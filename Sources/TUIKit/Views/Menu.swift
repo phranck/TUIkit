@@ -200,10 +200,12 @@ extension Menu: Renderable {
 
         // Menu items
         let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
+        let appearance = context.environment.appearance
+        let isBlockAppearance = appearance.id == .block
+        
         for (index, item) in items.enumerated() {
             let isSelected = index == currentSelection
-            let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
-
+            
             // Build the label with optional shortcut
             let labelText: String
             if let shortcut = item.shortcut {
@@ -212,13 +214,28 @@ extension Menu: Renderable {
                 labelText = "    \(item.label)"
             }
 
-            let fullText = " " + prefix + labelText
+            // For block appearance: no indicator, use background highlight
+            // For other appearances: use indicator prefix
+            let fullText: String
+            if isBlockAppearance {
+                fullText = " " + labelText
+            } else {
+                let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
+                fullText = " " + prefix + labelText
+            }
 
             // Apply styling
             var style = TextStyle()
             if isSelected {
                 style.isBold = true
-                style.foregroundColor = selectedColor ?? Color.theme.accent
+                if isBlockAppearance {
+                    // Block appearance: use background highlight
+                    style.foregroundColor = Color.theme.background
+                    style.backgroundColor = selectedColor ?? Color.theme.accent
+                } else {
+                    // Other appearances: just change foreground color
+                    style.foregroundColor = selectedColor ?? Color.theme.accent
+                }
             } else {
                 // Use theme foreground color if no custom itemColor is set
                 style.foregroundColor = itemColor ?? Color.theme.foreground
