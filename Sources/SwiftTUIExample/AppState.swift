@@ -60,25 +60,27 @@ final class ExampleAppState: @unchecked Sendable {
     /// The status bar shows context-sensitive shortcuts:
     /// - Main menu: navigation, selection, and quit
     /// - Sub-pages: back navigation and quit
+    ///
+    /// Uses `Shortcut` constants for consistent Unicode symbols.
     func updateStatusBar() {
         switch currentPage {
         case .menu:
             // Main menu: navigation + quit
             StatusBarManager.shared.setGlobalItems([
-                TStatusBarItem(shortcut: "↑↓", label: "nav"),
-                TStatusBarItem(shortcut: "↵", label: "select", key: .enter),
-                TStatusBarItem(shortcut: "1-6", label: "jump"),
-                TStatusBarItem(shortcut: "q", label: "quit")
+                TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav"),
+                TStatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter),
+                TStatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump"),
+                TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
             ])
 
         default:
             // Sub-pages: back + quit
             StatusBarManager.shared.setGlobalItems([
-                TStatusBarItem(shortcut: "⎋", label: "back") { [weak self] in
+                TStatusBarItem(shortcut: Shortcut.escape, label: "back") { [weak self] in
                     self?.currentPage = .menu
                 },
-                TStatusBarItem(shortcut: "↑↓", label: "scroll"),
-                TStatusBarItem(shortcut: "q", label: "quit")
+                TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
+                TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
             ])
         }
     }
