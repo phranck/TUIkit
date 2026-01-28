@@ -22,7 +22,7 @@ struct OverlaysPage: View {
                 Alert(
                     title: "Modal Alert",
                     message: "This alert overlays dimmed content!",
-                    borderStyle: .rounded,
+                    // borderStyle uses appearance default
                     borderColor: .yellow,
                     titleColor: .yellow
                 ) {

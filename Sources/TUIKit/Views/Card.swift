@@ -19,7 +19,7 @@
 ///     Text("Card content goes here")
 /// }
 ///
-/// Card(borderStyle: .rounded, borderColor: .cyan) {
+/// Card(borderStyle: .doubleLine, borderColor: .cyan) {
 ///     Text("Styled Card")
 /// }
 /// ```
@@ -27,8 +27,8 @@ public struct Card<Content: View>: View {
     /// The content of the card.
     public let content: Content
 
-    /// The border style.
-    public let borderStyle: BorderStyle
+    /// The border style (nil uses appearance default).
+    public let borderStyle: BorderStyle?
 
     /// The border color.
     public let borderColor: Color?
@@ -42,13 +42,13 @@ public struct Card<Content: View>: View {
     /// Creates a card with the specified styling.
     ///
     /// - Parameters:
-    ///   - borderStyle: The border style (default: .rounded).
-    ///   - borderColor: The border color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
     ///   - backgroundColor: The background color (default: nil).
     ///   - padding: The inner padding (default: 1 on all sides).
     ///   - content: The content of the card.
     public init(
-        borderStyle: BorderStyle = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         backgroundColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(all: 1),
@@ -63,6 +63,7 @@ public struct Card<Content: View>: View {
 
     public var body: some View {
         // Build the card by composing modifiers
+        // Note: .border() with nil style uses appearance default
         if let bgColor = backgroundColor {
             content
                 .padding(padding)

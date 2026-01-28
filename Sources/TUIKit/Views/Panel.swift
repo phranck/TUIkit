@@ -30,8 +30,8 @@ public struct Panel<Content: View>: View {
     /// The content of the panel.
     public let content: Content
 
-    /// The border style.
-    public let borderStyle: BorderStyle
+    /// The border style (nil uses appearance default).
+    public let borderStyle: BorderStyle?
 
     /// The border color.
     public let borderColor: Color?
@@ -46,14 +46,14 @@ public struct Panel<Content: View>: View {
     ///
     /// - Parameters:
     ///   - title: The title to display in the top border.
-    ///   - borderStyle: The border style (default: .line).
-    ///   - borderColor: The border color (default: nil).
-    ///   - titleColor: The title color (default: nil, same as border).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: same as border).
     ///   - padding: The inner padding (default: horizontal 1, vertical 0).
     ///   - content: The content of the panel.
     public init(
         _ title: String,
-        borderStyle: BorderStyle = .line,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(horizontal: 1, vertical: 0),
@@ -76,6 +76,9 @@ public struct Panel<Content: View>: View {
 
 extension Panel: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Resolve border style - use explicit or fall back to appearance default
+        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
+        
         // Render the content first
         let paddedContent = content.padding(padding)
         let contentBuffer = TUIKit.renderToBuffer(paddedContent, context: context)
@@ -99,7 +102,7 @@ extension Panel: Renderable {
 
         // Left part: corner + one horizontal
         let leftPart = colorize(
-            String(borderStyle.topLeft) + String(borderStyle.horizontal),
+            String(effectiveBorderStyle.topLeft) + String(effectiveBorderStyle.horizontal),
             with: borderColor
         )
 
@@ -108,7 +111,7 @@ extension Panel: Renderable {
         // Used by: 1 (left horizontal) + titleLength + rightPartLength = innerWidth
         let rightPartLength = max(0, innerWidth - 1 - titleLength)
         let rightPart = colorize(
-            String(repeating: borderStyle.horizontal, count: rightPartLength) + String(borderStyle.topRight),
+            String(repeating: effectiveBorderStyle.horizontal, count: rightPartLength) + String(effectiveBorderStyle.topRight),
             with: borderColor
         )
 
@@ -116,9 +119,9 @@ extension Panel: Renderable {
 
         // Build bottom border (innerWidth horizontals between corners)
         let bottomLine = colorize(
-            String(borderStyle.bottomLeft)
-                + String(repeating: borderStyle.horizontal, count: innerWidth)
-                + String(borderStyle.bottomRight),
+            String(effectiveBorderStyle.bottomLeft)
+                + String(repeating: effectiveBorderStyle.horizontal, count: innerWidth)
+                + String(effectiveBorderStyle.bottomRight),
             with: borderColor
         )
 
@@ -129,8 +132,8 @@ extension Panel: Renderable {
         // Content lines with side borders
         // Important: Add reset before right border to prevent color bleeding
         let reset = "\u{1B}[0m"
-        let leftBorder = colorize(String(borderStyle.vertical), with: borderColor)
-        let rightBorder = colorize(String(borderStyle.vertical), with: borderColor)
+        let leftBorder = colorize(String(effectiveBorderStyle.vertical), with: borderColor)
+        let rightBorder = colorize(String(effectiveBorderStyle.vertical), with: borderColor)
 
         for line in contentBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
@@ -142,11 +145,10 @@ extension Panel: Renderable {
         return FrameBuffer(lines: lines)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String, with color: Color?) -> String {
-        guard let color = color else { return string }
         var style = TextStyle()
-        style.foregroundColor = color
+        style.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: style)
     }
 }

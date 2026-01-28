@@ -50,6 +50,24 @@ extension App {
     }
 }
 
+// MARK: - Quit Behavior
+
+/// Controls when the quit shortcut (`q`) is active.
+public enum QuitBehavior: Sendable {
+    /// Quit works from any screen.
+    ///
+    /// Pressing `q` will always exit the application, regardless of
+    /// the current navigation state.
+    case always
+    
+    /// Quit only works from the root/main screen.
+    ///
+    /// Pressing `q` will only exit when no context is pushed onto the
+    /// status bar stack. On subpages, `q` does nothing, allowing the
+    /// app to handle navigation (e.g., ESC to go back).
+    case rootOnly
+}
+
 // MARK: - Status Bar State
 
 /// Manages the status bar state for the running application.
@@ -73,12 +91,45 @@ extension App {
 /// }
 /// ```
 public final class StatusBarState: @unchecked Sendable {
-    /// Stack of contexts with their items.
-    private var contextStack: [(context: String, items: [any StatusBarItemProtocol])] = []
+    // MARK: - User Items
+    
+    /// Stack of user contexts with their items.
+    private var userContextStack: [(context: String, items: [any StatusBarItemProtocol])] = []
 
-    /// Global items that are always shown (lowest priority).
-    private var globalItems: [any StatusBarItemProtocol] = []
-
+    /// Global user items that are always shown (lowest priority).
+    private var userGlobalItems: [any StatusBarItemProtocol] = []
+    
+    // MARK: - System Items Configuration
+    
+    /// Whether system items are shown at all.
+    ///
+    /// Set to `false` to hide all system items (quit, help, theme).
+    /// Default is `true`.
+    public var showSystemItems: Bool = true
+    
+    /// Whether the appearance item (`a`) is shown.
+    ///
+    /// When `true`, pressing `a` cycles through available appearances (border styles).
+    /// Default is `true`.
+    public var showAppearanceItem: Bool = true
+    
+    /// Whether the theme item (`t`) is shown.
+    ///
+    /// When `true`, pressing `t` cycles through available themes.
+    /// Default is `true`.
+    public var showThemeItem: Bool = true
+    
+    /// Controls when the quit shortcut (`q`) is active.
+    ///
+    /// - `.always`: Quit works from any screen (default).
+    /// - `.rootOnly`: Quit only works when no context is pushed (main screen).
+    ///
+    /// When set to `.rootOnly`, pressing `q` on a subpage does nothing,
+    /// allowing the app to handle navigation (e.g., go back) instead.
+    public var quitBehavior: QuitBehavior = .always
+    
+    // MARK: - Appearance
+    
     /// The current status bar style.
     public var style: StatusBarStyle = .compact
 
@@ -92,57 +143,113 @@ public final class StatusBarState: @unchecked Sendable {
     public var labelColor: Color? = nil
 
     /// Creates a new status bar state.
-    public init() {}
+    public init() {
+        // System items are built dynamically based on flags
+    }
+    
+    // MARK: - System Items Access
+    
+    /// Whether we are at the root level (no context pushed).
+    public var isAtRoot: Bool {
+        userContextStack.isEmpty
+    }
+    
+    /// Whether quit is currently allowed based on `quitBehavior`.
+    public var isQuitAllowed: Bool {
+        switch quitBehavior {
+        case .always:
+            return true
+        case .rootOnly:
+            return isAtRoot
+        }
+    }
+    
+    /// The current system items based on configuration flags.
+    ///
+    /// Returns items filtered by `showSystemItems`, `showAppearanceItem`, `showThemeItem`,
+    /// and `quitBehavior`. The quit item is only included when quit is allowed.
+    public var currentSystemItems: [StatusBarItem] {
+        guard showSystemItems else { return [] }
+        
+        var items: [StatusBarItem] = []
+        
+        // Quit item respects quitBehavior
+        if isQuitAllowed {
+            items.append(SystemStatusBarItem.quit)
+        }
+        
+        if showAppearanceItem {
+            items.append(SystemStatusBarItem.appearance)
+        }
+        
+        if showThemeItem {
+            items.append(SystemStatusBarItem.theme)
+        }
+        
+        return items
+    }
 
-    // MARK: - Items Management
+    // MARK: - User Items Management
 
-    /// Sets the global status bar items.
+    /// Sets the global user items.
     ///
     /// These items are shown when no context is active.
+    /// System items are always shown in addition to these (unless disabled).
     /// Triggers a re-render.
     ///
-    /// - Parameter items: The items to display.
+    /// - Parameter items: The user items to display.
     public func setItems(_ items: [any StatusBarItemProtocol]) {
-        globalItems = items
+        userGlobalItems = items
         AppState.shared.setNeedsRender()
     }
 
-    /// Sets the global status bar items using a builder.
+    /// Sets the global user items using a builder.
     ///
     /// Triggers a re-render.
     ///
     /// - Parameter builder: A closure that returns items.
     public func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
-        globalItems = builder()
+        userGlobalItems = builder()
         AppState.shared.setNeedsRender()
     }
 
-    /// Sets the global status bar items without triggering a re-render.
+    /// Sets the global user items without triggering a re-render.
     ///
     /// Use this during rendering (e.g., from modifiers) to avoid render loops.
     ///
     /// - Parameter items: The items to display.
     internal func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
-        globalItems = items
+        userGlobalItems = items
+    }
+    
+    /// The current user items (topmost context or global user items).
+    ///
+    /// Does not include system items.
+    public var currentUserItems: [any StatusBarItemProtocol] {
+        if let topContext = userContextStack.last {
+            return topContext.items
+        }
+        return userGlobalItems
     }
 
-    // MARK: - Context Stack
+    // MARK: - User Context Stack
 
-    /// Pushes a new context with its items onto the stack.
+    /// Pushes a new user context with its items onto the stack.
     ///
-    /// Items from the most recent context are displayed, hiding global items.
+    /// Items from the most recent context are displayed instead of global user items.
+    /// System items are always shown in addition to context items.
     /// Triggers a re-render.
     ///
     /// - Parameters:
     ///   - context: A unique identifier for this context.
-    ///   - items: The items to display for this context.
+    ///   - items: The user items to display for this context.
     public func push(context: String, items: [any StatusBarItemProtocol]) {
-        contextStack.removeAll { $0.context == context }
-        contextStack.append((context, items))
+        userContextStack.removeAll { $0.context == context }
+        userContextStack.append((context, items))
         AppState.shared.setNeedsRender()
     }
 
-    /// Pushes a new context without triggering a re-render.
+    /// Pushes a new user context without triggering a re-render.
     ///
     /// Use this during rendering (e.g., from modifiers) to avoid render loops.
     ///
@@ -150,11 +257,11 @@ public final class StatusBarState: @unchecked Sendable {
     ///   - context: A unique identifier for this context.
     ///   - items: The items to display for this context.
     internal func pushSilently(context: String, items: [any StatusBarItemProtocol]) {
-        contextStack.removeAll { $0.context == context }
-        contextStack.append((context, items))
+        userContextStack.removeAll { $0.context == context }
+        userContextStack.append((context, items))
     }
 
-    /// Pushes a new context using a builder.
+    /// Pushes a new user context using a builder.
     ///
     /// Triggers a re-render.
     ///
@@ -165,46 +272,76 @@ public final class StatusBarState: @unchecked Sendable {
         push(context: context, items: builder())
     }
 
-    /// Pops a context from the stack.
+    /// Pops a user context from the stack.
     ///
     /// Triggers a re-render.
     ///
     /// - Parameter context: The context identifier to remove.
     public func pop(context: String) {
-        contextStack.removeAll { $0.context == context }
+        userContextStack.removeAll { $0.context == context }
         AppState.shared.setNeedsRender()
     }
 
-    /// Clears all contexts (keeps global items).
+    /// Clears all user contexts (keeps global user items and system items).
     ///
     /// Triggers a re-render.
     public func clearContexts() {
-        contextStack.removeAll()
+        userContextStack.removeAll()
         AppState.shared.setNeedsRender()
     }
 
-    /// Clears everything including global items.
-    public func clear() {
-        contextStack.removeAll()
-        globalItems.removeAll()
+    /// Clears all user items (global and contexts).
+    ///
+    /// System items remain visible unless `showSystemItems` is set to false.
+    public func clearUserItems() {
+        userContextStack.removeAll()
+        userGlobalItems.removeAll()
     }
 
-    // MARK: - Current State
+    /// Clears everything including user items and hides system items.
+    ///
+    /// After calling this, the status bar will be empty until new items are set
+    /// or `showSystemItems` is set back to `true`.
+    public func clear() {
+        userContextStack.removeAll()
+        userGlobalItems.removeAll()
+        showSystemItems = false
+    }
 
-    /// The currently active items (topmost context or global).
+    // MARK: - Combined Items
+
+    /// All currently active items for rendering and event handling.
+    ///
+    /// Layout: `[sorted user items] + [system items with fixed order]`
+    ///
+    /// If a user item has the same shortcut as a system item, the user item
+    /// replaces the system item (user items take priority).
     public var currentItems: [any StatusBarItemProtocol] {
-        if let topContext = contextStack.last {
-            return topContext.items
-        }
-        return globalItems
+        // Get shortcuts used by user items (for deduplication)
+        let userShortcuts = Set(currentUserItems.map { $0.shortcut })
+        
+        // Filter out system items that are overridden by user items
+        let filteredSystemItems = currentSystemItems.filter { !userShortcuts.contains($0.shortcut) }
+        
+        // Sort user items by order, then append system items (fixed order)
+        let sortedUserItems = currentUserItems.sorted { $0.order < $1.order }
+        
+        return sortedUserItems + filteredSystemItems
     }
 
     /// Whether the status bar has any items to display.
     public var hasItems: Bool {
         !currentItems.isEmpty
     }
+    
+    /// Whether there are any user items (ignoring system items).
+    public var hasUserItems: Bool {
+        !currentUserItems.isEmpty
+    }
 
     /// The height of the status bar in lines.
+    ///
+    /// Returns 0 only if no items are present.
     public var height: Int {
         guard hasItems else { return 0 }
         switch style {
@@ -279,6 +416,8 @@ internal final class AppRunner<A: App> {
     let terminal: Terminal
     let statusBar: StatusBarState
     let focusManager: FocusManager
+    let themeManager: ThemeManager
+    let appearanceManager: AppearanceManager
     private var isRunning = false
 
     init(app: A) {
@@ -286,6 +425,8 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
+        self.themeManager = ThemeManager()
+        self.appearanceManager = AppearanceManager()
     }
 
     func run() {
@@ -295,10 +436,12 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with status bar and focus manager
+        // Set up environment with status bar, focus manager, theme manager, and appearance manager
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
+        environment.themeManager = themeManager
+        environment.appearanceManager = appearanceManager
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
@@ -332,8 +475,6 @@ internal final class AppRunner<A: App> {
     }
 
     private func render() {
-        terminal.clear()
-
         // Clear event handlers before re-rendering
         KeyEventDispatcher.shared.clearHandlers()
         focusManager.clear()
@@ -349,6 +490,10 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
+        environment.themeManager = themeManager
+        environment.theme = themeManager.currentTheme  // Apply current theme
+        environment.appearanceManager = appearanceManager
+        environment.appearance = appearanceManager.currentAppearance  // Apply current appearance
 
         let context = RenderContext(
             terminal: terminal,
@@ -360,7 +505,7 @@ internal final class AppRunner<A: App> {
         // Update global environment storage
         EnvironmentStorage.shared.environment = environment
 
-        // Render main content
+        // Render main content (background fill happens in renderScene)
         let scene = app.body
         renderScene(scene, context: context)
 
@@ -381,12 +526,19 @@ internal final class AppRunner<A: App> {
 
     /// Renders the status bar at the specified row.
     private func renderStatusBar(atRow row: Int) {
+        // Use theme colors for status bar (if not explicitly overridden)
+        let highlightColor = statusBar.highlightColor == .cyan 
+            ? Color.theme.statusBarHighlight 
+            : statusBar.highlightColor
+        let labelColor = statusBar.labelColor ?? Color.theme.statusBarForeground
+        
         let statusBarView = StatusBar(
-            items: statusBar.currentItems,
+            userItems: statusBar.currentUserItems,
+            systemItems: statusBar.currentSystemItems,
             style: statusBar.style,
             alignment: statusBar.alignment,
-            highlightColor: statusBar.highlightColor,
-            labelColor: statusBar.labelColor
+            highlightColor: highlightColor,
+            labelColor: labelColor
         )
         let context = RenderContext(
             terminal: terminal,
@@ -395,11 +547,24 @@ internal final class AppRunner<A: App> {
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)
+        
+        // Get background color from theme
+        let bgColor = themeManager.currentTheme.background
+        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
+        let reset = ANSIRenderer.reset
+        let terminalWidth = terminal.width
 
-        // Write directly to terminal at the bottom
+        // Write status bar with theme background
         for (index, line) in buffer.lines.enumerated() {
             terminal.moveCursor(toRow: row + index, column: 1)
-            terminal.write(line)
+            
+            let visibleWidth = line.strippedLength
+            let padding = max(0, terminalWidth - visibleWidth)
+            
+            // Replace all reset codes with "reset + restore background"
+            let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
+            let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
+            terminal.write(paddedLine)
         }
     }
 
@@ -414,14 +579,24 @@ internal final class AppRunner<A: App> {
             return
         }
 
-        // Default handling (only if no handler consumed the event):
-        // - ESC exits the app
-        // - 'q' or 'Q' exits the app
+        // Default handling (only if no handler consumed the event)
         switch event.key {
-        case .escape:
-            isRunning = false
         case .character(let char) where char == "q" || char == "Q":
-            isRunning = false
+            // 'q' is the only way to quit (respects quitBehavior setting)
+            if statusBar.isQuitAllowed {
+                isRunning = false
+            }
+            
+        case .character(let char) where char == "t" || char == "T":
+            // 't' cycles theme (if theme item is enabled)
+            if statusBar.showThemeItem {
+                themeManager.cycleTheme()
+            }
+            
+        case .character(let char) where char == "a" || char == "A":
+            // 'a' cycles appearance
+            appearanceManager.cycleAppearance()
+            
         default:
             break
         }
@@ -467,11 +642,36 @@ internal protocol SceneRenderable {
 extension WindowGroup: SceneRenderable {
     func renderScene(context: RenderContext) {
         let buffer = renderToBuffer(content, context: context)
-        // Write buffer to terminal
         let terminal = Terminal.shared
-        for (index, line) in buffer.lines.enumerated() {
-            terminal.moveCursor(toRow: 1 + index, column: 1)
-            terminal.write(line)
+        let terminalWidth = terminal.width
+        let terminalHeight = context.availableHeight
+        
+        // Get background color from theme
+        let bgColor = context.environment.theme.background
+        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
+        let reset = ANSIRenderer.reset
+        
+        // Write buffer to terminal, ensuring consistent background color
+        for row in 0..<terminalHeight {
+            terminal.moveCursor(toRow: 1 + row, column: 1)
+            
+            if row < buffer.lines.count {
+                let line = buffer.lines[row]
+                let visibleWidth = line.strippedLength
+                let padding = max(0, terminalWidth - visibleWidth)
+                
+                // Replace all reset codes with "reset + restore background"
+                // This ensures background color persists after styled text
+                let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
+                
+                // Wrap entire line with background
+                let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
+                terminal.write(paddedLine)
+            } else {
+                // Empty row - fill with background color
+                let emptyLine = bgCode + String(repeating: " ", count: terminalWidth) + reset
+                terminal.write(emptyLine)
+            }
         }
     }
 }
