@@ -26,9 +26,8 @@ struct OverlaysPage: TView {
                     borderColor: .yellow,
                     titleColor: .yellow
                 ) {
-                    HStack {
+                    HStack(spacing: 3) {
                         Text("[OK]").bold().foregroundColor(.green)
-                        Spacer()
                         Text("[Cancel]").foregroundColor(.red)
                     }
                 }

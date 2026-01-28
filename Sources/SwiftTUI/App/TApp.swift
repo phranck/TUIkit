@@ -99,6 +99,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Sets the global status bar items.
     ///
     /// These items are shown when no context is active.
+    /// Triggers a re-render.
     ///
     /// - Parameter items: The items to display.
     public func setItems(_ items: [any TStatusBarItemProtocol]) {
@@ -108,10 +109,21 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// Sets the global status bar items using a builder.
     ///
+    /// Triggers a re-render.
+    ///
     /// - Parameter builder: A closure that returns items.
     public func setItems(@StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]) {
         globalItems = builder()
         AppState.shared.setNeedsRender()
+    }
+
+    /// Sets the global status bar items without triggering a re-render.
+    ///
+    /// Use this during rendering (e.g., from modifiers) to avoid render loops.
+    ///
+    /// - Parameter items: The items to display.
+    internal func setItemsSilently(_ items: [any TStatusBarItemProtocol]) {
+        globalItems = items
     }
 
     // MARK: - Context Stack
@@ -119,6 +131,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Pushes a new context with its items onto the stack.
     ///
     /// Items from the most recent context are displayed, hiding global items.
+    /// Triggers a re-render.
     ///
     /// - Parameters:
     ///   - context: A unique identifier for this context.
@@ -129,7 +142,21 @@ public final class StatusBarState: @unchecked Sendable {
         AppState.shared.setNeedsRender()
     }
 
+    /// Pushes a new context without triggering a re-render.
+    ///
+    /// Use this during rendering (e.g., from modifiers) to avoid render loops.
+    ///
+    /// - Parameters:
+    ///   - context: A unique identifier for this context.
+    ///   - items: The items to display for this context.
+    internal func pushSilently(context: String, items: [any TStatusBarItemProtocol]) {
+        contextStack.removeAll { $0.context == context }
+        contextStack.append((context, items))
+    }
+
     /// Pushes a new context using a builder.
+    ///
+    /// Triggers a re-render.
     ///
     /// - Parameters:
     ///   - context: A unique identifier for this context.
@@ -140,6 +167,8 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// Pops a context from the stack.
     ///
+    /// Triggers a re-render.
+    ///
     /// - Parameter context: The context identifier to remove.
     public func pop(context: String) {
         contextStack.removeAll { $0.context == context }
@@ -147,6 +176,8 @@ public final class StatusBarState: @unchecked Sendable {
     }
 
     /// Clears all contexts (keeps global items).
+    ///
+    /// Triggers a re-render.
     public func clearContexts() {
         contextStack.removeAll()
         AppState.shared.setNeedsRender()
@@ -186,15 +217,22 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// Handles a key event, checking if any current item matches.
     ///
+    /// Only returns true if the item has an action to execute.
+    /// Items without actions (informational items) don't consume the event,
+    /// allowing default handlers to process it.
+    ///
     /// - Parameter event: The key event to handle.
-    /// - Returns: True if an item handled the event.
+    /// - Returns: True if an item with an action handled the event.
     @discardableResult
     public func handleKeyEvent(_ event: KeyEvent) -> Bool {
         for item in currentItems {
             if item.matches(event) {
                 if let statusBarItem = item as? TStatusBarItem {
-                    statusBarItem.execute()
-                    return true
+                    // Only consume the event if the item has an action
+                    if statusBarItem.hasAction {
+                        statusBarItem.execute()
+                        return true
+                    }
                 }
             }
         }
@@ -297,6 +335,9 @@ internal final class AppRunner<App: TApp> {
         KeyEventDispatcher.shared.clearHandlers()
         FocusManager.shared.clear()
 
+        // Begin lifecycle tracking for this render pass
+        LifecycleTracker.shared.beginRenderPass()
+
         // Calculate available height (reserve space for status bar)
         let statusBarHeight = statusBar.height
         let contentHeight = terminal.height - statusBarHeight
@@ -318,6 +359,9 @@ internal final class AppRunner<App: TApp> {
         // Render main content
         let scene = app.body
         renderScene(scene, context: context)
+
+        // End lifecycle tracking - triggers onDisappear for removed views
+        LifecycleTracker.shared.endRenderPass(onDisappear: DisappearCallbackStorage.shared.allCallbacks)
 
         // Render status bar separately (never dimmed)
         if statusBar.hasItems {
@@ -387,6 +431,9 @@ internal final class AppRunner<App: TApp> {
         KeyEventDispatcher.shared.clearHandlers()
         EnvironmentStorage.shared.reset()
         FocusManager.shared.clear()
+        LifecycleTracker.shared.reset()
+        DisappearCallbackStorage.shared.reset()
+        TaskStorage.shared.reset()
     }
 
     private func setupSignalHandlers() {
