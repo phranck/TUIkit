@@ -537,7 +537,7 @@ struct StatusBarTests {
             StatusBarItem(shortcut: "h", label: "help")
         ])
 
-        #expect(statusBar.items.count == 2)
+        #expect(statusBar.userItems.count == 2)
         #expect(statusBar.style == .compact)
         #expect(statusBar.alignment == .justified)
         #expect(statusBar.highlightColor == .cyan)
@@ -572,7 +572,7 @@ struct StatusBarTests {
             StatusBarItem(shortcut: "b", label: "beta")
         }
 
-        #expect(statusBar.items.count == 2)
+        #expect(statusBar.userItems.count == 2)
     }
 
     @Test("StatusBar compact height")
@@ -817,7 +817,7 @@ struct StatusBarItemBuilderTests {
             StatusBarItem(shortcut: "y", label: "test2")
         }
 
-        #expect(statusBar.items.count == 2)
+        #expect(statusBar.userItems.count == 2)
     }
 }
 
