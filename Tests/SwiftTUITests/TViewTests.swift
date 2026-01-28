@@ -807,3 +807,293 @@ struct ButtonRowTests {
         #expect(buffer.isEmpty)
     }
 }
+
+@Suite("StatusBar Item Tests")
+struct StatusBarItemTests {
+
+    init() {
+        StatusBarManager.shared.clear()
+    }
+
+    @Test("TStatusBarItem can be created with shortcut and label")
+    func statusBarItemCreation() {
+        let item = TStatusBarItem(shortcut: "q", label: "quit")
+        #expect(item.shortcut == "q")
+        #expect(item.label == "quit")
+        #expect(item.id == "q-quit")
+    }
+
+    @Test("TStatusBarItem derives trigger key from single character shortcut")
+    func statusBarItemTriggerKey() {
+        let item = TStatusBarItem(shortcut: "x", label: "delete")
+        #expect(item.triggerKey == .character("x"))
+    }
+
+    @Test("TStatusBarItem with escape shortcut")
+    func statusBarItemEscapeKey() {
+        let item = TStatusBarItem(shortcut: "⎋", label: "close")
+        #expect(item.triggerKey == .escape)
+    }
+
+    @Test("TStatusBarItem with enter shortcut")
+    func statusBarItemEnterKey() {
+        let item = TStatusBarItem(shortcut: "↵", label: "confirm")
+        #expect(item.triggerKey == .enter)
+    }
+
+    @Test("TStatusBarItem matches arrow key combinations")
+    func statusBarItemArrowKeys() {
+        let item = TStatusBarItem(shortcut: "↑↓", label: "nav")
+
+        let upEvent = KeyEvent(key: .up)
+        let downEvent = KeyEvent(key: .down)
+        let leftEvent = KeyEvent(key: .left)
+
+        #expect(item.matches(upEvent) == true)
+        #expect(item.matches(downEvent) == true)
+        #expect(item.matches(leftEvent) == false)
+    }
+
+    @Test("TStatusBarItem is case-sensitive for character shortcuts")
+    func statusBarItemCaseSensitive() {
+        let lowerItem = TStatusBarItem(shortcut: "n", label: "next")
+        let upperItem = TStatusBarItem(shortcut: "N", label: "new")
+
+        let lowerEvent = KeyEvent(key: .character("n"))
+        let upperEvent = KeyEvent(key: .character("N"))
+
+        // Lowercase "n" should only match lowercase
+        #expect(lowerItem.matches(lowerEvent) == true)
+        #expect(lowerItem.matches(upperEvent) == false)
+
+        // Uppercase "N" should only match uppercase
+        #expect(upperItem.matches(lowerEvent) == false)
+        #expect(upperItem.matches(upperEvent) == true)
+    }
+
+    @Test("TStatusBarItem executes action")
+    func statusBarItemAction() {
+        // Use a class to track execution (reference type is Sendable-safe)
+        final class ExecutionTracker: @unchecked Sendable {
+            var wasExecuted = false
+        }
+        let tracker = ExecutionTracker()
+
+        let item = TStatusBarItem(shortcut: "t", label: "test") {
+            tracker.wasExecuted = true
+        }
+
+        item.execute()
+        #expect(tracker.wasExecuted == true)
+    }
+
+    @Test("TStatusBarItem without action does not crash")
+    func statusBarItemNoAction() {
+        let item = TStatusBarItem(shortcut: "i", label: "info")
+        item.execute()  // Should not crash
+    }
+}
+
+@Suite("StatusBar Manager Tests")
+struct StatusBarManagerTests {
+
+    /// Clears the manager and removes any callbacks that might interfere.
+    private func resetManager() {
+        StatusBarManager.shared.onItemsChanged = nil
+        StatusBarManager.shared.clear()
+    }
+
+    @Test("StatusBarManager is singleton")
+    func managerSingleton() {
+        let manager1 = StatusBarManager.shared
+        let manager2 = StatusBarManager.shared
+        #expect(manager1 === manager2)
+    }
+
+    @Test("StatusBarManager can be cleared")
+    func managerCanBeCleared() {
+        resetManager()
+
+        // Add some items
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "x", label: "test")
+        ])
+        #expect(StatusBarManager.shared.hasItems == true)
+
+        // Clear and verify
+        StatusBarManager.shared.clear()
+        #expect(StatusBarManager.shared.hasItems == false)
+        #expect(StatusBarManager.shared.currentItems.isEmpty)
+    }
+
+    @Test("StatusBarManager global items can be set")
+    func managerGlobalItems() {
+        resetManager()
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "q", label: "quit"),
+            TStatusBarItem(shortcut: "h", label: "help")
+        ])
+
+        #expect(StatusBarManager.shared.hasItems == true)
+        #expect(StatusBarManager.shared.currentItems.count == 2)
+    }
+
+    @Test("StatusBarManager context stack")
+    func managerContextStack() {
+        resetManager()
+
+        // Set global items
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "q", label: "quit")
+        ])
+        #expect(StatusBarManager.shared.currentItems.count == 1)
+
+        // Push a context
+        StatusBarManager.shared.push(context: "dialog", items: [
+            TStatusBarItem(shortcut: "⎋", label: "close"),
+            TStatusBarItem(shortcut: "↵", label: "confirm")
+        ])
+        #expect(StatusBarManager.shared.currentItems.count == 2)
+        #expect(StatusBarManager.shared.currentItems[0].shortcut == "⎋")
+
+        // Pop the context
+        StatusBarManager.shared.pop(context: "dialog")
+        #expect(StatusBarManager.shared.currentItems.count == 1)
+        #expect(StatusBarManager.shared.currentItems[0].shortcut == "q")
+    }
+
+    @Test("StatusBarManager handles key events")
+    func managerKeyEvents() {
+        resetManager()
+
+        // Use a class to track execution (reference type is Sendable-safe)
+        final class ExecutionTracker: @unchecked Sendable {
+            var wasHandled = false
+        }
+        let tracker = ExecutionTracker()
+
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "t", label: "test") {
+                tracker.wasHandled = true
+            }
+        ])
+
+        let event = KeyEvent(key: .character("t"))
+        let handled = StatusBarManager.shared.handleKeyEvent(event)
+
+        #expect(handled == true)
+        #expect(tracker.wasHandled == true)
+    }
+
+    @Test("StatusBarManager does not handle unmatched events")
+    func managerUnmatchedEvents() {
+        resetManager()
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "a", label: "action")
+        ])
+
+        let event = KeyEvent(key: .character("z"))
+        let handled = StatusBarManager.shared.handleKeyEvent(event)
+
+        #expect(handled == false)
+    }
+}
+
+@Suite("TStatusBar Tests")
+struct TStatusBarTests {
+
+    init() {
+        StatusBarManager.shared.clear()
+    }
+
+    @Test("TStatusBar compact style renders single line")
+    func statusBarCompactStyle() {
+        let statusBar = TStatusBar(
+            items: [TStatusBarItem(shortcut: "q", label: "quit")],
+            style: .compact
+        )
+
+        #expect(statusBar.height == 1)
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        #expect(buffer.height == 1)
+        #expect(buffer.lines[0].stripped.contains("q"))
+        #expect(buffer.lines[0].stripped.contains("quit"))
+    }
+
+    @Test("TStatusBar bordered style renders three lines")
+    func statusBarBorderedStyle() {
+        let statusBar = TStatusBar(
+            items: [TStatusBarItem(shortcut: "q", label: "quit")],
+            style: .bordered
+        )
+
+        #expect(statusBar.height == 3)
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        #expect(buffer.height == 3)
+        // Check for block border characters
+        let topLine = buffer.lines[0]
+        #expect(topLine.contains("█") || topLine.contains("▀"))
+    }
+
+    @Test("TStatusBar with multiple items")
+    func statusBarMultipleItems() {
+        let statusBar = TStatusBar(
+            items: [
+                TStatusBarItem(shortcut: "q", label: "quit"),
+                TStatusBarItem(shortcut: "↑↓", label: "nav"),
+                TStatusBarItem(shortcut: "⎋", label: "close")
+            ],
+            style: .compact
+        )
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        let content = buffer.lines[0].stripped
+        #expect(content.contains("quit"))
+        #expect(content.contains("nav"))
+        #expect(content.contains("close"))
+    }
+
+    @Test("TStatusBar with empty items renders nothing")
+    func statusBarEmptyItems() {
+        let statusBar = TStatusBar(items: [], style: .compact)
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        #expect(buffer.isEmpty)
+    }
+
+    @Test("TStatusBar uses StatusBarManager items")
+    func statusBarFromManager() {
+        StatusBarManager.shared.clear()
+        StatusBarManager.shared.setGlobalItems([
+            TStatusBarItem(shortcut: "h", label: "help")
+        ])
+
+        let statusBar = TStatusBar()
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        #expect(buffer.lines[0].stripped.contains("help"))
+    }
+
+    @Test("TStatusBar with explicit items array")
+    func statusBarExplicitItems() {
+        let items: [any TStatusBarItemProtocol] = [
+            TStatusBarItem(shortcut: "1", label: "one"),
+            TStatusBarItem(shortcut: "2", label: "two")
+        ]
+        let statusBar = TStatusBar(items: items, style: .compact)
+
+        #expect(statusBar.items.count == 2)
+    }
+}
