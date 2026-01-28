@@ -77,12 +77,13 @@ public struct Appearance: Sendable, Equatable {
 extension Appearance {
     /// Type-safe identifier for appearances.
     ///
-    /// Use predefined IDs or create custom ones:
+    /// IDs match `BorderStyle` names for consistency.
     ///
     /// ```swift
-    /// // Predefined
+    /// // Predefined (matching BorderStyle names)
+    /// Appearance.ID.line
     /// Appearance.ID.rounded
-    /// Appearance.ID.sharp
+    /// Appearance.ID.doubleLine
     ///
     /// // Custom
     /// extension Appearance.ID {
@@ -96,51 +97,59 @@ extension Appearance {
             self.rawValue = rawValue
         }
         
-        /// Rounded corners appearance.
+        /// Single line borders (┌─┐).
+        public static let line = ID(rawValue: "line")
+        
+        /// Rounded corners (╭─╮).
         public static let rounded = ID(rawValue: "rounded")
         
-        /// Sharp/square corners appearance.
-        public static let sharp = ID(rawValue: "sharp")
+        /// Double-line borders (╔═╗).
+        public static let doubleLine = ID(rawValue: "doubleLine")
         
-        /// Double-line borders appearance.
-        public static let double = ID(rawValue: "double")
-        
-        /// ASCII-only borders (maximum terminal compatibility).
-        public static let ascii = ID(rawValue: "ascii")
-        
-        /// Heavy/thick borders appearance.
+        /// Heavy/bold borders (┏━┓).
         public static let heavy = ID(rawValue: "heavy")
+        
+        /// Block/solid borders (███).
+        public static let block = ID(rawValue: "block")
+        
+        /// ASCII-only borders (+--+).
+        public static let ascii = ID(rawValue: "ascii")
     }
 }
 
 // MARK: - Predefined Appearances
 
 extension Appearance {
+    /// Single line borders.
+    ///
+    /// Uses `BorderStyle.line` with standard box-drawing characters.
+    public static let line = Appearance(id: .line, borderStyle: .line)
+    
     /// Rounded corners (default).
     ///
     /// Uses `BorderStyle.rounded` with curved corner characters.
     public static let rounded = Appearance(id: .rounded, borderStyle: .rounded)
     
-    /// Sharp/square corners.
-    ///
-    /// Uses `BorderStyle.line` with 90-degree corner characters.
-    public static let sharp = Appearance(id: .sharp, borderStyle: .line)
-    
     /// Double-line borders.
     ///
     /// Uses `BorderStyle.doubleLine` for a more prominent look.
-    public static let double = Appearance(id: .double, borderStyle: .doubleLine)
+    public static let doubleLine = Appearance(id: .doubleLine, borderStyle: .doubleLine)
+    
+    /// Heavy/bold borders.
+    ///
+    /// Uses `BorderStyle.heavy` for bold, prominent borders.
+    public static let heavy = Appearance(id: .heavy, borderStyle: .heavy)
+    
+    /// Block/solid borders.
+    ///
+    /// Uses `BorderStyle.block` with solid block characters.
+    public static let block = Appearance(id: .block, borderStyle: .block)
     
     /// ASCII-only borders.
     ///
     /// Uses `BorderStyle.ascii` with only `+`, `-`, and `|` characters.
     /// Maximum compatibility with all terminals.
     public static let ascii = Appearance(id: .ascii, borderStyle: .ascii)
-    
-    /// Heavy/thick borders.
-    ///
-    /// Uses `BorderStyle.heavy` for bold, prominent borders.
-    public static let heavy = Appearance(id: .heavy, borderStyle: .heavy)
     
     /// The default appearance (rounded).
     public static let `default`: Appearance = .rounded
@@ -151,11 +160,14 @@ extension Appearance {
 /// Registry of available appearances for cycling.
 public struct AppearanceRegistry {
     /// All available appearances in cycling order.
+    ///
+    /// Order: line → rounded → doubleLine → heavy → block → ascii
     public static let all: [Appearance] = [
+        .line,
         .rounded,
-        .sharp,
-        .double,
+        .doubleLine,
         .heavy,
+        .block,
         .ascii
     ]
     
