@@ -19,16 +19,16 @@ import SwiftTUI
 ///     Text("Feature 2")
 /// }
 /// ```
-struct DemoSection<Content: TView>: TView {
+struct DemoSection<Content: View>: View {
     let title: String
     let content: Content
 
-    init(_ title: String, @TViewBuilder content: () -> Content) {
+    init(_ title: String, @ViewBuilder content: () -> Content) {
         self.title = title
         self.content = content()
     }
 
-    var body: some TView {
+    var body: some View {
         VStack(alignment: .leading) {
             Text(title)
                 .bold()

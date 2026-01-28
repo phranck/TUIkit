@@ -141,6 +141,124 @@ public struct Color: Sendable, Equatable {
         let blue = UInt8(hex & 0xFF)
         return .rgb(red, green, blue)
     }
+
+    /// Creates a color from a hex string.
+    ///
+    /// Supports formats: "#RGB", "#RRGGBB", "RGB", "RRGGBB"
+    ///
+    /// - Parameter hex: The hex string (e.g., "#FF5500", "F50", "#abc").
+    /// - Returns: The corresponding RGB color, or nil if invalid.
+    public static func hex(_ hex: String) -> Color? {
+        var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Remove # prefix if present
+        if hexString.hasPrefix("#") {
+            hexString.removeFirst()
+        }
+
+        // Handle shorthand format (RGB -> RRGGBB)
+        if hexString.count == 3 {
+            let chars = Array(hexString)
+            hexString = String([chars[0], chars[0], chars[1], chars[1], chars[2], chars[2]])
+        }
+
+        // Must be 6 characters now
+        guard hexString.count == 6 else { return nil }
+
+        // Parse hex value
+        guard let hexValue = UInt32(hexString, radix: 16) else { return nil }
+
+        return .hex(hexValue)
+    }
+
+    /// Creates a color from HSL values.
+    ///
+    /// - Parameters:
+    ///   - hue: The hue component (0-360).
+    ///   - saturation: The saturation component (0-100).
+    ///   - lightness: The lightness component (0-100).
+    /// - Returns: The corresponding RGB color.
+    public static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Color {
+        let h = hue / 360.0
+        let s = saturation / 100.0
+        let l = lightness / 100.0
+
+        if s == 0 {
+            // Achromatic (gray)
+            let gray = UInt8(l * 255)
+            return .rgb(gray, gray, gray)
+        }
+
+        let q = l < 0.5 ? l * (1 + s) : l + s - l * s
+        let p = 2 * l - q
+
+        func hueToRGB(_ p: Double, _ q: Double, _ t: Double) -> Double {
+            var t = t
+            if t < 0 { t += 1 }
+            if t > 1 { t -= 1 }
+            if t < 1/6 { return p + (q - p) * 6 * t }
+            if t < 1/2 { return q }
+            if t < 2/3 { return p + (q - p) * (2/3 - t) * 6 }
+            return p
+        }
+
+        let red = UInt8(hueToRGB(p, q, h + 1/3) * 255)
+        let green = UInt8(hueToRGB(p, q, h) * 255)
+        let blue = UInt8(hueToRGB(p, q, h - 1/3) * 255)
+
+        return .rgb(red, green, blue)
+    }
+
+    /// Returns a lighter version of this color.
+    ///
+    /// - Parameter amount: The amount to lighten (0-1, default 0.2).
+    /// - Returns: A lighter color.
+    public func lighter(by amount: Double = 0.2) -> Color {
+        guard case .rgb(let red, let green, let blue) = value else {
+            return self
+        }
+
+        let newRed = UInt8(min(255, Double(red) + 255 * amount))
+        let newGreen = UInt8(min(255, Double(green) + 255 * amount))
+        let newBlue = UInt8(min(255, Double(blue) + 255 * amount))
+
+        return .rgb(newRed, newGreen, newBlue)
+    }
+
+    /// Returns a darker version of this color.
+    ///
+    /// - Parameter amount: The amount to darken (0-1, default 0.2).
+    /// - Returns: A darker color.
+    public func darker(by amount: Double = 0.2) -> Color {
+        guard case .rgb(let red, let green, let blue) = value else {
+            return self
+        }
+
+        let newRed = UInt8(max(0, Double(red) - 255 * amount))
+        let newGreen = UInt8(max(0, Double(green) - 255 * amount))
+        let newBlue = UInt8(max(0, Double(blue) - 255 * amount))
+
+        return .rgb(newRed, newGreen, newBlue)
+    }
+
+    /// Returns a color with adjusted opacity (simulated via color mixing).
+    ///
+    /// Since terminals don't support true transparency, this mixes
+    /// the color with black to simulate opacity.
+    ///
+    /// - Parameter opacity: The opacity (0-1).
+    /// - Returns: A color simulating the given opacity.
+    public func opacity(_ opacity: Double) -> Color {
+        guard case .rgb(let red, let green, let blue) = value else {
+            return self
+        }
+
+        let newRed = UInt8(Double(red) * opacity)
+        let newGreen = UInt8(Double(green) * opacity)
+        let newBlue = UInt8(Double(blue) * opacity)
+
+        return .rgb(newRed, newGreen, newBlue)
+    }
 }
 
 // MARK: - ANSIColor

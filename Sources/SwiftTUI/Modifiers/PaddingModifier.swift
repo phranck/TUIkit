@@ -81,7 +81,7 @@ public struct Edge: OptionSet, Sendable {
 }
 
 /// A modifier that adds padding around a view.
-public struct PaddingModifier: TViewModifier {
+public struct PaddingModifier: ViewModifier {
     /// The padding insets.
     public let insets: EdgeInsets
 
@@ -112,9 +112,9 @@ public struct PaddingModifier: TViewModifier {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Adds padding on all sides.
     ///
     /// ```swift

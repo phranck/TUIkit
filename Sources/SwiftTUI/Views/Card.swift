@@ -23,7 +23,7 @@
 ///     Text("Styled Card")
 /// }
 /// ```
-public struct Card<Content: TView>: TView {
+public struct Card<Content: View>: View {
     /// The content of the card.
     public let content: Content
 
@@ -52,7 +52,7 @@ public struct Card<Content: TView>: TView {
         borderColor: Color? = nil,
         backgroundColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(all: 1),
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.content = content()
         self.borderStyle = borderStyle
@@ -61,7 +61,7 @@ public struct Card<Content: TView>: TView {
         self.padding = padding
     }
 
-    public var body: some TView {
+    public var body: some View {
         // Build the card by composing modifiers
         if let bgColor = backgroundColor {
             content

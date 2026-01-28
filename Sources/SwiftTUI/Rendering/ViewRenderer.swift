@@ -2,12 +2,12 @@
 //  ViewRenderer.swift
 //  SwiftTUI
 //
-//  Renders TViews to terminal output via FrameBuffer.
+//  Renders Views to terminal output via FrameBuffer.
 //
 
 import Foundation
 
-/// Renders TViews to terminal output.
+/// Renders Views to terminal output.
 ///
 /// The `ViewRenderer` uses a two-pass approach:
 /// 1. Render the entire view tree into a `FrameBuffer`
@@ -29,7 +29,7 @@ public final class ViewRenderer {
     ///   - view: The view to render.
     ///   - row: The starting row (1-based, default: 1).
     ///   - column: The starting column (1-based, default: 1).
-    public func render<V: TView>(_ view: V, atRow row: Int = 1, column: Int = 1) {
+    public func render<V: View>(_ view: V, atRow row: Int = 1, column: Int = 1) {
         let context = RenderContext(terminal: terminal)
         let buffer = renderToBuffer(view, context: context)
         flush(buffer, atRow: row, column: column)
@@ -68,7 +68,7 @@ protocol ChildInfoProvider {
 }
 
 /// Creates a ChildInfo for a single view.
-func makeChildInfo<V: TView>(for view: V, context: RenderContext) -> ChildInfo {
+func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
     if let spacer = view as? Spacer {
         return ChildInfo(buffer: nil, isSpacer: true, spacerMinLength: spacer.minLength)
     }
@@ -358,9 +358,9 @@ extension ConditionalView: Renderable {
     }
 }
 
-// MARK: - TViewArray Rendering
+// MARK: - ViewArray Rendering
 
-extension TViewArray: Renderable, ChildInfoProvider {
+extension ViewArray: Renderable, ChildInfoProvider {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
@@ -372,7 +372,7 @@ extension TViewArray: Renderable, ChildInfoProvider {
 
 // MARK: - Optional Rendering
 
-extension Optional: Renderable where Wrapped: TView {
+extension Optional: Renderable where Wrapped: View {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         switch self {
         case .some(let view):
@@ -395,7 +395,7 @@ extension Optional: Renderable where Wrapped: TView {
 ///   - content: The content view.
 ///   - context: The rendering context.
 /// - Returns: An array of ChildInfo.
-func resolveChildInfos<V: TView>(from content: V, context: RenderContext) -> [ChildInfo] {
+func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [ChildInfo] {
     if let provider = content as? ChildInfoProvider {
         return provider.childInfos(context: context)
     }

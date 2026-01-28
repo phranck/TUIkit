@@ -51,10 +51,10 @@ public struct MenuItem: Identifiable {
 /// # Interactive Example (with Binding)
 ///
 /// ```swift
-/// struct ContentView: TView {
-///     @TState var selection = 0
+/// struct ContentView: View {
+///     @State var selection = 0
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         Menu(
 ///             title: "Main Menu",
 ///             items: menuItems,
@@ -66,7 +66,7 @@ public struct MenuItem: Identifiable {
 ///     }
 /// }
 /// ```
-public struct Menu: TView {
+public struct Menu: View {
     /// The menu title (optional).
     public let title: String?
 
@@ -347,11 +347,11 @@ extension Menu: Renderable {
 ///
 /// This is a temporary solution until we have proper `@ViewBuilder`
 /// support for complex conditionals.
-public struct AnyView: TView {
+public struct AnyView: View {
     private let _render: (RenderContext) -> FrameBuffer
 
     /// Creates an AnyView wrapping the given view.
-    public init<V: TView>(_ view: V) {
+    public init<V: View>(_ view: V) {
         self._render = { context in
             SwiftTUI.renderToBuffer(view, context: context)
         }
@@ -368,7 +368,7 @@ extension AnyView: Renderable {
     }
 }
 
-extension TView {
+extension View {
     /// Wraps this view in an AnyView for type erasure.
     ///
     /// Use this when you need to return different view types from

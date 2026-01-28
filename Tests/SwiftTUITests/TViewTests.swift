@@ -1,15 +1,15 @@
 //
-//  TViewTests.swift
+//  ViewTests.swift
 //  SwiftTUI
 //
-//  Tests for the TView protocol, ViewBuilder, and basic views.
+//  Tests for the View protocol, ViewBuilder, and basic views.
 //
 
 import Testing
 @testable import SwiftTUI
 
-@Suite("TView Protocol Tests")
-struct TViewTests {
+@Suite("View Protocol Tests")
+struct ViewTests {
 
     @Test("Text view can be created")
     func textViewCreation() {
@@ -57,8 +57,8 @@ struct ViewBuilderTests {
 
     @Test("ViewBuilder with single view")
     func singleView() {
-        @TViewBuilder
-        func buildView() -> some TView {
+        @ViewBuilder
+        func buildView() -> some View {
             Text("Single")
         }
 
@@ -68,8 +68,8 @@ struct ViewBuilderTests {
 
     @Test("ViewBuilder with two views")
     func twoViews() {
-        @TViewBuilder
-        func buildViews() -> some TView {
+        @ViewBuilder
+        func buildViews() -> some View {
             Text("First")
             Text("Second")
         }
@@ -80,8 +80,8 @@ struct ViewBuilderTests {
 
     @Test("ViewBuilder with three views")
     func threeViews() {
-        @TViewBuilder
-        func buildViews() -> some TView {
+        @ViewBuilder
+        func buildViews() -> some View {
             Text("One")
             Text("Two")
             Text("Three")

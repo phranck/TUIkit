@@ -15,8 +15,8 @@ import SwiftTUI
 /// - Plain style (no border)
 /// - ButtonRow for horizontal groups
 /// - Focus navigation with Tab
-struct ButtonsPage: TView {
-    var body: some TView {
+struct ButtonsPage: View {
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Buttons & Focus Demo")
 

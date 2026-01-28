@@ -24,7 +24,7 @@
 ///     }
 /// }
 /// ```
-public struct Box<Content: TView>: TView {
+public struct Box<Content: View>: View {
     /// The content of the box.
     public let content: Content
 
@@ -43,14 +43,14 @@ public struct Box<Content: TView>: TView {
     public init(
         _ borderStyle: BorderStyle = .line,
         color: Color? = nil,
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.content = content()
         self.borderStyle = borderStyle
         self.borderColor = color
     }
 
-    public var body: some TView {
+    public var body: some View {
         content.border(borderStyle, color: borderColor)
     }
 }
