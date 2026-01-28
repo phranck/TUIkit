@@ -142,11 +142,10 @@ extension Panel: Renderable {
         return FrameBuffer(lines: lines)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String, with color: Color?) -> String {
-        guard let color = color else { return string }
         var style = TextStyle()
-        style.foregroundColor = color
+        style.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: style)
     }
 }

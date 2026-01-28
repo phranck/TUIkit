@@ -271,27 +271,38 @@ extension View {
 /// Classic green phosphor terminal theme (P1 phosphor).
 ///
 /// Inspired by early CRT monitors like the IBM 5151 and Apple II.
+/// Uses a neutral dark background with green text - like classic terminals.
 public struct GreenPhosphorTheme: Theme {
     public let id = "green-phosphor"
-    public let name = "Green (Phosphor)"
+    public let name = "Green"
 
-    // Dark background with green phosphor glow
-    public let background = Color.hex(0x0D1F0D)
-    public let backgroundSecondary = Color.hex(0x0A1A0A)
-    public let backgroundTertiary = Color.hex(0x071407)
-    public let foreground = Color.hex(0x33FF33)
-    public let foregroundSecondary = Color.hex(0x29CC29)
-    public let foregroundTertiary = Color.hex(0x1F991F)
-    public let accent = Color.hex(0x66FF66)
-    public let accentSecondary = Color.hex(0x00CC00)
+    // Neutral dark background (like Spotnik reference)
+    public let background = Color.hex(0x1E1E1E)
+    public let backgroundSecondary = Color.hex(0x282828)
+    public let backgroundTertiary = Color.hex(0x141414)
+    
+    // Green phosphor text hierarchy
+    public let foreground = Color.hex(0x33FF33)           // Bright green - primary text
+    public let foregroundSecondary = Color.hex(0x29CC29)  // Medium green - secondary text
+    public let foregroundTertiary = Color.hex(0x1F8F1F)   // Dim green - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0x66FF66)               // Lighter green for highlights
+    public let accentSecondary = Color.hex(0x00CC00)      // Darker accent
+    
+    // Semantic colors (stay in green family)
     public let success = Color.hex(0x33FF33)
-    public let warning = Color.hex(0xCCFF33)
-    public let error = Color.hex(0xFF6633)
-    public let info = Color.hex(0x33FFCC)
-    public let border = Color.hex(0x1F661F)
-    public let borderFocused = Color.hex(0x33FF33)
-    public let selection = Color.hex(0x1F4D1F)
-    public let statusBarBackground = Color.hex(0x0A1A0A)
+    public let warning = Color.hex(0xCCFF33)              // Yellow-green
+    public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
+    public let info = Color.hex(0x33FFCC)                 // Cyan-green
+    
+    // UI elements
+    public let border = Color.hex(0x2D5A2D)               // Subtle green border
+    public let borderFocused = Color.hex(0x33FF33)        // Bright when focused
+    public let selection = Color.hex(0x1F4D1F)            // Dark green for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x282828)
     public let statusBarForeground = Color.hex(0x33FF33)
     public let statusBarHighlight = Color.hex(0x66FF66)
 
@@ -301,28 +312,39 @@ public struct GreenPhosphorTheme: Theme {
 /// Classic amber phosphor terminal theme (P3 phosphor).
 ///
 /// Inspired by terminals like the IBM 3278 and Wyse 50.
+/// Matches the Spotnik app reference with neutral background and amber text.
 public struct AmberPhosphorTheme: Theme {
     public let id = "amber-phosphor"
-    public let name = "Amber (Phosphor)"
+    public let name = "Amber"
 
-    // Dark background with amber phosphor glow
-    public let background = Color.hex(0x1F1400)
-    public let backgroundSecondary = Color.hex(0x1A1100)
-    public let backgroundTertiary = Color.hex(0x140D00)
-    public let foreground = Color.hex(0xFFB000)
-    public let foregroundSecondary = Color.hex(0xCC8C00)
-    public let foregroundTertiary = Color.hex(0x996900)
-    public let accent = Color.hex(0xFFCC33)
-    public let accentSecondary = Color.hex(0xCC9900)
+    // Neutral dark background (exactly like Spotnik reference)
+    public let background = Color.hex(0x1E1E1E)
+    public let backgroundSecondary = Color.hex(0x282828)
+    public let backgroundTertiary = Color.hex(0x141414)
+    
+    // Amber phosphor text hierarchy (matching Spotnik)
+    public let foreground = Color.hex(0xFFAA00)           // Bright amber - primary text
+    public let foregroundSecondary = Color.hex(0xCC8800)  // Medium amber - secondary text
+    public let foregroundTertiary = Color.hex(0x8F6600)   // Dim amber - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFFCC33)               // Lighter amber for highlights
+    public let accentSecondary = Color.hex(0xCC9900)      // Darker accent
+    
+    // Semantic colors (stay in amber family)
     public let success = Color.hex(0xFFCC00)
-    public let warning = Color.hex(0xFFE066)
-    public let error = Color.hex(0xFF6633)
-    public let info = Color.hex(0xFFD966)
-    public let border = Color.hex(0x664D00)
-    public let borderFocused = Color.hex(0xFFB000)
-    public let selection = Color.hex(0x4D3A00)
-    public let statusBarBackground = Color.hex(0x1A1100)
-    public let statusBarForeground = Color.hex(0xFFB000)
+    public let warning = Color.hex(0xFFE066)              // Light amber
+    public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
+    public let info = Color.hex(0xFFD966)                 // Light amber
+    
+    // UI elements
+    public let border = Color.hex(0x5A4A2D)               // Subtle amber border
+    public let borderFocused = Color.hex(0xFFAA00)        // Bright when focused
+    public let selection = Color.hex(0x4D3A1F)            // Dark amber for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x282828)
+    public let statusBarForeground = Color.hex(0xFFAA00)
     public let statusBarHighlight = Color.hex(0xFFCC33)
 
     public init() {}
@@ -331,29 +353,40 @@ public struct AmberPhosphorTheme: Theme {
 /// Classic white phosphor terminal theme (P4 phosphor).
 ///
 /// Inspired by terminals like the DEC VT100 and VT220.
+/// Clean monochrome look with neutral background.
 public struct WhitePhosphorTheme: Theme {
     public let id = "white-phosphor"
-    public let name = "White (Phosphor)"
+    public let name = "White"
 
-    // Dark background with white/cool phosphor glow
-    public let background = Color.hex(0x0A0A0F)
-    public let backgroundSecondary = Color.hex(0x12121A)
-    public let backgroundTertiary = Color.hex(0x080810)
-    public let foreground = Color.hex(0xE0E0E8)
-    public let foregroundSecondary = Color.hex(0xB0B0B8)
-    public let foregroundTertiary = Color.hex(0x808088)
-    public let accent = Color.hex(0xF0F0FF)
-    public let accentSecondary = Color.hex(0xC0C0D0)
-    public let success = Color.hex(0xC0FFC0)
-    public let warning = Color.hex(0xFFE0A0)
-    public let error = Color.hex(0xFFA0A0)
-    public let info = Color.hex(0xA0E0FF)
-    public let border = Color.hex(0x404050)
-    public let borderFocused = Color.hex(0xE0E0E8)
-    public let selection = Color.hex(0x303040)
-    public let statusBarBackground = Color.hex(0x12121A)
-    public let statusBarForeground = Color.hex(0xE0E0E8)
-    public let statusBarHighlight = Color.hex(0xF0F0FF)
+    // Neutral dark background
+    public let background = Color.hex(0x1E1E1E)
+    public let backgroundSecondary = Color.hex(0x282828)
+    public let backgroundTertiary = Color.hex(0x141414)
+    
+    // White/gray phosphor text hierarchy
+    public let foreground = Color.hex(0xE8E8E8)           // Bright white - primary text
+    public let foregroundSecondary = Color.hex(0xB0B0B0)  // Medium gray - secondary text
+    public let foregroundTertiary = Color.hex(0x787878)   // Dim gray - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFFFFFF)               // Pure white for highlights
+    public let accentSecondary = Color.hex(0xC0C0C0)      // Light gray accent
+    
+    // Semantic colors (subtle tints)
+    public let success = Color.hex(0xC0FFC0)              // Slight green tint
+    public let warning = Color.hex(0xFFE0A0)              // Slight amber tint
+    public let error = Color.hex(0xFFA0A0)                // Slight red tint
+    public let info = Color.hex(0xA0D0FF)                 // Slight blue tint
+    
+    // UI elements
+    public let border = Color.hex(0x484848)               // Subtle gray border
+    public let borderFocused = Color.hex(0xE8E8E8)        // Bright when focused
+    public let selection = Color.hex(0x3A3A3A)            // Dark gray for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x282828)
+    public let statusBarForeground = Color.hex(0xE8E8E8)
+    public let statusBarHighlight = Color.hex(0xFFFFFF)
 
     public init() {}
 }
@@ -361,28 +394,39 @@ public struct WhitePhosphorTheme: Theme {
 /// Red phosphor terminal theme.
 ///
 /// Less common but used in some military and specialized applications.
+/// Night-vision friendly with reduced eye strain in dark environments.
 public struct RedPhosphorTheme: Theme {
     public let id = "red-phosphor"
-    public let name = "Red (Phosphor)"
+    public let name = "Red"
 
-    // Dark background with red phosphor glow
-    public let background = Color.hex(0x1A0A0A)
-    public let backgroundSecondary = Color.hex(0x140808)
-    public let backgroundTertiary = Color.hex(0x100606)
-    public let foreground = Color.hex(0xFF4040)
-    public let foregroundSecondary = Color.hex(0xCC3333)
-    public let foregroundTertiary = Color.hex(0x992626)
-    public let accent = Color.hex(0xFF6666)
-    public let accentSecondary = Color.hex(0xCC4040)
-    public let success = Color.hex(0xFF8080)
-    public let warning = Color.hex(0xFFB366)
-    public let error = Color.hex(0xFFFFFF)
-    public let info = Color.hex(0xFF9999)
-    public let border = Color.hex(0x661A1A)
-    public let borderFocused = Color.hex(0xFF4040)
-    public let selection = Color.hex(0x4D1414)
-    public let statusBarBackground = Color.hex(0x140808)
-    public let statusBarForeground = Color.hex(0xFF4040)
+    // Neutral dark background
+    public let background = Color.hex(0x1E1E1E)
+    public let backgroundSecondary = Color.hex(0x282828)
+    public let backgroundTertiary = Color.hex(0x141414)
+    
+    // Red phosphor text hierarchy
+    public let foreground = Color.hex(0xFF4444)           // Bright red - primary text
+    public let foregroundSecondary = Color.hex(0xCC3333)  // Medium red - secondary text
+    public let foregroundTertiary = Color.hex(0x8F2222)   // Dim red - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFF6666)               // Lighter red for highlights
+    public let accentSecondary = Color.hex(0xCC4444)      // Darker accent
+    
+    // Semantic colors (stay in red family)
+    public let success = Color.hex(0xFF8080)              // Light red (success in red theme)
+    public let warning = Color.hex(0xFFAA66)              // Orange
+    public let error = Color.hex(0xFFFFFF)                // White (stands out as error)
+    public let info = Color.hex(0xFF9999)                 // Light red
+    
+    // UI elements
+    public let border = Color.hex(0x5A2D2D)               // Subtle red border
+    public let borderFocused = Color.hex(0xFF4444)        // Bright when focused
+    public let selection = Color.hex(0x4D1F1F)            // Dark red for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x282828)
+    public let statusBarForeground = Color.hex(0xFF4444)
     public let statusBarHighlight = Color.hex(0xFF6666)
 
     public init() {}
