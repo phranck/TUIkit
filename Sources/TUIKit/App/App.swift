@@ -490,6 +490,7 @@ internal final class AppRunner<A: App> {
         environment.statusBar = statusBar
         environment.focusManager = focusManager
         environment.themeManager = themeManager
+        environment.theme = themeManager.currentTheme  // Apply current theme
 
         let context = RenderContext(
             terminal: terminal,
