@@ -416,6 +416,7 @@ internal final class AppRunner<A: App> {
     let terminal: Terminal
     let statusBar: StatusBarState
     let focusManager: FocusManager
+    let themeManager: ThemeManager
     private var isRunning = false
 
     init(app: A) {
@@ -423,6 +424,7 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
+        self.themeManager = ThemeManager()
     }
 
     func run() {
@@ -432,10 +434,11 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with status bar and focus manager
+        // Set up environment with status bar, focus manager, and theme manager
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
+        environment.themeManager = themeManager
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
@@ -486,6 +489,7 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
+        environment.themeManager = themeManager
 
         let context = RenderContext(
             terminal: terminal,
@@ -567,7 +571,7 @@ internal final class AppRunner<A: App> {
         case .character(let char) where char == "t" || char == "T":
             // 't' cycles theme (if theme item is enabled)
             if statusBar.showThemeItem {
-                ThemeManager.shared.cycleTheme()
+                themeManager.cycleTheme()
             }
             
         default:
