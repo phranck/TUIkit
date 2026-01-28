@@ -472,8 +472,6 @@ internal final class AppRunner<A: App> {
     }
 
     private func render() {
-        terminal.clear()
-
         // Clear event handlers before re-rendering
         KeyEventDispatcher.shared.clearHandlers()
         focusManager.clear()
@@ -501,6 +499,9 @@ internal final class AppRunner<A: App> {
 
         // Update global environment storage
         EnvironmentStorage.shared.environment = environment
+        
+        // Fill the entire screen with the theme background color
+        terminal.fillBackground(themeManager.currentTheme.background)
 
         // Render main content
         let scene = app.body
