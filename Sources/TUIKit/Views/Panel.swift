@@ -2,33 +2,56 @@
 //  Panel.swift
 //  TUIKit
 //
-//  A titled container view with a header.
+//  A titled container view with optional footer.
 //
 
-/// A bordered container with a title in the top border.
+/// A bordered container with a title and optional footer.
 ///
 /// `Panel` is useful for grouping content with a visible label,
 /// similar to a fieldset in HTML or a group box in desktop UIs.
 ///
-/// # Example
+/// ## Behavior by Appearance
+///
+/// - **Standard appearances** (line, rounded, doubleLine, heavy):
+///   Title is rendered IN the top border.
+///
+/// - **Block appearance**:
+///   Title becomes a separate header section with darker background.
+///
+/// ## Examples
 ///
 /// ```swift
+/// // Simple panel
 /// Panel("Settings") {
 ///     Text("Option 1")
 ///     Text("Option 2")
 /// }
 ///
-/// Panel("User Info", borderStyle: .doubleLine, titleColor: .cyan) {
+/// // Panel with footer
+/// Panel("User Info") {
 ///     Text("Name: John")
 ///     Text("Age: 30")
+/// } footer: {
+///     ButtonRow {
+///         Button("Save") { }
+///         Button("Cancel") { }
+///     }
+/// }
+///
+/// // Customized panel
+/// Panel("Settings", borderStyle: .doubleLine, titleColor: .cyan) {
+///     Text("Content")
 /// }
 /// ```
-public struct Panel<Content: View>: View {
-    /// The title displayed in the top border.
+public struct Panel<Content: View, Footer: View>: View {
+    /// The title displayed in the header/border.
     public let title: String
 
     /// The content of the panel.
     public let content: Content
+    
+    /// The footer content (typically buttons).
+    public let footer: Footer?
 
     /// The border style (nil uses appearance default).
     public let borderStyle: BorderStyle?
@@ -39,10 +62,66 @@ public struct Panel<Content: View>: View {
     /// The title color.
     public let titleColor: Color?
 
-    /// The padding inside the panel.
+    /// The padding inside the panel body.
     public let padding: EdgeInsets
+    
+    /// Whether to show a separator before the footer.
+    public let showFooterSeparator: Bool
 
-    /// Creates a panel with the specified options.
+    /// Creates a panel with content and footer.
+    ///
+    /// - Parameters:
+    ///   - title: The title to display.
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: theme accent).
+    ///   - padding: The inner padding (default: horizontal 1, vertical 0).
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: The main content of the panel.
+    ///   - footer: The footer content.
+    public init(
+        _ title: String,
+        borderStyle: BorderStyle? = nil,
+        borderColor: Color? = nil,
+        titleColor: Color? = nil,
+        padding: EdgeInsets = EdgeInsets(horizontal: 1, vertical: 0),
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = title
+        self.content = content()
+        self.footer = footer()
+        self.borderStyle = borderStyle
+        self.borderColor = borderColor
+        self.titleColor = titleColor
+        self.padding = padding
+        self.showFooterSeparator = showFooterSeparator
+    }
+
+    public var body: some View {
+        ContainerView(
+            title: title,
+            titleColor: titleColor,
+            style: ContainerStyle(
+                showHeaderSeparator: true,
+                showFooterSeparator: showFooterSeparator,
+                borderStyle: borderStyle,
+                borderColor: borderColor
+            ),
+            padding: padding
+        ) {
+            content
+        } footer: {
+            footer!
+        }
+    }
+}
+
+// MARK: - Convenience Initializer (no footer)
+
+extension Panel where Footer == EmptyView {
+    /// Creates a panel without a footer.
     ///
     /// - Parameters:
     ///   - title: The title to display in the top border.
@@ -61,14 +140,12 @@ public struct Panel<Content: View>: View {
     ) {
         self.title = title
         self.content = content()
+        self.footer = nil
         self.borderStyle = borderStyle
         self.borderColor = borderColor
         self.titleColor = titleColor
         self.padding = padding
-    }
-
-    public var body: Never {
-        fatalError("Panel renders via Renderable")
+        self.showFooterSeparator = true
     }
 }
 
@@ -76,79 +153,36 @@ public struct Panel<Content: View>: View {
 
 extension Panel: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Resolve border style - use explicit or fall back to appearance default
-        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
+        // Create the ContainerView and render it
+        let containerStyle = ContainerStyle(
+            showHeaderSeparator: true,
+            showFooterSeparator: showFooterSeparator,
+            borderStyle: borderStyle,
+            borderColor: borderColor
+        )
         
-        // Render the content first
-        let paddedContent = content.padding(padding)
-        let contentBuffer = TUIKit.renderToBuffer(paddedContent, context: context)
-
-        guard !contentBuffer.isEmpty else {
-            return FrameBuffer()
+        if let footerView = footer {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: containerStyle,
+                padding: padding
+            ) {
+                content
+            } footer: {
+                footerView
+            }
+            return container.renderToBuffer(context: context)
+        } else {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: containerStyle,
+                padding: padding
+            ) {
+                content
+            }
+            return container.renderToBuffer(context: context)
         }
-
-        // Title with spaces: " Title "
-        let titleText = " \(title) "
-        let titleLength = titleText.count
-
-        // Inner width must fit both content and title (plus corner + one horizontal on each side)
-        // Top line structure: ┌─ Title ─────┐
-        // So minimum inner width = titleLength + 2 (for the ─ on each side of title)
-        let innerWidth = max(contentBuffer.width, titleLength + 2)
-
-        // Build top border with title
-        // Format: ┌─ Title ─────┐
-        let titleStyled = colorize(titleText, with: titleColor ?? borderColor)
-
-        // Left part: corner + one horizontal
-        let leftPart = colorize(
-            String(effectiveBorderStyle.topLeft) + String(effectiveBorderStyle.horizontal),
-            with: borderColor
-        )
-
-        // Right part: remaining horizontals + corner
-        // Total top line width (excluding corners) = innerWidth
-        // Used by: 1 (left horizontal) + titleLength + rightPartLength = innerWidth
-        let rightPartLength = max(0, innerWidth - 1 - titleLength)
-        let rightPart = colorize(
-            String(repeating: effectiveBorderStyle.horizontal, count: rightPartLength) + String(effectiveBorderStyle.topRight),
-            with: borderColor
-        )
-
-        let topLine = leftPart + titleStyled + rightPart
-
-        // Build bottom border (innerWidth horizontals between corners)
-        let bottomLine = colorize(
-            String(effectiveBorderStyle.bottomLeft)
-                + String(repeating: effectiveBorderStyle.horizontal, count: innerWidth)
-                + String(effectiveBorderStyle.bottomRight),
-            with: borderColor
-        )
-
-        // Build result
-        var lines: [String] = []
-        lines.append(topLine)
-
-        // Content lines with side borders
-        // Important: Add reset before right border to prevent color bleeding
-        let reset = "\u{1B}[0m"
-        let leftBorder = colorize(String(effectiveBorderStyle.vertical), with: borderColor)
-        let rightBorder = colorize(String(effectiveBorderStyle.vertical), with: borderColor)
-
-        for line in contentBuffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            lines.append(leftBorder + paddedLine + reset + rightBorder)
-        }
-
-        lines.append(bottomLine)
-
-        return FrameBuffer(lines: lines)
-    }
-
-    /// Applies color to a string, using theme border color as default.
-    private func colorize(_ string: String, with color: Color?) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color ?? Color.theme.border
-        return ANSIRenderer.render(string, with: style)
     }
 }

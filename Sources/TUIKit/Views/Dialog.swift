@@ -2,15 +2,21 @@
 //  Dialog.swift
 //  TUIKit
 //
-//  A modal dialog view with title and custom content.
+//  A modal dialog view with title, custom content, and optional footer.
 //
 
-/// A modal dialog view with a title and customizable content.
+/// A modal dialog view with a title, customizable content, and optional footer.
 ///
 /// `Dialog` is more flexible than `Alert` — it accepts any content,
 /// making it suitable for forms, selections, or complex interactions.
 ///
-/// # Example
+/// ## Structure
+///
+/// - **Header**: Title (in border for standard appearances, separate section for block)
+/// - **Body**: Custom content
+/// - **Footer**: Optional, typically buttons (separated by optional separator line)
+///
+/// ## Examples
 ///
 /// ```swift
 /// // Simple dialog
@@ -19,12 +25,15 @@
 ///     Text("Option 2: Disabled")
 /// }
 ///
-/// // Dialog with custom styling
-/// Dialog(title: "User Profile", borderStyle: .doubleLine, titleColor: .cyan) {
+/// // Dialog with footer buttons
+/// Dialog(title: "User Profile") {
 ///     Text("Name: John Doe")
 ///     Text("Email: john@example.com")
-///     Divider()
-///     Text("[Edit] [Close]")
+/// } footer: {
+///     ButtonRow {
+///         Button("Edit") { }
+///         Button("Close") { }
+///     }
 /// }
 ///
 /// // Modal overlay pattern
@@ -33,20 +42,23 @@
 ///     .overlay {
 ///         Dialog(title: "Confirm Action") {
 ///             Text("Are you sure you want to proceed?")
-///             HStack {
-///                 Text("[Yes]").foregroundColor(.green)
-///                 Spacer()
-///                 Text("[No]").foregroundColor(.red)
+///         } footer: {
+///             ButtonRow {
+///                 Button("Yes") { }
+///                 Button("No") { }
 ///             }
 ///         }
 ///     }
 /// ```
-public struct Dialog<Content: View>: View {
+public struct Dialog<Content: View, Footer: View>: View {
     /// The dialog title.
     public let title: String
 
     /// The dialog content.
     public let content: Content
+    
+    /// The footer content (typically buttons).
+    public let footer: Footer?
 
     /// The border style (nil uses appearance default).
     public let borderStyle: BorderStyle?
@@ -59,8 +71,87 @@ public struct Dialog<Content: View>: View {
 
     /// The inner padding.
     public let padding: EdgeInsets
+    
+    /// Whether to show a separator before the footer.
+    public let showFooterSeparator: Bool
 
-    /// Creates a dialog with the specified options.
+    /// Creates a dialog with content and footer.
+    ///
+    /// - Parameters:
+    ///   - title: The dialog title.
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: theme foreground).
+    ///   - padding: The inner padding (default: horizontal 2, vertical 1).
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: The dialog content.
+    ///   - footer: The footer content.
+    public init(
+        title: String,
+        borderStyle: BorderStyle? = nil,
+        borderColor: Color? = nil,
+        titleColor: Color? = nil,
+        padding: EdgeInsets = EdgeInsets(horizontal: 2, vertical: 1),
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = title
+        self.borderStyle = borderStyle
+        self.borderColor = borderColor
+        self.titleColor = titleColor
+        self.padding = padding
+        self.showFooterSeparator = showFooterSeparator
+        self.content = content()
+        self.footer = footer()
+    }
+
+    public var body: Never {
+        fatalError("Dialog renders via Renderable")
+    }
+}
+
+// MARK: - Rendering
+
+extension Dialog: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let containerStyle = ContainerStyle(
+            showHeaderSeparator: true,
+            showFooterSeparator: showFooterSeparator,
+            borderStyle: borderStyle,
+            borderColor: borderColor
+        )
+        
+        if let footerView = footer {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: containerStyle,
+                padding: padding
+            ) {
+                content
+            } footer: {
+                footerView
+            }
+            return container.renderToBuffer(context: context)
+        } else {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: containerStyle,
+                padding: padding
+            ) {
+                content
+            }
+            return container.renderToBuffer(context: context)
+        }
+    }
+}
+
+// MARK: - Convenience Initializer (no footer)
+
+extension Dialog where Footer == EmptyView {
+    /// Creates a dialog without a footer.
     ///
     /// - Parameters:
     ///   - title: The dialog title.
@@ -82,25 +173,15 @@ public struct Dialog<Content: View>: View {
         self.borderColor = borderColor
         self.titleColor = titleColor
         self.padding = padding
+        self.showFooterSeparator = false
         self.content = content()
-    }
-
-    public var body: some View {
-        Panel(
-            title,
-            borderStyle: borderStyle,
-            borderColor: borderColor,
-            titleColor: titleColor,
-            padding: padding
-        ) {
-            content
-        }
+        self.footer = nil
     }
 }
 
 // MARK: - Convenience Extensions
 
-extension Dialog {
+extension Dialog where Footer == EmptyView {
     /// Creates a dialog with a double-line border style.
     ///
     /// - Parameters:
@@ -114,8 +195,8 @@ extension Dialog {
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         @ViewBuilder content: () -> C
-    ) -> Dialog<C> {
-        Dialog<C>(
+    ) -> Dialog<C, EmptyView> {
+        Dialog<C, EmptyView>(
             title: title,
             borderStyle: .doubleLine,
             borderColor: borderColor,
@@ -137,8 +218,8 @@ extension Dialog {
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         @ViewBuilder content: () -> C
-    ) -> Dialog<C> {
-        Dialog<C>(
+    ) -> Dialog<C, EmptyView> {
+        Dialog<C, EmptyView>(
             title: title,
             borderStyle: .heavy,
             borderColor: borderColor,
@@ -156,7 +237,7 @@ extension View {
     /// This is a convenience method that combines `.dimmed()` and `.overlay()`
     /// with center alignment.
     ///
-    /// # Example
+    /// ## Example
     ///
     /// ```swift
     /// mainContent.modal {
