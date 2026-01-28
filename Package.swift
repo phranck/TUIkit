@@ -1,23 +1,36 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-    name: "SwiftTUI",
+    name: "TUIKit",
+    // Minimum deployment targets for Apple platforms
+    // Linux is automatically supported (no platform specification needed)
+    platforms: [
+        .macOS(.v10_15)
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "SwiftTUI",
-            targets: ["SwiftTUI"]
+            name: "TUIKit",
+            targets: ["TUIKit"]
+        ),
+        .executable(
+            name: "TUIKitExample",
+            targets: ["TUIKitExample"]
         ),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SwiftTUI"
+            name: "TUIKit"
         ),
-
+        .executableTarget(
+            name: "TUIKitExample",
+            dependencies: ["TUIKit"]
+        ),
+        .testTarget(
+            name: "TUIKitTests",
+            dependencies: ["TUIKit"]
+        ),
     ]
 )
