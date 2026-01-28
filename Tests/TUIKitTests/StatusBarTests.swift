@@ -265,15 +265,17 @@ struct StatusBarStateTests {
 
         state.setItems([
             StatusBarItem(shortcut: "s", label: "save"),
-            StatusBarItem(shortcut: "h", label: "help")
+            StatusBarItem(shortcut: "x", label: "extra")
         ])
 
-        // System items + user items (q from system, s and h from user)
-        #expect(state.currentItems.count == 3)
+        // User items (s, x) + system items (q, ?, t) = 5 total
+        #expect(state.currentItems.count == 5)
         #expect(state.hasItems == true)
         #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
+        #expect(state.currentItems.contains { $0.shortcut == "?" }) // system help
+        #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
         #expect(state.currentItems.contains { $0.shortcut == "s" }) // user save
-        #expect(state.currentItems.contains { $0.shortcut == "h" }) // user help
+        #expect(state.currentItems.contains { $0.shortcut == "x" }) // user extra
     }
 
     @Test("Set global items with builder merges with system items")
@@ -282,11 +284,11 @@ struct StatusBarStateTests {
 
         state.setItems {
             StatusBarItem(shortcut: "s", label: "save")
-            StatusBarItem(shortcut: "h", label: "help")
+            StatusBarItem(shortcut: "x", label: "extra")
         }
 
-        // System items + user items
-        #expect(state.currentItems.count == 3)
+        // User items (s, x) + system items (q, ?, t) = 5 total
+        #expect(state.currentItems.count == 5)
     }
 
     @Test("Push context overrides global items but keeps system items")
@@ -302,9 +304,11 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
         ])
 
-        // System quit + context items (escape, enter)
-        #expect(state.currentItems.count == 3)
+        // Context items (escape, enter) + system items (q, ?, t) = 5 total
+        #expect(state.currentItems.count == 5)
         #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
+        #expect(state.currentItems.contains { $0.shortcut == "?" }) // system help
+        #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.escape })
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.enter })
     }
@@ -317,10 +321,12 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "a", label: "action")
         }
 
-        // System quit + context item
-        #expect(state.currentItems.count == 2)
+        // Context item (a) + system items (q, ?, t) = 4 total
+        #expect(state.currentItems.count == 4)
         #expect(state.currentItems.contains { $0.label == "action" })
         #expect(state.currentItems.contains { $0.shortcut == "q" })
+        #expect(state.currentItems.contains { $0.shortcut == "?" })
+        #expect(state.currentItems.contains { $0.shortcut == "t" })
     }
 
     @Test("Pop context returns to global items with system items")
@@ -332,15 +338,17 @@ struct StatusBarStateTests {
         ])
 
         state.push(context: "temp", items: [
-            StatusBarItem(shortcut: "t", label: "temp")
+            StatusBarItem(shortcut: "x", label: "temp")
         ])
 
         state.pop(context: "temp")
 
-        // System quit + global item
-        #expect(state.currentItems.count == 2)
+        // Global item (g) + system items (q, ?, t) = 4 total
+        #expect(state.currentItems.count == 4)
         #expect(state.currentItems.contains { $0.shortcut == "g" })
         #expect(state.currentItems.contains { $0.shortcut == "q" })
+        #expect(state.currentItems.contains { $0.shortcut == "?" })
+        #expect(state.currentItems.contains { $0.shortcut == "t" })
     }
 
     @Test("Context stack respects order")
