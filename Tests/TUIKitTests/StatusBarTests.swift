@@ -242,44 +242,59 @@ struct StatusBarItemTests {
 @Suite("Status Bar State Tests")
 struct StatusBarStateTests {
 
-    @Test("StatusBarState can be created")
+    @Test("StatusBarState can be created with system items")
     func stateCreation() {
         let state = StatusBarState()
+        // By default, system items (quit) are present
+        #expect(state.hasItems == true)
+        #expect(state.currentItems.count >= 1)
+        #expect(state.currentItems.contains { $0.shortcut == "q" })
+    }
+    
+    @Test("StatusBarState without system items is empty")
+    func stateWithoutSystemItems() {
+        let state = StatusBarState()
+        state.showSystemItems = false
         #expect(state.currentItems.isEmpty)
         #expect(state.hasItems == false)
     }
 
-    @Test("Set global items")
+    @Test("Set global items merges with system items")
     func setGlobalItems() {
         let state = StatusBarState()
 
         state.setItems([
-            StatusBarItem(shortcut: "q", label: "quit"),
+            StatusBarItem(shortcut: "s", label: "save"),
             StatusBarItem(shortcut: "h", label: "help")
         ])
 
-        #expect(state.currentItems.count == 2)
+        // System items + user items (q from system, s and h from user)
+        #expect(state.currentItems.count == 3)
         #expect(state.hasItems == true)
+        #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
+        #expect(state.currentItems.contains { $0.shortcut == "s" }) // user save
+        #expect(state.currentItems.contains { $0.shortcut == "h" }) // user help
     }
 
-    @Test("Set global items with builder")
+    @Test("Set global items with builder merges with system items")
     func setGlobalItemsBuilder() {
         let state = StatusBarState()
 
         state.setItems {
-            StatusBarItem(shortcut: "q", label: "quit")
+            StatusBarItem(shortcut: "s", label: "save")
             StatusBarItem(shortcut: "h", label: "help")
         }
 
-        #expect(state.currentItems.count == 2)
+        // System items + user items
+        #expect(state.currentItems.count == 3)
     }
 
-    @Test("Push context overrides global items")
+    @Test("Push context overrides global items but keeps system items")
     func pushContextOverrides() {
         let state = StatusBarState()
 
         state.setItems([
-            StatusBarItem(shortcut: "q", label: "quit")
+            StatusBarItem(shortcut: "s", label: "save")
         ])
 
         state.push(context: "dialog", items: [
@@ -287,11 +302,14 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
         ])
 
-        #expect(state.currentItems.count == 2)
-        #expect(state.currentItems[0].shortcut == Shortcut.escape)
+        // System quit + context items (escape, enter)
+        #expect(state.currentItems.count == 3)
+        #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
+        #expect(state.currentItems.contains { $0.shortcut == Shortcut.escape })
+        #expect(state.currentItems.contains { $0.shortcut == Shortcut.enter })
     }
 
-    @Test("Push context with builder")
+    @Test("Push context with builder merges with system items")
     func pushContextBuilder() {
         let state = StatusBarState()
 
@@ -299,11 +317,13 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "a", label: "action")
         }
 
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "action")
+        // System quit + context item
+        #expect(state.currentItems.count == 2)
+        #expect(state.currentItems.contains { $0.label == "action" })
+        #expect(state.currentItems.contains { $0.shortcut == "q" })
     }
 
-    @Test("Pop context returns to global items")
+    @Test("Pop context returns to global items with system items")
     func popContextReturnsToGlobal() {
         let state = StatusBarState()
 
@@ -317,13 +337,16 @@ struct StatusBarStateTests {
 
         state.pop(context: "temp")
 
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].shortcut == "g")
+        // System quit + global item
+        #expect(state.currentItems.count == 2)
+        #expect(state.currentItems.contains { $0.shortcut == "g" })
+        #expect(state.currentItems.contains { $0.shortcut == "q" })
     }
 
     @Test("Context stack respects order")
     func contextStackOrder() {
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable system items for cleaner test
 
         state.push(context: "first", items: [
             StatusBarItem(shortcut: "1", label: "first")
@@ -333,16 +356,18 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "2", label: "second")
         ])
 
-        // Top of stack is shown
-        #expect(state.currentItems[0].label == "second")
+        // Top of stack is shown (only user items)
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "second")
 
         state.pop(context: "second")
-        #expect(state.currentItems[0].label == "first")
+        #expect(state.currentUserItems[0].label == "first")
     }
 
     @Test("Push replaces same context")
     func pushReplacesSameContext() {
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable system items for cleaner test
 
         state.push(context: "same", items: [
             StatusBarItem(shortcut: "a", label: "original")
@@ -352,13 +377,14 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "b", label: "replaced")
         ])
 
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "replaced")
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "replaced")
     }
 
-    @Test("Clear contexts keeps global items")
+    @Test("Clear contexts keeps global user items")
     func clearContextsKeepsGlobal() {
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable system items for cleaner test
 
         state.setItems([
             StatusBarItem(shortcut: "g", label: "global")
@@ -370,8 +396,8 @@ struct StatusBarStateTests {
 
         state.clearContexts()
 
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].shortcut == "g")
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].shortcut == "g")
     }
 
     @Test("Clear removes everything")
@@ -468,10 +494,18 @@ struct StatusBarStateTests {
         #expect(state.alignment == .justified)
     }
 
-    @Test("Height is zero when no items")
+    @Test("Height is zero when no items and system items disabled")
     func heightZeroWhenEmpty() {
         let state = StatusBarState()
+        state.showSystemItems = false
         #expect(state.height == 0)
+    }
+    
+    @Test("Height is 1 when only system items")
+    func heightWithSystemItems() {
+        let state = StatusBarState()
+        // System items are enabled by default
+        #expect(state.height == 1)  // compact style default
     }
 
     @Test("Height is 1 for compact style")
@@ -828,6 +862,7 @@ struct StatusBarItemsModifierTests {
     func modifierSetsItemsInEnvironment() {
         // Setup: Create a status bar state and environment
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable for cleaner test
         var environment = EnvironmentValues()
         environment.statusBar = state
 
@@ -847,15 +882,16 @@ struct StatusBarItemsModifierTests {
         EnvironmentStorage.shared.environment = environment
         _ = renderToBuffer(view, context: context)
 
-        // Check that items were set
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "test")
+        // Check that user items were set
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "test")
     }
 
     @Test("statusBarItems modifier with context pushes to stack")
     func modifierWithContextPushesToStack() {
         // Setup
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable for cleaner test
         var environment = EnvironmentValues()
         environment.statusBar = state
 
@@ -881,15 +917,15 @@ struct StatusBarItemsModifierTests {
         _ = renderToBuffer(view, context: context)
 
         // Context items should be active
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "dialog-item")
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "dialog-item")
 
         // Pop context
         state.pop(context: "dialog")
 
         // Global items should be back
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "global")
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "global")
     }
 
     @Test("statusBarItems modifier renders content")
@@ -933,6 +969,7 @@ struct StatusBarItemsModifierTests {
     @Test("Nested statusBarItems modifiers")
     func nestedModifiers() {
         let state = StatusBarState()
+        state.showSystemItems = false  // Disable for cleaner test
         var environment = EnvironmentValues()
         environment.statusBar = state
 
@@ -959,13 +996,109 @@ struct StatusBarItemsModifierTests {
         _ = renderToBuffer(outerView, context: context)
 
         // Inner context should be on top
-        #expect(state.currentItems.count == 1)
-        #expect(state.currentItems[0].label == "inner-item")
+        #expect(state.currentUserItems.count == 1)
+        #expect(state.currentUserItems[0].label == "inner-item")
 
         // Pop inner context
         state.pop(context: "inner")
 
         // Outer (global) should be active
-        #expect(state.currentItems[0].label == "outer-item")
+        #expect(state.currentUserItems[0].label == "outer-item")
+    }
+}
+
+// MARK: - System Status Bar Items Tests
+
+@Suite("System Status Bar Items Tests")
+struct SystemStatusBarItemsTests {
+    
+    @Test("System items are present by default")
+    func systemItemsPresentByDefault() {
+        let state = StatusBarState()
+        #expect(state.showSystemItems == true)
+        #expect(state.currentSystemItems.count >= 1)
+        #expect(state.currentSystemItems.contains { $0.shortcut == "q" })
+    }
+    
+    @Test("System items can be disabled")
+    func systemItemsCanBeDisabled() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+        #expect(state.currentSystemItems.isEmpty)
+    }
+    
+    @Test("System items appear on the right (high order values)")
+    func systemItemsAppearOnRight() {
+        let state = StatusBarState()
+        state.setItems([
+            StatusBarItem(shortcut: "s", label: "save")
+        ])
+        
+        // User items should come before system items (lower order)
+        let items = state.currentItems
+        let saveIndex = items.firstIndex { $0.shortcut == "s" }
+        let quitIndex = items.firstIndex { $0.shortcut == "q" }
+        
+        #expect(saveIndex != nil)
+        #expect(quitIndex != nil)
+        #expect(saveIndex! < quitIndex!)  // save appears before quit
+    }
+    
+    @Test("User items can override system items with same shortcut")
+    func userItemsOverrideSystemItems() {
+        let state = StatusBarState()
+        
+        // Set user item with same shortcut as system quit
+        state.setItems([
+            StatusBarItem(shortcut: "q", label: "custom-quit") {
+                // Custom action
+            }
+        ])
+        
+        // Should only have one "q" item, and it should be the user's
+        let qItems = state.currentItems.filter { $0.shortcut == "q" }
+        #expect(qItems.count == 1)
+        #expect(qItems[0].label == "custom-quit")
+    }
+    
+    @Test("System item order constants are correct")
+    func systemItemOrderConstants() {
+        // System items should have high order values (900+)
+        #expect(StatusBarItemOrder.quit.value == 900)
+        #expect(StatusBarItemOrder.help.value == 910)
+        #expect(StatusBarItemOrder.theme.value == 920)
+        
+        // User items should have lower order values
+        #expect(StatusBarItemOrder.default.value == 500)
+        #expect(StatusBarItemOrder.early.value == 100)
+        #expect(StatusBarItemOrder.late.value == 800)
+        
+        // User items < system items
+        #expect(StatusBarItemOrder.late < StatusBarItemOrder.quit)
+    }
+    
+    @Test("Items are sorted by order")
+    func itemsSortedByOrder() {
+        let state = StatusBarState()
+        
+        // Add items in random order
+        state.setItems([
+            StatusBarItem(shortcut: "l", label: "late", order: .late),
+            StatusBarItem(shortcut: "e", label: "early", order: .early),
+            StatusBarItem(shortcut: "d", label: "default", order: .default)
+        ])
+        
+        let items = state.currentItems
+        
+        // Should be sorted: early, default, late, quit (system)
+        let labels = items.map { $0.label }
+        let earlyIndex = labels.firstIndex(of: "early")!
+        let defaultIndex = labels.firstIndex(of: "default")!
+        let lateIndex = labels.firstIndex(of: "late")!
+        let quitIndex = labels.firstIndex(of: "quit")!
+        
+        #expect(earlyIndex < defaultIndex)
+        #expect(defaultIndex < lateIndex)
+        #expect(lateIndex < quitIndex)
     }
 }
