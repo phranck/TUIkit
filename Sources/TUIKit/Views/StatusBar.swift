@@ -236,6 +236,66 @@ public enum Shortcut {
     }
 }
 
+// MARK: - Status Bar Item Order
+
+/// Defines the display order of status bar items.
+///
+/// Items are sorted by their order value (ascending). Lower values appear first (left).
+/// System items appear on the right side with high order values.
+///
+/// # Order Ranges
+///
+/// - `0-99`: Reserved for leading items
+/// - `100-899`: User-defined items (default: 500)
+/// - `900-999`: Reserved for system items (quit, help, theme) on the right
+///
+/// # System Item Layout (from right edge)
+///
+/// ```
+/// [user items...] [q quit] [? help] [t theme]
+/// ```
+///
+/// # Example
+///
+/// ```swift
+/// // Custom item appears on the left (before system items)
+/// StatusBarItem(shortcut: "s", label: "save", order: .default)
+/// ```
+public struct StatusBarItemOrder: Comparable, Sendable {
+    public let value: Int
+    
+    public init(_ value: Int) {
+        self.value = value
+    }
+    
+    public static func < (lhs: StatusBarItemOrder, rhs: StatusBarItemOrder) -> Bool {
+        lhs.value < rhs.value
+    }
+    
+    // MARK: - User Item Orders
+    
+    /// Default order for user-defined items (appears on the left).
+    public static let `default` = StatusBarItemOrder(500)
+    
+    /// Order for items that should appear early (leftmost user items).
+    public static let early = StatusBarItemOrder(100)
+    
+    /// Order for items that should appear late (rightmost user items, before system items).
+    public static let late = StatusBarItemOrder(800)
+    
+    // MARK: - System Item Orders (right side)
+    
+    /// Order for the quit item (leftmost of system items).
+    /// Appears as: `[...user items] [q quit] [a appearance] [t theme]`
+    public static let quit = StatusBarItemOrder(900)
+    
+    /// Order for the appearance item (middle system item).
+    public static let appearance = StatusBarItemOrder(910)
+    
+    /// Order for the theme item (rightmost).
+    public static let theme = StatusBarItemOrder(920)
+}
+
 // MARK: - Status Bar Item Protocol
 
 /// A protocol for items that can be displayed in a status bar.
@@ -256,6 +316,11 @@ public protocol StatusBarItemProtocol: Sendable {
     ///
     /// Return nil if the item is purely informational (no action).
     var triggerKey: Key? { get }
+    
+    /// The display order of this item.
+    ///
+    /// Items are sorted by order (ascending). Lower values appear first.
+    var order: StatusBarItemOrder { get }
 
     /// Whether this item matches a given key event.
     ///
@@ -263,8 +328,11 @@ public protocol StatusBarItemProtocol: Sendable {
     func matches(_ event: KeyEvent) -> Bool
 }
 
-// Default implementation for triggerKey matching
+// Default implementations
 public extension StatusBarItemProtocol {
+    /// Default order for user-defined items.
+    var order: StatusBarItemOrder { .default }
+    
     func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
@@ -283,12 +351,18 @@ public extension StatusBarItemProtocol {
 /// }
 ///
 /// StatusBarItem(shortcut: "↑↓", label: "nav", key: .up) // Info only, no action
+///
+/// // With custom order
+/// StatusBarItem(shortcut: "s", label: "save", order: .early) {
+///     save()
+/// }
 /// ```
 public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     public let id: String
     public let shortcut: String
     public let label: String
     public let triggerKey: Key?
+    public let order: StatusBarItemOrder
 
     /// The action to perform when the shortcut is triggered.
     private let action: (@Sendable () -> Void)?
@@ -299,16 +373,19 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     ///   - shortcut: The shortcut key(s) to display.
     ///   - label: A short description (one word).
     ///   - key: The key that triggers the action (derived from shortcut if not provided).
+    ///   - order: The display order (default: `.default`).
     ///   - action: The action to perform.
     public init(
         shortcut: String,
         label: String,
         key: Key? = nil,
+        order: StatusBarItemOrder = .default,
         action: (@Sendable () -> Void)? = nil
     ) {
         self.id = "\(shortcut)-\(label)"
         self.shortcut = shortcut
         self.label = label
+        self.order = order
         self.action = action
 
         // Derive trigger key from shortcut if not explicitly provided
@@ -330,8 +407,9 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     /// - Parameters:
     ///   - shortcut: The shortcut key(s) to display.
     ///   - label: A short description.
-    public init(shortcut: String, label: String) {
-        self.init(shortcut: shortcut, label: label, key: nil, action: nil)
+    ///   - order: The display order (default: `.default`).
+    public init(shortcut: String, label: String, order: StatusBarItemOrder = .default) {
+        self.init(shortcut: shortcut, label: label, key: nil, order: order, action: nil)
     }
 
     /// Whether this item has an action to execute.
@@ -390,6 +468,97 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     }
 }
 
+// MARK: - System Status Bar Items
+
+/// System status bar items that are always present.
+///
+/// These items are automatically added to the status bar by the framework.
+/// They appear in a fixed order and provide essential app-wide functionality.
+///
+/// System items include:
+/// - **quit** (`q`): Exits the application
+/// - **appearance** (`a`): Cycles through appearances
+/// - **theme** (`t`): Cycles through themes
+public enum SystemStatusBarItem {
+    /// The quit item (`q quit`).
+    ///
+    /// This item is always present and exits the application.
+    public static let quit = StatusBarItem(
+        shortcut: "q",
+        label: "quit",
+        order: .quit
+    )
+    
+    /// The appearance item (`a appearance`).
+    ///
+    /// Cycles through available appearances (border styles).
+    /// Action must be set by the framework.
+    public static let appearance = StatusBarItem(
+        shortcut: "a",
+        label: "appearance",
+        order: .appearance
+    )
+    
+    /// The theme item (`t theme`).
+    ///
+    /// Cycles through available themes. Action must be set by the framework.
+    public static let theme = StatusBarItem(
+        shortcut: "t",
+        label: "theme",
+        order: .theme
+    )
+    
+    /// All system items in their default order.
+    public static var all: [StatusBarItem] {
+        [quit, appearance, theme]
+    }
+    
+    /// Creates system items with custom actions.
+    ///
+    /// - Parameters:
+    ///   - onQuit: Action for quit (default: exits app).
+    ///   - onAppearance: Action for appearance cycling (optional).
+    ///   - onTheme: Action for theme cycling (optional).
+    /// - Returns: Array of configured system items.
+    public static func items(
+        onQuit: (@Sendable () -> Void)? = nil,
+        onAppearance: (@Sendable () -> Void)? = nil,
+        onTheme: (@Sendable () -> Void)? = nil
+    ) -> [StatusBarItem] {
+        var result: [StatusBarItem] = []
+        
+        // Quit is always present
+        result.append(StatusBarItem(
+            shortcut: "q",
+            label: "quit",
+            order: .quit,
+            action: onQuit
+        ))
+        
+        // Appearance is present if action is provided
+        if let onAppearance = onAppearance {
+            result.append(StatusBarItem(
+                shortcut: "a",
+                label: "appearance",
+                order: .appearance,
+                action: onAppearance
+            ))
+        }
+        
+        // Theme is present if action is provided
+        if let onTheme = onTheme {
+            result.append(StatusBarItem(
+                shortcut: "t",
+                label: "theme",
+                order: .theme,
+                action: onTheme
+            ))
+        }
+        
+        return result
+    }
+}
+
 // MARK: - Status Bar Item Builder
 
 /// Result builder for creating status bar items.
@@ -428,6 +597,18 @@ public struct StatusBarItemBuilder {
 /// It's rendered separately from the main view tree and is never
 /// affected by overlays or dimming.
 ///
+/// # Layout
+///
+/// The status bar consists of two containers:
+/// - **User Container** (left): User-defined items, sorted by order
+/// - **System Container** (right): System items (quit, help, theme), fixed order
+///
+/// ```
+/// ┌────────────────────────────────────────┬───────────────────────────────┐
+/// │ s save   x action   ↑↓ nav             │ q quit   ? help   t theme    │
+/// └────────────────────────────────────────┴───────────────────────────────┘
+/// ```
+///
 /// # Usage
 ///
 /// To set status bar items, use the environment:
@@ -442,7 +623,7 @@ public struct StatusBarItemBuilder {
 ///         }
 ///         .onAppear {
 ///             statusBar.setItems([
-///                 StatusBarItem(shortcut: "q", label: "quit"),
+///                 StatusBarItem(shortcut: "s", label: "save"),
 ///                 StatusBarItem(shortcut: "↑↓", label: "nav"),
 ///             ])
 ///         }
@@ -450,13 +631,16 @@ public struct StatusBarItemBuilder {
 /// }
 /// ```
 public struct StatusBar: View {
-    /// The items to display.
-    public let items: [any StatusBarItemProtocol]
+    /// User items (left container).
+    public let userItems: [any StatusBarItemProtocol]
+    
+    /// System items (right container).
+    public let systemItems: [any StatusBarItemProtocol]
 
     /// The visual style.
     public let style: StatusBarStyle
 
-    /// The horizontal alignment of items.
+    /// The horizontal alignment of user items within the left container.
     public let alignment: StatusBarAlignment
 
     /// The highlight color for shortcut keys.
@@ -465,10 +649,35 @@ public struct StatusBar: View {
     /// The label color.
     public let labelColor: Color?
 
-    /// Creates a status bar with explicit items.
+    /// Creates a status bar with separate user and system items.
     ///
     /// - Parameters:
-    ///   - items: The items to display.
+    ///   - userItems: User-defined items (left container).
+    ///   - systemItems: System items (right container).
+    ///   - style: The visual style (default: `.compact`).
+    ///   - alignment: The alignment of user items (default: `.leading`).
+    ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
+    ///   - labelColor: The color for labels (default: nil, terminal default).
+    public init(
+        userItems: [any StatusBarItemProtocol] = [],
+        systemItems: [any StatusBarItemProtocol] = [],
+        style: StatusBarStyle = .compact,
+        alignment: StatusBarAlignment = .leading,
+        highlightColor: Color = .cyan,
+        labelColor: Color? = nil
+    ) {
+        self.userItems = userItems
+        self.systemItems = systemItems
+        self.style = style
+        self.alignment = alignment
+        self.highlightColor = highlightColor
+        self.labelColor = labelColor
+    }
+    
+    /// Creates a status bar with all items combined (legacy compatibility).
+    ///
+    /// - Parameters:
+    ///   - items: All items to display (will be treated as user items).
     ///   - style: The visual style (default: `.compact`).
     ///   - alignment: The horizontal alignment (default: `.justified`).
     ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
@@ -480,7 +689,8 @@ public struct StatusBar: View {
         highlightColor: Color = .cyan,
         labelColor: Color? = nil
     ) {
-        self.items = items
+        self.userItems = items
+        self.systemItems = []
         self.style = style
         self.alignment = alignment
         self.highlightColor = highlightColor
@@ -502,11 +712,29 @@ public struct StatusBar: View {
         labelColor: Color? = nil,
         @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]
     ) {
-        self.items = builder()
+        self.userItems = builder()
+        self.systemItems = []
         self.style = style
         self.alignment = alignment
         self.highlightColor = highlightColor
         self.labelColor = labelColor
+    }
+    
+    /// All items combined (sorted user items, then filtered system items).
+    ///
+    /// User items are sorted by their `order` property.
+    /// System items maintain their fixed order (quit, help, theme).
+    /// User items override system items with the same shortcut.
+    /// Use this for event handling to check all items.
+    public var allItems: [any StatusBarItemProtocol] {
+        let userShortcuts = Set(userItems.map { $0.shortcut })
+        let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
+        return userItems.sorted { $0.order < $1.order } + filteredSystemItems
+    }
+    
+    /// Whether the status bar has any items to display.
+    public var hasItems: Bool {
+        !userItems.isEmpty || !systemItems.isEmpty
     }
 
     public var body: Never {
@@ -518,12 +746,22 @@ public struct StatusBar: View {
 
 extension StatusBar: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        guard !items.isEmpty else {
+        // Get shortcuts used by user items (for deduplication)
+        let userShortcuts = Set(userItems.map { $0.shortcut })
+        
+        // Filter out system items that are overridden by user items
+        let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
+        
+        // Combine: sorted user items + filtered system items (fixed order)
+        let sortedUserItems = userItems.sorted { $0.order < $1.order }
+        let combinedItems = sortedUserItems + filteredSystemItems
+        
+        guard !combinedItems.isEmpty else {
             return FrameBuffer()
         }
 
         // Build item strings
-        let itemStrings = items.map { item -> String in
+        let itemStrings = combinedItems.map { item -> String in
             let shortcutStyled = ANSIRenderer.render(item.shortcut, with: {
                 var style = TextStyle()
                 style.foregroundColor = highlightColor
@@ -550,7 +788,7 @@ extension StatusBar: Renderable {
             return renderCompact(itemStrings: itemStrings, width: context.availableWidth)
 
         case .bordered:
-            return renderBordered(itemStrings: itemStrings, width: context.availableWidth)
+            return renderBordered(itemStrings: itemStrings, width: context.availableWidth, context: context)
         }
     }
 
@@ -656,9 +894,10 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [line])
     }
 
-    /// Renders the bordered style (block border with alignment).
-    private func renderBordered(itemStrings: [String], width: Int) -> FrameBuffer {
-        let border = BorderStyle.block
+    /// Renders the bordered style using the current appearance's border style.
+    private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
+        // Use the current appearance's border style
+        let border = context.environment.appearance.borderStyle
         let innerWidth = width - 2  // Account for left and right border
 
         let content = alignContent(itemStrings: itemStrings, width: innerWidth)

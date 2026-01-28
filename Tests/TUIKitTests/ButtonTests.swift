@@ -34,10 +34,11 @@ private func cleanupEnvironment() {
 @Suite("Button Style Tests")
 struct ButtonStyleTests {
 
-    @Test("Default button style")
+    @Test("Default button style uses appearance default")
     func defaultStyle() {
         let style = ButtonStyle.default
-        #expect(style.borderStyle == .rounded)
+        // nil means "use appearance.borderStyle at render time"
+        #expect(style.borderStyle == nil)
         #expect(style.horizontalPadding == 2)
         #expect(style.isBold == false)
     }
@@ -67,7 +68,8 @@ struct ButtonStyleTests {
     @Test("Plain button style has no border")
     func plainStyle() {
         let style = ButtonStyle.plain
-        #expect(style.borderStyle == nil)
+        // Plain uses BorderStyle.none (invisible border) to explicitly disable borders
+        #expect(style.borderStyle == BorderStyle.none)
         #expect(style.horizontalPadding == 0)
     }
 
@@ -199,13 +201,13 @@ struct ButtonTests {
         #expect(allContent.contains("▸"))
     }
 
-    @Test("Button default focused style is cyan")
+    @Test("Button default focused style uses theme colors")
     func buttonDefaultFocusedStyle() {
         let button = Button("Test") {}
 
-        // Default focused style should have cyan color
-        #expect(button.focusedStyle.foregroundColor == .cyan)
-        #expect(button.focusedStyle.borderColor == .cyan)
+        // Default focused style should use theme colors (nil = resolved at render time)
+        #expect(button.focusedStyle.foregroundColor == nil)
+        #expect(button.focusedStyle.borderColor == nil)
         #expect(button.focusedStyle.isBold == true)
     }
 }

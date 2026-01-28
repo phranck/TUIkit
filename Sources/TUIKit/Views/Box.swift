@@ -28,8 +28,8 @@ public struct Box<Content: View>: View {
     /// The content of the box.
     public let content: Content
 
-    /// The border style.
-    public let borderStyle: BorderStyle
+    /// The border style (nil uses appearance default).
+    public let borderStyle: BorderStyle?
 
     /// The border color.
     public let borderColor: Color?
@@ -37,11 +37,11 @@ public struct Box<Content: View>: View {
     /// Creates a box with the specified border.
     ///
     /// - Parameters:
-    ///   - borderStyle: The border style (default: .line).
-    ///   - color: The border color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - color: The border color (default: theme border).
     ///   - content: The content of the box.
     public init(
-        _ borderStyle: BorderStyle = .line,
+        _ borderStyle: BorderStyle? = nil,
         color: Color? = nil,
         @ViewBuilder content: () -> Content
     ) {

@@ -19,6 +19,7 @@ struct ContentView: View {
         let state = ExampleAppState.shared
 
         // Show current page based on state
+        // Note: Background color is set by AppRunner using theme.background
         pageContent(for: state.currentPage)
             .onKeyPress { event in
                 switch event.key {
@@ -45,7 +46,6 @@ struct ContentView: View {
                     StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
                     StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
                     StatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump")
-                    StatusBarItem(shortcut: Shortcut.quit, label: "quit")
                 }
         case .textStyles:
             TextStylesPage()
@@ -74,8 +74,7 @@ struct ContentView: View {
             StatusBarItem(shortcut: Shortcut.escape, label: "back") {
                 ExampleAppState.shared.currentPage = .menu
             },
-            StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
-            StatusBarItem(shortcut: Shortcut.quit, label: "quit")
+            StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll")
         ]
     }
 }

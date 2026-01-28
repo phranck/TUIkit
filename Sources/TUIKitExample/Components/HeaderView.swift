@@ -34,14 +34,14 @@ struct HeaderView: View {
             HStack {
                 Text(title)
                     .bold()
-                    .foregroundColor(.cyan)
+                    .foregroundColor(.theme.accent)
                 Spacer()
                 Text("TUIKit v\(tuiKitVersion)")
-                    .dim()
+                    .foregroundColor(.theme.foregroundTertiary)
             }
             if let sub = subtitle {
                 Text(sub)
-                    .dim()
+                    .foregroundColor(.theme.foregroundSecondary)
                     .italic()
             }
             Divider(character: "═")

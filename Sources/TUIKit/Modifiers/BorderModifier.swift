@@ -13,10 +13,10 @@ public struct BorderedView<Content: View>: View {
     /// The content to wrap with a border.
     let content: Content
 
-    /// The border style to use.
-    let style: BorderStyle
+    /// The border style to use (nil uses appearance default).
+    let style: BorderStyle?
 
-    /// The color of the border (nil uses default terminal color).
+    /// The color of the border (nil uses theme border color).
     let color: Color?
 
     public var body: Never {
@@ -28,6 +28,9 @@ public struct BorderedView<Content: View>: View {
 
 extension BorderedView: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Resolve border style - use explicit or fall back to appearance default
+        let effectiveStyle = style ?? context.environment.appearance.borderStyle
+        
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context
         contentContext.availableWidth = max(1, context.availableWidth - 2)
@@ -42,17 +45,17 @@ extension BorderedView: Renderable {
 
         // Build the top border line
         let topLine = buildBorderLine(
-            left: style.topLeft,
-            fill: style.horizontal,
-            right: style.topRight,
+            left: effectiveStyle.topLeft,
+            fill: effectiveStyle.horizontal,
+            right: effectiveStyle.topRight,
             width: innerWidth
         )
 
         // Build the bottom border line
         let bottomLine = buildBorderLine(
-            left: style.bottomLeft,
-            fill: style.horizontal,
-            right: style.bottomRight,
+            left: effectiveStyle.bottomLeft,
+            fill: effectiveStyle.horizontal,
+            right: effectiveStyle.bottomRight,
             width: innerWidth
         )
 
@@ -67,10 +70,10 @@ extension BorderedView: Renderable {
         let reset = "\u{1B}[0m"
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = colorize(String(style.vertical))
+            let borderedLine = colorize(String(effectiveStyle.vertical))
                 + paddedLine
                 + reset  // Reset any styling from content
-                + colorize(String(style.vertical))
+                + colorize(String(effectiveStyle.vertical))
             lines.append(borderedLine)
         }
 
@@ -90,11 +93,10 @@ extension BorderedView: Renderable {
         String(left) + String(repeating: fill, count: width) + String(right)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String) -> String {
-        guard let color = color else { return string }
         var textStyle = TextStyle()
-        textStyle.foregroundColor = color
+        textStyle.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: textStyle)
     }
 }
@@ -111,7 +113,7 @@ extension View {
     ///
     /// ```swift
     /// Text("Hello")
-    ///     .border()
+    ///     .border()  // Uses appearance.borderStyle
     ///
     /// Text("Rounded")
     ///     .border(.rounded, color: .cyan)
@@ -121,11 +123,11 @@ extension View {
     /// ```
     ///
     /// - Parameters:
-    ///   - style: The border style (default: .line).
-    ///   - color: The border color (default: nil, uses terminal default).
+    ///   - style: The border style (default: appearance borderStyle).
+    ///   - color: The border color (default: theme border color).
     /// - Returns: A view with a border.
     public func border(
-        _ style: BorderStyle = .line,
+        _ style: BorderStyle? = nil,
         color: Color? = nil
     ) -> some View {
         BorderedView(content: self, style: style, color: color)
@@ -201,11 +203,10 @@ public struct BorderModifier: ViewModifier {
         String(left) + String(repeating: fill, count: width) + String(right)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String) -> String {
-        guard let color = color else { return string }
         var textStyle = TextStyle()
-        textStyle.foregroundColor = color
+        textStyle.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: textStyle)
     }
 }

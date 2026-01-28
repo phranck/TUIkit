@@ -36,8 +36,8 @@ public struct Alert<Actions: View>: View {
     /// The alert message.
     public let message: String
 
-    /// The border style for the alert box.
-    public let borderStyle: BorderStyle
+    /// The border style for the alert box (nil uses appearance default).
+    public let borderStyle: BorderStyle?
 
     /// The border color.
     public let borderColor: Color?
@@ -53,14 +53,14 @@ public struct Alert<Actions: View>: View {
     /// - Parameters:
     ///   - title: The alert title.
     ///   - message: The alert message.
-    ///   - borderStyle: The border style (default: .rounded).
-    ///   - borderColor: The border color (default: nil).
-    ///   - titleColor: The title color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: theme foreground).
     ///   - actions: The action views to display below the message.
     public init(
         title: String,
         message: String,
-        borderStyle: BorderStyle = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         @ViewBuilder actions: () -> Actions

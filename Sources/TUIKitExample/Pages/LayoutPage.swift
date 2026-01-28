@@ -20,7 +20,8 @@ struct LayoutPage: View {
             HeaderView(title: "Layout System Demo")
 
             DemoSection("VStack (Vertical)") {
-                Box(.rounded, color: .brightBlack) {
+                // Box uses appearance default borderStyle
+                Box(color: .brightBlack) {
                     VStack(spacing: 0) {
                         Text("Item 1")
                         Text("Item 2")
@@ -30,7 +31,7 @@ struct LayoutPage: View {
             }
 
             DemoSection("HStack (Horizontal)") {
-                Box(.rounded, color: .brightBlack) {
+                Box(color: .brightBlack) {
                     HStack(spacing: 2) {
                         Text("Left")
                         Text("Center")
@@ -40,7 +41,7 @@ struct LayoutPage: View {
             }
 
             DemoSection("Spacer") {
-                Box(.rounded, color: .brightBlack) {
+                Box(color: .brightBlack) {
                     HStack {
                         Text("Start")
                         Spacer()
@@ -55,13 +56,13 @@ struct LayoutPage: View {
                         Text(".padding()").dim()
                         Text("Padded")
                             .padding(EdgeInsets(all: 1))
-                            .border(.line)
+                            .border() // Uses appearance default
                     }
                     VStack {
                         Text(".frame()").dim()
                         Text("Framed")
                             .frame(width: 15, alignment: .center)
-                            .border(.line)
+                            .border() // Uses appearance default
                     }
                 }
             }
