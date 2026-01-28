@@ -140,17 +140,12 @@ struct ContentView: TView {
                     // ESC goes back to menu (or exits if already on menu)
                     if state.currentPage != .menu {
                         state.currentPage = .menu
+                        return true  // Consumed
                     }
-                    // If on menu, let it fall through to default handler (exit)
-
-                case .character(let char) where char == "b" || char == "B":
-                    // B also goes back
-                    if state.currentPage != .menu {
-                        state.currentPage = .menu
-                    }
+                    return false  // Let default handler exit the app
 
                 default:
-                    break
+                    return false  // Let other handlers process
                 }
             }
     }
