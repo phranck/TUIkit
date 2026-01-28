@@ -50,6 +50,24 @@ extension App {
     }
 }
 
+// MARK: - Quit Behavior
+
+/// Controls when the quit shortcut (`q`) is active.
+public enum QuitBehavior: Sendable {
+    /// Quit works from any screen.
+    ///
+    /// Pressing `q` will always exit the application, regardless of
+    /// the current navigation state.
+    case always
+    
+    /// Quit only works from the root/main screen.
+    ///
+    /// Pressing `q` will only exit when no context is pushed onto the
+    /// status bar stack. On subpages, `q` does nothing, allowing the
+    /// app to handle navigation (e.g., ESC to go back).
+    case rootOnly
+}
+
 // MARK: - Status Bar State
 
 /// Manages the status bar state for the running application.
@@ -101,6 +119,15 @@ public final class StatusBarState: @unchecked Sendable {
     /// Default is `true`.
     public var showThemeItem: Bool = true
     
+    /// Controls when the quit shortcut (`q`) is active.
+    ///
+    /// - `.always`: Quit works from any screen (default).
+    /// - `.rootOnly`: Quit only works when no context is pushed (main screen).
+    ///
+    /// When set to `.rootOnly`, pressing `q` on a subpage does nothing,
+    /// allowing the app to handle navigation (e.g., go back) instead.
+    public var quitBehavior: QuitBehavior = .always
+    
     // MARK: - Appearance
     
     /// The current status bar style.
@@ -122,14 +149,34 @@ public final class StatusBarState: @unchecked Sendable {
     
     // MARK: - System Items Access
     
+    /// Whether we are at the root level (no context pushed).
+    public var isAtRoot: Bool {
+        userContextStack.isEmpty
+    }
+    
+    /// Whether quit is currently allowed based on `quitBehavior`.
+    public var isQuitAllowed: Bool {
+        switch quitBehavior {
+        case .always:
+            return true
+        case .rootOnly:
+            return isAtRoot
+        }
+    }
+    
     /// The current system items based on configuration flags.
     ///
-    /// Returns items filtered by `showSystemItems`, `showHelpItem`, and `showThemeItem`.
-    /// The quit item is always included when `showSystemItems` is true.
+    /// Returns items filtered by `showSystemItems`, `showHelpItem`, `showThemeItem`,
+    /// and `quitBehavior`. The quit item is only included when quit is allowed.
     public var currentSystemItems: [StatusBarItem] {
         guard showSystemItems else { return [] }
         
-        var items: [StatusBarItem] = [SystemStatusBarItem.quit]
+        var items: [StatusBarItem] = []
+        
+        // Quit item respects quitBehavior
+        if isQuitAllowed {
+            items.append(SystemStatusBarItem.quit)
+        }
         
         if showHelpItem {
             items.append(SystemStatusBarItem.help)
@@ -505,14 +552,24 @@ internal final class AppRunner<A: App> {
             return
         }
 
-        // Default handling (only if no handler consumed the event):
-        // - ESC exits the app
-        // - 'q' or 'Q' exits the app
+        // Default handling (only if no handler consumed the event)
         switch event.key {
         case .escape:
+            // ESC always exits (could also be made configurable)
             isRunning = false
+            
         case .character(let char) where char == "q" || char == "Q":
-            isRunning = false
+            // 'q' respects quitBehavior setting
+            if statusBar.isQuitAllowed {
+                isRunning = false
+            }
+            
+        case .character(let char) where char == "t" || char == "T":
+            // 't' cycles theme (if theme item is enabled)
+            if statusBar.showThemeItem {
+                ThemeManager.shared.cycleTheme()
+            }
+            
         default:
             break
         }
