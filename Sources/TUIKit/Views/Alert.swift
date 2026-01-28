@@ -2,7 +2,7 @@
 //  Alert.swift
 //  TUIKit
 //
-//  A modal alert view with title, message, and optional actions.
+//  A modal alert view with title, message, and optional action buttons.
 //
 
 /// A modal alert view that displays a title, message, and optional action buttons.
@@ -10,16 +10,22 @@
 /// `Alert` is designed to be shown as an overlay on top of other content.
 /// Use it together with `.overlay()` and `.dimmed()` for a modal effect.
 ///
-/// # Example
+/// ## Structure
+///
+/// - **Header**: Title (in border for standard appearances, separate section for block)
+/// - **Body**: Message
+/// - **Footer**: Action buttons (separated by optional separator line)
+///
+/// ## Examples
 ///
 /// ```swift
 /// // Simple alert
 /// Alert(title: "Warning", message: "Are you sure?")
 ///
-/// // Alert with custom actions
+/// // Alert with action buttons
 /// Alert(title: "Confirm", message: "Delete this item?") {
-///     Text("[Yes]")
-///     Text("[No]")
+///     Button("Yes") { }
+///     Button("No") { }
 /// }
 ///
 /// // Modal overlay pattern
@@ -44,8 +50,11 @@ public struct Alert<Actions: View>: View {
 
     /// The title color.
     public let titleColor: Color?
+    
+    /// Whether to show a separator before the action buttons.
+    public let showFooterSeparator: Bool
 
-    /// The action views (typically buttons or styled text).
+    /// The action views (typically buttons).
     public let actions: Actions
 
     /// Creates an alert with custom action views.
@@ -56,13 +65,15 @@ public struct Alert<Actions: View>: View {
     ///   - borderStyle: The border style (default: appearance borderStyle).
     ///   - borderColor: The border color (default: theme border).
     ///   - titleColor: The title color (default: theme foreground).
-    ///   - actions: The action views to display below the message.
+    ///   - showFooterSeparator: Whether to show separator before actions (default: true).
+    ///   - actions: The action views to display in the footer.
     public init(
         title: String,
         message: String,
         borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
+        showFooterSeparator: Bool = true,
         @ViewBuilder actions: () -> Actions
     ) {
         self.title = title
@@ -70,32 +81,57 @@ public struct Alert<Actions: View>: View {
         self.borderStyle = borderStyle
         self.borderColor = borderColor
         self.titleColor = titleColor
+        self.showFooterSeparator = showFooterSeparator
         self.actions = actions()
     }
 
-    public var body: some View {
-        VStack(spacing: 1) {
-            // Title
-            if let color = titleColor {
-                Text(title)
-                    .bold()
-                    .foregroundColor(color)
-            } else {
-                Text(title)
-                    .bold()
+    public var body: Never {
+        fatalError("Alert renders via Renderable")
+    }
+}
+
+// MARK: - Rendering
+
+extension Alert: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let containerStyle = ContainerStyle(
+            showHeaderSeparator: true,
+            showFooterSeparator: showFooterSeparator,
+            borderStyle: borderStyle,
+            borderColor: borderColor
+        )
+        
+        // Check if actions is EmptyView (no actions)
+        let hasActions = !(actions is EmptyView)
+        
+        if hasActions {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: containerStyle,
+                padding: EdgeInsets(horizontal: 2, vertical: 1)
+            ) {
+                Text(message)
+            } footer: {
+                actions
             }
-
-            // Message
-            Text(message)
-
-            // Empty line between message and actions
-            Text("")
-
-            // Actions (if any)
-            actions
+            return container.renderToBuffer(context: context)
+        } else {
+            let container = ContainerView(
+                title: title,
+                titleColor: titleColor,
+                style: ContainerStyle(
+                    showHeaderSeparator: true,
+                    showFooterSeparator: false,
+                    borderStyle: borderStyle,
+                    borderColor: borderColor
+                ),
+                padding: EdgeInsets(horizontal: 2, vertical: 1)
+            ) {
+                Text(message)
+            }
+            return container.renderToBuffer(context: context)
         }
-        .padding(EdgeInsets(horizontal: 2, vertical: 1))
-        .border(borderStyle, color: borderColor)
     }
 }
 
@@ -107,13 +143,13 @@ extension Alert where Actions == EmptyView {
     /// - Parameters:
     ///   - title: The alert title.
     ///   - message: The alert message.
-    ///   - borderStyle: The border style (default: .rounded).
+    ///   - borderStyle: The border style (default: appearance default).
     ///   - borderColor: The border color (default: nil).
     ///   - titleColor: The title color (default: nil).
     public init(
         title: String,
         message: String,
-        borderStyle: BorderStyle = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil
     ) {
@@ -122,6 +158,7 @@ extension Alert where Actions == EmptyView {
         self.borderStyle = borderStyle
         self.borderColor = borderColor
         self.titleColor = titleColor
+        self.showFooterSeparator = false
         self.actions = EmptyView()
     }
 }
@@ -144,7 +181,6 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .yellow,
             titleColor: .yellow,
             actions: actions
@@ -166,7 +202,6 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .red,
             titleColor: .red,
             actions: actions
@@ -188,7 +223,6 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .cyan,
             titleColor: .cyan,
             actions: actions
@@ -210,7 +244,6 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .green,
             titleColor: .green,
             actions: actions
@@ -226,7 +259,6 @@ extension Alert where Actions == EmptyView {
         Alert<EmptyView>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .yellow,
             titleColor: .yellow
         )
@@ -237,7 +269,6 @@ extension Alert where Actions == EmptyView {
         Alert<EmptyView>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .red,
             titleColor: .red
         )
@@ -248,7 +279,6 @@ extension Alert where Actions == EmptyView {
         Alert<EmptyView>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .cyan,
             titleColor: .cyan
         )
@@ -259,7 +289,6 @@ extension Alert where Actions == EmptyView {
         Alert<EmptyView>(
             title: title,
             message: message,
-            borderStyle: .rounded,
             borderColor: .green,
             titleColor: .green
         )
