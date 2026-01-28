@@ -45,17 +45,17 @@ final class MockFocusable: Focusable {
 @Suite("Focus Manager Tests")
 struct FocusManagerTests {
 
-    @Test("FocusManager is a singleton")
-    func focusManagerSingleton() {
-        let manager1 = FocusManager.shared
-        let manager2 = FocusManager.shared
-        #expect(manager1 === manager2)
+    @Test("FocusManager can be instantiated")
+    func focusManagerInstantiation() {
+        let manager1 = FocusManager()
+        let manager2 = FocusManager()
+        // Each instance is independent
+        #expect(manager1 !== manager2)
     }
 
     @Test("Register focusable element")
     func registerFocusable() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element = MockFocusable(id: "test-element")
         manager.register(element)
@@ -67,8 +67,7 @@ struct FocusManagerTests {
 
     @Test("Register multiple elements")
     func registerMultipleElements() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "element-1")
         let element2 = MockFocusable(id: "element-2")
@@ -83,8 +82,7 @@ struct FocusManagerTests {
 
     @Test("Avoid duplicate registration")
     func avoidDuplicates() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element = MockFocusable(id: "unique-element")
         manager.register(element)
@@ -96,8 +94,7 @@ struct FocusManagerTests {
 
     @Test("Unregister focusable element")
     func unregisterFocusable() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "elem-1")
         let element2 = MockFocusable(id: "elem-2")
@@ -112,8 +109,7 @@ struct FocusManagerTests {
 
     @Test("Clear all focusables")
     func clearAll() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element = MockFocusable(id: "to-clear")
         manager.register(element)
@@ -125,8 +121,7 @@ struct FocusManagerTests {
 
     @Test("Focus specific element")
     func focusSpecific() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "first")
         let element2 = MockFocusable(id: "second")
@@ -141,8 +136,7 @@ struct FocusManagerTests {
 
     @Test("Focus by ID")
     func focusByID() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "id-a")
         let element2 = MockFocusable(id: "id-b")
@@ -157,8 +151,7 @@ struct FocusManagerTests {
 
     @Test("Focus next wraps around")
     func focusNextWrapsAround() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "nav-1")
         let element2 = MockFocusable(id: "nav-2")
@@ -183,8 +176,7 @@ struct FocusManagerTests {
 
     @Test("Focus previous wraps around")
     func focusPreviousWrapsAround() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "prev-1")
         let element2 = MockFocusable(id: "prev-2")
@@ -210,8 +202,7 @@ struct FocusManagerTests {
 
     @Test("Skip non-focusable elements")
     func skipNonFocusable() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "focusable-1")
         let element2 = MockFocusable(id: "disabled", canBeFocused: false)
@@ -229,8 +220,7 @@ struct FocusManagerTests {
 
     @Test("Cannot focus disabled element")
     func cannotFocusDisabled() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let disabled = MockFocusable(id: "disabled", canBeFocused: false)
         manager.register(disabled)
@@ -242,13 +232,12 @@ struct FocusManagerTests {
 
     @Test("Focus callbacks are called")
     func focusCallbacks() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
-        let element1 = MockFocusable(id: "callback-1-\(UUID().uuidString)")
-        let element2 = MockFocusable(id: "callback-2-\(UUID().uuidString)")
+        let element1 = MockFocusable(id: "callback-1")
+        let element2 = MockFocusable(id: "callback-2")
 
-        // Register element1 - it should be auto-focused since manager was just cleared
+        // Register element1 - it should be auto-focused since manager was just created
         manager.register(element1)
         // Note: focusReceivedCount should be 1 after registration auto-focus
         #expect(element1.focusReceivedCount == 1, "Element1 should receive focus when registered as first element")
@@ -264,8 +253,7 @@ struct FocusManagerTests {
 
     @Test("Tab key moves focus next")
     func tabKeyMovesFocusNext() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "tab-1")
         let element2 = MockFocusable(id: "tab-2")
@@ -282,8 +270,7 @@ struct FocusManagerTests {
 
     @Test("Shift+Tab moves focus previous")
     func shiftTabMovesFocusPrevious() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element1 = MockFocusable(id: "shift-1")
         let element2 = MockFocusable(id: "shift-2")
@@ -301,8 +288,7 @@ struct FocusManagerTests {
 
     @Test("Key events dispatched to focused element")
     func keyEventsDispatched() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         let element = MockFocusable(id: "dispatch-test", shouldConsumeEvents: true)
         manager.register(element)
@@ -316,8 +302,7 @@ struct FocusManagerTests {
 
     @Test("onFocusChange callback triggered")
     func onFocusChangeCallback() {
-        let manager = FocusManager.shared
-        manager.clear()
+        let manager = FocusManager()
 
         var callbackCount = 0
         manager.onFocusChange = {
@@ -353,10 +338,13 @@ struct FocusStateTests {
         #expect(state.id.contains("-"))
     }
 
-    @Test("FocusState isFocused reflects manager state")
+    @Test("FocusState isFocused reflects environment focus manager state")
     func focusStateIsFocused() {
-        let manager = FocusManager.shared
-        manager.clear()
+        // Set up a focus manager in the environment
+        let manager = FocusManager()
+        var environment = EnvironmentValues()
+        environment.focusManager = manager
+        EnvironmentStorage.shared.environment = environment
 
         let state = FocusState(id: "state-test")
         let element = MockFocusable(id: "state-test")
@@ -365,12 +353,18 @@ struct FocusStateTests {
 
         // The element is focused, so state should report focused
         #expect(state.isFocused)
+
+        // Cleanup
+        EnvironmentStorage.shared.reset()
     }
 
     @Test("FocusState requestFocus works")
     func focusStateRequestFocus() {
-        let manager = FocusManager.shared
-        manager.clear()
+        // Set up a focus manager in the environment
+        let manager = FocusManager()
+        var environment = EnvironmentValues()
+        environment.focusManager = manager
+        EnvironmentStorage.shared.environment = environment
 
         let element1 = MockFocusable(id: "req-1")
         let element2 = MockFocusable(id: "req-2")
@@ -382,5 +376,52 @@ struct FocusStateTests {
         state.requestFocus()
 
         #expect(manager.isFocused(id: "req-2"))
+
+        // Cleanup
+        EnvironmentStorage.shared.reset()
+    }
+}
+
+// MARK: - Focus Manager Environment Tests
+
+@Suite("Focus Manager Environment Tests")
+struct FocusManagerEnvironmentTests {
+
+    @Test("FocusManager is accessible via environment key")
+    func focusManagerEnvironmentKey() {
+        let manager = FocusManager()
+        var environment = EnvironmentValues()
+        environment.focusManager = manager
+
+        #expect(environment.focusManager === manager)
+    }
+
+    @Test("Default FocusManager is provided if not set")
+    func defaultFocusManager() {
+        let environment = EnvironmentValues()
+        // Should return a default FocusManager instance
+        let defaultManager = environment.focusManager
+        #expect(defaultManager.currentFocusedID == nil)
+    }
+
+    @Test("Multiple tests can have independent FocusManagers")
+    func independentManagers() {
+        let manager1 = FocusManager()
+        let manager2 = FocusManager()
+
+        let element1 = MockFocusable(id: "test-1")
+        let element2 = MockFocusable(id: "test-2")
+
+        manager1.register(element1)
+        manager2.register(element2)
+
+        // Each manager should have its own focused element
+        #expect(manager1.currentFocusedID == "test-1")
+        #expect(manager2.currentFocusedID == "test-2")
+
+        // Clearing one shouldn't affect the other
+        manager1.clear()
+        #expect(manager1.currentFocusedID == nil)
+        #expect(manager2.currentFocusedID == "test-2")
     }
 }
