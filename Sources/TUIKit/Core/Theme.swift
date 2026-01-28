@@ -572,3 +572,93 @@ extension Theme where Self == LightTheme {
     /// Modern light theme.
     public static var light: LightTheme { LightTheme() }
 }
+
+// MARK: - Theme Manager
+
+/// Manages theme cycling for the application.
+///
+/// The `ThemeManager` provides a centralized way to cycle through available themes.
+/// It works with the environment system to update the current theme and trigger re-renders.
+///
+/// # Usage
+///
+/// ```swift
+/// // Cycle to the next theme
+/// ThemeManager.shared.cycleTheme()
+///
+/// // Get the current theme
+/// let theme = ThemeManager.shared.currentTheme
+///
+/// // Set a specific theme by index
+/// ThemeManager.shared.setTheme(at: 2)
+/// ```
+public final class ThemeManager: @unchecked Sendable {
+    /// The shared theme manager instance.
+    public static let shared = ThemeManager()
+    
+    /// The current theme index.
+    private var currentIndex: Int = 0
+    
+    /// All available themes.
+    public var availableThemes: [Theme] {
+        ThemeRegistry.all
+    }
+    
+    /// The current theme.
+    public var currentTheme: Theme {
+        availableThemes[currentIndex]
+    }
+    
+    /// The name of the current theme.
+    public var currentThemeName: String {
+        currentTheme.name
+    }
+    
+    private init() {}
+    
+    /// Cycles to the next theme.
+    ///
+    /// This method updates the current theme index, updates the environment,
+    /// and triggers a re-render.
+    public func cycleTheme() {
+        currentIndex = (currentIndex + 1) % availableThemes.count
+        applyCurrentTheme()
+    }
+    
+    /// Cycles to the previous theme.
+    public func cyclePreviousTheme() {
+        currentIndex = (currentIndex - 1 + availableThemes.count) % availableThemes.count
+        applyCurrentTheme()
+    }
+    
+    /// Sets the theme at the specified index.
+    ///
+    /// - Parameter index: The index of the theme to set.
+    public func setTheme(at index: Int) {
+        guard index >= 0 && index < availableThemes.count else { return }
+        currentIndex = index
+        applyCurrentTheme()
+    }
+    
+    /// Sets the theme by ID.
+    ///
+    /// - Parameter id: The theme ID to set.
+    /// - Returns: `true` if the theme was found and set.
+    @discardableResult
+    public func setTheme(withId id: String) -> Bool {
+        guard let index = availableThemes.firstIndex(where: { $0.id == id }) else {
+            return false
+        }
+        currentIndex = index
+        applyCurrentTheme()
+        return true
+    }
+    
+    /// Applies the current theme to the environment and triggers a re-render.
+    private func applyCurrentTheme() {
+        var environment = EnvironmentStorage.shared.environment
+        environment.theme = currentTheme
+        EnvironmentStorage.shared.environment = environment
+        AppState.shared.setNeedsRender()
+    }
+}
