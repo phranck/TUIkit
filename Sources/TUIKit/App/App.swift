@@ -555,7 +555,10 @@ internal final class AppRunner<A: App> {
             
             let visibleWidth = line.strippedLength
             let padding = max(0, terminalWidth - visibleWidth)
-            let paddedLine = bgCode + line + String(repeating: " ", count: padding) + reset
+            
+            // Replace all reset codes with "reset + restore background"
+            let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
+            let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
             terminal.write(paddedLine)
         }
     }
@@ -643,7 +646,7 @@ extension WindowGroup: SceneRenderable {
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
         
-        // Write buffer to terminal, wrapping each line with background color
+        // Write buffer to terminal, ensuring consistent background color
         for row in 0..<terminalHeight {
             terminal.moveCursor(toRow: 1 + row, column: 1)
             
@@ -652,9 +655,12 @@ extension WindowGroup: SceneRenderable {
                 let visibleWidth = line.strippedLength
                 let padding = max(0, terminalWidth - visibleWidth)
                 
-                // Wrap entire line with background: bg + content + padding + reset
-                // The bgCode sets the background for everything that follows
-                let paddedLine = bgCode + line + String(repeating: " ", count: padding) + reset
+                // Replace all reset codes with "reset + restore background"
+                // This ensures background color persists after styled text
+                let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
+                
+                // Wrap entire line with background
+                let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
                 terminal.write(paddedLine)
             } else {
                 // Empty row - fill with background color
