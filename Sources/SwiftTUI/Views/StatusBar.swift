@@ -19,6 +19,23 @@ public enum TStatusBarStyle: Sendable {
     case bordered
 }
 
+// MARK: - Status Bar Alignment
+
+/// The horizontal alignment of items within the status bar.
+public enum TStatusBarAlignment: Sendable {
+    /// Items are aligned to the left (leading edge).
+    case leading
+
+    /// Items are aligned to the right (trailing edge).
+    case trailing
+
+    /// Items are centered horizontally.
+    case center
+
+    /// Items are evenly distributed across the full width.
+    case justified
+}
+
 // MARK: - Shortcut Symbols
 
 /// A collection of Unicode symbols commonly used for keyboard shortcuts.
@@ -368,166 +385,13 @@ public struct TStatusBarItem: TStatusBarItemProtocol, Identifiable {
     }
 }
 
-// MARK: - Status Bar Manager
-
-/// Manages the status bar state and context-dependent items.
-///
-/// The StatusBarManager is a singleton that tracks which items should
-/// be displayed based on the current context (focused view, active dialog, etc.).
-///
-/// # Usage
-///
-/// ```swift
-/// // Push a new context with items
-/// StatusBarManager.shared.push(context: "dialog") {
-///     TStatusBarItem(shortcut: "⎋", label: "close") { dismiss() }
-///     TStatusBarItem(shortcut: "↵", label: "confirm") { confirm() }
-/// }
-///
-/// // Pop the context when done
-/// StatusBarManager.shared.pop(context: "dialog")
-/// ```
-public final class StatusBarManager: @unchecked Sendable {
-    /// The shared manager instance.
-    public static let shared = StatusBarManager()
-
-    /// Stack of contexts with their items.
-    private var contextStack: [(context: String, items: [any TStatusBarItemProtocol])] = []
-
-    /// Global items that are always shown (lowest priority).
-    private var globalItems: [any TStatusBarItemProtocol] = []
-
-    /// The current status bar style.
-    public var style: TStatusBarStyle = .compact
-
-    /// The highlight color for shortcut keys.
-    public var highlightColor: Color = .cyan
-
-    /// The label color.
-    public var labelColor: Color? = nil  // Default terminal color
-
-    /// Callback when items change (triggers re-render).
-    public var onItemsChanged: (() -> Void)?
-
-    private init() {}
-
-    // MARK: - Global Items
-
-    /// Sets the global status bar items (always shown when no context overrides).
-    ///
-    /// - Parameter items: The items to set.
-    public func setGlobalItems(_ items: [any TStatusBarItemProtocol]) {
-        globalItems = items
-        notifyChange()
-    }
-
-    /// Sets global items using a builder.
-    ///
-    /// - Parameter builder: A closure that returns items.
-    public func setGlobalItems(@StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]) {
-        globalItems = builder()
-        notifyChange()
-    }
-
-    // MARK: - Context Stack
-
-    /// Pushes a new context with its items onto the stack.
-    ///
-    /// Items from the most recent context are displayed.
-    ///
-    /// - Parameters:
-    ///   - context: A unique identifier for this context.
-    ///   - items: The items to display for this context.
-    public func push(context: String, items: [any TStatusBarItemProtocol]) {
-        // Remove existing context with same name (if any)
-        contextStack.removeAll { $0.context == context }
-        contextStack.append((context, items))
-        notifyChange()
-    }
-
-    /// Pushes a new context using a builder.
-    ///
-    /// - Parameters:
-    ///   - context: A unique identifier for this context.
-    ///   - builder: A closure that returns items.
-    public func push(context: String, @StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]) {
-        push(context: context, items: builder())
-    }
-
-    /// Pops a context from the stack.
-    ///
-    /// - Parameter context: The context identifier to remove.
-    public func pop(context: String) {
-        contextStack.removeAll { $0.context == context }
-        notifyChange()
-    }
-
-    /// Clears all contexts (keeps global items).
-    public func clearContexts() {
-        contextStack.removeAll()
-        notifyChange()
-    }
-
-    /// Clears everything including global items.
-    public func clear() {
-        contextStack.removeAll()
-        globalItems.removeAll()
-        notifyChange()
-    }
-
-    // MARK: - Current Items
-
-    /// The currently active items (topmost context or global).
-    public var currentItems: [any TStatusBarItemProtocol] {
-        if let topContext = contextStack.last {
-            return topContext.items
-        }
-        return globalItems
-    }
-
-    /// Whether the status bar has any items to display.
-    public var hasItems: Bool {
-        !currentItems.isEmpty
-    }
-
-    // MARK: - Event Handling
-
-    /// Handles a key event, checking if any current item matches.
-    ///
-    /// - Parameter event: The key event to handle.
-    /// - Returns: True if an item handled the event.
-    @discardableResult
-    public func handleKeyEvent(_ event: KeyEvent) -> Bool {
-        for item in currentItems {
-            if item.matches(event) {
-                if let statusBarItem = item as? TStatusBarItem {
-                    statusBarItem.execute()
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
-    // MARK: - Private
-
-    private func notifyChange() {
-        onItemsChanged?()
-        AppState.shared.setNeedsRender()
-    }
-}
-
 // MARK: - Status Bar Item Builder
 
 /// Result builder for creating status bar items.
 @resultBuilder
 public struct StatusBarItemBuilder {
-    public static func buildBlock(_ items: any TStatusBarItemProtocol...) -> [any TStatusBarItemProtocol] {
-        items
-    }
-
-    public static func buildBlock(_ items: [any TStatusBarItemProtocol]) -> [any TStatusBarItemProtocol] {
-        items
+    public static func buildBlock(_ components: [any TStatusBarItemProtocol]...) -> [any TStatusBarItemProtocol] {
+        components.flatMap { $0 }
     }
 
     public static func buildArray(_ components: [[any TStatusBarItemProtocol]]) -> [any TStatusBarItemProtocol] {
@@ -559,15 +423,26 @@ public struct StatusBarItemBuilder {
 /// It's rendered separately from the main view tree and is never
 /// affected by overlays or dimming.
 ///
-/// # Example
+/// # Usage
+///
+/// To set status bar items, use the environment:
 ///
 /// ```swift
-/// // The status bar is typically managed via StatusBarManager,
-/// // but can also be used directly:
-/// TStatusBar(items: [
-///     TStatusBarItem(shortcut: "q", label: "quit"),
-///     TStatusBarItem(shortcut: "↑↓", label: "nav"),
-/// ])
+/// struct MyView: TView {
+///     @Environment(\.statusBar) var statusBar
+///
+///     var body: some TView {
+///         VStack {
+///             Text("Hello")
+///         }
+///         .onAppear {
+///             statusBar.setItems([
+///                 TStatusBarItem(shortcut: "q", label: "quit"),
+///                 TStatusBarItem(shortcut: "↑↓", label: "nav"),
+///             ])
+///         }
+///     }
+/// }
 /// ```
 public struct TStatusBar: TView {
     /// The items to display.
@@ -575,6 +450,9 @@ public struct TStatusBar: TView {
 
     /// The visual style.
     public let style: TStatusBarStyle
+
+    /// The horizontal alignment of items.
+    public let alignment: TStatusBarAlignment
 
     /// The highlight color for shortcut keys.
     public let highlightColor: Color
@@ -587,46 +465,41 @@ public struct TStatusBar: TView {
     /// - Parameters:
     ///   - items: The items to display.
     ///   - style: The visual style (default: `.compact`).
+    ///   - alignment: The horizontal alignment (default: `.justified`).
     ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
     ///   - labelColor: The color for labels (default: nil, terminal default).
     public init(
         items: [any TStatusBarItemProtocol],
         style: TStatusBarStyle = .compact,
+        alignment: TStatusBarAlignment = .justified,
         highlightColor: Color = .cyan,
         labelColor: Color? = nil
     ) {
         self.items = items
         self.style = style
+        self.alignment = alignment
         self.highlightColor = highlightColor
         self.labelColor = labelColor
-    }
-
-    /// Creates a status bar using the StatusBarManager's current items.
-    ///
-    /// - Parameter style: The visual style (default: from manager).
-    public init(style: TStatusBarStyle? = nil) {
-        let manager = StatusBarManager.shared
-        self.items = manager.currentItems
-        self.style = style ?? manager.style
-        self.highlightColor = manager.highlightColor
-        self.labelColor = manager.labelColor
     }
 
     /// Creates a status bar using a builder.
     ///
     /// - Parameters:
     ///   - style: The visual style.
+    ///   - alignment: The horizontal alignment.
     ///   - highlightColor: The color for shortcut keys.
     ///   - labelColor: The color for labels.
     ///   - builder: A closure that returns items.
     public init(
         style: TStatusBarStyle = .compact,
+        alignment: TStatusBarAlignment = .justified,
         highlightColor: Color = .cyan,
         labelColor: Color? = nil,
         @StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]
     ) {
         self.items = builder()
         self.style = style
+        self.alignment = alignment
         self.highlightColor = highlightColor
         self.labelColor = labelColor
     }
@@ -667,33 +540,104 @@ extension TStatusBar: Renderable {
             return shortcutStyled + labelStyled
         }
 
-        let separator = "  "  // Two spaces between items
-        let content = itemStrings.joined(separator: separator)
-
         switch style {
         case .compact:
-            return renderCompact(content: content, width: context.availableWidth)
+            return renderCompact(itemStrings: itemStrings, width: context.availableWidth)
 
         case .bordered:
-            return renderBordered(content: content, width: context.availableWidth)
+            return renderBordered(itemStrings: itemStrings, width: context.availableWidth)
         }
     }
 
-    /// Renders the compact style (single line with padding).
-    private func renderCompact(content: String, width: Int) -> FrameBuffer {
-        let padding = " "
-        let paddedContent = padding + content
-        let line = paddedContent.padToVisibleWidth(width)
+    /// Aligns content within the given width based on alignment setting.
+    ///
+    /// - Parameters:
+    ///   - itemStrings: The styled item strings to align.
+    ///   - width: The total available width.
+    /// - Returns: The aligned content string.
+    private func alignContent(itemStrings: [String], width: Int) -> String {
+        let separator = "  "  // Two spaces between items for non-justified
+
+        switch alignment {
+        case .leading:
+            let content = " " + itemStrings.joined(separator: separator)
+            return content.padToVisibleWidth(width)
+
+        case .trailing:
+            let content = itemStrings.joined(separator: separator) + " "
+            let contentWidth = content.strippedLength
+            let padding = max(0, width - contentWidth)
+            return String(repeating: " ", count: padding) + content
+
+        case .center:
+            let content = itemStrings.joined(separator: separator)
+            let contentWidth = content.strippedLength
+            let totalPadding = max(0, width - contentWidth)
+            let leftPadding = totalPadding / 2
+            let rightPadding = totalPadding - leftPadding
+            return String(repeating: " ", count: leftPadding) + content + String(repeating: " ", count: rightPadding)
+
+        case .justified:
+            return justifyContent(itemStrings: itemStrings, width: width)
+        }
+    }
+
+    /// Distributes items evenly across the width (justified alignment).
+    ///
+    /// - Parameters:
+    ///   - itemStrings: The styled item strings to distribute.
+    ///   - width: The total available width.
+    /// - Returns: The justified content string.
+    private func justifyContent(itemStrings: [String], width: Int) -> String {
+        guard itemStrings.count > 1 else {
+            // Single item: center it
+            let content = itemStrings.first ?? ""
+            let contentWidth = content.strippedLength
+            let totalPadding = max(0, width - contentWidth)
+            let leftPadding = totalPadding / 2
+            let rightPadding = totalPadding - leftPadding
+            return String(repeating: " ", count: leftPadding) + content + String(repeating: " ", count: rightPadding)
+        }
+
+        // Calculate total content width (without separators)
+        let totalContentWidth = itemStrings.reduce(0) { sum, item in
+            sum + item.strippedLength
+        }
+
+        // Calculate space for separators
+        let separatorCount = itemStrings.count - 1
+        let availableForSeparators = max(0, width - totalContentWidth - 2)  // -2 for edge padding
+        let separatorWidth = separatorCount > 0 ? availableForSeparators / separatorCount : 0
+        let extraSpace = separatorCount > 0 ? availableForSeparators % separatorCount : 0
+
+        // Build justified string
+        var result = " "  // Left edge padding
+        for (index, item) in itemStrings.enumerated() {
+            result += item
+            if index < itemStrings.count - 1 {
+                // Add separator with extra space distributed to first separators
+                let extra = index < extraSpace ? 1 : 0
+                result += String(repeating: " ", count: separatorWidth + extra)
+            }
+        }
+        result += " "  // Right edge padding
+
+        // Ensure the result fills the width
+        return result.padToVisibleWidth(width)
+    }
+
+    /// Renders the compact style (single line with alignment).
+    private func renderCompact(itemStrings: [String], width: Int) -> FrameBuffer {
+        let line = alignContent(itemStrings: itemStrings, width: width)
         return FrameBuffer(lines: [line])
     }
 
-    /// Renders the bordered style (block border).
-    private func renderBordered(content: String, width: Int) -> FrameBuffer {
+    /// Renders the bordered style (block border with alignment).
+    private func renderBordered(itemStrings: [String], width: Int) -> FrameBuffer {
         let border = BorderStyle.block
         let innerWidth = width - 2  // Account for left and right border
 
-        let padding = " "
-        let paddedContent = padding + content
+        let content = alignContent(itemStrings: itemStrings, width: innerWidth)
 
         // Build the three lines
         let topBorder = String(border.topLeft)
@@ -701,7 +645,7 @@ extension TStatusBar: Renderable {
             + String(border.topRight)
 
         let contentLine = String(border.vertical)
-            + paddedContent.padToVisibleWidth(innerWidth)
+            + content
             + ANSIRenderer.reset  // Prevent color bleeding
             + String(border.vertical)
 
