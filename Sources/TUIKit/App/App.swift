@@ -107,11 +107,11 @@ public final class StatusBarState: @unchecked Sendable {
     /// Default is `true`.
     public var showSystemItems: Bool = true
     
-    /// Whether the help item (`?`) is shown.
+    /// Whether the appearance item (`a`) is shown.
     ///
-    /// When `true`, pressing `?` shows available shortcuts.
+    /// When `true`, pressing `a` cycles through available appearances (border styles).
     /// Default is `true`.
-    public var showHelpItem: Bool = true
+    public var showAppearanceItem: Bool = true
     
     /// Whether the theme item (`t`) is shown.
     ///
@@ -166,7 +166,7 @@ public final class StatusBarState: @unchecked Sendable {
     
     /// The current system items based on configuration flags.
     ///
-    /// Returns items filtered by `showSystemItems`, `showHelpItem`, `showThemeItem`,
+    /// Returns items filtered by `showSystemItems`, `showAppearanceItem`, `showThemeItem`,
     /// and `quitBehavior`. The quit item is only included when quit is allowed.
     public var currentSystemItems: [StatusBarItem] {
         guard showSystemItems else { return [] }
@@ -178,8 +178,8 @@ public final class StatusBarState: @unchecked Sendable {
             items.append(SystemStatusBarItem.quit)
         }
         
-        if showHelpItem {
-            items.append(SystemStatusBarItem.help)
+        if showAppearanceItem {
+            items.append(SystemStatusBarItem.appearance)
         }
         
         if showThemeItem {
