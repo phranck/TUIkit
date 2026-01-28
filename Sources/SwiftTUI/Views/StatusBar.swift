@@ -334,6 +334,11 @@ public struct TStatusBarItem: TStatusBarItemProtocol, Identifiable {
         self.init(shortcut: shortcut, label: label, key: nil, action: nil)
     }
 
+    /// Whether this item has an action to execute.
+    public var hasAction: Bool {
+        action != nil
+    }
+
     /// Executes the item's action.
     public func execute() {
         action?()
@@ -584,11 +589,18 @@ extension TStatusBar: Renderable {
 
     /// Distributes items evenly across the width (justified alignment).
     ///
+    /// Items are distributed so that the space on the left edge, between items,
+    /// and on the right edge are all equal.
+    ///
     /// - Parameters:
     ///   - itemStrings: The styled item strings to distribute.
     ///   - width: The total available width.
     /// - Returns: The justified content string.
     private func justifyContent(itemStrings: [String], width: Int) -> String {
+        guard !itemStrings.isEmpty else {
+            return String(repeating: " ", count: width)
+        }
+
         guard itemStrings.count > 1 else {
             // Single item: center it
             let content = itemStrings.first ?? ""
@@ -599,30 +611,42 @@ extension TStatusBar: Renderable {
             return String(repeating: " ", count: leftPadding) + content + String(repeating: " ", count: rightPadding)
         }
 
-        // Calculate total content width (without separators)
+        // Calculate total content width (without gaps)
         let totalContentWidth = itemStrings.reduce(0) { sum, item in
             sum + item.strippedLength
         }
 
-        // Calculate space for separators
-        let separatorCount = itemStrings.count - 1
-        let availableForSeparators = max(0, width - totalContentWidth - 2)  // -2 for edge padding
-        let separatorWidth = separatorCount > 0 ? availableForSeparators / separatorCount : 0
-        let extraSpace = separatorCount > 0 ? availableForSeparators % separatorCount : 0
+        // For n items, we have n+1 gaps (left edge, between each item, right edge)
+        let gapCount = itemStrings.count + 1
+        let availableForGaps = max(0, width - totalContentWidth)
+        let gapWidth = availableForGaps / gapCount
+        let extraSpace = availableForGaps % gapCount
 
-        // Build justified string
-        var result = " "  // Left edge padding
+        // Build justified string with equal gaps
+        var result = ""
+
+        // Left edge gap (gets extra space if available)
+        let leftGapExtra = extraSpace > 0 ? 1 : 0
+        result += String(repeating: " ", count: gapWidth + leftGapExtra)
+
         for (index, item) in itemStrings.enumerated() {
             result += item
+
             if index < itemStrings.count - 1 {
-                // Add separator with extra space distributed to first separators
-                let extra = index < extraSpace ? 1 : 0
-                result += String(repeating: " ", count: separatorWidth + extra)
+                // Gap between items
+                // Distribute extra space to middle gaps (after left edge took one if available)
+                let gapIndex = index + 1  // 0 = left edge, 1..n-1 = between items, n = right edge
+                let extra = gapIndex < extraSpace ? 1 : 0
+                result += String(repeating: " ", count: gapWidth + extra)
             }
         }
-        result += " "  // Right edge padding
 
-        // Ensure the result fills the width
+        // Right edge gap
+        let rightGapIndex = itemStrings.count
+        let rightGapExtra = rightGapIndex < extraSpace ? 1 : 0
+        result += String(repeating: " ", count: gapWidth + rightGapExtra)
+
+        // Ensure the result fills the width exactly
         return result.padToVisibleWidth(width)
     }
 
