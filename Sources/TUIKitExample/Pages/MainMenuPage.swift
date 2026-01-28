@@ -42,9 +42,9 @@ struct MainMenuPage: View {
                             state.currentPage = page
                         }
                     },
-                    selectedColor: .cyan,
+                    selectedColor: .theme.accent,
                     borderStyle: .rounded,
-                    borderColor: .brightBlack
+                    borderColor: .theme.border
                 )
                 Spacer()
             }
@@ -71,11 +71,11 @@ struct MainMenuPage: View {
         VStack {
             Text(title)
                 .bold()
-                .foregroundColor(.green)
+                .foregroundColor(.theme.accent)
             Text(subtitle)
-                .dim()
+                .foregroundColor(.theme.foregroundSecondary)
         }
         .padding(EdgeInsets(horizontal: 2, vertical: 1))
-        .border(.rounded, color: .brightBlack)
+        .border(.rounded, color: .theme.border)
     }
 }
