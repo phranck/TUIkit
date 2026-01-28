@@ -108,9 +108,17 @@ internal final class AppRunner<App: TApp> {
     }
 
     private func handleInput(_ char: Character) {
-        // Escape or 'q' exits the app
-        if char == "\u{1B}" || char == "q" || char == "Q" {
+        // Only Escape or 'q'/'Q' exits the app
+        // Other keys are ignored for now (future: dispatch to focused view)
+        switch char {
+        case "\u{1B}":  // Escape
             isRunning = false
+        case "q", "Q":
+            isRunning = false
+        default:
+            // TODO: Dispatch to event system / focused view
+            // For now, re-render to show any changes
+            break
         }
     }
 
