@@ -180,6 +180,9 @@ extension Menu: Renderable {
         }
 
         var lines: [String] = []
+        
+        // Calculate the content width for full-width selection bar
+        let contentWidth = maxItemWidth + 2  // +2 for padding
 
         // Title if present
         if let menuTitle = title {
@@ -191,18 +194,14 @@ extension Menu: Renderable {
             }())
             lines.append(" " + titleStyled)
 
-            // Divider under title (same color as border)
-            let dividerWidth = max(menuTitle.count, maxItemWidth + 1)
-            let dividerLine = String(repeating: "─", count: dividerWidth)
+            // Divider under title - full width to match content
+            let dividerLine = String(repeating: "─", count: contentWidth)
             let dividerStyled = colorizeBorder(dividerLine, with: borderColor)
             lines.append(dividerStyled)
         }
 
         // Menu items
         let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
-        
-        // Calculate the content width for full-width selection bar
-        let contentWidth = maxItemWidth + 2  // +2 for padding
         
         for (index, item) in items.enumerated() {
             let isSelected = index == currentSelection
