@@ -90,11 +90,10 @@ extension BorderedView: Renderable {
         String(left) + String(repeating: fill, count: width) + String(right)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String) -> String {
-        guard let color = color else { return string }
         var textStyle = TextStyle()
-        textStyle.foregroundColor = color
+        textStyle.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: textStyle)
     }
 }
@@ -201,11 +200,10 @@ public struct BorderModifier: ViewModifier {
         String(left) + String(repeating: fill, count: width) + String(right)
     }
 
-    /// Applies color to a string if a color is set.
+    /// Applies color to a string, using theme border color as default.
     private func colorize(_ string: String) -> String {
-        guard let color = color else { return string }
         var textStyle = TextStyle()
-        textStyle.foregroundColor = color
+        textStyle.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: textStyle)
     }
 }
