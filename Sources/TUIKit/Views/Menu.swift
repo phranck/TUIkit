@@ -245,12 +245,16 @@ extension Menu: Renderable {
         var contentBuffer = FrameBuffer(lines: lines)
 
         // Apply border - use explicit style, or fall back to appearance default
-        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
+        let appearance = context.environment.appearance
+        let effectiveBorderStyle = borderStyle ?? appearance.borderStyle
+        let isBlockStyle = appearance.id == .block
+        
         contentBuffer = applyBorder(
             to: contentBuffer,
             style: effectiveBorderStyle,
             color: borderColor,
-            dividerLineIndex: dividerLineIndex
+            dividerLineIndex: dividerLineIndex,
+            isBlockStyle: isBlockStyle
         )
 
         return contentBuffer
@@ -322,52 +326,108 @@ extension Menu: Renderable {
     ///   - style: The border style to use.
     ///   - color: The border color (optional).
     ///   - dividerLineIndex: If set, renders a horizontal divider with T-junctions at this line index.
+    ///   - isBlockStyle: If true, uses half-block characters for smooth edges.
     private func applyBorder(
         to buffer: FrameBuffer,
         style: BorderStyle,
         color: Color?,
-        dividerLineIndex: Int? = nil
+        dividerLineIndex: Int? = nil,
+        isBlockStyle: Bool = false
     ) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
         let innerWidth = buffer.width
         var result: [String] = []
-
-        // Border characters (optionally colored)
-        let vertical = colorizeBorder(String(style.vertical), with: color)
-
-        // Top border
-        let topLine = String(style.topLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.topRight)
-        result.append(colorizeBorder(topLine, with: color))
-
-        // Content lines with side borders
-        // Important: Reset ANSI before right border to prevent color bleeding
         let reset = "\u{1B}[0m"
-        for (index, line) in buffer.lines.enumerated() {
-            // Check if this is the divider line
-            if let dividerIndex = dividerLineIndex, index == dividerIndex {
-                // Render horizontal divider with T-junctions
-                let dividerLine = String(style.leftT)
-                    + String(repeating: style.horizontal, count: innerWidth)
-                    + String(style.rightT)
-                result.append(colorizeBorder(dividerLine, with: color))
-            } else {
-                let paddedLine = line.padToVisibleWidth(innerWidth)
-                // Left border + content + reset + right border
-                let borderedLine = vertical + paddedLine + reset + vertical
-                result.append(borderedLine)
+        
+        if isBlockStyle {
+            // Block style: use half-blocks with special coloring
+            let headerBackground = Color.theme.containerHeaderBackground
+            let vertical = String(style.vertical)  // █
+            
+            // Top border: ▄▄▄ with header background as foreground (title section)
+            let topLine = String(repeating: "▄", count: innerWidth + 2)
+            result.append(colorizeWithForeground(topLine, foreground: headerBackground))
+            
+            // Content lines with side borders
+            for (index, line) in buffer.lines.enumerated() {
+                if let dividerIndex = dividerLineIndex, index == dividerIndex {
+                    // Header/Body separator: ▀▀▀
+                    // FG = header background, BG = transparent (body background)
+                    let dividerLine = String(repeating: "▀", count: innerWidth + 2)
+                    result.append(colorizeWithForeground(dividerLine, foreground: headerBackground))
+                } else if index < (dividerLineIndex ?? 0) {
+                    // Header line (before divider): with background
+                    let paddedLine = line.padToVisibleWidth(innerWidth)
+                    let leftBorder = colorizeWithBoth(vertical, foreground: color ?? Color.theme.border, background: headerBackground)
+                    let rightBorder = colorizeWithBoth(vertical, foreground: color ?? Color.theme.border, background: headerBackground)
+                    let styledContent = applyHeaderBackground(paddedLine, background: headerBackground)
+                    result.append(leftBorder + styledContent + reset + rightBorder)
+                } else {
+                    // Body line (after divider): transparent
+                    let paddedLine = line.padToVisibleWidth(innerWidth)
+                    let leftBorder = colorizeBorder(vertical, with: color)
+                    let rightBorder = colorizeBorder(vertical, with: color)
+                    result.append(leftBorder + paddedLine + reset + rightBorder)
+                }
             }
+            
+            // Bottom border: ▀▀▀ with border color (body section)
+            let bottomLine = String(repeating: "▀", count: innerWidth + 2)
+            result.append(colorizeBorder(bottomLine, with: color))
+        } else {
+            // Standard style: regular box-drawing characters
+            let vertical = colorizeBorder(String(style.vertical), with: color)
+
+            // Top border
+            let topLine = String(style.topLeft)
+                + String(repeating: style.horizontal, count: innerWidth)
+                + String(style.topRight)
+            result.append(colorizeBorder(topLine, with: color))
+
+            // Content lines with side borders
+            for (index, line) in buffer.lines.enumerated() {
+                if let dividerIndex = dividerLineIndex, index == dividerIndex {
+                    // Render horizontal divider with T-junctions
+                    let dividerLine = String(style.leftT)
+                        + String(repeating: style.horizontal, count: innerWidth)
+                        + String(style.rightT)
+                    result.append(colorizeBorder(dividerLine, with: color))
+                } else {
+                    let paddedLine = line.padToVisibleWidth(innerWidth)
+                    result.append(vertical + paddedLine + reset + vertical)
+                }
+            }
+
+            // Bottom border
+            let bottomLine = String(style.bottomLeft)
+                + String(repeating: style.horizontal, count: innerWidth)
+                + String(style.bottomRight)
+            result.append(colorizeBorder(bottomLine, with: color))
         }
 
-        // Bottom border
-        let bottomLine = String(style.bottomLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.bottomRight)
-        result.append(colorizeBorder(bottomLine, with: color))
-
         return FrameBuffer(lines: result)
+    }
+    
+    /// Colorizes with only foreground color (for separator transitions).
+    private func colorizeWithForeground(_ string: String, foreground: Color) -> String {
+        var style = TextStyle()
+        style.foregroundColor = foreground
+        return ANSIRenderer.render(string, with: style)
+    }
+    
+    /// Colorizes with both foreground and background.
+    private func colorizeWithBoth(_ string: String, foreground: Color, background: Color) -> String {
+        var style = TextStyle()
+        style.foregroundColor = foreground
+        style.backgroundColor = background
+        return ANSIRenderer.render(string, with: style)
+    }
+    
+    /// Applies header background to content.
+    private func applyHeaderBackground(_ string: String, background: Color) -> String {
+        let bgCode = ANSIRenderer.backgroundCode(for: background)
+        return "\u{1B}[\(bgCode)m" + string
     }
 
     /// Colorizes border characters.
