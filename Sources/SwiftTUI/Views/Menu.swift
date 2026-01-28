@@ -105,61 +105,114 @@ public struct Menu: TView {
         self.borderColor = borderColor
     }
 
-    public var body: some TView {
-        let menuContent = VStack(alignment: .leading, spacing: 0) {
-            // Title if present
-            if let menuTitle = title {
-                Text(menuTitle)
-                    .bold()
-                    .foregroundColor(selectedColor ?? .cyan)
-                Divider()
-                Spacer(minLength: 1)
+    public var body: Never {
+        fatalError("Menu renders via Renderable")
+    }
+}
+
+// MARK: - Menu Rendering
+
+extension Menu: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        var lines: [String] = []
+
+        // Title if present
+        if let menuTitle = title {
+            let titleStyled = ANSIRenderer.render(menuTitle, with: {
+                var style = TextStyle()
+                style.isBold = true
+                style.foregroundColor = selectedColor ?? .cyan
+                return style
+            }())
+            lines.append(" " + titleStyled)
+
+            // Divider under title
+            let dividerWidth = max(menuTitle.count + 2, maxItemWidth + 2)
+            lines.append(" " + String(repeating: "─", count: dividerWidth))
+        }
+
+        // Menu items
+        for (index, item) in items.enumerated() {
+            let isSelected = index == selectedIndex
+            let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
+
+            // Build the label with optional shortcut
+            let labelText: String
+            if let shortcut = item.shortcut {
+                labelText = "[\(shortcut)] \(item.label)"
+            } else {
+                labelText = "    \(item.label)"
             }
 
-            // Menu items
-            ForEach(items.indices, id: \.self) { index in
-                menuItemView(for: index)
+            let fullText = " " + prefix + labelText
+
+            // Apply styling
+            var style = TextStyle()
+            if isSelected {
+                style.isBold = true
+                style.foregroundColor = selectedColor
+            } else {
+                style.foregroundColor = itemColor
             }
+
+            let styledLine = ANSIRenderer.render(fullText, with: style)
+            lines.append(styledLine)
         }
-        .padding(EdgeInsets(horizontal: 1, vertical: 0))
+
+        // Create content buffer
+        var contentBuffer = FrameBuffer(lines: lines)
 
         // Apply border if specified
         if let border = borderStyle {
-            return menuContent.border(border, color: borderColor).asAnyView()
-        } else {
-            return menuContent.asAnyView()
+            contentBuffer = applyBorder(to: contentBuffer, style: border, color: borderColor)
         }
+
+        return contentBuffer
     }
 
-    /// Creates the view for a single menu item.
-    private func menuItemView(for index: Int) -> some TView {
-        let item = items[index]
-        let isSelected = index == selectedIndex
-        let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
+    /// The maximum width of menu items (for sizing).
+    private var maxItemWidth: Int {
+        items.map { item -> Int in
+            let shortcutPart = item.shortcut != nil ? 4 : 4  // "[x] " or "    "
+            return selectionIndicator.count + shortcutPart + item.label.count
+        }.max() ?? 0
+    }
 
-        // Build the label with optional shortcut
-        let labelText: String
-        if let shortcut = item.shortcut {
-            labelText = "[\(shortcut)] \(item.label)"
-        } else {
-            labelText = "    \(item.label)"
+    /// Applies a border to the buffer.
+    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color?) -> FrameBuffer {
+        guard !buffer.isEmpty else { return buffer }
+
+        let innerWidth = buffer.width
+        var result: [String] = []
+
+        // Top border
+        let topLine = String(style.topLeft)
+            + String(repeating: style.horizontal, count: innerWidth)
+            + String(style.topRight)
+        result.append(colorize(topLine, with: color))
+
+        // Content lines with side borders
+        for line in buffer.lines {
+            let paddedLine = line.padToVisibleWidth(innerWidth)
+            let borderedLine = String(style.vertical) + paddedLine + String(style.vertical)
+            result.append(colorize(borderedLine, with: color, contentOnly: false))
         }
 
-        let fullText = prefix + labelText
+        // Bottom border
+        let bottomLine = String(style.bottomLeft)
+            + String(repeating: style.horizontal, count: innerWidth)
+            + String(style.bottomRight)
+        result.append(colorize(bottomLine, with: color))
 
-        if isSelected {
-            if let color = selectedColor {
-                return Text(fullText).bold().foregroundColor(color).asAnyView()
-            } else {
-                return Text(fullText).bold().asAnyView()
-            }
-        } else {
-            if let color = itemColor {
-                return Text(fullText).foregroundColor(color).asAnyView()
-            } else {
-                return Text(fullText).asAnyView()
-            }
-        }
+        return FrameBuffer(lines: result)
+    }
+
+    /// Colorizes border characters only.
+    private func colorize(_ string: String, with color: Color?, contentOnly: Bool = true) -> String {
+        guard let color = color else { return string }
+        var style = TextStyle()
+        style.foregroundColor = color
+        return ANSIRenderer.render(string, with: style)
     }
 }
 
