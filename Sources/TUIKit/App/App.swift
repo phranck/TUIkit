@@ -262,39 +262,23 @@ public final class StatusBarState: @unchecked Sendable {
 
     // MARK: - Combined Items
 
-    /// All currently active items (system + user), sorted by order.
+    /// All currently active items for rendering and event handling.
     ///
-    /// Items are sorted by their `order` property to ensure consistent positioning.
-    /// System items appear first (lower order values), followed by user items.
-    /// If a user item has the same shortcut as a system item, the user item wins.
+    /// Layout: `[sorted user items] + [system items with fixed order]`
+    ///
+    /// If a user item has the same shortcut as a system item, the user item
+    /// replaces the system item (user items take priority).
     public var currentItems: [any StatusBarItemProtocol] {
-        var items: [any StatusBarItemProtocol] = []
+        // Get shortcuts used by user items (for deduplication)
+        let userShortcuts = Set(currentUserItems.map { $0.shortcut })
         
-        // Add system items if enabled
-        items.append(contentsOf: currentSystemItems)
+        // Filter out system items that are overridden by user items
+        let filteredSystemItems = currentSystemItems.filter { !userShortcuts.contains($0.shortcut) }
         
-        // Add current user items
-        items.append(contentsOf: currentUserItems)
+        // Sort user items by order, then append system items (fixed order)
+        let sortedUserItems = currentUserItems.sorted { $0.order < $1.order }
         
-        // Sort by order and remove duplicates
-        return sortAndDeduplicate(items)
-    }
-    
-    /// Sorts items by order and removes duplicates.
-    ///
-    /// If a user item has the same shortcut as a system item, the user item wins.
-    /// User items are added after system items, so they override by position.
-    private func sortAndDeduplicate(_ items: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
-        // Group by shortcut, keeping the LAST item (user items are added after system items)
-        var itemsByShortcut: [String: any StatusBarItemProtocol] = [:]
-        
-        for item in items {
-            // Later items (user items) override earlier items (system items)
-            itemsByShortcut[item.shortcut] = item
-        }
-        
-        // Sort by order
-        return itemsByShortcut.values.sorted { $0.order < $1.order }
+        return sortedUserItems + filteredSystemItems
     }
 
     /// Whether the status bar has any items to display.
@@ -487,7 +471,8 @@ internal final class AppRunner<A: App> {
     /// Renders the status bar at the specified row.
     private func renderStatusBar(atRow row: Int) {
         let statusBarView = StatusBar(
-            items: statusBar.currentItems,
+            userItems: statusBar.currentUserItems,
+            systemItems: statusBar.currentSystemItems,
             style: statusBar.style,
             alignment: statusBar.alignment,
             highlightColor: statusBar.highlightColor,

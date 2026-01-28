@@ -596,6 +596,18 @@ public struct StatusBarItemBuilder {
 /// It's rendered separately from the main view tree and is never
 /// affected by overlays or dimming.
 ///
+/// # Layout
+///
+/// The status bar consists of two containers:
+/// - **User Container** (left): User-defined items, sorted by order
+/// - **System Container** (right): System items (quit, help, theme), fixed order
+///
+/// ```
+/// ┌────────────────────────────────────────┬───────────────────────────────┐
+/// │ s save   x action   ↑↓ nav             │ q quit   ? help   t theme    │
+/// └────────────────────────────────────────┴───────────────────────────────┘
+/// ```
+///
 /// # Usage
 ///
 /// To set status bar items, use the environment:
@@ -610,7 +622,7 @@ public struct StatusBarItemBuilder {
 ///         }
 ///         .onAppear {
 ///             statusBar.setItems([
-///                 StatusBarItem(shortcut: "q", label: "quit"),
+///                 StatusBarItem(shortcut: "s", label: "save"),
 ///                 StatusBarItem(shortcut: "↑↓", label: "nav"),
 ///             ])
 ///         }
@@ -618,13 +630,16 @@ public struct StatusBarItemBuilder {
 /// }
 /// ```
 public struct StatusBar: View {
-    /// The items to display.
-    public let items: [any StatusBarItemProtocol]
+    /// User items (left container).
+    public let userItems: [any StatusBarItemProtocol]
+    
+    /// System items (right container).
+    public let systemItems: [any StatusBarItemProtocol]
 
     /// The visual style.
     public let style: StatusBarStyle
 
-    /// The horizontal alignment of items.
+    /// The horizontal alignment of user items within the left container.
     public let alignment: StatusBarAlignment
 
     /// The highlight color for shortcut keys.
@@ -633,10 +648,35 @@ public struct StatusBar: View {
     /// The label color.
     public let labelColor: Color?
 
-    /// Creates a status bar with explicit items.
+    /// Creates a status bar with separate user and system items.
     ///
     /// - Parameters:
-    ///   - items: The items to display.
+    ///   - userItems: User-defined items (left container).
+    ///   - systemItems: System items (right container).
+    ///   - style: The visual style (default: `.compact`).
+    ///   - alignment: The alignment of user items (default: `.leading`).
+    ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
+    ///   - labelColor: The color for labels (default: nil, terminal default).
+    public init(
+        userItems: [any StatusBarItemProtocol] = [],
+        systemItems: [any StatusBarItemProtocol] = [],
+        style: StatusBarStyle = .compact,
+        alignment: StatusBarAlignment = .leading,
+        highlightColor: Color = .cyan,
+        labelColor: Color? = nil
+    ) {
+        self.userItems = userItems
+        self.systemItems = systemItems
+        self.style = style
+        self.alignment = alignment
+        self.highlightColor = highlightColor
+        self.labelColor = labelColor
+    }
+    
+    /// Creates a status bar with all items combined (legacy compatibility).
+    ///
+    /// - Parameters:
+    ///   - items: All items to display (will be treated as user items).
     ///   - style: The visual style (default: `.compact`).
     ///   - alignment: The horizontal alignment (default: `.justified`).
     ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
@@ -648,7 +688,8 @@ public struct StatusBar: View {
         highlightColor: Color = .cyan,
         labelColor: Color? = nil
     ) {
-        self.items = items
+        self.userItems = items
+        self.systemItems = []
         self.style = style
         self.alignment = alignment
         self.highlightColor = highlightColor
@@ -670,11 +711,26 @@ public struct StatusBar: View {
         labelColor: Color? = nil,
         @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]
     ) {
-        self.items = builder()
+        self.userItems = builder()
+        self.systemItems = []
         self.style = style
         self.alignment = alignment
         self.highlightColor = highlightColor
         self.labelColor = labelColor
+    }
+    
+    /// All items combined (sorted user items, then system items).
+    ///
+    /// User items are sorted by their `order` property.
+    /// System items maintain their fixed order (quit, help, theme).
+    /// Use this for event handling to check all items.
+    public var allItems: [any StatusBarItemProtocol] {
+        userItems.sorted { $0.order < $1.order } + systemItems
+    }
+    
+    /// Whether the status bar has any items to display.
+    public var hasItems: Bool {
+        !userItems.isEmpty || !systemItems.isEmpty
     }
 
     public var body: Never {
@@ -686,12 +742,16 @@ public struct StatusBar: View {
 
 extension StatusBar: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        guard !items.isEmpty else {
+        // Combine user items (sorted by order) and system items (fixed order)
+        let sortedUserItems = userItems.sorted { $0.order < $1.order }
+        let combinedItems = sortedUserItems + systemItems
+        
+        guard !combinedItems.isEmpty else {
             return FrameBuffer()
         }
 
         // Build item strings
-        let itemStrings = items.map { item -> String in
+        let itemStrings = combinedItems.map { item -> String in
             let shortcutStyled = ANSIRenderer.render(item.shortcut, with: {
                 var style = TextStyle()
                 style.foregroundColor = highlightColor
