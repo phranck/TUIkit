@@ -236,6 +236,66 @@ public enum Shortcut {
     }
 }
 
+// MARK: - Status Bar Item Order
+
+/// Defines the display order of status bar items.
+///
+/// Items are sorted by their order value (ascending). Lower values appear first (left).
+/// System items appear on the right side with high order values.
+///
+/// # Order Ranges
+///
+/// - `0-99`: Reserved for leading items
+/// - `100-899`: User-defined items (default: 500)
+/// - `900-999`: Reserved for system items (quit, help, theme) on the right
+///
+/// # System Item Layout (from right edge)
+///
+/// ```
+/// [user items...] [q quit] [? help] [t theme]
+/// ```
+///
+/// # Example
+///
+/// ```swift
+/// // Custom item appears on the left (before system items)
+/// StatusBarItem(shortcut: "s", label: "save", order: .default)
+/// ```
+public struct StatusBarItemOrder: Comparable, Sendable {
+    public let value: Int
+    
+    public init(_ value: Int) {
+        self.value = value
+    }
+    
+    public static func < (lhs: StatusBarItemOrder, rhs: StatusBarItemOrder) -> Bool {
+        lhs.value < rhs.value
+    }
+    
+    // MARK: - User Item Orders
+    
+    /// Default order for user-defined items (appears on the left).
+    public static let `default` = StatusBarItemOrder(500)
+    
+    /// Order for items that should appear early (leftmost user items).
+    public static let early = StatusBarItemOrder(100)
+    
+    /// Order for items that should appear late (rightmost user items, before system items).
+    public static let late = StatusBarItemOrder(800)
+    
+    // MARK: - System Item Orders (right side)
+    
+    /// Order for the quit item (leftmost of system items).
+    /// Appears as: `[...user items] [q quit] [? help] [t theme]`
+    public static let quit = StatusBarItemOrder(900)
+    
+    /// Order for the help item (middle system item).
+    public static let help = StatusBarItemOrder(910)
+    
+    /// Order for the theme item (rightmost).
+    public static let theme = StatusBarItemOrder(920)
+}
+
 // MARK: - Status Bar Item Protocol
 
 /// A protocol for items that can be displayed in a status bar.
@@ -256,6 +316,11 @@ public protocol StatusBarItemProtocol: Sendable {
     ///
     /// Return nil if the item is purely informational (no action).
     var triggerKey: Key? { get }
+    
+    /// The display order of this item.
+    ///
+    /// Items are sorted by order (ascending). Lower values appear first.
+    var order: StatusBarItemOrder { get }
 
     /// Whether this item matches a given key event.
     ///
@@ -263,8 +328,11 @@ public protocol StatusBarItemProtocol: Sendable {
     func matches(_ event: KeyEvent) -> Bool
 }
 
-// Default implementation for triggerKey matching
+// Default implementations
 public extension StatusBarItemProtocol {
+    /// Default order for user-defined items.
+    var order: StatusBarItemOrder { .default }
+    
     func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
@@ -283,12 +351,18 @@ public extension StatusBarItemProtocol {
 /// }
 ///
 /// StatusBarItem(shortcut: "↑↓", label: "nav", key: .up) // Info only, no action
+///
+/// // With custom order
+/// StatusBarItem(shortcut: "s", label: "save", order: .early) {
+///     save()
+/// }
 /// ```
 public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     public let id: String
     public let shortcut: String
     public let label: String
     public let triggerKey: Key?
+    public let order: StatusBarItemOrder
 
     /// The action to perform when the shortcut is triggered.
     private let action: (@Sendable () -> Void)?
@@ -299,16 +373,19 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     ///   - shortcut: The shortcut key(s) to display.
     ///   - label: A short description (one word).
     ///   - key: The key that triggers the action (derived from shortcut if not provided).
+    ///   - order: The display order (default: `.default`).
     ///   - action: The action to perform.
     public init(
         shortcut: String,
         label: String,
         key: Key? = nil,
+        order: StatusBarItemOrder = .default,
         action: (@Sendable () -> Void)? = nil
     ) {
         self.id = "\(shortcut)-\(label)"
         self.shortcut = shortcut
         self.label = label
+        self.order = order
         self.action = action
 
         // Derive trigger key from shortcut if not explicitly provided
@@ -330,8 +407,9 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     /// - Parameters:
     ///   - shortcut: The shortcut key(s) to display.
     ///   - label: A short description.
-    public init(shortcut: String, label: String) {
-        self.init(shortcut: shortcut, label: label, key: nil, action: nil)
+    ///   - order: The display order (default: `.default`).
+    public init(shortcut: String, label: String, order: StatusBarItemOrder = .default) {
+        self.init(shortcut: shortcut, label: label, key: nil, order: order, action: nil)
     }
 
     /// Whether this item has an action to execute.
@@ -387,6 +465,96 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
         }
 
         return event.key == trigger
+    }
+}
+
+// MARK: - System Status Bar Items
+
+/// System status bar items that are always present.
+///
+/// These items are automatically added to the status bar by the framework.
+/// They appear in a fixed order and provide essential app-wide functionality.
+///
+/// System items include:
+/// - **quit** (`q`): Exits the application
+/// - **help** (`?`): Shows help (not yet implemented)
+/// - **theme** (`t`): Cycles through themes (not yet implemented)
+public enum SystemStatusBarItem {
+    /// The quit item (`q quit`).
+    ///
+    /// This item is always present and exits the application.
+    public static let quit = StatusBarItem(
+        shortcut: "q",
+        label: "quit",
+        order: .quit
+    )
+    
+    /// The help item (`? help`).
+    ///
+    /// Shows application help. Action must be set by the framework.
+    public static let help = StatusBarItem(
+        shortcut: "?",
+        label: "help",
+        order: .help
+    )
+    
+    /// The theme item (`t theme`).
+    ///
+    /// Cycles through available themes. Action must be set by the framework.
+    public static let theme = StatusBarItem(
+        shortcut: "t",
+        label: "theme",
+        order: .theme
+    )
+    
+    /// All system items in their default order.
+    public static var all: [StatusBarItem] {
+        [quit, help, theme]
+    }
+    
+    /// Creates system items with custom actions.
+    ///
+    /// - Parameters:
+    ///   - onQuit: Action for quit (default: exits app).
+    ///   - onHelp: Action for help (optional).
+    ///   - onTheme: Action for theme cycling (optional).
+    /// - Returns: Array of configured system items.
+    public static func items(
+        onQuit: (@Sendable () -> Void)? = nil,
+        onHelp: (@Sendable () -> Void)? = nil,
+        onTheme: (@Sendable () -> Void)? = nil
+    ) -> [StatusBarItem] {
+        var result: [StatusBarItem] = []
+        
+        // Quit is always present
+        result.append(StatusBarItem(
+            shortcut: "q",
+            label: "quit",
+            order: .quit,
+            action: onQuit
+        ))
+        
+        // Help is present if action is provided
+        if let onHelp = onHelp {
+            result.append(StatusBarItem(
+                shortcut: "?",
+                label: "help",
+                order: .help,
+                action: onHelp
+            ))
+        }
+        
+        // Theme is present if action is provided
+        if let onTheme = onTheme {
+            result.append(StatusBarItem(
+                shortcut: "t",
+                label: "theme",
+                order: .theme,
+                action: onTheme
+            ))
+        }
+        
+        return result
     }
 }
 
