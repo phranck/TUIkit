@@ -108,8 +108,8 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// Creates a new status bar state.
     public init() {
-        // Initialize with default system items (quit only, no actions yet)
-        self.systemItems = [SystemStatusBarItem.quit]
+        // Initialize with all system items (quit, help, theme)
+        self.systemItems = SystemStatusBarItem.all
     }
     
     // MARK: - System Items Configuration
