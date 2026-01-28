@@ -152,6 +152,30 @@ public final class Terminal: @unchecked Sendable {
     public func clear() {
         write(ANSIRenderer.clearScreen + ANSIRenderer.moveCursor(toRow: 1, column: 1))
     }
+    
+    /// Fills the entire screen with a background color.
+    ///
+    /// This clears the screen and fills every cell with the specified color.
+    /// Use this to set a consistent background before rendering content.
+    ///
+    /// - Parameter color: The background color to fill.
+    public func fillBackground(_ color: Color) {
+        let size = getSize()
+        let bgCode = ANSIRenderer.backgroundCode(for: color)
+        let reset = ANSIRenderer.reset
+        
+        // Move to top-left and fill each line
+        var output = ANSIRenderer.moveCursor(toRow: 1, column: 1)
+        let emptyLine = bgCode + String(repeating: " ", count: size.width) + reset
+        
+        for _ in 0..<size.height {
+            output += emptyLine
+        }
+        
+        // Move cursor back to top-left
+        output += ANSIRenderer.moveCursor(toRow: 1, column: 1)
+        write(output)
+    }
 
     /// Moves the cursor to the specified position.
     ///
