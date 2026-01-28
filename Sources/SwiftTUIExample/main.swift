@@ -18,6 +18,7 @@ enum DemoPage: Int, CaseIterable {
     case containers = 3
     case overlays = 4
     case layout = 5
+    case buttons = 6
 }
 
 // MARK: - App State
@@ -165,6 +166,8 @@ struct ContentView: TView {
             OverlaysPage()
         case .layout:
             LayoutPage()
+        case .buttons:
+            ButtonsPage()
         }
     }
 }
@@ -192,7 +195,8 @@ struct MainMenuPage: TView {
                         MenuItem(label: "Colors", shortcut: "2"),
                         MenuItem(label: "Container Views", shortcut: "3"),
                         MenuItem(label: "Overlays & Modals", shortcut: "4"),
-                        MenuItem(label: "Layout System", shortcut: "5")
+                        MenuItem(label: "Layout System", shortcut: "5"),
+                        MenuItem(label: "Buttons & Focus", shortcut: "6")
                     ],
                     selection: state.menuSelectionBinding,
                     onSelect: { index in
@@ -416,6 +420,66 @@ struct OverlaysPage: TView {
             DemoSection("This page demonstrates a modal overlay") {
                 Text("The content behind is dimmed automatically")
                 Text("Press [B] to go back to the menu")
+            }
+
+            Spacer()
+            FooterView(showBackHint: true)
+        }
+    }
+}
+
+// MARK: - Buttons Demo Page
+
+struct ButtonsPage: TView {
+    var body: some TView {
+        VStack(spacing: 1) {
+            HeaderView(title: "Buttons & Focus Demo")
+
+            DemoSection("Button Styles") {
+                HStack(spacing: 2) {
+                    Button("Default") {
+                        // Default style button action
+                    }
+                    Button("Primary", style: .primary) {
+                        // Primary button action
+                    }
+                    Button("Success", style: .success) {
+                        // Success button action
+                    }
+                    Button("Destructive", style: .destructive) {
+                        // Destructive button action
+                    }
+                }
+            }
+
+            DemoSection("Disabled Button") {
+                HStack(spacing: 2) {
+                    Button("Enabled") { }
+                    Button("Disabled") { }.disabled()
+                }
+            }
+
+            DemoSection("Plain Style (No Border)") {
+                HStack(spacing: 2) {
+                    Button("Link 1", style: .plain) { }
+                    Button("Link 2", style: .plain) { }
+                }
+            }
+
+            DemoSection("ButtonRow (Horizontal Group)") {
+                ButtonRow(spacing: 3) {
+                    Button("Cancel") { }
+                    Button("Save", style: .primary) { }
+                }
+            }
+
+            DemoSection("Focus Navigation") {
+                VStack {
+                    Text("Use [Tab] to move focus between buttons")
+                        .dim()
+                    Text("Use [Enter] or [Space] to press the focused button")
+                        .dim()
+                }
             }
 
             Spacer()
