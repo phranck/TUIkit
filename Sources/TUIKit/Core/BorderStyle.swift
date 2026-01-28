@@ -8,7 +8,7 @@
 /// Defines the visual style of a border.
 ///
 /// Each style provides characters for all border components:
-/// corners, edges, and optionally T-junctions for complex layouts.
+/// corners, edges, and T-junctions for complex layouts.
 public struct BorderStyle: Sendable, Equatable {
     /// Top-left corner character.
     public let topLeft: Character
@@ -27,6 +27,12 @@ public struct BorderStyle: Sendable, Equatable {
 
     /// Vertical edge character.
     public let vertical: Character
+    
+    /// Left T-junction character (├).
+    public let leftT: Character
+    
+    /// Right T-junction character (┤).
+    public let rightT: Character
 
     /// Creates a custom border style.
     public init(
@@ -35,7 +41,9 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: Character,
         bottomRight: Character,
         horizontal: Character,
-        vertical: Character
+        vertical: Character,
+        leftT: Character? = nil,
+        rightT: Character? = nil
     ) {
         self.topLeft = topLeft
         self.topRight = topRight
@@ -43,14 +51,19 @@ public struct BorderStyle: Sendable, Equatable {
         self.bottomRight = bottomRight
         self.horizontal = horizontal
         self.vertical = vertical
+        // Default T-junctions based on the vertical character
+        self.leftT = leftT ?? vertical
+        self.rightT = rightT ?? vertical
     }
 
     // MARK: - Preset Styles
 
-    /// Single line border (─ │ ┌ ┐ └ ┘).
+    /// Single line border (─ │ ┌ ┐ └ ┘ ├ ┤).
     ///
     /// ```
     /// ┌────────┐
+    /// │ Title  │
+    /// ├────────┤
     /// │ Content│
     /// └────────┘
     /// ```
@@ -60,13 +73,17 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "└",
         bottomRight: "┘",
         horizontal: "─",
-        vertical: "│"
+        vertical: "│",
+        leftT: "├",
+        rightT: "┤"
     )
 
-    /// Double line border (═ ║ ╔ ╗ ╚ ╝).
+    /// Double line border (═ ║ ╔ ╗ ╚ ╝ ╠ ╣).
     ///
     /// ```
     /// ╔════════╗
+    /// ║ Title  ║
+    /// ╠════════╣
     /// ║ Content║
     /// ╚════════╝
     /// ```
@@ -76,13 +93,17 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "╚",
         bottomRight: "╝",
         horizontal: "═",
-        vertical: "║"
+        vertical: "║",
+        leftT: "╠",
+        rightT: "╣"
     )
 
-    /// Rounded border with curved corners (─ │ ╭ ╮ ╰ ╯).
+    /// Rounded border with curved corners (─ │ ╭ ╮ ╰ ╯ ├ ┤).
     ///
     /// ```
     /// ╭────────╮
+    /// │ Title  │
+    /// ├────────┤
     /// │ Content│
     /// ╰────────╯
     /// ```
@@ -92,13 +113,17 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "╰",
         bottomRight: "╯",
         horizontal: "─",
-        vertical: "│"
+        vertical: "│",
+        leftT: "├",
+        rightT: "┤"
     )
 
-    /// Heavy/bold border (━ ┃ ┏ ┓ ┗ ┛).
+    /// Heavy/bold border (━ ┃ ┏ ┓ ┗ ┛ ┣ ┫).
     ///
     /// ```
     /// ┏━━━━━━━━┓
+    /// ┃ Title  ┃
+    /// ┣━━━━━━━━┫
     /// ┃ Content┃
     /// ┗━━━━━━━━┛
     /// ```
@@ -108,12 +133,16 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "┗",
         bottomRight: "┛",
         horizontal: "━",
-        vertical: "┃"
+        vertical: "┃",
+        leftT: "┣",
+        rightT: "┫"
     )
 
     /// Block/solid border using block characters (█).
     ///
     /// ```
+    /// ██████████
+    /// █ Title  █
     /// ██████████
     /// █ Content█
     /// ██████████
@@ -124,7 +153,9 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "█",
         bottomRight: "█",
         horizontal: "█",
-        vertical: "█"
+        vertical: "█",
+        leftT: "█",
+        rightT: "█"
     )
 
     /// No visible border (space characters).
@@ -134,7 +165,9 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: " ",
         bottomRight: " ",
         horizontal: " ",
-        vertical: " "
+        vertical: " ",
+        leftT: " ",
+        rightT: " "
     )
     
     /// ASCII-only border (+ - |).
@@ -143,6 +176,8 @@ public struct BorderStyle: Sendable, Equatable {
     /// don't support Unicode box-drawing characters.
     ///
     /// ```
+    /// +--------+
+    /// | Title  |
     /// +--------+
     /// | Content|
     /// +--------+
@@ -153,6 +188,8 @@ public struct BorderStyle: Sendable, Equatable {
         bottomLeft: "+",
         bottomRight: "+",
         horizontal: "-",
-        vertical: "|"
+        vertical: "|",
+        leftT: "+",
+        rightT: "+"
     )
 }
