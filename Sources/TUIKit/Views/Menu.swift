@@ -103,19 +103,19 @@ public struct Menu: View {
     ///   - title: The menu title (optional).
     ///   - items: The menu items.
     ///   - selectedIndex: The currently selected item index (default: 0).
-    ///   - itemColor: The color for unselected items (default: nil).
-    ///   - selectedColor: The color for the selected item (default: .cyan).
+    ///   - itemColor: The color for unselected items (default: theme foreground).
+    ///   - selectedColor: The color for the selected item (default: theme accent).
     ///   - selectionIndicator: The indicator shown before selected item (default: "▶ ").
-    ///   - borderStyle: The border style (default: .rounded).
-    ///   - borderColor: The border color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle, nil for no border).
+    ///   - borderColor: The border color (default: theme border).
     public init(
         title: String? = nil,
         items: [MenuItem],
         selectedIndex: Int = 0,
         itemColor: Color? = nil,
-        selectedColor: Color? = .cyan,
+        selectedColor: Color? = nil,
         selectionIndicator: String = "▶ ",
-        borderStyle: BorderStyle? = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil
     ) {
         self.title = title
@@ -137,20 +137,20 @@ public struct Menu: View {
     ///   - items: The menu items.
     ///   - selection: Binding to the selected index.
     ///   - onSelect: Callback when item is activated (Enter or shortcut).
-    ///   - itemColor: The color for unselected items (default: nil).
-    ///   - selectedColor: The color for the selected item (default: .cyan).
+    ///   - itemColor: The color for unselected items (default: theme foreground).
+    ///   - selectedColor: The color for the selected item (default: theme accent).
     ///   - selectionIndicator: The indicator shown before selected item (default: "▶ ").
-    ///   - borderStyle: The border style (default: .rounded).
-    ///   - borderColor: The border color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle, nil for no border).
+    ///   - borderColor: The border color (default: theme border).
     public init(
         title: String? = nil,
         items: [MenuItem],
         selection: Binding<Int>,
         onSelect: ((Int) -> Void)? = nil,
         itemColor: Color? = nil,
-        selectedColor: Color? = .cyan,
+        selectedColor: Color? = nil,
         selectionIndicator: String = "▶ ",
-        borderStyle: BorderStyle? = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil
     ) {
         self.title = title
@@ -186,7 +186,7 @@ extension Menu: Renderable {
             let titleStyled = ANSIRenderer.render(menuTitle, with: {
                 var style = TextStyle()
                 style.isBold = true
-                style.foregroundColor = selectedColor ?? .cyan
+                style.foregroundColor = selectedColor ?? Color.theme.accent
                 return style
             }())
             lines.append(" " + titleStyled)
@@ -200,10 +200,12 @@ extension Menu: Renderable {
 
         // Menu items
         let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
+        let appearance = context.environment.appearance
+        let isBlockAppearance = appearance.id == .block
+        
         for (index, item) in items.enumerated() {
             let isSelected = index == currentSelection
-            let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
-
+            
             // Build the label with optional shortcut
             let labelText: String
             if let shortcut = item.shortcut {
@@ -212,15 +214,31 @@ extension Menu: Renderable {
                 labelText = "    \(item.label)"
             }
 
-            let fullText = " " + prefix + labelText
+            // For block appearance: no indicator, use background highlight
+            // For other appearances: use indicator prefix
+            let fullText: String
+            if isBlockAppearance {
+                fullText = " " + labelText
+            } else {
+                let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
+                fullText = " " + prefix + labelText
+            }
 
             // Apply styling
             var style = TextStyle()
             if isSelected {
                 style.isBold = true
-                style.foregroundColor = selectedColor
+                if isBlockAppearance {
+                    // Block appearance: use background highlight
+                    style.foregroundColor = Color.theme.background
+                    style.backgroundColor = selectedColor ?? Color.theme.accent
+                } else {
+                    // Other appearances: just change foreground color
+                    style.foregroundColor = selectedColor ?? Color.theme.accent
+                }
             } else {
-                style.foregroundColor = itemColor
+                // Use theme foreground color if no custom itemColor is set
+                style.foregroundColor = itemColor ?? Color.theme.foreground
             }
 
             let styledLine = ANSIRenderer.render(fullText, with: style)
@@ -230,10 +248,9 @@ extension Menu: Renderable {
         // Create content buffer
         var contentBuffer = FrameBuffer(lines: lines)
 
-        // Apply border if specified
-        if let border = borderStyle {
-            contentBuffer = applyBorder(to: contentBuffer, style: border, color: borderColor)
-        }
+        // Apply border - use explicit style, or fall back to appearance default
+        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
+        contentBuffer = applyBorder(to: contentBuffer, style: effectiveBorderStyle, color: borderColor)
 
         return contentBuffer
     }
@@ -334,9 +351,8 @@ extension Menu: Renderable {
 
     /// Colorizes border characters.
     private func colorizeBorder(_ string: String, with color: Color?) -> String {
-        guard let color = color else { return string }
         var style = TextStyle()
-        style.foregroundColor = color
+        style.foregroundColor = color ?? Color.theme.border
         return ANSIRenderer.render(string, with: style)
     }
 }

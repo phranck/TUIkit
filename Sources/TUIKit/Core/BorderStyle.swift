@@ -136,4 +136,23 @@ public struct BorderStyle: Sendable, Equatable {
         horizontal: " ",
         vertical: " "
     )
+    
+    /// ASCII-only border (+ - |).
+    ///
+    /// Maximum compatibility with all terminals, including those that
+    /// don't support Unicode box-drawing characters.
+    ///
+    /// ```
+    /// +--------+
+    /// | Content|
+    /// +--------+
+    /// ```
+    public static let ascii = BorderStyle(
+        topLeft: "+",
+        topRight: "+",
+        bottomLeft: "+",
+        bottomRight: "+",
+        horizontal: "-",
+        vertical: "|"
+    )
 }

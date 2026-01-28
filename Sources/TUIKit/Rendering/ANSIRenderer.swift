@@ -116,6 +116,17 @@ public enum ANSIRenderer {
             return ["48", "2", "\(red)", "\(green)", "\(blue)"]
         }
     }
+    
+    /// Generates the ANSI escape sequence for a background color.
+    ///
+    /// Use this to set only the background color without other styles.
+    ///
+    /// - Parameter color: The background color.
+    /// - Returns: The ANSI escape sequence.
+    public static func backgroundCode(for color: Color) -> String {
+        let codes = backgroundCodes(for: color)
+        return "\(csi)\(codes.joined(separator: ";"))m"
+    }
 
     // MARK: - Cursor Control
 
