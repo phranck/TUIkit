@@ -70,6 +70,12 @@ internal final class AppRunner<App: TApp> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
+        // Register for state changes
+        AppState.shared.observe { [weak self] in
+            needsRerender = true
+            _ = self  // Silence warning
+        }
+
         isRunning = true
 
         // Initial render
@@ -77,14 +83,16 @@ internal final class AppRunner<App: TApp> {
 
         // Main loop
         while isRunning {
-            // Check if terminal was resized
-            if needsRerender {
+            // Check if terminal was resized or state changed
+            if needsRerender || AppState.shared.needsRender {
                 needsRerender = false
+                AppState.shared.didRender()
                 render()
             }
 
-            if let char = terminal.readChar() {
-                handleInput(char)
+            // Read key events
+            if let keyEvent = terminal.readKeyEvent() {
+                handleKeyEvent(keyEvent)
             }
         }
 
@@ -94,6 +102,10 @@ internal final class AppRunner<App: TApp> {
 
     private func render() {
         terminal.clear()
+
+        // Clear event handlers before re-rendering
+        KeyEventDispatcher.shared.clearHandlers()
+
         let renderer = ViewRenderer(terminal: terminal)
 
         // Extract the root view from the scene
@@ -107,17 +119,19 @@ internal final class AppRunner<App: TApp> {
         }
     }
 
-    private func handleInput(_ char: Character) {
-        // Only Escape or 'q'/'Q' exits the app
-        // Other keys are ignored for now (future: dispatch to focused view)
-        switch char {
-        case "\u{1B}":  // Escape
+    private func handleKeyEvent(_ event: KeyEvent) {
+        // First, let registered handlers try to handle the event
+        if KeyEventDispatcher.shared.dispatch(event) {
+            return
+        }
+
+        // Default handling: ESC or 'q' exits
+        switch event.key {
+        case .escape:
             isRunning = false
-        case "q", "Q":
+        case .character(let char) where char == "q" || char == "Q":
             isRunning = false
         default:
-            // TODO: Dispatch to event system / focused view
-            // For now, re-render to show any changes
             break
         }
     }
@@ -126,6 +140,8 @@ internal final class AppRunner<App: TApp> {
         terminal.disableRawMode()
         terminal.showCursor()
         terminal.exitAlternateScreen()
+        AppState.shared.clearObservers()
+        KeyEventDispatcher.shared.clearHandlers()
     }
 
     private func setupSignalHandlers() {
