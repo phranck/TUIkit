@@ -29,7 +29,7 @@
 ///         Alert(title: "Notice", message: "Operation complete!")
 ///     }
 /// ```
-public struct Alert<Actions: TView>: TView {
+public struct Alert<Actions: View>: View {
     /// The alert title.
     public let title: String
 
@@ -63,7 +63,7 @@ public struct Alert<Actions: TView>: TView {
         borderStyle: BorderStyle = .rounded,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
-        @TViewBuilder actions: () -> Actions
+        @ViewBuilder actions: () -> Actions
     ) {
         self.title = title
         self.message = message
@@ -73,7 +73,7 @@ public struct Alert<Actions: TView>: TView {
         self.actions = actions()
     }
 
-    public var body: some TView {
+    public var body: some View {
         VStack(spacing: 1) {
             // Title
             if let color = titleColor {
@@ -136,10 +136,10 @@ extension Alert {
     ///   - message: The alert message.
     ///   - actions: The action views.
     /// - Returns: A warning-styled alert.
-    public static func warning<A: TView>(
+    public static func warning<A: View>(
         title: String = "Warning",
         message: String,
-        @TViewBuilder actions: () -> A
+        @ViewBuilder actions: () -> A
     ) -> Alert<A> {
         Alert<A>(
             title: title,
@@ -158,10 +158,10 @@ extension Alert {
     ///   - message: The alert message.
     ///   - actions: The action views.
     /// - Returns: An error-styled alert.
-    public static func error<A: TView>(
+    public static func error<A: View>(
         title: String = "Error",
         message: String,
-        @TViewBuilder actions: () -> A
+        @ViewBuilder actions: () -> A
     ) -> Alert<A> {
         Alert<A>(
             title: title,
@@ -180,10 +180,10 @@ extension Alert {
     ///   - message: The alert message.
     ///   - actions: The action views.
     /// - Returns: An info-styled alert.
-    public static func info<A: TView>(
+    public static func info<A: View>(
         title: String = "Info",
         message: String,
-        @TViewBuilder actions: () -> A
+        @ViewBuilder actions: () -> A
     ) -> Alert<A> {
         Alert<A>(
             title: title,
@@ -202,10 +202,10 @@ extension Alert {
     ///   - message: The alert message.
     ///   - actions: The action views.
     /// - Returns: A success-styled alert.
-    public static func success<A: TView>(
+    public static func success<A: View>(
         title: String = "Success",
         message: String,
-        @TViewBuilder actions: () -> A
+        @ViewBuilder actions: () -> A
     ) -> Alert<A> {
         Alert<A>(
             title: title,

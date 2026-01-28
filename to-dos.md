@@ -2,67 +2,146 @@
 
 ## IN PROGRESS
 
-- [ ] Commit and open PR for `feature/tview-foundation`
+- [ ] Open PR for `feature/tview-foundation`
 
 ## PLANNED
 
-### Rendering & Layout
-- [ ] Proper HStack horizontal rendering (two-pass layout: measure, then position)
-- [ ] Spacer expansion in stack contexts
-- [ ] ForEach rendering in ViewRenderer
-- [ ] `renderOnce()` should return actual rendered line count
+### High Priority
+- [ ] FocusManager: Refactor from singleton to Environment-based (fixes parallel tests)
+- [ ] AppState: Replace singleton with Environment-based render trigger
+- [ ] TextField view with cursor management
 
-### New Views & Modifiers
-- [ ] `Button` view with action handler
-- [ ] `Group` view
+### Views & Components
+- [ ] ScrollView for scrollable content
+- [ ] TabView for tabbed navigation
+- [ ] ProgressView (determinate and indeterminate)
+- [ ] Toggle/Checkbox view
 
-### State & Interactivity
-- [ ] `@TState` property wrapper
-- [ ] Re-render on state change
-- [ ] Input/event handling system (key dispatch)
-- [ ] Focus system for interactive elements
+### Layout
+- [ ] HStack: Two-pass layout (measure children, then position)
+- [ ] LazyVStack/LazyHStack for large lists
+- [ ] Grid layout
 
 ### Infrastructure
-- [ ] Deduplicate `renderElement` helper across TupleView/ConditionalView/TViewArray extensions
-- [ ] Linux support (optional, later)
+- [ ] Deduplicate `renderElement` helper across TupleView/ConditionalView/TViewArray
+- [ ] Animation system (basic transitions)
+- [ ] Accessibility labels
 
 ## COMPLETED
 
+### Core Framework
 - [x] TView protocol
 - [x] TViewBuilder result builder (up to 10 children, conditionals, optionals, arrays)
 - [x] Primitive views: Text, EmptyView, Spacer, Divider
 - [x] Container views: VStack, HStack, ZStack
-- [x] New container views: Card, Box, Panel
+- [x] Container views: Card, Box, Panel
 - [x] ForEach (Identifiable, KeyPath, Range)
-- [x] Color system (ANSI, bright, 256, RGB, hex)
+- [x] AnyView type erasure
+
+### Color & Theming (2026-01-28)
+- [x] Color system (ANSI, bright, 256-palette, RGB)
+- [x] Hex colors (integer and string: "#FF5500", "#F50")
+- [x] HSL color support
+- [x] Color modifiers: lighter(), darker(), opacity()
+- [x] **Theme System**
+  - [x] Theme protocol with semantic colors
+  - [x] Environment-based (no singleton)
+  - [x] 8 predefined themes:
+    - DefaultTheme (ANSI)
+    - GreenPhosphorTheme (P1)
+    - AmberPhosphorTheme (P3)
+    - WhitePhosphorTheme (P4)
+    - RedPhosphorTheme
+    - NCursesTheme
+    - DarkTheme
+    - LightTheme
+  - [x] `.theme()` modifier
+  - [x] `Color.theme.foreground` etc. shortcuts
+
+### Text & Styling
 - [x] Text styling (bold, italic, underline, strikethrough, dim, blink, inverted)
+- [x] Foreground and background colors
+
+### Modifiers
+- [x] `.padding()` modifier
+- [x] `.frame(width:height:alignment:)` - fixed size
+- [x] `.frame(minWidth:maxWidth:minHeight:maxHeight:)` - flexible size
+- [x] `.border()` modifier (8 border styles, width-aware)
+- [x] `.background()` modifier
+- [x] `.overlay(alignment:)` modifier
+- [x] `.dimmed()` modifier
+- [x] `.modal()` convenience helper
+- [x] `.onKeyPress()` modifier
+- [x] `.statusBarItems()` modifier
+- [x] `.environment()` modifier
+- [x] `.theme()` modifier
+
+### Lifecycle (2026-01-28)
+- [x] `.onAppear()` modifier
+- [x] `.onDisappear()` modifier
+- [x] `.task()` async modifier
+
+### State & Data Flow
+- [x] @TState property wrapper
+- [x] Binding for two-way data flow
+- [x] **Environment System** (top-down)
+  - [x] @Environment property wrapper
+  - [x] EnvironmentValues container
+  - [x] EnvironmentKey protocol
+  - [x] .environment() modifier
+- [x] **Preferences System** (bottom-up)
+  - [x] PreferenceKey protocol
+  - [x] .preference() modifier
+  - [x] .onPreferenceChange() modifier
+  - [x] .navigationTitle() convenience
+
+### Storage (2026-01-28)
+- [x] @AppStorage property wrapper (persistent settings)
+- [x] @SceneStorage property wrapper (scene state restoration)
+- [x] JSONFileStorage backend
+- [x] UserDefaultsStorage (macOS + Linux emulation)
+- [x] StorageBackend protocol
+
+### Interactive Views
+- [x] Button view with action handler
+- [x] ButtonRow for horizontal button groups
+- [x] ButtonStyle presets (default, primary, destructive, success, plain)
+- [x] Focus system with Tab/Shift+Tab navigation
+- [x] Menu view with items, selection, shortcuts
+
+### Overlays & Alerts
+- [x] Alert view (with warning/error/info/success presets)
+- [x] Dialog view
+- [x] FrameBuffer character-level compositing
+
+### Status Bar
+- [x] TStatusBar view (compact and bordered styles)
+- [x] TStatusBarItem with shortcut, label, action
+- [x] Shortcut constants (Unicode symbols)
+- [x] Context stack for modals (push/pop)
+- [x] StatusBarState via Environment (not singleton)
+
+### Rendering
 - [x] Terminal abstraction (raw mode, alternate screen, cursor, I/O)
 - [x] ANSI escape code renderer
-- [x] ViewRenderer with Renderable protocol
-- [x] TApp/TScene/WindowGroup app lifecycle
-- [x] `.padding()` modifier
-- [x] `.frame(width:height:)` modifier
-- [x] `.border()` modifier (with 8 border styles)
-- [x] `.background()` modifier
-- [x] **Overlay System** (2026-01-28)
-  - [x] `.overlay()` modifier with alignment
-  - [x] `.dimmed()` modifier
-  - [x] `.modal()` convenience helper
-  - [x] `Alert` view (with warning/error/info/success presets)
-  - [x] `Dialog` view
-  - [x] FrameBuffer character-level compositing
-- [x] **Menu View** (2026-01-28)
-  - [x] `Menu` view with items, selection, shortcuts
-  - [x] `MenuItem` model
-  - [x] `AnyView` type erasure helper
-- [x] Example app with menu-based navigation
-  - [x] Main Menu page
-  - [x] Text Styles demo page
-  - [x] Colors demo page
-  - [x] Containers demo page
-  - [x] Overlays demo page
-  - [x] Layout demo page
-- [x] Test suite (58 tests, 12 suites)
+- [x] Renderable protocol with RenderContext
+- [x] ViewRenderer with tree traversal
+- [x] FrameBuffer with compositing
+
+### App Lifecycle
+- [x] TApp/TScene/WindowGroup
+- [x] AppRunner with run loop
+- [x] Signal handlers (SIGINT, SIGWINCH)
+
+### Platform Support (2026-01-28)
+- [x] macOS support (10.15+)
+- [x] **Linux support**
+  - [x] Glibc compatibility
+  - [x] XDG Base Directory paths
+  - [x] UserDefaults emulation via JSON
+
+### Testing & Documentation
+- [x] Test suite (178 tests, 26 suites)
 - [x] README with badges
-- [x] All code comments in English
-- [x] macOS-only platform restriction
+- [x] Code documentation in English
+- [x] Example app with 7 demo pages

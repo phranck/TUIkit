@@ -13,8 +13,8 @@ import SwiftTUI
 // MARK: - Main App
 
 /// The main example application.
-struct ExampleApp: TApp {
-    var body: some TScene {
+struct ExampleApp: App {
+    var body: some Scene {
         WindowGroup {
             ContentView()
         }

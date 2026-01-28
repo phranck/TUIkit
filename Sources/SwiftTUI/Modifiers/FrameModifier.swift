@@ -25,7 +25,7 @@ public enum FrameDimension: Equatable, Sendable {
 ///
 /// This view handles min/max constraints and renders content with
 /// the appropriate available space.
-public struct FlexibleFrameView<Content: TView>: TView {
+public struct FlexibleFrameView<Content: View>: View {
     let content: Content
     let minWidth: Int?
     let idealWidth: Int?
@@ -171,7 +171,7 @@ extension FlexibleFrameView: Renderable {
 /// A modifier that constrains a view to a specific width and/or height.
 ///
 /// Content is aligned within the frame according to the specified alignment.
-public struct FrameModifier: TViewModifier {
+public struct FrameModifier: ViewModifier {
     /// The desired width (nil means intrinsic width).
     public let width: Int?
 
@@ -246,9 +246,9 @@ public struct FrameModifier: TViewModifier {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Sets an explicit frame size for this view.
     ///
     /// The content is aligned within the frame according to the specified alignment.
@@ -310,7 +310,7 @@ extension TView {
         idealHeight: Int? = nil,
         maxHeight: FrameDimension? = nil,
         alignment: Alignment = .center
-    ) -> some TView {
+    ) -> some View {
         FlexibleFrameView(
             content: self,
             minWidth: minWidth,

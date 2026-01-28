@@ -70,14 +70,14 @@ public struct RenderContext {
 
 // MARK: - Rendering Helper
 
-/// Renders any TView into a FrameBuffer by checking for Renderable conformance
+/// Renders any View into a FrameBuffer by checking for Renderable conformance
 /// or recursively rendering the body.
 ///
 /// - Parameters:
 ///   - view: The view to render.
 ///   - context: The rendering context.
 /// - Returns: A FrameBuffer with the rendered content.
-public func renderToBuffer<V: TView>(_ view: V, context: RenderContext) -> FrameBuffer {
+public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     if let renderable = view as? Renderable {
         return renderable.renderToBuffer(context: context)
     }

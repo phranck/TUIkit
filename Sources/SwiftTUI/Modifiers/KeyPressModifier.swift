@@ -9,7 +9,7 @@
 ///
 /// The handler returns a Bool indicating whether the event was consumed.
 /// If false is returned, the event continues to propagate to other handlers.
-public struct KeyPressModifier<Content: TView>: TView {
+public struct KeyPressModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -47,9 +47,9 @@ extension KeyPressModifier: Renderable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Adds a handler for key press events.
     ///
     /// The handler is called when any key is pressed while this view
@@ -71,7 +71,7 @@ extension TView {
     ///
     /// - Parameter handler: The handler to call on key press. Returns true if handled.
     /// - Returns: A view that handles key presses.
-    public func onKeyPress(_ handler: @escaping (KeyEvent) -> Bool) -> some TView {
+    public func onKeyPress(_ handler: @escaping (KeyEvent) -> Bool) -> some View {
         KeyPressModifier(content: self, keys: nil, handler: handler)
     }
 

@@ -13,8 +13,8 @@ import SwiftTUI
 /// - Basic styles (bold, italic, underline, etc.)
 /// - Combined styles
 /// - Special effects (blink, inverted)
-struct TextStylesPage: TView {
-    var body: some TView {
+struct TextStylesPage: View {
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Text Styles Demo")
 

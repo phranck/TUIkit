@@ -1,5 +1,5 @@
 //
-//  TScene.swift
+//  Scene.swift
 //  SwiftTUI
 //
 //  Scene types for SwiftTUI applications.
@@ -9,7 +9,7 @@
 ///
 /// A scene represents a part of the app structure,
 /// typically a window or a group of views.
-public protocol TScene {}
+public protocol Scene {}
 
 // MARK: - WindowGroup
 
@@ -24,14 +24,14 @@ public protocol TScene {}
 ///     ContentView()
 /// }
 /// ```
-public struct WindowGroup<Content: TView>: TScene {
+public struct WindowGroup<Content: View>: Scene {
     /// The content of the window.
     public let content: Content
 
     /// Creates a WindowGroup with the specified content.
     ///
     /// - Parameter content: A ViewBuilder that defines the content.
-    public init(@TViewBuilder content: () -> Content) {
+    public init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
 }
@@ -42,7 +42,7 @@ public struct WindowGroup<Content: TView>: TScene {
 @resultBuilder
 public struct SceneBuilder {
     /// Builds a single scene.
-    public static func buildBlock<Content: TScene>(_ content: Content) -> Content {
+    public static func buildBlock<Content: Scene>(_ content: Content) -> Content {
         content
     }
 }

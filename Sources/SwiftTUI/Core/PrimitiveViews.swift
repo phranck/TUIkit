@@ -5,14 +5,14 @@
 //  Primitive view types that serve as leaves in the view tree.
 //
 
-// MARK: - Never as TView
+// MARK: - Never as View
 
-/// `Never` conforms to TView for views that have no body.
+/// `Never` conforms to View for views that have no body.
 ///
 /// Primitive views like `Text` or containers like `TupleView` have no
 /// body of their own - they are rendered directly. This extension allows
 /// using `Never` as the body type.
-extension Never: TView {
+extension Never: View {
     public var body: Never {
         fatalError("Never.body should never be called")
     }
@@ -32,7 +32,7 @@ extension Never: TView {
 ///     EmptyView()
 /// }
 /// ```
-public struct EmptyView: TView {
+public struct EmptyView: View {
     /// Creates an empty view.
     public init() {}
 
@@ -45,8 +45,8 @@ public struct EmptyView: TView {
 
 /// A view that represents either the true or false branch of a conditional.
 ///
-/// This type is used internally by `TViewBuilder` for if-else statements.
-public enum ConditionalView<TrueContent: TView, FalseContent: TView>: TView {
+/// This type is used internally by `ViewBuilder` for if-else statements.
+public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
     /// The true branch was executed.
     case trueContent(TrueContent)
 
@@ -58,22 +58,22 @@ public enum ConditionalView<TrueContent: TView, FalseContent: TView>: TView {
     }
 }
 
-// MARK: - TViewArray
+// MARK: - ViewArray
 
 /// A view that contains an array of identical views.
 ///
-/// This type is used internally by `TViewBuilder` for for-in loops.
+/// This type is used internally by `ViewBuilder` for for-in loops.
 ///
 /// ```swift
 /// ForEach(items) { item in
 ///     Text(item.name)
 /// }
 /// ```
-public struct TViewArray<Element: TView>: TView {
+public struct ViewArray<Element: View>: View {
     /// The contained views.
     public let elements: [Element]
 
-    /// Creates a TViewArray from an array of views.
+    /// Creates a ViewArray from an array of views.
     ///
     /// - Parameter elements: The views this container holds.
     public init(_ elements: [Element]) {
@@ -81,15 +81,15 @@ public struct TViewArray<Element: TView>: TView {
     }
 
     public var body: Never {
-        fatalError("TViewArray renders its children directly")
+        fatalError("ViewArray renders its children directly")
     }
 }
 
-// MARK: - Optional TView Conformance
+// MARK: - Optional View Conformance
 
-/// Optional views conform to TView when their Wrapped type does.
-extension Optional: TView where Wrapped: TView {
-    public var body: some TView {
+/// Optional views conform to View when their Wrapped type does.
+extension Optional: View where Wrapped: View {
+    public var body: some View {
         switch self {
         case .some(let view):
             view

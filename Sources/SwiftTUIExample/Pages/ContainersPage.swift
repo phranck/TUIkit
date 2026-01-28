@@ -14,8 +14,8 @@ import SwiftTUI
 /// - Box (simple bordered container)
 /// - Panel (container with title in border)
 /// - All available border styles
-struct ContainersPage: TView {
-    var body: some TView {
+struct ContainersPage: View {
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Container Views Demo")
 

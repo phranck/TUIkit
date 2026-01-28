@@ -20,7 +20,7 @@ import SwiftTUI
 ///     subtitle: "An optional description"
 /// )
 /// ```
-struct HeaderView: TView {
+struct HeaderView: View {
     let title: String
     let subtitle: String?
 
@@ -29,7 +29,7 @@ struct HeaderView: TView {
         self.subtitle = subtitle
     }
 
-    var body: some TView {
+    var body: some View {
         VStack {
             HStack {
                 Text(title)

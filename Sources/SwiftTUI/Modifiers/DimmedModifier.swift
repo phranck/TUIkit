@@ -9,7 +9,7 @@
 ///
 /// This is useful for de-emphasizing background content when showing
 /// overlays, alerts, or dialogs.
-public struct DimmedModifier<Content: TView>: TView {
+public struct DimmedModifier<Content: View>: View {
     /// The content to dim.
     let content: Content
 
@@ -62,9 +62,9 @@ extension DimmedModifier: Renderable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Applies a dimming effect to the view content.
     ///
     /// This reduces the visual intensity of the content using the ANSI dim
@@ -81,7 +81,7 @@ extension TView {
     /// ```
     ///
     /// - Returns: A view with the dimming effect applied.
-    public func dimmed() -> some TView {
+    public func dimmed() -> some View {
         DimmedModifier(content: self)
     }
 }

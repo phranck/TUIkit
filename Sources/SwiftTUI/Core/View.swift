@@ -1,5 +1,5 @@
 //
-//  TView.swift
+//  View.swift
 //  SwiftTUI
 //
 //  The base protocol for all SwiftTUI views.
@@ -7,31 +7,31 @@
 
 /// The base protocol for all SwiftTUI views.
 ///
-/// `TView` is the central protocol in SwiftTUI and works similarly to `View` in SwiftUI.
+/// `View` is the central protocol in SwiftTUI and works similarly to `View` in SwiftUI.
 /// It defines how components declare their structure and content.
 ///
-/// Every TView defines a `body` composed of other TViews.
+/// Every View defines a `body` composed of other Views.
 /// This enables a hierarchical, declarative UI description.
 ///
 /// # Example
 ///
 /// ```swift
-/// struct MyView: TView {
-///     var body: some TView {
+/// struct MyView: View {
+///     var body: some View {
 ///         Text("Hello, SwiftTUI!")
 ///     }
 /// }
 /// ```
-public protocol TView {
+public protocol View {
     /// The type of the body view.
     ///
     /// Swift automatically infers this type from the `body` implementation.
-    associatedtype Body: TView
+    associatedtype Body: View
 
     /// The content and behavior of this view.
     ///
     /// Implement this property to define the structure of your view.
-    /// The body consists of other TViews that together form the UI.
-    @TViewBuilder
+    /// The body consists of other Views that together form the UI.
+    @ViewBuilder
     var body: Body { get }
 }
