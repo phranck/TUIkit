@@ -286,11 +286,11 @@ public struct StatusBarItemOrder: Comparable, Sendable {
     // MARK: - System Item Orders (right side)
     
     /// Order for the quit item (leftmost of system items).
-    /// Appears as: `[...user items] [q quit] [? help] [t theme]`
+    /// Appears as: `[...user items] [q quit] [a appearance] [t theme]`
     public static let quit = StatusBarItemOrder(900)
     
-    /// Order for the help item (middle system item).
-    public static let help = StatusBarItemOrder(910)
+    /// Order for the appearance item (middle system item).
+    public static let appearance = StatusBarItemOrder(910)
     
     /// Order for the theme item (rightmost).
     public static let theme = StatusBarItemOrder(920)
@@ -477,8 +477,8 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
 ///
 /// System items include:
 /// - **quit** (`q`): Exits the application
-/// - **help** (`?`): Shows help (not yet implemented)
-/// - **theme** (`t`): Cycles through themes (not yet implemented)
+/// - **appearance** (`a`): Cycles through appearances
+/// - **theme** (`t`): Cycles through themes
 public enum SystemStatusBarItem {
     /// The quit item (`q quit`).
     ///
@@ -489,13 +489,14 @@ public enum SystemStatusBarItem {
         order: .quit
     )
     
-    /// The help item (`? help`).
+    /// The appearance item (`a appearance`).
     ///
-    /// Shows application help. Action must be set by the framework.
-    public static let help = StatusBarItem(
-        shortcut: "?",
-        label: "help",
-        order: .help
+    /// Cycles through available appearances (border styles).
+    /// Action must be set by the framework.
+    public static let appearance = StatusBarItem(
+        shortcut: "a",
+        label: "appearance",
+        order: .appearance
     )
     
     /// The theme item (`t theme`).
@@ -509,19 +510,19 @@ public enum SystemStatusBarItem {
     
     /// All system items in their default order.
     public static var all: [StatusBarItem] {
-        [quit, help, theme]
+        [quit, appearance, theme]
     }
     
     /// Creates system items with custom actions.
     ///
     /// - Parameters:
     ///   - onQuit: Action for quit (default: exits app).
-    ///   - onHelp: Action for help (optional).
+    ///   - onAppearance: Action for appearance cycling (optional).
     ///   - onTheme: Action for theme cycling (optional).
     /// - Returns: Array of configured system items.
     public static func items(
         onQuit: (@Sendable () -> Void)? = nil,
-        onHelp: (@Sendable () -> Void)? = nil,
+        onAppearance: (@Sendable () -> Void)? = nil,
         onTheme: (@Sendable () -> Void)? = nil
     ) -> [StatusBarItem] {
         var result: [StatusBarItem] = []
@@ -534,13 +535,13 @@ public enum SystemStatusBarItem {
             action: onQuit
         ))
         
-        // Help is present if action is provided
-        if let onHelp = onHelp {
+        // Appearance is present if action is provided
+        if let onAppearance = onAppearance {
             result.append(StatusBarItem(
-                shortcut: "?",
-                label: "help",
-                order: .help,
-                action: onHelp
+                shortcut: "a",
+                label: "appearance",
+                order: .appearance,
+                action: onAppearance
             ))
         }
         
@@ -787,7 +788,7 @@ extension StatusBar: Renderable {
             return renderCompact(itemStrings: itemStrings, width: context.availableWidth)
 
         case .bordered:
-            return renderBordered(itemStrings: itemStrings, width: context.availableWidth)
+            return renderBordered(itemStrings: itemStrings, width: context.availableWidth, context: context)
         }
     }
 
@@ -893,9 +894,10 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [line])
     }
 
-    /// Renders the bordered style (block border with alignment).
-    private func renderBordered(itemStrings: [String], width: Int) -> FrameBuffer {
-        let border = BorderStyle.block
+    /// Renders the bordered style using the current appearance's border style.
+    private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
+        // Use the current appearance's border style
+        let border = context.environment.appearance.borderStyle
         let innerWidth = width - 2  // Account for left and right border
 
         let content = alignContent(itemStrings: itemStrings, width: innerWidth)
