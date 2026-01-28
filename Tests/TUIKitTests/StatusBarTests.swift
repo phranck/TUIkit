@@ -268,11 +268,11 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "x", label: "extra")
         ])
 
-        // User items (s, x) + system items (q, ?, t) = 5 total
+        // User items (s, x) + system items (q, a, t) = 5 total
         #expect(state.currentItems.count == 5)
         #expect(state.hasItems == true)
         #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
-        #expect(state.currentItems.contains { $0.shortcut == "?" }) // system help
+        #expect(state.currentItems.contains { $0.shortcut == "a" }) // system appearance
         #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
         #expect(state.currentItems.contains { $0.shortcut == "s" }) // user save
         #expect(state.currentItems.contains { $0.shortcut == "x" }) // user extra
@@ -287,7 +287,7 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "x", label: "extra")
         }
 
-        // User items (s, x) + system items (q, ?, t) = 5 total
+        // User items (s, x) + system items (q, a, t) = 5 total
         #expect(state.currentItems.count == 5)
     }
 
@@ -304,10 +304,10 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
         ])
 
-        // Context items (escape, enter) + system items (q, ?, t) = 5 total
+        // Context items (escape, enter) + system items (q, a, t) = 5 total
         #expect(state.currentItems.count == 5)
         #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
-        #expect(state.currentItems.contains { $0.shortcut == "?" }) // system help
+        #expect(state.currentItems.contains { $0.shortcut == "a" }) // system appearance
         #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.escape })
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.enter })
@@ -318,14 +318,14 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.push(context: "test") {
-            StatusBarItem(shortcut: "a", label: "action")
+            StatusBarItem(shortcut: "x", label: "action")  // Use 'x' to not conflict with 'a' (appearance)
         }
 
-        // Context item (a) + system items (q, ?, t) = 4 total
+        // Context item (x) + system items (q, a, t) = 4 total
         #expect(state.currentItems.count == 4)
         #expect(state.currentItems.contains { $0.label == "action" })
         #expect(state.currentItems.contains { $0.shortcut == "q" })
-        #expect(state.currentItems.contains { $0.shortcut == "?" })
+        #expect(state.currentItems.contains { $0.shortcut == "a" })
         #expect(state.currentItems.contains { $0.shortcut == "t" })
     }
 
@@ -343,11 +343,11 @@ struct StatusBarStateTests {
 
         state.pop(context: "temp")
 
-        // Global item (g) + system items (q, ?, t) = 4 total
+        // Global item (g) + system items (q, a, t) = 4 total
         #expect(state.currentItems.count == 4)
         #expect(state.currentItems.contains { $0.shortcut == "g" })
         #expect(state.currentItems.contains { $0.shortcut == "q" })
-        #expect(state.currentItems.contains { $0.shortcut == "?" })
+        #expect(state.currentItems.contains { $0.shortcut == "a" })
         #expect(state.currentItems.contains { $0.shortcut == "t" })
     }
 
@@ -616,13 +616,15 @@ struct StatusBarTests {
             StatusBarItem(shortcut: "h", label: "help")
         ], style: .bordered)
 
+        // Use default appearance (rounded)
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(statusBar, context: context)
 
         #expect(buffer.height == 3)
-        // Should have block border characters
+        // Should have border characters (appearance-based, default is rounded: ╭─╮)
         let allContent = buffer.lines.joined()
-        #expect(allContent.contains("▄") || allContent.contains("█") || allContent.contains("▀"))
+        #expect(allContent.contains("╭") || allContent.contains("─") || allContent.contains("╮") ||
+                allContent.contains("│") || allContent.contains("╰") || allContent.contains("╯"))
     }
 
     @Test("Empty StatusBar returns empty buffer")
@@ -1073,7 +1075,7 @@ struct SystemStatusBarItemsTests {
     func systemItemOrderConstants() {
         // System items should have high order values (900+)
         #expect(StatusBarItemOrder.quit.value == 900)
-        #expect(StatusBarItemOrder.help.value == 910)
+        #expect(StatusBarItemOrder.appearance.value == 910)
         #expect(StatusBarItemOrder.theme.value == 920)
         
         // User items should have lower order values
