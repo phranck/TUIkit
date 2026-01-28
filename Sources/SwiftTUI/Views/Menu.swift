@@ -185,30 +185,36 @@ extension Menu: Renderable {
         let innerWidth = buffer.width
         var result: [String] = []
 
+        // Border character (optionally colored)
+        let vertical = colorizeBorder(String(style.vertical), with: color)
+
         // Top border
         let topLine = String(style.topLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.topRight)
-        result.append(colorize(topLine, with: color))
+        result.append(colorizeBorder(topLine, with: color))
 
         // Content lines with side borders
+        // Important: Reset ANSI before right border to prevent color bleeding
+        let reset = "\u{1B}[0m"
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = String(style.vertical) + paddedLine + String(style.vertical)
-            result.append(colorize(borderedLine, with: color, contentOnly: false))
+            // Left border + content + reset + right border
+            let borderedLine = vertical + paddedLine + reset + vertical
+            result.append(borderedLine)
         }
 
         // Bottom border
         let bottomLine = String(style.bottomLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.bottomRight)
-        result.append(colorize(bottomLine, with: color))
+        result.append(colorizeBorder(bottomLine, with: color))
 
         return FrameBuffer(lines: result)
     }
 
-    /// Colorizes border characters only.
-    private func colorize(_ string: String, with color: Color?, contentOnly: Bool = true) -> String {
+    /// Colorizes border characters.
+    private func colorizeBorder(_ string: String, with color: Color?) -> String {
         guard let color = color else { return string }
         var style = TextStyle()
         style.foregroundColor = color
