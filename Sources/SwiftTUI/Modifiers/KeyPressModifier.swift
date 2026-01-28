@@ -6,6 +6,9 @@
 //
 
 /// A modifier that adds a key press handler to a view.
+///
+/// The handler returns a Bool indicating whether the event was consumed.
+/// If false is returned, the event continues to propagate to other handlers.
 public struct KeyPressModifier<Content: TView>: TView {
     /// The content view.
     let content: Content
@@ -14,7 +17,8 @@ public struct KeyPressModifier<Content: TView>: TView {
     let keys: Set<Key>?
 
     /// The handler to call when a matching key is pressed.
-    let handler: (KeyEvent) -> Void
+    /// Returns true if the event was handled, false to let it propagate.
+    let handler: (KeyEvent) -> Bool
 
     public var body: Never {
         fatalError("KeyPressModifier renders via Renderable")
@@ -34,8 +38,8 @@ extension KeyPressModifier: Renderable {
                 }
             }
 
-            handler(event)
-            return true
+            // Call handler and return whether it consumed the event
+            return handler(event)
         }
 
         // Render the content
@@ -49,20 +53,25 @@ extension TView {
     /// Adds a handler for key press events.
     ///
     /// The handler is called when any key is pressed while this view
-    /// is in the view hierarchy.
+    /// is in the view hierarchy. Return `true` to consume the event,
+    /// or `false` to let it propagate to other handlers.
     ///
     /// # Example
     ///
     /// ```swift
     /// Text("Press any key")
     ///     .onKeyPress { event in
-    ///         print("Key pressed: \(event.key)")
+    ///         if event.key == .enter {
+    ///             doSomething()
+    ///             return true  // Consumed
+    ///         }
+    ///         return false  // Let others handle it
     ///     }
     /// ```
     ///
-    /// - Parameter handler: The handler to call on key press.
+    /// - Parameter handler: The handler to call on key press. Returns true if handled.
     /// - Returns: A view that handles key presses.
-    public func onKeyPress(_ handler: @escaping (KeyEvent) -> Void) -> some TView {
+    public func onKeyPress(_ handler: @escaping (KeyEvent) -> Bool) -> some TView {
         KeyPressModifier(content: self, keys: nil, handler: handler)
     }
 
@@ -78,18 +87,21 @@ extension TView {
     ///         } else {
     ///             moveDown()
     ///         }
+    ///         return true
     ///     }
     /// ```
     ///
     /// - Parameters:
     ///   - keys: The keys to listen for.
-    ///   - handler: The handler to call on key press.
+    ///   - handler: The handler to call on key press. Returns true if handled.
     /// - Returns: A view that handles specific key presses.
-    public func onKeyPress(keys: Set<Key>, handler: @escaping (KeyEvent) -> Void) -> KeyPressModifier<Self> {
+    public func onKeyPress(keys: Set<Key>, handler: @escaping (KeyEvent) -> Bool) -> KeyPressModifier<Self> {
         KeyPressModifier(content: self, keys: keys, handler: handler)
     }
 
     /// Adds a handler for a single key press.
+    ///
+    /// This handler always consumes the event when the specified key is pressed.
     ///
     /// # Example
     ///
@@ -105,6 +117,9 @@ extension TView {
     ///   - action: The action to perform.
     /// - Returns: A view that handles the specific key press.
     public func onKeyPress(_ key: Key, action: @escaping () -> Void) -> KeyPressModifier<Self> {
-        KeyPressModifier(content: self, keys: [key], handler: { _ in action() })
+        KeyPressModifier(content: self, keys: [key], handler: { _ in
+            action()
+            return true
+        })
     }
 }
