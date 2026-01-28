@@ -201,6 +201,45 @@ public final class Terminal: @unchecked Sendable {
         return nil
     }
 
+    /// Reads raw bytes from the terminal, handling escape sequences.
+    ///
+    /// This method reads up to `maxBytes` bytes, which is needed for
+    /// parsing escape sequences (arrow keys, function keys, etc.).
+    ///
+    /// - Parameter maxBytes: Maximum bytes to read (default: 8).
+    /// - Returns: The bytes read, or empty array on timeout/error.
+    public func readBytes(maxBytes: Int = 8) -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: maxBytes)
+        let bytesRead = read(STDIN_FILENO, &buffer, 1)
+
+        guard bytesRead > 0 else { return [] }
+
+        // If first byte is ESC, try to read more (escape sequence)
+        if buffer[0] == 0x1B {
+            // Short timeout read for rest of sequence
+            var seqBuffer = [UInt8](repeating: 0, count: maxBytes - 1)
+            let seqBytesRead = read(STDIN_FILENO, &seqBuffer, maxBytes - 1)
+
+            if seqBytesRead > 0 {
+                return [buffer[0]] + Array(seqBuffer.prefix(Int(seqBytesRead)))
+            }
+        }
+
+        return [buffer[0]]
+    }
+
+    /// Reads a key event from the terminal.
+    ///
+    /// This is the preferred method for reading keyboard input,
+    /// as it properly handles escape sequences.
+    ///
+    /// - Returns: The key event, or nil on timeout/error.
+    public func readKeyEvent() -> KeyEvent? {
+        let bytes = readBytes()
+        guard !bytes.isEmpty else { return nil }
+        return KeyEvent.parse(bytes)
+    }
+
     /// Reads a complete line from the terminal.
     ///
     /// - Returns: The input line without newline.

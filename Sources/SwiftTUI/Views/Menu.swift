@@ -32,10 +32,9 @@ public struct MenuItem: Identifiable {
 /// A vertical menu displaying a list of selectable items.
 ///
 /// `Menu` renders items as a vertical list with optional shortcuts.
-/// The currently selected item is highlighted. Since SwiftTUI doesn't
-/// have state management yet, selection is passed in as a parameter.
+/// The currently selected item is highlighted.
 ///
-/// # Example
+/// # Basic Example (Static)
 ///
 /// ```swift
 /// Menu(
@@ -43,11 +42,29 @@ public struct MenuItem: Identifiable {
 ///     items: [
 ///         MenuItem(label: "Text Styles", shortcut: "1"),
 ///         MenuItem(label: "Colors", shortcut: "2"),
-///         MenuItem(label: "Containers", shortcut: "3"),
 ///         MenuItem(label: "Quit", shortcut: "q")
 ///     ],
 ///     selectedIndex: 0
 /// )
+/// ```
+///
+/// # Interactive Example (with Binding)
+///
+/// ```swift
+/// struct ContentView: TView {
+///     @TState var selection = 0
+///
+///     var body: some TView {
+///         Menu(
+///             title: "Main Menu",
+///             items: menuItems,
+///             selection: $selection,
+///             onSelect: { index in
+///                 handleSelection(index)
+///             }
+///         )
+///     }
+/// }
 /// ```
 public struct Menu: TView {
     /// The menu title (optional).
@@ -57,7 +74,13 @@ public struct Menu: TView {
     public let items: [MenuItem]
 
     /// The currently selected item index.
-    public let selectedIndex: Int
+    public var selectedIndex: Int
+
+    /// Binding to the selection (for interactive menus).
+    private let selectionBinding: Binding<Int>?
+
+    /// Callback when an item is selected (Enter or shortcut).
+    private let onSelect: ((Int) -> Void)?
 
     /// The style for unselected items.
     public let itemColor: Color?
@@ -74,7 +97,7 @@ public struct Menu: TView {
     /// The border color.
     public let borderColor: Color?
 
-    /// Creates a menu with the specified options.
+    /// Creates a static menu (non-interactive).
     ///
     /// - Parameters:
     ///   - title: The menu title (optional).
@@ -98,6 +121,43 @@ public struct Menu: TView {
         self.title = title
         self.items = items
         self.selectedIndex = max(0, min(selectedIndex, items.count - 1))
+        self.selectionBinding = nil
+        self.onSelect = nil
+        self.itemColor = itemColor
+        self.selectedColor = selectedColor
+        self.selectionIndicator = selectionIndicator
+        self.borderStyle = borderStyle
+        self.borderColor = borderColor
+    }
+
+    /// Creates an interactive menu with selection binding.
+    ///
+    /// - Parameters:
+    ///   - title: The menu title (optional).
+    ///   - items: The menu items.
+    ///   - selection: Binding to the selected index.
+    ///   - onSelect: Callback when item is activated (Enter or shortcut).
+    ///   - itemColor: The color for unselected items (default: nil).
+    ///   - selectedColor: The color for the selected item (default: .cyan).
+    ///   - selectionIndicator: The indicator shown before selected item (default: "▶ ").
+    ///   - borderStyle: The border style (default: .rounded).
+    ///   - borderColor: The border color (default: nil).
+    public init(
+        title: String? = nil,
+        items: [MenuItem],
+        selection: Binding<Int>,
+        onSelect: ((Int) -> Void)? = nil,
+        itemColor: Color? = nil,
+        selectedColor: Color? = .cyan,
+        selectionIndicator: String = "▶ ",
+        borderStyle: BorderStyle? = .rounded,
+        borderColor: Color? = nil
+    ) {
+        self.title = title
+        self.items = items
+        self.selectedIndex = max(0, min(selection.wrappedValue, items.count - 1))
+        self.selectionBinding = selection
+        self.onSelect = onSelect
         self.itemColor = itemColor
         self.selectedColor = selectedColor
         self.selectionIndicator = selectionIndicator
@@ -114,6 +174,11 @@ public struct Menu: TView {
 
 extension Menu: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Register key handlers if this is an interactive menu
+        if let binding = selectionBinding {
+            registerKeyHandlers(binding: binding)
+        }
+
         var lines: [String] = []
 
         // Title if present
@@ -132,8 +197,9 @@ extension Menu: Renderable {
         }
 
         // Menu items
+        let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
         for (index, item) in items.enumerated() {
-            let isSelected = index == selectedIndex
+            let isSelected = index == currentSelection
             let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
 
             // Build the label with optional shortcut
@@ -168,6 +234,57 @@ extension Menu: Renderable {
         }
 
         return contentBuffer
+    }
+
+    /// Registers key handlers for menu navigation.
+    private func registerKeyHandlers(binding: Binding<Int>) {
+        let itemCount = items.count
+        let menuItems = items
+        let selectCallback = onSelect
+
+        KeyEventDispatcher.shared.addHandler { event in
+            switch event.key {
+            case .up:
+                // Move selection up
+                let current = binding.wrappedValue
+                if current > 0 {
+                    binding.wrappedValue = current - 1
+                } else {
+                    binding.wrappedValue = itemCount - 1  // Wrap to bottom
+                }
+                return true
+
+            case .down:
+                // Move selection down
+                let current = binding.wrappedValue
+                if current < itemCount - 1 {
+                    binding.wrappedValue = current + 1
+                } else {
+                    binding.wrappedValue = 0  // Wrap to top
+                }
+                return true
+
+            case .enter:
+                // Select current item
+                selectCallback?(binding.wrappedValue)
+                return true
+
+            case .character(let char):
+                // Check for shortcut
+                for (index, item) in menuItems.enumerated() {
+                    if let shortcut = item.shortcut,
+                       shortcut.lowercased() == char.lowercased() {
+                        binding.wrappedValue = index
+                        selectCallback?(index)
+                        return true
+                    }
+                }
+                return false
+
+            default:
+                return false
+            }
+        }
     }
 
     /// The maximum width of menu items (for sizing).
