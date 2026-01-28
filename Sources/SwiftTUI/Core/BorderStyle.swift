@@ -127,54 +127,6 @@ public struct BorderStyle: Sendable, Equatable {
         vertical: "█"
     )
 
-    /// ASCII-only border (- | + + + +).
-    ///
-    /// ```
-    /// +--------+
-    /// | Content|
-    /// +--------+
-    /// ```
-    public static let ascii = BorderStyle(
-        topLeft: "+",
-        topRight: "+",
-        bottomLeft: "+",
-        bottomRight: "+",
-        horizontal: "-",
-        vertical: "|"
-    )
-
-    /// Dashed border (╌ ╎ ┌ ┐ └ ┘).
-    ///
-    /// ```
-    /// ┌╌╌╌╌╌╌╌╌┐
-    /// ╎ Content╎
-    /// └╌╌╌╌╌╌╌╌┘
-    /// ```
-    public static let dashed = BorderStyle(
-        topLeft: "┌",
-        topRight: "┐",
-        bottomLeft: "└",
-        bottomRight: "┘",
-        horizontal: "╌",
-        vertical: "╎"
-    )
-
-    /// Dotted border using dots.
-    ///
-    /// ```
-    /// ..........
-    /// : Content:
-    /// ..........
-    /// ```
-    public static let dotted = BorderStyle(
-        topLeft: ".",
-        topRight: ".",
-        bottomLeft: ".",
-        bottomRight: ".",
-        horizontal: ".",
-        vertical: ":"
-    )
-
     /// No visible border (space characters).
     public static let none = BorderStyle(
         topLeft: " ",
