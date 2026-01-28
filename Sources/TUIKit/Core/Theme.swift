@@ -85,8 +85,11 @@ public protocol Theme: Sendable {
     /// Separator/divider color.
     var separator: Color { get }
 
-    /// Selection highlight color.
+    /// Selection highlight color (foreground).
     var selection: Color { get }
+    
+    /// Selection background color (dimmed accent).
+    var selectionBackground: Color { get }
 
     /// Color for disabled elements.
     var disabled: Color { get }
@@ -116,6 +119,7 @@ extension Theme {
     public var borderFocused: Color { accent }
     public var separator: Color { border }
     public var selection: Color { accent }
+    public var selectionBackground: Color { backgroundSecondary }
     public var disabled: Color { foregroundTertiary }
     public var statusBarBackground: Color { backgroundSecondary }
     public var statusBarForeground: Color { foreground }
@@ -233,6 +237,9 @@ public enum ThemeColors {
 
     /// Selection color.
     public static var selection: Color { current.selection }
+    
+    /// Selection background color.
+    public static var selectionBackground: Color { current.selectionBackground }
 
     /// Disabled color.
     public static var disabled: Color { current.disabled }
@@ -299,7 +306,8 @@ public struct GreenPhosphorTheme: Theme {
     // UI elements
     public let border = Color.hex(0x2D5A2D)               // Subtle green border
     public let borderFocused = Color.hex(0x33FF33)        // Bright when focused
-    public let selection = Color.hex(0x1F4D1F)            // Dark green for selection bg
+    public let selection = Color.hex(0x66FF66)            // Bright green for selection text
+    public let selectionBackground = Color.hex(0x1A4D1A)  // Dark green for selection bar bg
     
     // Status bar
     public let statusBarBackground = Color.hex(0x162016)
@@ -340,7 +348,8 @@ public struct AmberPhosphorTheme: Theme {
     // UI elements
     public let border = Color.hex(0x5A4A2D)               // Subtle amber border
     public let borderFocused = Color.hex(0xFFAA00)        // Bright when focused
-    public let selection = Color.hex(0x4D3A1F)            // Dark amber for selection bg
+    public let selection = Color.hex(0xFFCC33)            // Bright amber for selection text
+    public let selectionBackground = Color.hex(0x4D3A1F)  // Dark amber for selection bar bg
     
     // Status bar
     public let statusBarBackground = Color.hex(0x201A14)
@@ -381,7 +390,8 @@ public struct WhitePhosphorTheme: Theme {
     // UI elements
     public let border = Color.hex(0x484848)               // Subtle gray border
     public let borderFocused = Color.hex(0xE8E8E8)        // Bright when focused
-    public let selection = Color.hex(0x3A3A3A)            // Dark gray for selection bg
+    public let selection = Color.hex(0xFFFFFF)            // White for selection text
+    public let selectionBackground = Color.hex(0x3A3A3A)  // Dark gray for selection bar bg
     
     // Status bar
     public let statusBarBackground = Color.hex(0x181C20)
@@ -422,7 +432,8 @@ public struct RedPhosphorTheme: Theme {
     // UI elements
     public let border = Color.hex(0x5A2D2D)               // Subtle red border
     public let borderFocused = Color.hex(0xFF4444)        // Bright when focused
-    public let selection = Color.hex(0x4D1F1F)            // Dark red for selection bg
+    public let selection = Color.hex(0xFF6666)            // Bright red for selection text
+    public let selectionBackground = Color.hex(0x4D1F1F)  // Dark red for selection bar bg
     
     // Status bar
     public let statusBarBackground = Color.hex(0x201414)
@@ -455,7 +466,8 @@ public struct NCursesTheme: Theme {
     public let info = Color.cyan
     public let border = Color.white
     public let borderFocused = Color.brightCyan
-    public let selection = Color.blue
+    public let selection = Color.brightCyan
+    public let selectionBackground = Color.blue
     public let disabled = Color.brightBlack
     public let statusBarBackground = Color.blue
     public let statusBarForeground = Color.white

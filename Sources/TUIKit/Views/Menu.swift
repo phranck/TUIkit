@@ -200,8 +200,9 @@ extension Menu: Renderable {
 
         // Menu items
         let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
-        let appearance = context.environment.appearance
-        let isBlockAppearance = appearance.id == .block
+        
+        // Calculate the content width for full-width selection bar
+        let contentWidth = maxItemWidth + 2  // +2 for padding
         
         for (index, item) in items.enumerated() {
             let isSelected = index == currentSelection
@@ -214,34 +215,28 @@ extension Menu: Renderable {
                 labelText = "    \(item.label)"
             }
 
-            // For block appearance: no indicator, use background highlight
-            // For other appearances: use indicator prefix
-            let fullText: String
-            if isBlockAppearance {
-                fullText = " " + labelText
-            } else {
-                let prefix = isSelected ? selectionIndicator : String(repeating: " ", count: selectionIndicator.count)
-                fullText = " " + prefix + labelText
-            }
+            // Build the full text with padding
+            let fullText = " " + labelText
+            
+            // Pad to full width for selection bar
+            let visibleLength = fullText.count
+            let padding = max(0, contentWidth - visibleLength)
+            let paddedText = fullText + String(repeating: " ", count: padding)
 
             // Apply styling
             var style = TextStyle()
             if isSelected {
+                // Selected: bold text with dimmed background, highlighted foreground
                 style.isBold = true
-                if isBlockAppearance {
-                    // Block appearance: use background highlight
-                    style.foregroundColor = Color.theme.background
-                    style.backgroundColor = selectedColor ?? Color.theme.accent
-                } else {
-                    // Other appearances: just change foreground color
-                    style.foregroundColor = selectedColor ?? Color.theme.accent
-                }
+                style.foregroundColor = selectedColor ?? Color.theme.accent
+                // Use a dimmed version of the accent color for background
+                style.backgroundColor = Color.theme.selectionBackground
             } else {
                 // Use theme foreground color if no custom itemColor is set
                 style.foregroundColor = itemColor ?? Color.theme.foreground
             }
 
-            let styledLine = ANSIRenderer.render(fullText, with: style)
+            let styledLine = ANSIRenderer.render(paddedText, with: style)
             lines.append(styledLine)
         }
 
@@ -310,7 +305,7 @@ extension Menu: Renderable {
     private var maxItemWidth: Int {
         items.map { item -> Int in
             let shortcutPart = item.shortcut != nil ? 4 : 4  // "[x] " or "    "
-            return selectionIndicator.count + shortcutPart + item.label.count
+            return shortcutPart + item.label.count
         }.max() ?? 0
     }
 
