@@ -18,8 +18,10 @@ struct ContentView: View {
     var body: some View {
         let state = ExampleAppState.shared
 
-        // Show current page based on state
+        // Show current page based on state with theme background
         pageContent(for: state.currentPage)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.theme.background)
             .onKeyPress { event in
                 switch event.key {
                 case .escape:
