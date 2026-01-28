@@ -719,13 +719,16 @@ public struct StatusBar: View {
         self.labelColor = labelColor
     }
     
-    /// All items combined (sorted user items, then system items).
+    /// All items combined (sorted user items, then filtered system items).
     ///
     /// User items are sorted by their `order` property.
     /// System items maintain their fixed order (quit, help, theme).
+    /// User items override system items with the same shortcut.
     /// Use this for event handling to check all items.
     public var allItems: [any StatusBarItemProtocol] {
-        userItems.sorted { $0.order < $1.order } + systemItems
+        let userShortcuts = Set(userItems.map { $0.shortcut })
+        let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
+        return userItems.sorted { $0.order < $1.order } + filteredSystemItems
     }
     
     /// Whether the status bar has any items to display.
@@ -742,9 +745,15 @@ public struct StatusBar: View {
 
 extension StatusBar: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Combine user items (sorted by order) and system items (fixed order)
+        // Get shortcuts used by user items (for deduplication)
+        let userShortcuts = Set(userItems.map { $0.shortcut })
+        
+        // Filter out system items that are overridden by user items
+        let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
+        
+        // Combine: sorted user items + filtered system items (fixed order)
         let sortedUserItems = userItems.sorted { $0.order < $1.order }
-        let combinedItems = sortedUserItems + systemItems
+        let combinedItems = sortedUserItems + filteredSystemItems
         
         guard !combinedItems.isEmpty else {
             return FrameBuffer()
