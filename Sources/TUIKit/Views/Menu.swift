@@ -106,7 +106,7 @@ public struct Menu: View {
     ///   - itemColor: The color for unselected items (default: theme foreground).
     ///   - selectedColor: The color for the selected item (default: theme accent).
     ///   - selectionIndicator: The indicator shown before selected item (default: "▶ ").
-    ///   - borderStyle: The border style (default: .rounded).
+    ///   - borderStyle: The border style (default: appearance borderStyle, nil for no border).
     ///   - borderColor: The border color (default: theme border).
     public init(
         title: String? = nil,
@@ -115,7 +115,7 @@ public struct Menu: View {
         itemColor: Color? = nil,
         selectedColor: Color? = nil,
         selectionIndicator: String = "▶ ",
-        borderStyle: BorderStyle? = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil
     ) {
         self.title = title
@@ -140,7 +140,7 @@ public struct Menu: View {
     ///   - itemColor: The color for unselected items (default: theme foreground).
     ///   - selectedColor: The color for the selected item (default: theme accent).
     ///   - selectionIndicator: The indicator shown before selected item (default: "▶ ").
-    ///   - borderStyle: The border style (default: .rounded).
+    ///   - borderStyle: The border style (default: appearance borderStyle, nil for no border).
     ///   - borderColor: The border color (default: theme border).
     public init(
         title: String? = nil,
@@ -150,7 +150,7 @@ public struct Menu: View {
         itemColor: Color? = nil,
         selectedColor: Color? = nil,
         selectionIndicator: String = "▶ ",
-        borderStyle: BorderStyle? = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil
     ) {
         self.title = title
@@ -231,10 +231,9 @@ extension Menu: Renderable {
         // Create content buffer
         var contentBuffer = FrameBuffer(lines: lines)
 
-        // Apply border if specified
-        if let border = borderStyle {
-            contentBuffer = applyBorder(to: contentBuffer, style: border, color: borderColor)
-        }
+        // Apply border - use explicit style, or fall back to appearance default
+        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
+        contentBuffer = applyBorder(to: contentBuffer, style: effectiveBorderStyle, color: borderColor)
 
         return contentBuffer
     }

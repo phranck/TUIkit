@@ -417,6 +417,7 @@ internal final class AppRunner<A: App> {
     let statusBar: StatusBarState
     let focusManager: FocusManager
     let themeManager: ThemeManager
+    let appearanceManager: AppearanceManager
     private var isRunning = false
 
     init(app: A) {
@@ -425,6 +426,7 @@ internal final class AppRunner<A: App> {
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
         self.themeManager = ThemeManager()
+        self.appearanceManager = AppearanceManager()
     }
 
     func run() {
@@ -434,11 +436,12 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with status bar, focus manager, and theme manager
+        // Set up environment with status bar, focus manager, theme manager, and appearance manager
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
         environment.themeManager = themeManager
+        environment.appearanceManager = appearanceManager
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
@@ -489,6 +492,8 @@ internal final class AppRunner<A: App> {
         environment.focusManager = focusManager
         environment.themeManager = themeManager
         environment.theme = themeManager.currentTheme  // Apply current theme
+        environment.appearanceManager = appearanceManager
+        environment.appearance = appearanceManager.currentAppearance  // Apply current appearance
 
         let context = RenderContext(
             terminal: terminal,
@@ -591,6 +596,10 @@ internal final class AppRunner<A: App> {
             if statusBar.showThemeItem {
                 themeManager.cycleTheme()
             }
+            
+        case .character(let char) where char == "a" || char == "A":
+            // 'a' cycles appearance
+            appearanceManager.cycleAppearance()
             
         default:
             break
