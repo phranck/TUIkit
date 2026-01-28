@@ -138,25 +138,40 @@ public struct BorderStyle: Sendable, Equatable {
         rightT: "┫"
     )
 
-    /// Block/solid border using block characters (█).
+    /// Block/solid border using half-block characters for smooth edges.
+    ///
+    /// Uses ▄ (lower half) for top edge and ▀ (upper half) for bottom edge,
+    /// creating a visually smooth container appearance.
     ///
     /// ```
-    /// ██████████
-    /// █ Title  █
-    /// ██████████
+    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: lower half block
+    /// █ Title  █  ← Sides: full block
+    /// ▀▀▀▀▀▀▀▀▀▀  ← Header separator: upper half block
     /// █ Content█
-    /// ██████████
+    /// ▄▄▄▄▄▄▄▄▄▄  ← Footer separator: lower half block
+    /// █ Footer █
+    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: upper half block
     /// ```
     public static let block = BorderStyle(
-        topLeft: "█",
-        topRight: "█",
-        bottomLeft: "█",
-        bottomRight: "█",
-        horizontal: "█",
-        vertical: "█",
-        leftT: "█",
-        rightT: "█"
+        topLeft: "▄",
+        topRight: "▄",
+        bottomLeft: "▀",
+        bottomRight: "▀",
+        horizontal: "▄",       // Top edge uses lower half
+        vertical: "█",         // Sides use full block
+        leftT: "▀",            // Header/Body separator (upper half)
+        rightT: "▀"
     )
+    
+    /// The character used for the bottom edge of block style.
+    ///
+    /// Block style uses different characters for top (▄) and bottom (▀).
+    public static let blockBottomHorizontal: Character = "▀"
+    
+    /// The character used for body/footer separator in block style.
+    ///
+    /// Uses lower half block (▄) to create visual separation.
+    public static let blockFooterSeparator: Character = "▄"
 
     /// No visible border (space characters).
     public static let none = BorderStyle(
