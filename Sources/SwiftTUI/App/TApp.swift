@@ -125,7 +125,9 @@ internal final class AppRunner<App: TApp> {
             return
         }
 
-        // Default handling: ESC or 'q' exits
+        // Default handling (only if no handler consumed the event):
+        // - ESC exits the app
+        // - 'q' or 'Q' exits the app
         switch event.key {
         case .escape:
             isRunning = false

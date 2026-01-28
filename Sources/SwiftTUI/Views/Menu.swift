@@ -191,9 +191,11 @@ extension Menu: Renderable {
             }())
             lines.append(" " + titleStyled)
 
-            // Divider under title (starts at same position as title)
+            // Divider under title (same color as border)
             let dividerWidth = max(menuTitle.count, maxItemWidth + 1)
-            lines.append(String(repeating: "─", count: dividerWidth))
+            let dividerLine = String(repeating: "─", count: dividerWidth)
+            let dividerStyled = colorizeBorder(dividerLine, with: borderColor)
+            lines.append(dividerStyled)
         }
 
         // Menu items
