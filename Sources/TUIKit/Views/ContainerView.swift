@@ -290,7 +290,19 @@ extension ContainerView: Renderable {
     
     // MARK: - Block Style Rendering
     
-    /// Renders with filled backgrounds (block appearance).
+    /// Renders with half-block characters for smooth visual edges.
+    ///
+    /// Block style uses:
+    /// - `▄` (lower half) for top edge and body/footer separator
+    /// - `▀` (upper half) for bottom edge and header/body separator
+    /// - `█` (full block) for side borders
+    ///
+    /// The separator characters use special coloring for seamless transitions:
+    /// - Header/Body separator: FG = header background, BG = body background (transparent)
+    /// - Body/Footer separator: FG = footer background, BG = body background (transparent)
+    ///
+    /// Header and footer sections have a darker background color.
+    /// Body section is transparent (uses theme background).
     private func renderBlockStyle(
         bodyBuffer: FrameBuffer,
         footerBuffer: FrameBuffer?,
@@ -303,76 +315,103 @@ extension ContainerView: Renderable {
         let reset = "\u{1B}[0m"
         
         // Get theme colors for block appearance
-        let bodyBackground = Color.theme.containerBackground
         let headerFooterBackground = Color.theme.containerHeaderBackground
         
-        // Vertical border character
-        let verticalBorder = String(borderStyle.vertical)
+        // Characters for block style
+        let topChar: Character = "▄"      // Lower half block for top
+        let bottomChar: Character = "▀"   // Upper half block for bottom
+        let headerSepChar: Character = "▀"    // Upper half for header/body separator
+        let footerSepChar: Character = "▄"    // Lower half for body/footer separator
+        let vertical = String(borderStyle.vertical)  // Full block █
         
-        // Helper to render a line with background
-        func renderLine(_ content: String, background: Color) -> String {
+        // Helper to render a content line with side borders
+        func renderLine(_ content: String, withBackground: Bool = false) -> String {
             let paddedContent = content.padToVisibleWidth(innerWidth)
-            let leftBorder = colorize(verticalBorder, with: borderColor, backgroundColor: background)
-            let rightBorder = colorize(verticalBorder, with: borderColor, backgroundColor: background)
-            let styledContent = applyBackground(paddedContent, background: background)
-            return leftBorder + styledContent + reset + rightBorder
+            if withBackground {
+                // With darker header/footer background
+                let leftBorder = colorize(vertical, with: borderColor, backgroundColor: headerFooterBackground)
+                let rightBorder = colorize(vertical, with: borderColor, backgroundColor: headerFooterBackground)
+                let styledContent = applyBackground(paddedContent, background: headerFooterBackground)
+                return leftBorder + styledContent + reset + rightBorder
+            } else {
+                // Transparent body (no extra background)
+                let leftBorder = colorize(vertical, with: borderColor)
+                let rightBorder = colorize(vertical, with: borderColor)
+                return leftBorder + paddedContent + reset + rightBorder
+            }
         }
         
-        // Helper to render a full-width separator
-        func renderSeparator() -> String {
-            colorize(
-                String(repeating: borderStyle.horizontal, count: innerWidth + 2),
-                with: borderColor,
-                backgroundColor: bodyBackground
-            )
+        // Helper to render top/bottom border line
+        func renderEdgeLine(_ char: Character, withBackground: Bool = false) -> String {
+            let line = String(repeating: char, count: innerWidth + 2)
+            if withBackground {
+                return colorize(line, with: borderColor, backgroundColor: headerFooterBackground)
+            } else {
+                return colorize(line, with: borderColor)
+            }
         }
         
-        // Top border
-        let topLine = colorize(
-            String(repeating: borderStyle.horizontal, count: innerWidth + 2),
-            with: borderColor,
-            backgroundColor: headerFooterBackground
-        )
-        lines.append(topLine)
+        // Helper to render separator with special coloring for seamless transition
+        // FG = section background color, BG = body background (transparent/none)
+        func renderSeparator(_ char: Character, sectionBackground: Color) -> String {
+            let line = String(repeating: char, count: innerWidth + 2)
+            // Foreground = section's background color (creates the visual "belonging")
+            // Background = transparent (body background shows through)
+            return colorize(line, with: sectionBackground)
+        }
         
-        // Header section (if title present)
+        // === TOP BORDER ===
+        // ▄▄▄▄▄▄▄▄▄▄ (foreground = header bg if header exists, otherwise border color)
+        let hasHeader = title != nil
+        if hasHeader {
+            // Top edge colored with header background to blend with header
+            lines.append(colorize(String(repeating: topChar, count: innerWidth + 2), with: headerFooterBackground))
+        } else {
+            lines.append(renderEdgeLine(topChar, withBackground: false))
+        }
+        
+        // === HEADER SECTION (if title present) ===
         if let titleText = title {
+            // █ TITLE █ (with darker background)
             let titleStyled = colorize(" \(titleText) ", with: titleColor ?? Color.theme.accent, bold: true)
-            let paddedTitle = titleStyled.padToVisibleWidth(innerWidth)
-            lines.append(renderLine(paddedTitle, background: headerFooterBackground))
+            lines.append(renderLine(titleStyled, withBackground: true))
             
-            // Header separator
+            // Header/Body separator: ▀▀▀▀▀▀▀▀▀▀
+            // FG = header background, BG = transparent (body background)
             if style.showHeaderSeparator {
-                lines.append(renderSeparator())
+                lines.append(renderSeparator(headerSepChar, sectionBackground: headerFooterBackground))
             }
         }
         
-        // Body lines
+        // === BODY LINES ===
+        // █ Content █ (transparent - no extra background)
         for line in bodyBuffer.lines {
-            lines.append(renderLine(line, background: bodyBackground))
+            lines.append(renderLine(line, withBackground: false))
         }
         
-        // Footer section (if present)
+        // === FOOTER SECTION (if present) ===
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
-            // Footer separator
+            // Body/Footer separator: ▄▄▄▄▄▄▄▄▄▄
+            // FG = footer background, BG = transparent (body background)
             if style.showFooterSeparator {
-                lines.append(renderSeparator())
+                lines.append(renderSeparator(footerSepChar, sectionBackground: headerFooterBackground))
             }
             
-            // Footer lines
+            // █ Footer █ (with darker background)
             for line in footerBuf.lines {
-                lines.append(renderLine(line, background: headerFooterBackground))
+                lines.append(renderLine(line, withBackground: true))
             }
         }
         
-        // Bottom border
-        let bottomBackground = (footer != nil && footerBuffer?.isEmpty == false) ? headerFooterBackground : bodyBackground
-        let bottomLine = colorize(
-            String(repeating: borderStyle.horizontal, count: innerWidth + 2),
-            with: borderColor,
-            backgroundColor: bottomBackground
-        )
-        lines.append(bottomLine)
+        // === BOTTOM BORDER ===
+        // ▀▀▀▀▀▀▀▀▀▀ (foreground = footer bg if footer exists, otherwise border color)
+        let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
+        if hasFooter {
+            // Bottom edge colored with footer background to blend with footer
+            lines.append(colorize(String(repeating: bottomChar, count: innerWidth + 2), with: headerFooterBackground))
+        } else {
+            lines.append(renderEdgeLine(bottomChar, withBackground: false))
+        }
         
         return FrameBuffer(lines: lines)
     }
