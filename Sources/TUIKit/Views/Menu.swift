@@ -183,6 +183,9 @@ extension Menu: Renderable {
         
         // Calculate the content width for full-width selection bar
         let contentWidth = maxItemWidth + 2  // +2 for padding
+        
+        // Track the divider line index (for T-junction rendering)
+        var dividerLineIndex: Int? = nil
 
         // Title if present
         if let menuTitle = title {
@@ -194,10 +197,9 @@ extension Menu: Renderable {
             }())
             lines.append(" " + titleStyled)
 
-            // Divider under title - full width to match content
-            let dividerLine = String(repeating: "─", count: contentWidth)
-            let dividerStyled = colorizeBorder(dividerLine, with: borderColor)
-            lines.append(dividerStyled)
+            // Mark divider position - actual divider will be rendered by applyBorder
+            dividerLineIndex = lines.count
+            lines.append("")  // Placeholder for divider
         }
 
         // Menu items
@@ -244,7 +246,12 @@ extension Menu: Renderable {
 
         // Apply border - use explicit style, or fall back to appearance default
         let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
-        contentBuffer = applyBorder(to: contentBuffer, style: effectiveBorderStyle, color: borderColor)
+        contentBuffer = applyBorder(
+            to: contentBuffer,
+            style: effectiveBorderStyle,
+            color: borderColor,
+            dividerLineIndex: dividerLineIndex
+        )
 
         return contentBuffer
     }
@@ -309,13 +316,24 @@ extension Menu: Renderable {
     }
 
     /// Applies a border to the buffer.
-    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color?) -> FrameBuffer {
+    ///
+    /// - Parameters:
+    ///   - buffer: The content buffer to wrap with border.
+    ///   - style: The border style to use.
+    ///   - color: The border color (optional).
+    ///   - dividerLineIndex: If set, renders a horizontal divider with T-junctions at this line index.
+    private func applyBorder(
+        to buffer: FrameBuffer,
+        style: BorderStyle,
+        color: Color?,
+        dividerLineIndex: Int? = nil
+    ) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
         let innerWidth = buffer.width
         var result: [String] = []
 
-        // Border character (optionally colored)
+        // Border characters (optionally colored)
         let vertical = colorizeBorder(String(style.vertical), with: color)
 
         // Top border
@@ -327,11 +345,20 @@ extension Menu: Renderable {
         // Content lines with side borders
         // Important: Reset ANSI before right border to prevent color bleeding
         let reset = "\u{1B}[0m"
-        for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            // Left border + content + reset + right border
-            let borderedLine = vertical + paddedLine + reset + vertical
-            result.append(borderedLine)
+        for (index, line) in buffer.lines.enumerated() {
+            // Check if this is the divider line
+            if let dividerIndex = dividerLineIndex, index == dividerIndex {
+                // Render horizontal divider with T-junctions
+                let dividerLine = String(style.leftT)
+                    + String(repeating: style.horizontal, count: innerWidth)
+                    + String(style.rightT)
+                result.append(colorizeBorder(dividerLine, with: color))
+            } else {
+                let paddedLine = line.padToVisibleWidth(innerWidth)
+                // Left border + content + reset + right border
+                let borderedLine = vertical + paddedLine + reset + vertical
+                result.append(borderedLine)
+            }
         }
 
         // Bottom border
