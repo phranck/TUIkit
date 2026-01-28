@@ -499,11 +499,8 @@ internal final class AppRunner<A: App> {
 
         // Update global environment storage
         EnvironmentStorage.shared.environment = environment
-        
-        // Fill the entire screen with the theme background color
-        terminal.fillBackground(themeManager.currentTheme.background)
 
-        // Render main content
+        // Render main content (background fill happens in renderScene)
         let scene = app.body
         renderScene(scene, context: context)
 
@@ -545,11 +542,21 @@ internal final class AppRunner<A: App> {
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)
+        
+        // Get background color from theme
+        let bgColor = themeManager.currentTheme.background
+        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
+        let reset = ANSIRenderer.reset
+        let terminalWidth = terminal.width
 
-        // Write directly to terminal at the bottom
+        // Write status bar with theme background
         for (index, line) in buffer.lines.enumerated() {
             terminal.moveCursor(toRow: row + index, column: 1)
-            terminal.write(line)
+            
+            let visibleWidth = line.strippedLength
+            let padding = max(0, terminalWidth - visibleWidth)
+            let paddedLine = bgCode + line + String(repeating: " ", count: padding) + reset
+            terminal.write(paddedLine)
         }
     }
 
@@ -627,11 +634,33 @@ internal protocol SceneRenderable {
 extension WindowGroup: SceneRenderable {
     func renderScene(context: RenderContext) {
         let buffer = renderToBuffer(content, context: context)
-        // Write buffer to terminal
         let terminal = Terminal.shared
-        for (index, line) in buffer.lines.enumerated() {
-            terminal.moveCursor(toRow: 1 + index, column: 1)
-            terminal.write(line)
+        let terminalWidth = terminal.width
+        let terminalHeight = context.availableHeight
+        
+        // Get background color from theme
+        let bgColor = context.environment.theme.background
+        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
+        let reset = ANSIRenderer.reset
+        
+        // Write buffer to terminal, wrapping each line with background color
+        for row in 0..<terminalHeight {
+            terminal.moveCursor(toRow: 1 + row, column: 1)
+            
+            if row < buffer.lines.count {
+                let line = buffer.lines[row]
+                let visibleWidth = line.strippedLength
+                let padding = max(0, terminalWidth - visibleWidth)
+                
+                // Wrap entire line with background: bg + content + padding + reset
+                // The bgCode sets the background for everything that follows
+                let paddedLine = bgCode + line + String(repeating: " ", count: padding) + reset
+                terminal.write(paddedLine)
+            } else {
+                // Empty row - fill with background color
+                let emptyLine = bgCode + String(repeating: " ", count: terminalWidth) + reset
+                terminal.write(emptyLine)
+            }
         }
     }
 }
