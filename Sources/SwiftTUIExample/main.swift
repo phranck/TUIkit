@@ -131,11 +131,15 @@ struct MainMenuPage: TView {
 
             Spacer(minLength: 1)
 
-            // Feature highlights
-            HStack(spacing: 3) {
-                featureBox("Pure Swift", "No ncurses")
-                featureBox("Declarative", "SwiftUI-like")
-                featureBox("Composable", "View protocol")
+            // Feature highlights (centered)
+            HStack {
+                Spacer()
+                HStack(spacing: 3) {
+                    featureBox("Pure Swift", "No ncurses")
+                    featureBox("Declarative", "SwiftUI-like")
+                    featureBox("Composable", "View protocol")
+                }
+                Spacer()
             }
 
             Spacer()

@@ -126,9 +126,9 @@ extension Menu: Renderable {
             }())
             lines.append(" " + titleStyled)
 
-            // Divider under title
-            let dividerWidth = max(menuTitle.count + 2, maxItemWidth + 2)
-            lines.append(" " + String(repeating: "─", count: dividerWidth))
+            // Divider under title (starts at same position as title)
+            let dividerWidth = max(menuTitle.count, maxItemWidth + 1)
+            lines.append(String(repeating: "─", count: dividerWidth))
         }
 
         // Menu items
