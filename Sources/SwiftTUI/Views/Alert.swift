@@ -88,8 +88,8 @@ public struct Alert<Actions: TView>: TView {
             // Message
             Text(message)
 
-            // Spacer between message and actions
-            Spacer(minLength: 1)
+            // Empty line between message and actions
+            Text("")
 
             // Actions (if any)
             actions

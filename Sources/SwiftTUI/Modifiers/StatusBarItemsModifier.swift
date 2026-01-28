@@ -53,13 +53,14 @@ extension StatusBarItemsModifier: Renderable {
         // Get the status bar from the environment
         let statusBar = renderContext.environment.statusBar
 
-        // Set the items
+        // Set the items silently (without triggering re-render) to avoid render loops.
+        // The modifier is called during rendering, so we must not trigger another render.
         if let contextName = self.context {
             // Push items to a named context (useful for modals/dialogs)
-            statusBar.push(context: contextName, items: items)
+            statusBar.pushSilently(context: contextName, items: items)
         } else {
             // Set as global items
-            statusBar.setItems(items)
+            statusBar.setItemsSilently(items)
         }
 
         // Render the content
