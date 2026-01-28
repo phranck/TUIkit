@@ -84,25 +84,37 @@ extension Panel: Renderable {
             return FrameBuffer()
         }
 
-        let innerWidth = max(contentBuffer.width, title.count + 4)
-        
+        // Title with spaces: " Title "
+        let titleText = " \(title) "
+        let titleLength = titleText.count
+
+        // Inner width must fit both content and title (plus corner + one horizontal on each side)
+        // Top line structure: ┌─ Title ─────┐
+        // So minimum inner width = titleLength + 2 (for the ─ on each side of title)
+        let innerWidth = max(contentBuffer.width, titleLength + 2)
+
         // Build top border with title
         // Format: ┌─ Title ─────┐
-        let titleText = " \(title) "
         let titleStyled = colorize(titleText, with: titleColor ?? borderColor)
-        
+
+        // Left part: corner + one horizontal
         let leftPart = colorize(
             String(borderStyle.topLeft) + String(borderStyle.horizontal),
             with: borderColor
         )
-        let rightPartLength = max(0, innerWidth - 2 - title.count - 2)
+
+        // Right part: remaining horizontals + corner
+        // Total top line width (excluding corners) = innerWidth
+        // Used by: 1 (left horizontal) + titleLength + rightPartLength = innerWidth
+        let rightPartLength = max(0, innerWidth - 1 - titleLength)
         let rightPart = colorize(
             String(repeating: borderStyle.horizontal, count: rightPartLength) + String(borderStyle.topRight),
             with: borderColor
         )
+
         let topLine = leftPart + titleStyled + rightPart
 
-        // Build bottom border
+        // Build bottom border (innerWidth horizontals between corners)
         let bottomLine = colorize(
             String(borderStyle.bottomLeft)
                 + String(repeating: borderStyle.horizontal, count: innerWidth)
@@ -115,12 +127,14 @@ extension Panel: Renderable {
         lines.append(topLine)
 
         // Content lines with side borders
+        // Important: Add reset before right border to prevent color bleeding
+        let reset = "\u{1B}[0m"
         let leftBorder = colorize(String(borderStyle.vertical), with: borderColor)
         let rightBorder = colorize(String(borderStyle.vertical), with: borderColor)
 
         for line in contentBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            lines.append(leftBorder + paddedLine + rightBorder)
+            lines.append(leftBorder + paddedLine + reset + rightBorder)
         }
 
         lines.append(bottomLine)
