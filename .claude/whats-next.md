@@ -1,28 +1,30 @@
-# SwiftTUI - Current Status
+# TUIKit - Current Status
 
 ## Date
 2026-01-28
 
 ## Last work context
-**Session Focus: FocusManager Refactoring to Environment-based**
+**Session Focus: Package Rename from SwiftTUI to TUIKit**
 
-Refactored the FocusManager from singleton pattern to Environment-based injection:
-- Removed `FocusManager.shared` singleton
-- Added `FocusManagerKey` for Environment access via `\.focusManager`
-- `FocusState` now reads from `EnvironmentStorage`
-- `AppRunner` creates and injects FocusManager instance
-- `Button` accesses FocusManager via `context.environment`
-- Updated all tests to use independent FocusManager instances
-- Added new test suite for Environment integration
+Renamed the entire package due to name collision with existing rensbreur/SwiftTUI:
+- Package name: SwiftTUI -> TUIKit
+- Library target: SwiftTUI -> TUIKit
+- Example target: SwiftTUIExample -> TUIKitExample
+- Test target: SwiftTUITests -> TUIKitTests
+- All imports updated
+- All code references updated
+- Documentation updated
 
-**Key Result: Tests can now run in parallel!** No more `--no-parallel` needed.
+Also completed FocusManager refactoring earlier in session:
+- Removed FocusManager.shared singleton
+- FocusManager now injected via Environment (\.focusManager)
+- Tests can run in parallel
 
 ## Active tasks
-- [ ] Rename package from SwiftTUI to TUIKit (name collision with existing package)
 - [ ] Open PR for `feature/tview-foundation`
 
 ## Next steps
-1. **Rename to TUIKit** - Package name, imports, folder structure
+1. **Open PR** - Merge feature/tview-foundation to main
 2. **TextField View** - Text input with cursor management
 3. **ScrollView** - Scrollable content area
 4. **Improve HStack** - Two-pass layout (measure, then position)
@@ -32,14 +34,16 @@ Refactored the FocusManager from singleton pattern to Environment-based injectio
 - Should `DefaultTheme` be renamed to `ANSITheme`? What should be the actual default?
 
 ## Important decisions
+- **Package name: TUIKit** - Apple-style naming (like UIKit, AppKit)
 - **No singletons for state** - Use Environment system instead
 - **FocusManager via Environment** - `\.focusManager` environment key
-- **Package rename to TUIKit** - Due to name collision with rensbreur/SwiftTUI
 
 ## Notes
-- Run tests with `swift test` (parallel now works!)
+- Run tests with `swift test` (parallel works!)
 - 181 tests across 27 suites, all passing
-- FocusManager accessible via `@Environment(\.focusManager)` or `context.environment.focusManager`
+- Import with `import TUIKit`
+- Version variable: `tuiKitVersion`
 
 ## Commits this session
 - `5b54c26` - refactor: Replace FocusManager singleton with Environment-based injection
+- `ca977c3` - refactor: Rename package from SwiftTUI to TUIKit
