@@ -126,7 +126,7 @@ extension Theme {
 
 /// Environment key for the current theme.
 private struct ThemeKey: EnvironmentKey {
-    static let defaultValue: Theme = DefaultTheme()
+    static let defaultValue: Theme = GreenPhosphorTheme()
 }
 
 extension EnvironmentValues {
@@ -268,52 +268,41 @@ extension View {
 
 // MARK: - Predefined Themes
 
-/// The default theme using standard ANSI colors.
-public struct DefaultTheme: Theme {
-    public let id = "default"
-    public let name = "Default"
-
-    public let background = Color.default
-    public let backgroundSecondary = Color.brightBlack
-    public let foreground = Color.white
-    public let foregroundSecondary = Color.brightWhite
-    public let foregroundTertiary = Color.brightBlack
-    public let accent = Color.cyan
-    public let accentSecondary = Color.blue
-    public let success = Color.green
-    public let warning = Color.yellow
-    public let error = Color.red
-    public let info = Color.cyan
-    public let border = Color.brightBlack
-    public let statusBarHighlight = Color.cyan
-
-    public init() {}
-}
-
 /// Classic green phosphor terminal theme (P1 phosphor).
 ///
 /// Inspired by early CRT monitors like the IBM 5151 and Apple II.
+/// Uses a dark background with subtle green tint.
 public struct GreenPhosphorTheme: Theme {
     public let id = "green-phosphor"
-    public let name = "Green (Phosphor)"
+    public let name = "Green"
 
-    // Dark background with green phosphor glow
-    public let background = Color.hex(0x0D1F0D)
-    public let backgroundSecondary = Color.hex(0x0A1A0A)
-    public let backgroundTertiary = Color.hex(0x071407)
-    public let foreground = Color.hex(0x33FF33)
-    public let foregroundSecondary = Color.hex(0x29CC29)
-    public let foregroundTertiary = Color.hex(0x1F991F)
-    public let accent = Color.hex(0x66FF66)
-    public let accentSecondary = Color.hex(0x00CC00)
+    // Dark background with subtle green tint
+    public let background = Color.hex(0x0F1A0F)             // Very dark with green tint
+    public let backgroundSecondary = Color.hex(0x162016)    // Slightly lighter
+    public let backgroundTertiary = Color.hex(0x0A120A)     // Darkest
+    
+    // Green phosphor text hierarchy
+    public let foreground = Color.hex(0x33FF33)           // Bright green - primary text
+    public let foregroundSecondary = Color.hex(0x29CC29)  // Medium green - secondary text
+    public let foregroundTertiary = Color.hex(0x1F8F1F)   // Dim green - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0x66FF66)               // Lighter green for highlights
+    public let accentSecondary = Color.hex(0x00CC00)      // Darker accent
+    
+    // Semantic colors (stay in green family)
     public let success = Color.hex(0x33FF33)
-    public let warning = Color.hex(0xCCFF33)
-    public let error = Color.hex(0xFF6633)
-    public let info = Color.hex(0x33FFCC)
-    public let border = Color.hex(0x1F661F)
-    public let borderFocused = Color.hex(0x33FF33)
-    public let selection = Color.hex(0x1F4D1F)
-    public let statusBarBackground = Color.hex(0x0A1A0A)
+    public let warning = Color.hex(0xCCFF33)              // Yellow-green
+    public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
+    public let info = Color.hex(0x33FFCC)                 // Cyan-green
+    
+    // UI elements
+    public let border = Color.hex(0x2D5A2D)               // Subtle green border
+    public let borderFocused = Color.hex(0x33FF33)        // Bright when focused
+    public let selection = Color.hex(0x1F4D1F)            // Dark green for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x162016)
     public let statusBarForeground = Color.hex(0x33FF33)
     public let statusBarHighlight = Color.hex(0x66FF66)
 
@@ -323,28 +312,39 @@ public struct GreenPhosphorTheme: Theme {
 /// Classic amber phosphor terminal theme (P3 phosphor).
 ///
 /// Inspired by terminals like the IBM 3278 and Wyse 50.
+/// Uses a dark background with subtle amber/orange tint.
 public struct AmberPhosphorTheme: Theme {
     public let id = "amber-phosphor"
-    public let name = "Amber (Phosphor)"
+    public let name = "Amber"
 
-    // Dark background with amber phosphor glow
-    public let background = Color.hex(0x1F1400)
-    public let backgroundSecondary = Color.hex(0x1A1100)
-    public let backgroundTertiary = Color.hex(0x140D00)
-    public let foreground = Color.hex(0xFFB000)
-    public let foregroundSecondary = Color.hex(0xCC8C00)
-    public let foregroundTertiary = Color.hex(0x996900)
-    public let accent = Color.hex(0xFFCC33)
-    public let accentSecondary = Color.hex(0xCC9900)
+    // Dark background with subtle amber tint
+    public let background = Color.hex(0x1A150F)             // Very dark with amber tint
+    public let backgroundSecondary = Color.hex(0x201A14)    // Slightly lighter
+    public let backgroundTertiary = Color.hex(0x120E0A)     // Darkest
+    
+    // Amber phosphor text hierarchy (matching Spotnik)
+    public let foreground = Color.hex(0xFFAA00)           // Bright amber - primary text
+    public let foregroundSecondary = Color.hex(0xCC8800)  // Medium amber - secondary text
+    public let foregroundTertiary = Color.hex(0x8F6600)   // Dim amber - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFFCC33)               // Lighter amber for highlights
+    public let accentSecondary = Color.hex(0xCC9900)      // Darker accent
+    
+    // Semantic colors (stay in amber family)
     public let success = Color.hex(0xFFCC00)
-    public let warning = Color.hex(0xFFE066)
-    public let error = Color.hex(0xFF6633)
-    public let info = Color.hex(0xFFD966)
-    public let border = Color.hex(0x664D00)
-    public let borderFocused = Color.hex(0xFFB000)
-    public let selection = Color.hex(0x4D3A00)
-    public let statusBarBackground = Color.hex(0x1A1100)
-    public let statusBarForeground = Color.hex(0xFFB000)
+    public let warning = Color.hex(0xFFE066)              // Light amber
+    public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
+    public let info = Color.hex(0xFFD966)                 // Light amber
+    
+    // UI elements
+    public let border = Color.hex(0x5A4A2D)               // Subtle amber border
+    public let borderFocused = Color.hex(0xFFAA00)        // Bright when focused
+    public let selection = Color.hex(0x4D3A1F)            // Dark amber for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x201A14)
+    public let statusBarForeground = Color.hex(0xFFAA00)
     public let statusBarHighlight = Color.hex(0xFFCC33)
 
     public init() {}
@@ -353,29 +353,40 @@ public struct AmberPhosphorTheme: Theme {
 /// Classic white phosphor terminal theme (P4 phosphor).
 ///
 /// Inspired by terminals like the DEC VT100 and VT220.
+/// Uses a dark background with subtle cool/blue tint.
 public struct WhitePhosphorTheme: Theme {
     public let id = "white-phosphor"
-    public let name = "White (Phosphor)"
+    public let name = "White"
 
-    // Dark background with white/cool phosphor glow
-    public let background = Color.hex(0x0A0A0F)
-    public let backgroundSecondary = Color.hex(0x12121A)
-    public let backgroundTertiary = Color.hex(0x080810)
-    public let foreground = Color.hex(0xE0E0E8)
-    public let foregroundSecondary = Color.hex(0xB0B0B8)
-    public let foregroundTertiary = Color.hex(0x808088)
-    public let accent = Color.hex(0xF0F0FF)
-    public let accentSecondary = Color.hex(0xC0C0D0)
-    public let success = Color.hex(0xC0FFC0)
-    public let warning = Color.hex(0xFFE0A0)
-    public let error = Color.hex(0xFFA0A0)
-    public let info = Color.hex(0xA0E0FF)
-    public let border = Color.hex(0x404050)
-    public let borderFocused = Color.hex(0xE0E0E8)
-    public let selection = Color.hex(0x303040)
-    public let statusBarBackground = Color.hex(0x12121A)
-    public let statusBarForeground = Color.hex(0xE0E0E8)
-    public let statusBarHighlight = Color.hex(0xF0F0FF)
+    // Dark background with subtle cool/blue tint
+    public let background = Color.hex(0x121418)             // Very dark with blue tint
+    public let backgroundSecondary = Color.hex(0x181C20)    // Slightly lighter
+    public let backgroundTertiary = Color.hex(0x0C0E10)     // Darkest
+    
+    // White/gray phosphor text hierarchy
+    public let foreground = Color.hex(0xE8E8E8)           // Bright white - primary text
+    public let foregroundSecondary = Color.hex(0xB0B0B0)  // Medium gray - secondary text
+    public let foregroundTertiary = Color.hex(0x787878)   // Dim gray - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFFFFFF)               // Pure white for highlights
+    public let accentSecondary = Color.hex(0xC0C0C0)      // Light gray accent
+    
+    // Semantic colors (subtle tints)
+    public let success = Color.hex(0xC0FFC0)              // Slight green tint
+    public let warning = Color.hex(0xFFE0A0)              // Slight amber tint
+    public let error = Color.hex(0xFFA0A0)                // Slight red tint
+    public let info = Color.hex(0xA0D0FF)                 // Slight blue tint
+    
+    // UI elements
+    public let border = Color.hex(0x484848)               // Subtle gray border
+    public let borderFocused = Color.hex(0xE8E8E8)        // Bright when focused
+    public let selection = Color.hex(0x3A3A3A)            // Dark gray for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x181C20)
+    public let statusBarForeground = Color.hex(0xE8E8E8)
+    public let statusBarHighlight = Color.hex(0xFFFFFF)
 
     public init() {}
 }
@@ -383,28 +394,39 @@ public struct WhitePhosphorTheme: Theme {
 /// Red phosphor terminal theme.
 ///
 /// Less common but used in some military and specialized applications.
+/// Night-vision friendly with reduced eye strain in dark environments.
 public struct RedPhosphorTheme: Theme {
     public let id = "red-phosphor"
-    public let name = "Red (Phosphor)"
+    public let name = "Red"
 
-    // Dark background with red phosphor glow
-    public let background = Color.hex(0x1A0A0A)
-    public let backgroundSecondary = Color.hex(0x140808)
-    public let backgroundTertiary = Color.hex(0x100606)
-    public let foreground = Color.hex(0xFF4040)
-    public let foregroundSecondary = Color.hex(0xCC3333)
-    public let foregroundTertiary = Color.hex(0x992626)
-    public let accent = Color.hex(0xFF6666)
-    public let accentSecondary = Color.hex(0xCC4040)
-    public let success = Color.hex(0xFF8080)
-    public let warning = Color.hex(0xFFB366)
-    public let error = Color.hex(0xFFFFFF)
-    public let info = Color.hex(0xFF9999)
-    public let border = Color.hex(0x661A1A)
-    public let borderFocused = Color.hex(0xFF4040)
-    public let selection = Color.hex(0x4D1414)
-    public let statusBarBackground = Color.hex(0x140808)
-    public let statusBarForeground = Color.hex(0xFF4040)
+    // Dark background with subtle red tint
+    public let background = Color.hex(0x1A0F0F)             // Very dark with red tint
+    public let backgroundSecondary = Color.hex(0x201414)    // Slightly lighter
+    public let backgroundTertiary = Color.hex(0x120A0A)     // Darkest
+    
+    // Red phosphor text hierarchy
+    public let foreground = Color.hex(0xFF4444)           // Bright red - primary text
+    public let foregroundSecondary = Color.hex(0xCC3333)  // Medium red - secondary text
+    public let foregroundTertiary = Color.hex(0x8F2222)   // Dim red - tertiary/muted text
+    
+    // Accent colors
+    public let accent = Color.hex(0xFF6666)               // Lighter red for highlights
+    public let accentSecondary = Color.hex(0xCC4444)      // Darker accent
+    
+    // Semantic colors (stay in red family)
+    public let success = Color.hex(0xFF8080)              // Light red (success in red theme)
+    public let warning = Color.hex(0xFFAA66)              // Orange
+    public let error = Color.hex(0xFFFFFF)                // White (stands out as error)
+    public let info = Color.hex(0xFF9999)                 // Light red
+    
+    // UI elements
+    public let border = Color.hex(0x5A2D2D)               // Subtle red border
+    public let borderFocused = Color.hex(0xFF4444)        // Bright when focused
+    public let selection = Color.hex(0x4D1F1F)            // Dark red for selection bg
+    
+    // Status bar
+    public let statusBarBackground = Color.hex(0x201414)
+    public let statusBarForeground = Color.hex(0xFF4444)
     public let statusBarHighlight = Color.hex(0xFF6666)
 
     public init() {}
@@ -442,74 +464,19 @@ public struct NCursesTheme: Theme {
     public init() {}
 }
 
-/// Dark mode theme with modern colors.
-public struct DarkTheme: Theme {
-    public let id = "dark"
-    public let name = "Dark"
-
-    public let background = Color.hex(0x1E1E2E)
-    public let backgroundSecondary = Color.hex(0x313244)
-    public let backgroundTertiary = Color.hex(0x45475A)
-    public let foreground = Color.hex(0xCDD6F4)
-    public let foregroundSecondary = Color.hex(0xBAC2DE)
-    public let foregroundTertiary = Color.hex(0xA6ADC8)
-    public let accent = Color.hex(0x89B4FA)
-    public let accentSecondary = Color.hex(0x74C7EC)
-    public let success = Color.hex(0xA6E3A1)
-    public let warning = Color.hex(0xF9E2AF)
-    public let error = Color.hex(0xF38BA8)
-    public let info = Color.hex(0x89DCEB)
-    public let border = Color.hex(0x585B70)
-    public let borderFocused = Color.hex(0x89B4FA)
-    public let selection = Color.hex(0x45475A)
-    public let statusBarBackground = Color.hex(0x313244)
-    public let statusBarForeground = Color.hex(0xCDD6F4)
-    public let statusBarHighlight = Color.hex(0x89B4FA)
-
-    public init() {}
-}
-
-/// Light mode theme.
-public struct LightTheme: Theme {
-    public let id = "light"
-    public let name = "Light"
-
-    public let background = Color.hex(0xEFF1F5)
-    public let backgroundSecondary = Color.hex(0xE6E9EF)
-    public let backgroundTertiary = Color.hex(0xDCE0E8)
-    public let foreground = Color.hex(0x4C4F69)
-    public let foregroundSecondary = Color.hex(0x5C5F77)
-    public let foregroundTertiary = Color.hex(0x6C6F85)
-    public let accent = Color.hex(0x1E66F5)
-    public let accentSecondary = Color.hex(0x209FB5)
-    public let success = Color.hex(0x40A02B)
-    public let warning = Color.hex(0xDF8E1D)
-    public let error = Color.hex(0xD20F39)
-    public let info = Color.hex(0x04A5E5)
-    public let border = Color.hex(0x9CA0B0)
-    public let borderFocused = Color.hex(0x1E66F5)
-    public let selection = Color.hex(0xDCE0E8)
-    public let statusBarBackground = Color.hex(0xE6E9EF)
-    public let statusBarForeground = Color.hex(0x4C4F69)
-    public let statusBarHighlight = Color.hex(0x1E66F5)
-
-    public init() {}
-}
-
 // MARK: - Theme Registry
 
 /// Registry of available themes.
 public struct ThemeRegistry {
-    /// All available themes.
+    /// All available themes in cycling order.
+    ///
+    /// Order: Green → Amber → White → Red → NCurses
     public static let all: [Theme] = [
-        DefaultTheme(),
         GreenPhosphorTheme(),
         AmberPhosphorTheme(),
         WhitePhosphorTheme(),
         RedPhosphorTheme(),
-        NCursesTheme(),
-        DarkTheme(),
-        LightTheme()
+        NCursesTheme()
     ]
 
     /// Finds a theme by ID.
@@ -525,12 +492,9 @@ public struct ThemeRegistry {
 
 // MARK: - Convenience Theme Accessors
 
-extension Theme where Self == DefaultTheme {
-    /// The default theme.
-    public static var `default`: DefaultTheme { DefaultTheme() }
-}
-
 extension Theme where Self == GreenPhosphorTheme {
+    /// The default theme (green phosphor).
+    public static var `default`: GreenPhosphorTheme { GreenPhosphorTheme() }
     /// Green phosphor terminal theme.
     public static var green: GreenPhosphorTheme { GreenPhosphorTheme() }
     /// Green phosphor terminal theme (alias).
@@ -563,12 +527,129 @@ extension Theme where Self == NCursesTheme {
     public static var ncurses: NCursesTheme { NCursesTheme() }
 }
 
-extension Theme where Self == DarkTheme {
-    /// Modern dark theme.
-    public static var dark: DarkTheme { DarkTheme() }
+// MARK: - Theme Manager
+
+/// Manages theme cycling for the application.
+///
+/// The `ThemeManager` provides methods to cycle through available themes
+/// and set specific themes. It works with the environment system to update
+/// the current theme and trigger re-renders.
+///
+/// # Usage
+///
+/// Access via environment:
+///
+/// ```swift
+/// @Environment(\.themeManager) var themeManager
+///
+/// // Cycle to the next theme
+/// themeManager.cycleTheme()
+///
+/// // Set a specific theme
+/// themeManager.setTheme(.amber)
+/// themeManager.setTheme(.greenPhosphor)
+///
+/// // Get the current theme
+/// let theme = themeManager.currentTheme
+/// ```
+public final class ThemeManager: @unchecked Sendable {
+    /// The current theme index.
+    private var currentIndex: Int = 0
+    
+    /// All available themes.
+    public let availableThemes: [Theme]
+    
+    /// Creates a new theme manager with the default themes.
+    public init() {
+        self.availableThemes = ThemeRegistry.all
+    }
+    
+    /// Creates a new theme manager with custom themes.
+    ///
+    /// - Parameter themes: The themes to cycle through.
+    public init(themes: [Theme]) {
+        self.availableThemes = themes.isEmpty ? ThemeRegistry.all : themes
+    }
+    
+    /// The current theme.
+    public var currentTheme: Theme {
+        availableThemes[currentIndex]
+    }
+    
+    /// The name of the current theme.
+    public var currentThemeName: String {
+        currentTheme.name
+    }
+    
+    /// Cycles to the next theme.
+    ///
+    /// Updates the environment and triggers a re-render.
+    public func cycleTheme() {
+        currentIndex = (currentIndex + 1) % availableThemes.count
+        applyCurrentTheme()
+    }
+    
+    /// Cycles to the previous theme.
+    ///
+    /// Updates the environment and triggers a re-render.
+    public func cyclePreviousTheme() {
+        currentIndex = (currentIndex - 1 + availableThemes.count) % availableThemes.count
+        applyCurrentTheme()
+    }
+    
+    /// Sets a specific theme.
+    ///
+    /// - Parameter theme: The theme to set.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// themeManager.setTheme(.amber)
+    /// themeManager.setTheme(.greenPhosphor)
+    /// themeManager.setTheme(.dark)
+    /// ```
+    public func setTheme(_ theme: Theme) {
+        if let index = availableThemes.firstIndex(where: { $0.id == theme.id }) {
+            currentIndex = index
+        } else {
+            // Theme not in list, add temporarily at current position
+            currentIndex = 0
+        }
+        
+        // Apply the theme directly (even if not in availableThemes)
+        var environment = EnvironmentStorage.shared.environment
+        environment.theme = theme
+        EnvironmentStorage.shared.environment = environment
+        AppState.shared.setNeedsRender()
+    }
+    
+    /// Applies the current theme to the environment and triggers a re-render.
+    private func applyCurrentTheme() {
+        var environment = EnvironmentStorage.shared.environment
+        environment.theme = currentTheme
+        EnvironmentStorage.shared.environment = environment
+        AppState.shared.setNeedsRender()
+    }
 }
 
-extension Theme where Self == LightTheme {
-    /// Modern light theme.
-    public static var light: LightTheme { LightTheme() }
+// MARK: - ThemeManager Environment Key
+
+/// Environment key for the theme manager.
+private struct ThemeManagerKey: EnvironmentKey {
+    static let defaultValue: ThemeManager = ThemeManager()
+}
+
+extension EnvironmentValues {
+    /// The theme manager for cycling and setting themes.
+    ///
+    /// ```swift
+    /// @Environment(\.themeManager) var themeManager
+    ///
+    /// themeManager.cycleTheme()
+    /// themeManager.setTheme(.amber)
+    /// ```
+    public var themeManager: ThemeManager {
+        get { self[ThemeManagerKey.self] }
+        set { self[ThemeManagerKey.self] = newValue }
+    }
 }
