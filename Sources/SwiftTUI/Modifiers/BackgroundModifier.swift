@@ -6,7 +6,7 @@
 //
 
 /// A modifier that fills the background of a view with a color.
-public struct BackgroundModifier: TViewModifier {
+public struct BackgroundModifier: ViewModifier {
     /// The background color.
     public let color: Color
 
@@ -55,9 +55,9 @@ public struct BackgroundModifier: TViewModifier {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Adds a background color to this view.
     ///
     /// # Example

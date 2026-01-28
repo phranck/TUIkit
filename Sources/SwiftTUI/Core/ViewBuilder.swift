@@ -1,13 +1,13 @@
 //
-//  TViewBuilder.swift
+//  ViewBuilder.swift
 //  SwiftTUI
 //
 //  Result builder for declarative view composition.
 //
 
-/// A result builder for TView hierarchies.
+/// A result builder for View hierarchies.
 ///
-/// The `@TViewBuilder` enables a declarative syntax similar to SwiftUI:
+/// The `@ViewBuilder` enables a declarative syntax similar to SwiftUI:
 ///
 /// ```swift
 /// VStack {
@@ -26,19 +26,19 @@
 /// - Optional views (`if let`)
 /// - Arrays of views (`for-in`)
 @resultBuilder
-public struct TViewBuilder {
+public struct ViewBuilder {
 
     // MARK: - Single View
 
     /// Builds a single view.
-    public static func buildBlock<Content: TView>(_ content: Content) -> Content {
+    public static func buildBlock<Content: View>(_ content: Content) -> Content {
         content
     }
 
     // MARK: - Multiple Views (Tuple Views)
 
     /// Builds two views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView>(
+    public static func buildBlock<C0: View, C1: View>(
         _ c0: C0,
         _ c1: C1
     ) -> TupleView2<C0, C1> {
@@ -46,7 +46,7 @@ public struct TViewBuilder {
     }
 
     /// Builds three views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2
@@ -55,7 +55,7 @@ public struct TViewBuilder {
     }
 
     /// Builds four views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -65,7 +65,7 @@ public struct TViewBuilder {
     }
 
     /// Builds five views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -76,7 +76,7 @@ public struct TViewBuilder {
     }
 
     /// Builds six views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView, C5: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -88,7 +88,7 @@ public struct TViewBuilder {
     }
 
     /// Builds seven views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView, C5: TView, C6: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -101,7 +101,7 @@ public struct TViewBuilder {
     }
 
     /// Builds eight views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView, C5: TView, C6: TView, C7: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -115,7 +115,7 @@ public struct TViewBuilder {
     }
 
     /// Builds nine views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView, C5: TView, C6: TView, C7: TView, C8: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View, C8: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -130,7 +130,7 @@ public struct TViewBuilder {
     }
 
     /// Builds ten views into a TupleView.
-    public static func buildBlock<C0: TView, C1: TView, C2: TView, C3: TView, C4: TView, C5: TView, C6: TView, C7: TView, C8: TView, C9: TView>(
+    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View, C8: View, C9: View>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -148,45 +148,45 @@ public struct TViewBuilder {
     // MARK: - Conditionals
 
     /// Supports the true branch of an if-else.
-    public static func buildEither<TrueContent: TView, FalseContent: TView>(
+    public static func buildEither<TrueContent: View, FalseContent: View>(
         first content: TrueContent
     ) -> ConditionalView<TrueContent, FalseContent> {
         .trueContent(content)
     }
 
     /// Supports the false branch of an if-else.
-    public static func buildEither<TrueContent: TView, FalseContent: TView>(
+    public static func buildEither<TrueContent: View, FalseContent: View>(
         second content: FalseContent
     ) -> ConditionalView<TrueContent, FalseContent> {
         .falseContent(content)
     }
 
     /// Supports optional views (if let, if without else).
-    public static func buildOptional<Content: TView>(_ content: Content?) -> Content? {
+    public static func buildOptional<Content: View>(_ content: Content?) -> Content? {
         content
     }
 
     /// Supports availability limiting.
-    public static func buildLimitedAvailability<Content: TView>(_ content: Content) -> Content {
+    public static func buildLimitedAvailability<Content: View>(_ content: Content) -> Content {
         content
     }
 
     // MARK: - Arrays
 
     /// Supports for-in loops.
-    public static func buildArray<Content: TView>(_ components: [Content]) -> TViewArray<Content> {
-        TViewArray(components)
+    public static func buildArray<Content: View>(_ components: [Content]) -> ViewArray<Content> {
+        ViewArray(components)
     }
 
     // MARK: - Expression
 
     /// Converts a single expression into a view.
-    public static func buildExpression<Content: TView>(_ expression: Content) -> Content {
+    public static func buildExpression<Content: View>(_ expression: Content) -> Content {
         expression
     }
 
     /// Supports optional expressions.
-    public static func buildExpression<Content: TView>(_ expression: Content?) -> Content? {
+    public static func buildExpression<Content: View>(_ expression: Content?) -> Content? {
         expression
     }
 }

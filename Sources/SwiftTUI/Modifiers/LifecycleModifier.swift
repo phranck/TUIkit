@@ -80,7 +80,7 @@ public final class LifecycleTracker: @unchecked Sendable {
 // MARK: - OnAppear Modifier
 
 /// A modifier that executes an action when a view first appears.
-public struct OnAppearModifier<Content: TView>: TView {
+public struct OnAppearModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -133,7 +133,7 @@ public final class DisappearCallbackStorage: @unchecked Sendable {
 }
 
 /// A modifier that executes an action when a view disappears.
-public struct OnDisappearModifier<Content: TView>: TView {
+public struct OnDisappearModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -166,7 +166,7 @@ extension OnDisappearModifier: Renderable {
 /// A modifier that starts an async task when a view appears.
 ///
 /// The task is cancelled when the view disappears.
-public struct TaskModifier<Content: TView>: TView {
+public struct TaskModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -255,9 +255,9 @@ private final class TokenGenerator: @unchecked Sendable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Executes an action when this view first appears.
     ///
     /// The action is only executed once per view appearance. If the view
@@ -266,8 +266,8 @@ extension TView {
     /// # Example
     ///
     /// ```swift
-    /// struct ContentView: TView {
-    ///     var body: some TView {
+    /// struct ContentView: View {
+    ///     var body: some View {
     ///         Text("Hello")
     ///             .onAppear {
     ///                 loadData()
@@ -278,7 +278,7 @@ extension TView {
     ///
     /// - Parameter action: The action to execute.
     /// - Returns: A view that executes the action on appearance.
-    public func onAppear(perform action: @escaping () -> Void) -> some TView {
+    public func onAppear(perform action: @escaping () -> Void) -> some View {
         OnAppearModifier(
             content: self,
             token: TokenGenerator.shared.next(),
@@ -293,8 +293,8 @@ extension TView {
     /// # Example
     ///
     /// ```swift
-    /// struct ContentView: TView {
-    ///     var body: some TView {
+    /// struct ContentView: View {
+    ///     var body: some View {
     ///         Text("Hello")
     ///             .onDisappear {
     ///                 cleanup()
@@ -305,7 +305,7 @@ extension TView {
     ///
     /// - Parameter action: The action to execute.
     /// - Returns: A view that executes the action on disappearance.
-    public func onDisappear(perform action: @escaping () -> Void) -> some TView {
+    public func onDisappear(perform action: @escaping () -> Void) -> some View {
         OnDisappearModifier(
             content: self,
             token: TokenGenerator.shared.next(),
@@ -320,8 +320,8 @@ extension TView {
     /// # Example
     ///
     /// ```swift
-    /// struct ContentView: TView {
-    ///     var body: some TView {
+    /// struct ContentView: View {
+    ///     var body: some View {
     ///         Text("Loading...")
     ///             .task {
     ///                 await fetchData()
@@ -337,7 +337,7 @@ extension TView {
     public func task(
         priority: TaskPriority = .userInitiated,
         _ action: @escaping @Sendable () async -> Void
-    ) -> some TView {
+    ) -> some View {
         TaskModifier(
             content: self,
             token: TokenGenerator.shared.next(),

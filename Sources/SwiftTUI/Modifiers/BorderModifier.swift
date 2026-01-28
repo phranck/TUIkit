@@ -9,7 +9,7 @@
 ///
 /// This modifier reduces the available width for content by 2 characters
 /// (for the left and right border) to ensure the total width stays within bounds.
-public struct BorderedView<Content: TView>: TView {
+public struct BorderedView<Content: View>: View {
     /// The content to wrap with a border.
     let content: Content
 
@@ -99,9 +99,9 @@ extension BorderedView: Renderable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Adds a border around this view.
     ///
     /// The border reserves 2 characters of width (left and right),
@@ -127,18 +127,18 @@ extension TView {
     public func border(
         _ style: BorderStyle = .line,
         color: Color? = nil
-    ) -> some TView {
+    ) -> some View {
         BorderedView(content: self, style: style, color: color)
     }
 }
 
-// MARK: - Legacy TViewModifier (kept for compatibility)
+// MARK: - Legacy ViewModifier (kept for compatibility)
 
 /// A modifier that adds a border around a view.
 ///
 /// Note: This is the legacy implementation. The new `BorderedView`
 /// correctly handles available width constraints.
-public struct BorderModifier: TViewModifier {
+public struct BorderModifier: ViewModifier {
     /// The border style to use.
     public let style: BorderStyle
 

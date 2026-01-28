@@ -7,21 +7,21 @@
 
 /// A modifier that transforms a view's rendered output.
 ///
-/// `TViewModifier` works on the `FrameBuffer` level: it takes a rendered
+/// `ViewModifier` works on the `FrameBuffer` level: it takes a rendered
 /// buffer and returns a transformed buffer. This allows modifiers like
 /// `.padding()` and `.frame()` to manipulate layout after rendering.
 ///
 /// # Example
 ///
 /// ```swift
-/// struct MyModifier: TViewModifier {
+/// struct MyModifier: ViewModifier {
 ///     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
 ///         // transform the buffer
 ///         return buffer
 ///     }
 /// }
 /// ```
-public protocol TViewModifier {
+public protocol ViewModifier {
     /// Transforms a rendered buffer.
     ///
     /// - Parameters:
@@ -37,7 +37,7 @@ public protocol TViewModifier {
 ///
 /// This is the return type of modifier methods like `.frame()` and `.padding()`.
 /// It is created automatically — users don't instantiate this directly.
-public struct ModifiedView<Content: TView, Modifier: TViewModifier>: TView {
+public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The original view.
     public let content: Content
 
@@ -58,14 +58,14 @@ extension ModifiedView: Renderable {
     }
 }
 
-// MARK: - TView Modifier Extension
+// MARK: - View Modifier Extension
 
-extension TView {
+extension View {
     /// Applies a modifier to this view.
     ///
     /// - Parameter modifier: The modifier to apply.
     /// - Returns: A modified view.
-    public func modifier<M: TViewModifier>(_ modifier: M) -> ModifiedView<Self, M> {
+    public func modifier<M: ViewModifier>(_ modifier: M) -> ModifiedView<Self, M> {
         ModifiedView(content: self, modifier: modifier)
     }
 }

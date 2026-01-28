@@ -187,7 +187,7 @@ public final class PreferenceStorage: @unchecked Sendable {
 // MARK: - Preference Modifier
 
 /// A modifier that sets a preference value.
-public struct PreferenceModifier<Content: TView, K: PreferenceKey>: TView {
+public struct PreferenceModifier<Content: View, K: PreferenceKey>: View {
     /// The content view.
     let content: Content
 
@@ -212,7 +212,7 @@ extension PreferenceModifier: Renderable {
 // MARK: - OnPreferenceChange Modifier
 
 /// A modifier that reacts to preference changes.
-public struct OnPreferenceChangeModifier<Content: TView, K: PreferenceKey>: TView
+public struct OnPreferenceChangeModifier<Content: View, K: PreferenceKey>: View
 where K.Value: Equatable {
     /// The content view.
     let content: Content
@@ -246,9 +246,9 @@ extension OnPreferenceChangeModifier: Renderable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Sets a preference value for this view.
     ///
     /// Preferences propagate up the view hierarchy, allowing child views
@@ -265,7 +265,7 @@ extension TView {
     ///   - key: The preference key type.
     ///   - value: The value to set.
     /// - Returns: A view that sets the preference.
-    public func preference<K: PreferenceKey>(key: K.Type, value: K.Value) -> some TView {
+    public func preference<K: PreferenceKey>(key: K.Type, value: K.Value) -> some View {
         PreferenceModifier<Self, K>(content: self, value: value)
     }
 
@@ -289,7 +289,7 @@ extension TView {
     public func onPreferenceChange<K: PreferenceKey>(
         _ key: K.Type,
         perform action: @escaping (K.Value) -> Void
-    ) -> some TView where K.Value: Equatable {
+    ) -> some View where K.Value: Equatable {
         OnPreferenceChangeModifier<Self, K>(content: self, action: action)
     }
 }
@@ -321,7 +321,7 @@ public struct AnchorPreferenceKey: PreferenceKey {
 
 // MARK: - Convenience Extensions
 
-extension TView {
+extension View {
     /// Sets the navigation title for this view.
     ///
     /// # Example
@@ -335,7 +335,7 @@ extension TView {
     ///
     /// - Parameter title: The navigation title.
     /// - Returns: A view with the navigation title preference set.
-    public func navigationTitle(_ title: String) -> some TView {
+    public func navigationTitle(_ title: String) -> some View {
         preference(key: NavigationTitleKey.self, value: title)
     }
 }

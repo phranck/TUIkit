@@ -21,7 +21,7 @@
 /// Text("Colored")
 ///     .foregroundColor(.red)
 /// ```
-public struct Text: TView {
+public struct Text: View {
     /// The text to display.
     public let content: String
 

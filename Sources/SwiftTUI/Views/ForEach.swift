@@ -39,7 +39,7 @@
 ///     }
 /// }
 /// ```
-public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: TView>: TView {
+public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: View>: View {
     /// The underlying data collection.
     public let data: Data
 
@@ -58,7 +58,7 @@ public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: TView
     public init(
         _ data: Data,
         id: KeyPath<Data.Element, ID>,
-        @TViewBuilder content: @escaping (Data.Element) -> Content
+        @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.data = data
         self.idKeyPath = id
@@ -80,7 +80,7 @@ extension ForEach where Data.Element: Identifiable, ID == Data.Element.ID {
     ///   - content: The closure that creates the view for each element.
     public init(
         _ data: Data,
-        @TViewBuilder content: @escaping (Data.Element) -> Content
+        @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.data = data
         self.idKeyPath = \Data.Element.id
@@ -98,7 +98,7 @@ extension ForEach where Data == Range<Int>, ID == Int {
     ///   - content: The closure that creates the view for each index.
     public init(
         _ data: Range<Int>,
-        @TViewBuilder content: @escaping (Int) -> Content
+        @ViewBuilder content: @escaping (Int) -> Content
     ) {
         self.data = data
         self.idKeyPath = \.self

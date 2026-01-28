@@ -176,12 +176,12 @@ public final class StorageManager: @unchecked Sendable {
 /// # Example
 ///
 /// ```swift
-/// struct SettingsView: TView {
+/// struct SettingsView: View {
 ///     @AppStorage("username") var username = "Guest"
 ///     @AppStorage("darkMode") var darkMode = false
 ///     @AppStorage("fontSize") var fontSize = 14
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         VStack {
 ///             Text("User: \(username)")
 ///             Text("Dark Mode: \(darkMode ? "On" : "Off")")
@@ -306,11 +306,11 @@ extension AppStorage where Value: ExpressibleByNilLiteral {
 /// # Example
 ///
 /// ```swift
-/// struct ContentView: TView {
+/// struct ContentView: View {
 ///     @SceneStorage("selectedTab") var selectedTab = 0
 ///     @SceneStorage("scrollOffset") var scrollOffset = 0
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         TabView(selection: $selectedTab) {
 ///             // ...
 ///         }

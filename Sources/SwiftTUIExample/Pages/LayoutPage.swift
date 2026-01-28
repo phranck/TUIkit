@@ -14,8 +14,8 @@ import SwiftTUI
 /// - HStack (horizontal stacking)
 /// - Spacer (flexible space)
 /// - Padding and frame modifiers
-struct LayoutPage: TView {
-    var body: some TView {
+struct LayoutPage: View {
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Layout System Demo")
 

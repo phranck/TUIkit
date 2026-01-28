@@ -115,7 +115,7 @@ public struct ButtonStyle: Sendable {
 ///     dismiss()
 /// }
 /// ```
-public struct Button: TView {
+public struct Button: View {
     /// The button's label text.
     public let label: String
 
@@ -352,7 +352,7 @@ extension Button {
 ///     Button("OK", style: .primary) { confirm() }
 /// }
 /// ```
-public struct ButtonRow: TView {
+public struct ButtonRow: View {
     private let buttons: [Button]
     private let spacing: Int
 

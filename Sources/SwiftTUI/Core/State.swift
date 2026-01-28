@@ -62,10 +62,10 @@ public final class AppState: @unchecked Sendable {
 /// # Example
 ///
 /// ```swift
-/// struct ContentView: TView {
-///     @TState var selectedIndex = 0
+/// struct ContentView: View {
+///     @State var selectedIndex = 0
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         Menu(items: menuItems, selection: $selectedIndex)
 ///     }
 /// }
@@ -108,20 +108,20 @@ public struct Binding<Value> {
     }
 }
 
-// MARK: - TState Property Wrapper
+// MARK: - State Property Wrapper
 
 /// A property wrapper that stores mutable state for a view.
 ///
 /// When the value changes, the view hierarchy is re-rendered.
-/// Use `@TState` for simple value types owned by a single view.
+/// Use `@State` for simple value types owned by a single view.
 ///
 /// # Example
 ///
 /// ```swift
-/// struct CounterView: TView {
-///     @TState var count = 0
+/// struct CounterView: View {
+///     @State var count = 0
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         VStack {
 ///             Text("Count: \(count)")
 ///             // When count changes, view re-renders
@@ -138,7 +138,7 @@ public struct Binding<Value> {
 /// Menu(selection: $selectedIndex)
 /// ```
 @propertyWrapper
-public struct TState<Value> {
+public struct State<Value> {
     /// The storage for the state value.
     private final class Storage {
         var value: Value {

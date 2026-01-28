@@ -13,7 +13,7 @@ public let swiftTUIVersion = "0.1.0"
 
 /// Executes a view closure and renders it once.
 ///
-/// This is useful for simple CLI tools that don't need a full TApp.
+/// This is useful for simple CLI tools that don't need a full App.
 ///
 /// # Example
 ///
@@ -32,7 +32,7 @@ public let swiftTUIVersion = "0.1.0"
 ///
 /// - Parameter content: A ViewBuilder closure that defines the view to render.
 @discardableResult
-public func renderOnce<Content: TView>(@TViewBuilder content: () -> Content) -> Int {
+public func renderOnce<Content: View>(@ViewBuilder content: () -> Content) -> Int {
     let view = content()
     let renderer = ViewRenderer()
     renderer.render(view)

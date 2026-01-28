@@ -30,7 +30,7 @@
 ///     Text("Longer text")
 /// }
 /// ```
-public struct VStack<Content: TView>: TView {
+public struct VStack<Content: View>: View {
     /// The horizontal alignment of the children.
     public let alignment: HorizontalAlignment
 
@@ -49,7 +49,7 @@ public struct VStack<Content: TView>: TView {
     public init(
         alignment: HorizontalAlignment = .leading,
         spacing: Int = 0,
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
         self.spacing = spacing
@@ -84,7 +84,7 @@ public struct VStack<Content: TView>: TView {
 ///     Text("Right")
 /// }
 /// ```
-public struct HStack<Content: TView>: TView {
+public struct HStack<Content: View>: View {
     /// The vertical alignment of the children.
     public let alignment: VerticalAlignment
 
@@ -103,7 +103,7 @@ public struct HStack<Content: TView>: TView {
     public init(
         alignment: VerticalAlignment = .center,
         spacing: Int = 1,
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
         self.spacing = spacing
@@ -130,7 +130,7 @@ public struct HStack<Content: TView>: TView {
 ///     Text("    Overlay     ")
 /// }
 /// ```
-public struct ZStack<Content: TView>: TView {
+public struct ZStack<Content: View>: View {
     /// The alignment of the children.
     public let alignment: Alignment
 
@@ -144,7 +144,7 @@ public struct ZStack<Content: TView>: TView {
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: Alignment = .center,
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
         self.content = content()

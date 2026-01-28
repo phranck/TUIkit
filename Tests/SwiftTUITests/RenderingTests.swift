@@ -93,8 +93,8 @@ struct RenderingTests {
 
     @Test("Composite view renders through body")
     func compositeView() {
-        struct MyView: TView {
-            var body: some TView {
+        struct MyView: View {
+            var body: some View {
                 VStack {
                     Text("Hello")
                     Text("World")
