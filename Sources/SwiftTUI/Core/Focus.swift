@@ -48,25 +48,28 @@ public extension Focusable {
 /// The focus manager tracks which element currently has focus and
 /// provides methods to move focus between elements.
 ///
+/// FocusManager is injected via the Environment system, not as a singleton.
+/// Each app instance gets its own FocusManager, allowing for proper test isolation.
+///
 /// # Usage
 ///
 /// ```swift
+/// // Access via Environment in views
+/// let focusManager = context.environment.focusManager
+///
 /// // Register a focusable element
-/// FocusManager.shared.register(button)
+/// focusManager.register(button)
 ///
 /// // Move focus
-/// FocusManager.shared.focusNext()
-/// FocusManager.shared.focusPrevious()
+/// focusManager.focusNext()
+/// focusManager.focusPrevious()
 ///
 /// // Check focus
-/// if FocusManager.shared.isFocused(button) {
+/// if focusManager.isFocused(button) {
 ///     // render focused style
 /// }
 /// ```
 public final class FocusManager: @unchecked Sendable {
-    /// The shared focus manager instance.
-    public static let shared = FocusManager()
-
     /// Registered focusable elements in order.
     private var focusables: [Focusable] = []
 
@@ -76,7 +79,8 @@ public final class FocusManager: @unchecked Sendable {
     /// Callback triggered when focus changes.
     public var onFocusChange: (() -> Void)?
 
-    private init() {}
+    /// Creates a new focus manager instance.
+    public init() {}
 
     // MARK: - Registration
 
@@ -237,12 +241,30 @@ public final class FocusManager: @unchecked Sendable {
     }
 }
 
+// MARK: - Focus Manager Environment Key
+
+/// Environment key for the focus manager.
+private struct FocusManagerKey: EnvironmentKey {
+    static let defaultValue: FocusManager = FocusManager()
+}
+
+extension EnvironmentValues {
+    /// The focus manager for managing keyboard focus.
+    ///
+    /// Access via `@Environment(\.focusManager)` or `context.environment.focusManager`.
+    public var focusManager: FocusManager {
+        get { self[FocusManagerKey.self] }
+        set { self[FocusManagerKey.self] = newValue }
+    }
+}
+
 // MARK: - Focus State for Views
 
 /// Tracks focus state for a specific element.
 ///
 /// This is a lightweight wrapper that can be embedded in views
-/// to track whether they are focused.
+/// to track whether they are focused. It accesses the FocusManager
+/// via the Environment system.
 public class FocusState {
     /// The focus ID.
     public let id: String
@@ -255,12 +277,16 @@ public class FocusState {
     }
 
     /// Whether this element is currently focused.
+    ///
+    /// Reads from the current environment's focus manager.
     public var isFocused: Bool {
-        FocusManager.shared.isFocused(id: id)
+        EnvironmentStorage.shared.environment.focusManager.isFocused(id: id)
     }
 
     /// Requests focus for this element.
+    ///
+    /// Uses the current environment's focus manager.
     public func requestFocus() {
-        FocusManager.shared.focus(id: id)
+        EnvironmentStorage.shared.environment.focusManager.focus(id: id)
     }
 }

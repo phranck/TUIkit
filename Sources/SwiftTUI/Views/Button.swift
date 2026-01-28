@@ -206,16 +206,19 @@ final class ButtonHandler: Focusable {
 
 extension Button: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Get focus manager from environment
+        let focusManager = context.environment.focusManager
+
         // Register this button with the focus manager
         let handler = ButtonHandler(
             focusID: focusID,
             action: action,
             canBeFocused: !isDisabled
         )
-        FocusManager.shared.register(handler)
+        focusManager.register(handler)
 
         // Determine if focused
-        let isFocused = FocusManager.shared.isFocused(id: focusID)
+        let isFocused = focusManager.isFocused(id: focusID)
         let currentStyle = isFocused ? focusedStyle : style
 
         // Build the label with padding
