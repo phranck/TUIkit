@@ -43,7 +43,7 @@ struct MainMenuPage: View {
                         }
                     },
                     selectedColor: .theme.accent,
-                    borderStyle: .rounded,
+                    // borderStyle uses appearance default
                     borderColor: .theme.border
                 )
                 Spacer()
@@ -67,6 +67,8 @@ struct MainMenuPage: View {
     }
 
     /// Creates a small feature highlight box.
+    ///
+    /// The border style is automatically derived from the current appearance.
     private func featureBox(_ title: String, _ subtitle: String) -> some View {
         VStack {
             Text(title)
@@ -76,6 +78,6 @@ struct MainMenuPage: View {
                 .foregroundColor(.theme.foregroundSecondary)
         }
         .padding(EdgeInsets(horizontal: 2, vertical: 1))
-        .border(.rounded, color: .theme.border)
+        .border(color: .theme.border) // Uses appearance default borderStyle
     }
 }
