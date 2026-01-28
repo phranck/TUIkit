@@ -157,12 +157,13 @@ public struct Button: View {
         self.focusID = focusID
         self.isDisabled = isDisabled
 
-        // Default focused style: cyan foreground and border, bold
+        // Default focused style: use theme accent color, bold
+        // Note: Theme colors are resolved at render time via Color.theme
         self.focusedStyle = focusedStyle ?? ButtonStyle(
-            foregroundColor: .cyan,
+            foregroundColor: nil,  // Will use theme.accent at render time
             backgroundColor: style.backgroundColor,
             borderStyle: style.borderStyle,
-            borderColor: .cyan,
+            borderColor: nil,  // Will use theme.borderFocused at render time
             isBold: true,
             horizontalPadding: style.horizontalPadding
         )
@@ -227,7 +228,12 @@ extension Button: Renderable {
 
         // Apply text styling
         var textStyle = TextStyle()
-        textStyle.foregroundColor = isDisabled ? .brightBlack : currentStyle.foregroundColor
+        if isDisabled {
+            textStyle.foregroundColor = Color.theme.disabled
+        } else {
+            // Use theme accent if no explicit color is set
+            textStyle.foregroundColor = currentStyle.foregroundColor ?? Color.theme.accent
+        }
         textStyle.backgroundColor = currentStyle.backgroundColor
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
@@ -238,10 +244,16 @@ extension Button: Renderable {
 
         // Apply border if specified
         if let borderStyle = currentStyle.borderStyle {
+            let borderColor: Color
+            if isDisabled {
+                borderColor = Color.theme.disabled
+            } else {
+                borderColor = currentStyle.borderColor ?? Color.theme.border
+            }
             buffer = applyBorder(
                 to: buffer,
                 style: borderStyle,
-                color: isDisabled ? .brightBlack : currentStyle.borderColor
+                color: borderColor
             )
         }
 
@@ -254,7 +266,7 @@ extension Button: Renderable {
     }
 
     /// Applies a border to the buffer.
-    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color?) -> FrameBuffer {
+    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
         let innerWidth = buffer.width
@@ -287,8 +299,7 @@ extension Button: Renderable {
     }
 
     /// Colorizes border characters.
-    private func colorizeBorder(_ string: String, with color: Color?) -> String {
-        guard let color = color else { return string }
+    private func colorizeBorder(_ string: String, with color: Color) -> String {
         var style = TextStyle()
         style.foregroundColor = color
         return ANSIRenderer.render(string, with: style)
@@ -304,7 +315,7 @@ extension Button: Renderable {
         let middleIndex = buffer.height / 2
         let indicator = ANSIRenderer.render("▸ ", with: {
             var style = TextStyle()
-            style.foregroundColor = .cyan
+            style.foregroundColor = Color.theme.accent
             style.isBold = true
             return style
         }())

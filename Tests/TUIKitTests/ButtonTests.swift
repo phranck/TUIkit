@@ -199,13 +199,13 @@ struct ButtonTests {
         #expect(allContent.contains("▸"))
     }
 
-    @Test("Button default focused style is cyan")
+    @Test("Button default focused style uses theme colors")
     func buttonDefaultFocusedStyle() {
         let button = Button("Test") {}
 
-        // Default focused style should have cyan color
-        #expect(button.focusedStyle.foregroundColor == .cyan)
-        #expect(button.focusedStyle.borderColor == .cyan)
+        // Default focused style should use theme colors (nil = resolved at render time)
+        #expect(button.focusedStyle.foregroundColor == nil)
+        #expect(button.focusedStyle.borderColor == nil)
         #expect(button.focusedStyle.isBold == true)
     }
 }
