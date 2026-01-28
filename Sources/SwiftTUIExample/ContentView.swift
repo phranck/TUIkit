@@ -14,8 +14,8 @@ import SwiftTUI
 /// This view acts as a router, displaying the appropriate demo page
 /// based on the current state. It uses the `.statusBarItems()` modifier
 /// to declaratively set context-sensitive status bar items.
-struct ContentView: TView {
-    var body: some TView {
+struct ContentView: View {
+    var body: some View {
         let state = ExampleAppState.shared
 
         // Show current page based on state
@@ -36,16 +36,16 @@ struct ContentView: TView {
             }
     }
 
-    @TViewBuilder
-    private func pageContent(for page: DemoPage) -> some TView {
+    @ViewBuilder
+    private func pageContent(for page: DemoPage) -> some View {
         switch page {
         case .menu:
             MainMenuPage()
                 .statusBarItems {
-                    TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
-                    TStatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
-                    TStatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump")
-                    TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
+                    StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
+                    StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
+                    StatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump")
+                    StatusBarItem(shortcut: Shortcut.quit, label: "quit")
                 }
         case .textStyles:
             TextStylesPage()
@@ -69,13 +69,13 @@ struct ContentView: TView {
     }
 
     /// Common status bar items for sub-pages.
-    private var subPageItems: [any TStatusBarItemProtocol] {
+    private var subPageItems: [any StatusBarItemProtocol] {
         [
-            TStatusBarItem(shortcut: Shortcut.escape, label: "back") {
+            StatusBarItem(shortcut: Shortcut.escape, label: "back") {
                 ExampleAppState.shared.currentPage = .menu
             },
-            TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
-            TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
+            StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
+            StatusBarItem(shortcut: Shortcut.quit, label: "quit")
         ]
     }
 }

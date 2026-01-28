@@ -23,7 +23,7 @@
 ///     Text("Age: 30")
 /// }
 /// ```
-public struct Panel<Content: TView>: TView {
+public struct Panel<Content: View>: View {
     /// The title displayed in the top border.
     public let title: String
 
@@ -57,7 +57,7 @@ public struct Panel<Content: TView>: TView {
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(horizontal: 1, vertical: 0),
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.title = title
         self.content = content()

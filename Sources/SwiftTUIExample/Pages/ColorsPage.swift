@@ -14,8 +14,8 @@ import SwiftTUI
 /// - Bright colors (8 colors)
 /// - RGB colors (24-bit true color)
 /// - Semantic colors (primary, success, warning, error)
-struct ColorsPage: TView {
-    var body: some TView {
+struct ColorsPage: View {
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Colors Demo")
 

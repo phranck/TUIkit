@@ -41,7 +41,7 @@
 ///         }
 ///     }
 /// ```
-public struct Dialog<Content: TView>: TView {
+public struct Dialog<Content: View>: View {
     /// The dialog title.
     public let title: String
 
@@ -75,7 +75,7 @@ public struct Dialog<Content: TView>: TView {
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(horizontal: 2, vertical: 1),
-        @TViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content
     ) {
         self.title = title
         self.borderStyle = borderStyle
@@ -85,7 +85,7 @@ public struct Dialog<Content: TView>: TView {
         self.content = content()
     }
 
-    public var body: some TView {
+    public var body: some View {
         Panel(
             title,
             borderStyle: borderStyle,
@@ -109,11 +109,11 @@ extension Dialog {
     ///   - titleColor: The title color (default: nil).
     ///   - content: The dialog content.
     /// - Returns: A dialog with double-line borders.
-    public static func doubleLine<C: TView>(
+    public static func doubleLine<C: View>(
         title: String,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
-        @TViewBuilder content: () -> C
+        @ViewBuilder content: () -> C
     ) -> Dialog<C> {
         Dialog<C>(
             title: title,
@@ -132,11 +132,11 @@ extension Dialog {
     ///   - titleColor: The title color (default: nil).
     ///   - content: The dialog content.
     /// - Returns: A dialog with heavy borders.
-    public static func heavy<C: TView>(
+    public static func heavy<C: View>(
         title: String,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
-        @TViewBuilder content: () -> C
+        @ViewBuilder content: () -> C
     ) -> Dialog<C> {
         Dialog<C>(
             title: title,
@@ -150,7 +150,7 @@ extension Dialog {
 
 // MARK: - Modal Presentation Helper
 
-extension TView {
+extension View {
     /// Presents this view as a modal dialog over dimmed content.
     ///
     /// This is a convenience method that combines `.dimmed()` and `.overlay()`
@@ -169,9 +169,9 @@ extension TView {
     ///
     /// - Parameter content: The modal content to display.
     /// - Returns: A view with the modal overlay.
-    public func modal<Modal: TView>(
-        @TViewBuilder content: () -> Modal
-    ) -> some TView {
+    public func modal<Modal: View>(
+        @ViewBuilder content: () -> Modal
+    ) -> some View {
         self.dimmed()
             .overlay(alignment: .center, content: content)
     }

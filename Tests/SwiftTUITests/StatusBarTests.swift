@@ -2,7 +2,7 @@
 //  StatusBarTests.swift
 //  SwiftTUI
 //
-//  Tests for Shortcut constants, TStatusBarItem, StatusBarManager, and TStatusBar.
+//  Tests for Shortcut constants, StatusBarItem, StatusBarManager, and StatusBar.
 //
 
 import Testing
@@ -120,16 +120,16 @@ struct ShortcutTests {
 @Suite("Status Bar Item Tests")
 struct StatusBarItemTests {
 
-    @Test("TStatusBarItem can be created")
+    @Test("StatusBarItem can be created")
     func itemCreation() {
-        let item = TStatusBarItem(shortcut: "q", label: "quit")
+        let item = StatusBarItem(shortcut: "q", label: "quit")
 
         #expect(item.shortcut == "q")
         #expect(item.label == "quit")
         #expect(item.id == "q-quit")
     }
 
-    @Test("TStatusBarItem with action")
+    @Test("StatusBarItem with action")
     func itemWithAction() {
         // Use a class to track execution since the closure is @Sendable
         final class ExecutionTracker: @unchecked Sendable {
@@ -137,7 +137,7 @@ struct StatusBarItemTests {
         }
         let tracker = ExecutionTracker()
 
-        let item = TStatusBarItem(shortcut: "x", label: "execute") {
+        let item = StatusBarItem(shortcut: "x", label: "execute") {
             tracker.wasExecuted = true
         }
 
@@ -145,30 +145,30 @@ struct StatusBarItemTests {
         #expect(tracker.wasExecuted == true)
     }
 
-    @Test("TStatusBarItem derives key from single character")
+    @Test("StatusBarItem derives key from single character")
     func deriveKeyFromCharacter() {
-        let item = TStatusBarItem(shortcut: "q", label: "quit")
+        let item = StatusBarItem(shortcut: "q", label: "quit")
 
         #expect(item.triggerKey == .character("q"))
     }
 
-    @Test("TStatusBarItem derives key from escape symbol")
+    @Test("StatusBarItem derives key from escape symbol")
     func deriveKeyFromEscape() {
-        let item = TStatusBarItem(shortcut: Shortcut.escape, label: "close")
+        let item = StatusBarItem(shortcut: Shortcut.escape, label: "close")
 
         #expect(item.triggerKey == .escape)
     }
 
-    @Test("TStatusBarItem derives key from enter symbol")
+    @Test("StatusBarItem derives key from enter symbol")
     func deriveKeyFromEnter() {
-        let item = TStatusBarItem(shortcut: Shortcut.enter, label: "confirm")
+        let item = StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
 
         #expect(item.triggerKey == .enter)
     }
 
-    @Test("TStatusBarItem with explicit key")
+    @Test("StatusBarItem with explicit key")
     func itemWithExplicitKey() {
-        let item = TStatusBarItem(
+        let item = StatusBarItem(
             shortcut: "navigate",
             label: "nav",
             key: .up
@@ -177,19 +177,19 @@ struct StatusBarItemTests {
         #expect(item.triggerKey == .up)
     }
 
-    @Test("TStatusBarItem informational has no trigger key")
+    @Test("StatusBarItem informational has no trigger key")
     func informationalItem() {
         // Multi-character shortcut without explicit key
-        let item = TStatusBarItem(shortcut: "↑↓", label: "nav")
+        let item = StatusBarItem(shortcut: "↑↓", label: "nav")
 
         // Arrow combinations don't have a single trigger key
         // but matches() handles them specially
         #expect(item.triggerKey == nil)
     }
 
-    @Test("TStatusBarItem matches character key")
+    @Test("StatusBarItem matches character key")
     func matchesCharacterKey() {
-        let item = TStatusBarItem(shortcut: "q", label: "quit")
+        let item = StatusBarItem(shortcut: "q", label: "quit")
 
         let event = KeyEvent(key: .character("q"))
         #expect(item.matches(event) == true)
@@ -198,10 +198,10 @@ struct StatusBarItemTests {
         #expect(item.matches(wrongEvent) == false)
     }
 
-    @Test("TStatusBarItem case sensitive matching")
+    @Test("StatusBarItem case sensitive matching")
     func caseSensitiveMatching() {
-        let lowerItem = TStatusBarItem(shortcut: "n", label: "new")
-        let upperItem = TStatusBarItem(shortcut: "N", label: "New")
+        let lowerItem = StatusBarItem(shortcut: "n", label: "new")
+        let upperItem = StatusBarItem(shortcut: "N", label: "New")
 
         let lowerEvent = KeyEvent(key: .character("n"))
         let upperEvent = KeyEvent(key: .character("N"))
@@ -213,9 +213,9 @@ struct StatusBarItemTests {
         #expect(upperItem.matches(lowerEvent) == false)
     }
 
-    @Test("TStatusBarItem matches arrow combinations")
+    @Test("StatusBarItem matches arrow combinations")
     func matchesArrowCombinations() {
-        let item = TStatusBarItem(shortcut: "↑↓", label: "nav")
+        let item = StatusBarItem(shortcut: "↑↓", label: "nav")
 
         let upEvent = KeyEvent(key: .up)
         let downEvent = KeyEvent(key: .down)
@@ -226,9 +226,9 @@ struct StatusBarItemTests {
         #expect(item.matches(leftEvent) == false)
     }
 
-    @Test("TStatusBarItem matches all arrows")
+    @Test("StatusBarItem matches all arrows")
     func matchesAllArrows() {
-        let item = TStatusBarItem(shortcut: Shortcut.arrowsAll, label: "move")
+        let item = StatusBarItem(shortcut: Shortcut.arrowsAll, label: "move")
 
         #expect(item.matches(KeyEvent(key: .up)) == true)
         #expect(item.matches(KeyEvent(key: .down)) == true)
@@ -254,8 +254,8 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "q", label: "quit"),
-            TStatusBarItem(shortcut: "h", label: "help")
+            StatusBarItem(shortcut: "q", label: "quit"),
+            StatusBarItem(shortcut: "h", label: "help")
         ])
 
         #expect(state.currentItems.count == 2)
@@ -267,8 +267,8 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems {
-            TStatusBarItem(shortcut: "q", label: "quit")
-            TStatusBarItem(shortcut: "h", label: "help")
+            StatusBarItem(shortcut: "q", label: "quit")
+            StatusBarItem(shortcut: "h", label: "help")
         }
 
         #expect(state.currentItems.count == 2)
@@ -279,12 +279,12 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "q", label: "quit")
+            StatusBarItem(shortcut: "q", label: "quit")
         ])
 
         state.push(context: "dialog", items: [
-            TStatusBarItem(shortcut: Shortcut.escape, label: "close"),
-            TStatusBarItem(shortcut: Shortcut.enter, label: "confirm")
+            StatusBarItem(shortcut: Shortcut.escape, label: "close"),
+            StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
         ])
 
         #expect(state.currentItems.count == 2)
@@ -296,7 +296,7 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.push(context: "test") {
-            TStatusBarItem(shortcut: "a", label: "action")
+            StatusBarItem(shortcut: "a", label: "action")
         }
 
         #expect(state.currentItems.count == 1)
@@ -308,11 +308,11 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "g", label: "global")
+            StatusBarItem(shortcut: "g", label: "global")
         ])
 
         state.push(context: "temp", items: [
-            TStatusBarItem(shortcut: "t", label: "temp")
+            StatusBarItem(shortcut: "t", label: "temp")
         ])
 
         state.pop(context: "temp")
@@ -326,11 +326,11 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.push(context: "first", items: [
-            TStatusBarItem(shortcut: "1", label: "first")
+            StatusBarItem(shortcut: "1", label: "first")
         ])
 
         state.push(context: "second", items: [
-            TStatusBarItem(shortcut: "2", label: "second")
+            StatusBarItem(shortcut: "2", label: "second")
         ])
 
         // Top of stack is shown
@@ -345,11 +345,11 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.push(context: "same", items: [
-            TStatusBarItem(shortcut: "a", label: "original")
+            StatusBarItem(shortcut: "a", label: "original")
         ])
 
         state.push(context: "same", items: [
-            TStatusBarItem(shortcut: "b", label: "replaced")
+            StatusBarItem(shortcut: "b", label: "replaced")
         ])
 
         #expect(state.currentItems.count == 1)
@@ -361,11 +361,11 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "g", label: "global")
+            StatusBarItem(shortcut: "g", label: "global")
         ])
 
         state.push(context: "ctx", items: [
-            TStatusBarItem(shortcut: "c", label: "context")
+            StatusBarItem(shortcut: "c", label: "context")
         ])
 
         state.clearContexts()
@@ -379,11 +379,11 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "g", label: "global")
+            StatusBarItem(shortcut: "g", label: "global")
         ])
 
         state.push(context: "ctx", items: [
-            TStatusBarItem(shortcut: "c", label: "context")
+            StatusBarItem(shortcut: "c", label: "context")
         ])
 
         state.clear()
@@ -403,7 +403,7 @@ struct StatusBarStateTests {
         let tracker = TriggerTracker()
 
         state.setItems([
-            TStatusBarItem(shortcut: "t", label: "trigger") {
+            StatusBarItem(shortcut: "t", label: "trigger") {
                 tracker.wasTriggered = true
             }
         ])
@@ -420,7 +420,7 @@ struct StatusBarStateTests {
         let state = StatusBarState()
 
         state.setItems([
-            TStatusBarItem(shortcut: "a", label: "action") {}
+            StatusBarItem(shortcut: "a", label: "action") {}
         ])
 
         let event = KeyEvent(key: .character("x"))
@@ -478,7 +478,7 @@ struct StatusBarStateTests {
     func heightCompact() {
         let state = StatusBarState()
         state.style = .compact
-        state.setItems([TStatusBarItem(shortcut: "x", label: "test")])
+        state.setItems([StatusBarItem(shortcut: "x", label: "test")])
         #expect(state.height == 1)
     }
 
@@ -486,21 +486,21 @@ struct StatusBarStateTests {
     func heightBordered() {
         let state = StatusBarState()
         state.style = .bordered
-        state.setItems([TStatusBarItem(shortcut: "x", label: "test")])
+        state.setItems([StatusBarItem(shortcut: "x", label: "test")])
         #expect(state.height == 3)
     }
 }
 
-// MARK: - TStatusBar Tests
+// MARK: - StatusBar Tests
 
-@Suite("TStatusBar Tests")
-struct TStatusBarTests {
+@Suite("StatusBar Tests")
+struct StatusBarTests {
 
-    @Test("TStatusBar can be created with items")
+    @Test("StatusBar can be created with items")
     func statusBarCreation() {
-        let statusBar = TStatusBar(items: [
-            TStatusBarItem(shortcut: "q", label: "quit"),
-            TStatusBarItem(shortcut: "h", label: "help")
+        let statusBar = StatusBar(items: [
+            StatusBarItem(shortcut: "q", label: "quit"),
+            StatusBarItem(shortcut: "h", label: "help")
         ])
 
         #expect(statusBar.items.count == 2)
@@ -509,19 +509,19 @@ struct TStatusBarTests {
         #expect(statusBar.highlightColor == .cyan)
     }
 
-    @Test("TStatusBar with style")
+    @Test("StatusBar with style")
     func statusBarWithStyle() {
-        let statusBar = TStatusBar(
-            items: [TStatusBarItem(shortcut: "x", label: "test")],
+        let statusBar = StatusBar(
+            items: [StatusBarItem(shortcut: "x", label: "test")],
             style: .bordered
         )
 
         #expect(statusBar.style == .bordered)
     }
 
-    @Test("TStatusBar with custom colors")
+    @Test("StatusBar with custom colors")
     func statusBarWithColors() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [],
             highlightColor: .yellow,
             labelColor: .green
@@ -531,32 +531,32 @@ struct TStatusBarTests {
         #expect(statusBar.labelColor == .green)
     }
 
-    @Test("TStatusBar with builder")
+    @Test("StatusBar with builder")
     func statusBarWithBuilder() {
-        let statusBar = TStatusBar {
-            TStatusBarItem(shortcut: "a", label: "alpha")
-            TStatusBarItem(shortcut: "b", label: "beta")
+        let statusBar = StatusBar {
+            StatusBarItem(shortcut: "a", label: "alpha")
+            StatusBarItem(shortcut: "b", label: "beta")
         }
 
         #expect(statusBar.items.count == 2)
     }
 
-    @Test("TStatusBar compact height")
+    @Test("StatusBar compact height")
     func compactHeight() {
-        let statusBar = TStatusBar(items: [], style: .compact)
+        let statusBar = StatusBar(items: [], style: .compact)
         #expect(statusBar.height == 1)
     }
 
-    @Test("TStatusBar bordered height")
+    @Test("StatusBar bordered height")
     func borderedHeight() {
-        let statusBar = TStatusBar(items: [], style: .bordered)
+        let statusBar = StatusBar(items: [], style: .bordered)
         #expect(statusBar.height == 3)
     }
 
-    @Test("TStatusBar renders compact style")
+    @Test("StatusBar renders compact style")
     func rendersCompact() {
-        let statusBar = TStatusBar(items: [
-            TStatusBarItem(shortcut: "q", label: "quit")
+        let statusBar = StatusBar(items: [
+            StatusBarItem(shortcut: "q", label: "quit")
         ], style: .compact)
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
@@ -568,10 +568,10 @@ struct TStatusBarTests {
         #expect(content.contains("quit"))
     }
 
-    @Test("TStatusBar renders bordered style")
+    @Test("StatusBar renders bordered style")
     func rendersBordered() {
-        let statusBar = TStatusBar(items: [
-            TStatusBarItem(shortcut: "h", label: "help")
+        let statusBar = StatusBar(items: [
+            StatusBarItem(shortcut: "h", label: "help")
         ], style: .bordered)
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
@@ -583,9 +583,9 @@ struct TStatusBarTests {
         #expect(allContent.contains("▄") || allContent.contains("█") || allContent.contains("▀"))
     }
 
-    @Test("Empty TStatusBar returns empty buffer")
+    @Test("Empty StatusBar returns empty buffer")
     func emptyStatusBar() {
-        let statusBar = TStatusBar(items: [])
+        let statusBar = StatusBar(items: [])
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(statusBar, context: context)
@@ -593,11 +593,11 @@ struct TStatusBarTests {
         #expect(buffer.isEmpty)
     }
 
-    @Test("TStatusBar renders multiple items with separator")
+    @Test("StatusBar renders multiple items with separator")
     func multipleItemsWithSeparator() {
-        let statusBar = TStatusBar(items: [
-            TStatusBarItem(shortcut: "a", label: "alpha"),
-            TStatusBarItem(shortcut: "b", label: "beta")
+        let statusBar = StatusBar(items: [
+            StatusBarItem(shortcut: "a", label: "alpha"),
+            StatusBarItem(shortcut: "b", label: "beta")
         ])
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
@@ -608,21 +608,21 @@ struct TStatusBarTests {
         #expect(content.contains("beta"))
     }
 
-    @Test("TStatusBar default alignment is justified")
+    @Test("StatusBar default alignment is justified")
     func defaultAlignmentIsJustified() {
-        let statusBar = TStatusBar(items: [
-            TStatusBarItem(shortcut: "q", label: "quit")
+        let statusBar = StatusBar(items: [
+            StatusBarItem(shortcut: "q", label: "quit")
         ])
 
         #expect(statusBar.alignment == .justified)
     }
 
-    @Test("TStatusBar with leading alignment")
+    @Test("StatusBar with leading alignment")
     func leadingAlignment() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [
-                TStatusBarItem(shortcut: "a", label: "alpha"),
-                TStatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "a", label: "alpha"),
+                StatusBarItem(shortcut: "b", label: "beta")
             ],
             alignment: .leading
         )
@@ -638,12 +638,12 @@ struct TStatusBarTests {
         #expect(!strippedLine.isEmpty)
     }
 
-    @Test("TStatusBar with trailing alignment")
+    @Test("StatusBar with trailing alignment")
     func trailingAlignment() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [
-                TStatusBarItem(shortcut: "a", label: "alpha"),
-                TStatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "a", label: "alpha"),
+                StatusBarItem(shortcut: "b", label: "beta")
             ],
             alignment: .trailing
         )
@@ -657,12 +657,12 @@ struct TStatusBarTests {
         #expect(!buffer.isEmpty)
     }
 
-    @Test("TStatusBar with center alignment")
+    @Test("StatusBar with center alignment")
     func centerAlignment() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [
-                TStatusBarItem(shortcut: "a", label: "alpha"),
-                TStatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "a", label: "alpha"),
+                StatusBarItem(shortcut: "b", label: "beta")
             ],
             alignment: .center
         )
@@ -676,13 +676,13 @@ struct TStatusBarTests {
         #expect(!buffer.isEmpty)
     }
 
-    @Test("TStatusBar with justified alignment distributes items")
+    @Test("StatusBar with justified alignment distributes items")
     func justifiedAlignment() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [
-                TStatusBarItem(shortcut: "a", label: "first"),
-                TStatusBarItem(shortcut: "b", label: "second"),
-                TStatusBarItem(shortcut: "c", label: "third")
+                StatusBarItem(shortcut: "a", label: "first"),
+                StatusBarItem(shortcut: "b", label: "second"),
+                StatusBarItem(shortcut: "c", label: "third")
             ],
             alignment: .justified
         )
@@ -699,12 +699,12 @@ struct TStatusBarTests {
         #expect(content.contains("third"))
     }
 
-    @Test("TStatusBar bordered with alignment")
+    @Test("StatusBar bordered with alignment")
     func borderedWithAlignment() {
-        let statusBar = TStatusBar(
+        let statusBar = StatusBar(
             items: [
-                TStatusBarItem(shortcut: "a", label: "alpha"),
-                TStatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "a", label: "alpha"),
+                StatusBarItem(shortcut: "b", label: "beta")
             ],
             style: .bordered,
             alignment: .center
@@ -725,12 +725,12 @@ struct TStatusBarTests {
 @Suite("Status Bar Alignment Tests")
 struct StatusBarAlignmentTests {
 
-    @Test("TStatusBarAlignment enum values exist")
+    @Test("StatusBarAlignment enum values exist")
     func alignmentEnumValues() {
-        let leading: TStatusBarAlignment = .leading
-        let trailing: TStatusBarAlignment = .trailing
-        let center: TStatusBarAlignment = .center
-        let justified: TStatusBarAlignment = .justified
+        let leading: StatusBarAlignment = .leading
+        let trailing: StatusBarAlignment = .trailing
+        let center: StatusBarAlignment = .center
+        let justified: StatusBarAlignment = .justified
 
         #expect(leading != trailing)
         #expect(center != justified)
@@ -738,8 +738,8 @@ struct StatusBarAlignmentTests {
 
     @Test("Single item with justified alignment is centered")
     func singleItemJustified() {
-        let statusBar = TStatusBar(
-            items: [TStatusBarItem(shortcut: "x", label: "only")],
+        let statusBar = StatusBar(
+            items: [StatusBarItem(shortcut: "x", label: "only")],
             alignment: .justified
         )
 
@@ -761,8 +761,8 @@ struct StatusBarItemBuilderTests {
     @Test("Builder buildBlock combines arrays")
     func builderCreatesArray() {
         let items = StatusBarItemBuilder.buildBlock(
-            [TStatusBarItem(shortcut: "a", label: "a")],
-            [TStatusBarItem(shortcut: "b", label: "b")]
+            [StatusBarItem(shortcut: "a", label: "a")],
+            [StatusBarItem(shortcut: "b", label: "b")]
         )
 
         #expect(items.count == 2)
@@ -770,17 +770,17 @@ struct StatusBarItemBuilderTests {
 
     @Test("Builder handles expression")
     func builderHandlesExpression() {
-        let item = TStatusBarItem(shortcut: "e", label: "expr")
+        let item = StatusBarItem(shortcut: "e", label: "expr")
         let result = StatusBarItemBuilder.buildExpression(item)
 
         #expect(result.count == 1)
     }
 
-    @Test("Builder works with TStatusBar initializer")
+    @Test("Builder works with StatusBar initializer")
     func builderWorksWithStatusBar() {
-        let statusBar = TStatusBar {
-            TStatusBarItem(shortcut: "x", label: "test")
-            TStatusBarItem(shortcut: "y", label: "test2")
+        let statusBar = StatusBar {
+            StatusBarItem(shortcut: "x", label: "test")
+            StatusBarItem(shortcut: "y", label: "test2")
         }
 
         #expect(statusBar.items.count == 2)
@@ -796,7 +796,7 @@ struct StatusBarItemsModifierTests {
     func modifierCanBeApplied() {
         let view = Text("Content")
             .statusBarItems([
-                TStatusBarItem(shortcut: "q", label: "quit")
+                StatusBarItem(shortcut: "q", label: "quit")
             ])
 
         // View should be wrapped in modifier
@@ -807,8 +807,8 @@ struct StatusBarItemsModifierTests {
     func modifierWithBuilder() {
         let view = Text("Content")
             .statusBarItems {
-                TStatusBarItem(shortcut: "a", label: "alpha")
-                TStatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "a", label: "alpha")
+                StatusBarItem(shortcut: "b", label: "beta")
             }
 
         #expect(view is StatusBarItemsModifier<Text>)
@@ -818,7 +818,7 @@ struct StatusBarItemsModifierTests {
     func modifierWithContext() {
         let view = Text("Dialog")
             .statusBarItems(context: "dialog") {
-                TStatusBarItem(shortcut: Shortcut.escape, label: "close")
+                StatusBarItem(shortcut: Shortcut.escape, label: "close")
             }
 
         #expect(view is StatusBarItemsModifier<Text>)
@@ -834,7 +834,7 @@ struct StatusBarItemsModifierTests {
         // Create view with modifier
         let view = Text("Test")
             .statusBarItems {
-                TStatusBarItem(shortcut: "t", label: "test")
+                StatusBarItem(shortcut: "t", label: "test")
             }
 
         // Render with environment
@@ -861,13 +861,13 @@ struct StatusBarItemsModifierTests {
 
         // Set global items first
         state.setItems([
-            TStatusBarItem(shortcut: "g", label: "global")
+            StatusBarItem(shortcut: "g", label: "global")
         ])
 
         // Create view with context modifier
         let view = Text("Dialog")
             .statusBarItems(context: "dialog") {
-                TStatusBarItem(shortcut: "d", label: "dialog-item")
+                StatusBarItem(shortcut: "d", label: "dialog-item")
             }
 
         // Render
@@ -900,7 +900,7 @@ struct StatusBarItemsModifierTests {
 
         let view = Text("Hello World")
             .statusBarItems {
-                TStatusBarItem(shortcut: "x", label: "test")
+                StatusBarItem(shortcut: "x", label: "test")
             }
 
         let context = RenderContext(
@@ -920,8 +920,8 @@ struct StatusBarItemsModifierTests {
     @Test("statusBarItems with array and context")
     func modifierWithArrayAndContext() {
         let items = [
-            TStatusBarItem(shortcut: "y", label: "yes"),
-            TStatusBarItem(shortcut: "n", label: "no")
+            StatusBarItem(shortcut: "y", label: "yes"),
+            StatusBarItem(shortcut: "n", label: "no")
         ]
 
         let view = Text("Confirm?")
@@ -939,14 +939,14 @@ struct StatusBarItemsModifierTests {
         // Outer sets global, inner pushes context
         let innerView = Text("Inner")
             .statusBarItems(context: "inner") {
-                TStatusBarItem(shortcut: "i", label: "inner-item")
+                StatusBarItem(shortcut: "i", label: "inner-item")
             }
 
         let outerView = VStack {
             innerView
         }
         .statusBarItems {
-            TStatusBarItem(shortcut: "o", label: "outer-item")
+            StatusBarItem(shortcut: "o", label: "outer-item")
         }
 
         let context = RenderContext(

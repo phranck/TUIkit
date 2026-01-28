@@ -11,7 +11,7 @@ import Foundation
 // MARK: - Status Bar Style
 
 /// The visual style of the status bar.
-public enum TStatusBarStyle: Sendable {
+public enum StatusBarStyle: Sendable {
     /// A single line with horizontal padding.
     case compact
 
@@ -22,7 +22,7 @@ public enum TStatusBarStyle: Sendable {
 // MARK: - Status Bar Alignment
 
 /// The horizontal alignment of items within the status bar.
-public enum TStatusBarAlignment: Sendable {
+public enum StatusBarAlignment: Sendable {
     /// Items are aligned to the left (leading edge).
     case leading
 
@@ -46,9 +46,9 @@ public enum TStatusBarAlignment: Sendable {
 /// # Example
 ///
 /// ```swift
-/// TStatusBarItem(shortcut: .escape, label: "close") { dismiss() }
-/// TStatusBarItem(shortcut: .arrowsUpDown, label: "nav")
-/// TStatusBarItem(shortcut: .enter, label: "select", key: .enter)
+/// StatusBarItem(shortcut: .escape, label: "close") { dismiss() }
+/// StatusBarItem(shortcut: .arrowsUpDown, label: "nav")
+/// StatusBarItem(shortcut: .enter, label: "select", key: .enter)
 /// ```
 public enum Shortcut {
     // MARK: - Special Keys
@@ -241,8 +241,8 @@ public enum Shortcut {
 /// A protocol for items that can be displayed in a status bar.
 ///
 /// Implement this protocol to create custom status bar items.
-/// The default `TStatusBarItem` already conforms to this protocol.
-public protocol TStatusBarItemProtocol: Sendable {
+/// The default `StatusBarItem` already conforms to this protocol.
+public protocol StatusBarItemProtocol: Sendable {
     /// The unique identifier for this item.
     var id: String { get }
 
@@ -264,7 +264,7 @@ public protocol TStatusBarItemProtocol: Sendable {
 }
 
 // Default implementation for triggerKey matching
-public extension TStatusBarItemProtocol {
+public extension StatusBarItemProtocol {
     func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
@@ -278,13 +278,13 @@ public extension TStatusBarItemProtocol {
 /// # Example
 ///
 /// ```swift
-/// TStatusBarItem(shortcut: "q", label: "quit") {
+/// StatusBarItem(shortcut: "q", label: "quit") {
 ///     app.quit()
 /// }
 ///
-/// TStatusBarItem(shortcut: "↑↓", label: "nav", key: .up) // Info only, no action
+/// StatusBarItem(shortcut: "↑↓", label: "nav", key: .up) // Info only, no action
 /// ```
-public struct TStatusBarItem: TStatusBarItemProtocol, Identifiable {
+public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     public let id: String
     public let shortcut: String
     public let label: String
@@ -395,32 +395,32 @@ public struct TStatusBarItem: TStatusBarItemProtocol, Identifiable {
 /// Result builder for creating status bar items.
 @resultBuilder
 public struct StatusBarItemBuilder {
-    public static func buildBlock(_ components: [any TStatusBarItemProtocol]...) -> [any TStatusBarItemProtocol] {
+    public static func buildBlock(_ components: [any StatusBarItemProtocol]...) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
-    public static func buildArray(_ components: [[any TStatusBarItemProtocol]]) -> [any TStatusBarItemProtocol] {
+    public static func buildArray(_ components: [[any StatusBarItemProtocol]]) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
-    public static func buildOptional(_ component: [any TStatusBarItemProtocol]?) -> [any TStatusBarItemProtocol] {
+    public static func buildOptional(_ component: [any StatusBarItemProtocol]?) -> [any StatusBarItemProtocol] {
         component ?? []
     }
 
-    public static func buildEither(first component: [any TStatusBarItemProtocol]) -> [any TStatusBarItemProtocol] {
+    public static func buildEither(first component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
-    public static func buildEither(second component: [any TStatusBarItemProtocol]) -> [any TStatusBarItemProtocol] {
+    public static func buildEither(second component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
-    public static func buildExpression(_ expression: any TStatusBarItemProtocol) -> [any TStatusBarItemProtocol] {
+    public static func buildExpression(_ expression: any StatusBarItemProtocol) -> [any StatusBarItemProtocol] {
         [expression]
     }
 }
 
-// MARK: - TStatusBar View
+// MARK: - StatusBar View
 
 /// A status bar that displays at the bottom of the terminal.
 ///
@@ -433,31 +433,31 @@ public struct StatusBarItemBuilder {
 /// To set status bar items, use the environment:
 ///
 /// ```swift
-/// struct MyView: TView {
+/// struct MyView: View {
 ///     @Environment(\.statusBar) var statusBar
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         VStack {
 ///             Text("Hello")
 ///         }
 ///         .onAppear {
 ///             statusBar.setItems([
-///                 TStatusBarItem(shortcut: "q", label: "quit"),
-///                 TStatusBarItem(shortcut: "↑↓", label: "nav"),
+///                 StatusBarItem(shortcut: "q", label: "quit"),
+///                 StatusBarItem(shortcut: "↑↓", label: "nav"),
 ///             ])
 ///         }
 ///     }
 /// }
 /// ```
-public struct TStatusBar: TView {
+public struct StatusBar: View {
     /// The items to display.
-    public let items: [any TStatusBarItemProtocol]
+    public let items: [any StatusBarItemProtocol]
 
     /// The visual style.
-    public let style: TStatusBarStyle
+    public let style: StatusBarStyle
 
     /// The horizontal alignment of items.
-    public let alignment: TStatusBarAlignment
+    public let alignment: StatusBarAlignment
 
     /// The highlight color for shortcut keys.
     public let highlightColor: Color
@@ -474,9 +474,9 @@ public struct TStatusBar: TView {
     ///   - highlightColor: The color for shortcut keys (default: `.cyan`).
     ///   - labelColor: The color for labels (default: nil, terminal default).
     public init(
-        items: [any TStatusBarItemProtocol],
-        style: TStatusBarStyle = .compact,
-        alignment: TStatusBarAlignment = .justified,
+        items: [any StatusBarItemProtocol],
+        style: StatusBarStyle = .compact,
+        alignment: StatusBarAlignment = .justified,
         highlightColor: Color = .cyan,
         labelColor: Color? = nil
     ) {
@@ -496,11 +496,11 @@ public struct TStatusBar: TView {
     ///   - labelColor: The color for labels.
     ///   - builder: A closure that returns items.
     public init(
-        style: TStatusBarStyle = .compact,
-        alignment: TStatusBarAlignment = .justified,
+        style: StatusBarStyle = .compact,
+        alignment: StatusBarAlignment = .justified,
         highlightColor: Color = .cyan,
         labelColor: Color? = nil,
-        @StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]
+        @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]
     ) {
         self.items = builder()
         self.style = style
@@ -510,13 +510,13 @@ public struct TStatusBar: TView {
     }
 
     public var body: Never {
-        fatalError("TStatusBar renders via Renderable")
+        fatalError("StatusBar renders via Renderable")
     }
 }
 
-// MARK: - TStatusBar Rendering
+// MARK: - StatusBar Rendering
 
-extension TStatusBar: Renderable {
+extension StatusBar: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         guard !items.isEmpty else {
             return FrameBuffer()
@@ -683,7 +683,7 @@ extension TStatusBar: Renderable {
 
 // MARK: - Status Bar Height Helper
 
-extension TStatusBar {
+extension StatusBar {
     /// The height of the status bar in lines.
     public var height: Int {
         switch style {

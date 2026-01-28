@@ -14,8 +14,8 @@ import SwiftTUI
 /// - `.dimmed()` modifier
 /// - `.modal()` helper
 /// - Note: The status bar is NOT dimmed by modals!
-struct OverlaysPage: TView {
-    var body: some TView {
+struct OverlaysPage: View {
+    var body: some View {
         // Background content with modal overlay
         backgroundContent
             .modal {
@@ -34,7 +34,7 @@ struct OverlaysPage: TView {
             }
     }
 
-    var backgroundContent: some TView {
+    var backgroundContent: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Overlays & Modals Demo")
 

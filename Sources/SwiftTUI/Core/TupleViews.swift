@@ -8,7 +8,7 @@
 // MARK: - TupleView2
 
 /// A view that contains two child views.
-public struct TupleView2<V0: TView, V1: TView>: TView {
+public struct TupleView2<V0: View, V1: View>: View {
     public let value: (V0, V1)
 
     public init(_ v0: V0, _ v1: V1) {
@@ -23,7 +23,7 @@ public struct TupleView2<V0: TView, V1: TView>: TView {
 // MARK: - TupleView3
 
 /// A view that contains three child views.
-public struct TupleView3<V0: TView, V1: TView, V2: TView>: TView {
+public struct TupleView3<V0: View, V1: View, V2: View>: View {
     public let value: (V0, V1, V2)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2) {
@@ -38,7 +38,7 @@ public struct TupleView3<V0: TView, V1: TView, V2: TView>: TView {
 // MARK: - TupleView4
 
 /// A view that contains four child views.
-public struct TupleView4<V0: TView, V1: TView, V2: TView, V3: TView>: TView {
+public struct TupleView4<V0: View, V1: View, V2: View, V3: View>: View {
     public let value: (V0, V1, V2, V3)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3) {
@@ -53,7 +53,7 @@ public struct TupleView4<V0: TView, V1: TView, V2: TView, V3: TView>: TView {
 // MARK: - TupleView5
 
 /// A view that contains five child views.
-public struct TupleView5<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView>: TView {
+public struct TupleView5<V0: View, V1: View, V2: View, V3: View, V4: View>: View {
     public let value: (V0, V1, V2, V3, V4)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4) {
@@ -68,7 +68,7 @@ public struct TupleView5<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView>:
 // MARK: - TupleView6
 
 /// A view that contains six child views.
-public struct TupleView6<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, V5: TView>: TView {
+public struct TupleView6<V0: View, V1: View, V2: View, V3: View, V4: View, V5: View>: View {
     public let value: (V0, V1, V2, V3, V4, V5)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5) {
@@ -83,7 +83,7 @@ public struct TupleView6<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, 
 // MARK: - TupleView7
 
 /// A view that contains seven child views.
-public struct TupleView7<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, V5: TView, V6: TView>: TView {
+public struct TupleView7<V0: View, V1: View, V2: View, V3: View, V4: View, V5: View, V6: View>: View {
     public let value: (V0, V1, V2, V3, V4, V5, V6)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6) {
@@ -98,7 +98,7 @@ public struct TupleView7<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, 
 // MARK: - TupleView8
 
 /// A view that contains eight child views.
-public struct TupleView8<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, V5: TView, V6: TView, V7: TView>: TView {
+public struct TupleView8<V0: View, V1: View, V2: View, V3: View, V4: View, V5: View, V6: View, V7: View>: View {
     public let value: (V0, V1, V2, V3, V4, V5, V6, V7)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7) {
@@ -113,7 +113,7 @@ public struct TupleView8<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, 
 // MARK: - TupleView9
 
 /// A view that contains nine child views.
-public struct TupleView9<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, V5: TView, V6: TView, V7: TView, V8: TView>: TView {
+public struct TupleView9<V0: View, V1: View, V2: View, V3: View, V4: View, V5: View, V6: View, V7: View, V8: View>: View {
     public let value: (V0, V1, V2, V3, V4, V5, V6, V7, V8)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8) {
@@ -128,7 +128,7 @@ public struct TupleView9<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, 
 // MARK: - TupleView10
 
 /// A view that contains ten child views.
-public struct TupleView10<V0: TView, V1: TView, V2: TView, V3: TView, V4: TView, V5: TView, V6: TView, V7: TView, V8: TView, V9: TView>: TView {
+public struct TupleView10<V0: View, V1: View, V2: View, V3: View, V4: View, V5: View, V6: View, V7: View, V8: View, V9: View>: View {
     public let value: (V0, V1, V2, V3, V4, V5, V6, V7, V8, V9)
 
     public init(_ v0: V0, _ v1: V1, _ v2: V2, _ v3: V3, _ v4: V4, _ v5: V5, _ v6: V6, _ v7: V7, _ v8: V8, _ v9: V9) {

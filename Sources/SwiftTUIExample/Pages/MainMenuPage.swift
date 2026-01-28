@@ -11,8 +11,8 @@ import SwiftTUI
 ///
 /// Displays a centered menu with all available demos and
 /// feature highlight boxes at the bottom.
-struct MainMenuPage: TView {
-    var body: some TView {
+struct MainMenuPage: View {
+    var body: some View {
         let state = ExampleAppState.shared
 
         VStack(spacing: 1) {
@@ -67,7 +67,7 @@ struct MainMenuPage: TView {
     }
 
     /// Creates a small feature highlight box.
-    private func featureBox(_ title: String, _ subtitle: String) -> some TView {
+    private func featureBox(_ title: String, _ subtitle: String) -> some View {
         VStack {
             Text(title)
                 .bold()

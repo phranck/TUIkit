@@ -146,13 +146,13 @@ public final class EnvironmentStorage: @unchecked Sendable {
 /// # Example
 ///
 /// ```swift
-/// struct MyView: TView {
+/// struct MyView: View {
 ///     @Environment(\.statusBar) var statusBar
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         Button("Add Item") {
 ///             statusBar.push(context: "action") {
-///                 TStatusBarItem(shortcut: "⎋", label: "cancel")
+///                 StatusBarItem(shortcut: "⎋", label: "cancel")
 ///             }
 ///         }
 ///     }
@@ -179,7 +179,7 @@ public struct Environment<Value>: @unchecked Sendable {
 // MARK: - Environment Modifier
 
 /// A modifier that injects a value into the environment for child views.
-public struct EnvironmentModifier<Content: TView, V>: TView {
+public struct EnvironmentModifier<Content: View, V>: View {
     /// The content view.
     let content: Content
 
@@ -189,7 +189,7 @@ public struct EnvironmentModifier<Content: TView, V>: TView {
     /// The value to inject.
     let value: V
 
-    public var body: some TView {
+    public var body: some View {
         content
     }
 }
@@ -210,7 +210,7 @@ extension EnvironmentModifier: Renderable {
 // MARK: - Internal Rendering Helper
 
 /// Internal helper to render a view (avoids name collision with Renderable.renderToBuffer).
-private func renderView<V: TView>(_ view: V, context: RenderContext) -> FrameBuffer {
+private func renderView<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     if let renderable = view as? Renderable {
         return renderable.renderToBuffer(context: context)
     }
@@ -224,7 +224,7 @@ private func renderView<V: TView>(_ view: V, context: RenderContext) -> FrameBuf
 
 // MARK: - View Extension for Environment
 
-extension TView {
+extension View {
     /// Sets an environment value for this view and its children.
     ///
     /// - Parameters:
@@ -234,7 +234,7 @@ extension TView {
     public func environment<V>(
         _ keyPath: WritableKeyPath<EnvironmentValues, V>,
         _ value: V
-    ) -> some TView {
+    ) -> some View {
         EnvironmentModifier(content: self, keyPath: keyPath, value: value)
     }
 }

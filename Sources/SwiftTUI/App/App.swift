@@ -1,5 +1,5 @@
 //
-//  TApp.swift
+//  App.swift
 //  SwiftTUI
 //
 //  The base protocol for SwiftTUI applications.
@@ -7,28 +7,28 @@
 
 import Foundation
 
-// MARK: - TApp Protocol
+// MARK: - App Protocol
 
 /// The base protocol for SwiftTUI applications.
 ///
-/// `TApp` is the entry point for every SwiftTUI application,
+/// `App` is the entry point for every SwiftTUI application,
 /// similar to `App` in SwiftUI.
 ///
 /// # Example
 ///
 /// ```swift
 /// @main
-/// struct MyApp: TApp {
-///     var body: some TScene {
+/// struct MyApp: App {
+///     var body: some Scene {
 ///         WindowGroup {
 ///             ContentView()
 ///         }
 ///     }
 /// }
 /// ```
-public protocol TApp {
+public protocol App {
     /// The type of the main scene.
-    associatedtype Body: TScene
+    associatedtype Body: Scene
 
     /// The main scene of the app.
     @SceneBuilder
@@ -38,14 +38,14 @@ public protocol TApp {
     init()
 }
 
-extension TApp {
+extension App {
     /// Starts the app.
     ///
     /// This method is called by the `@main` attribute and starts
     /// the main run loop of the application.
     public static func main() {
         let app = Self()
-        let runner = AppRunner(app: app)
+        let runner = AppRunner<Self>(app: app)
         runner.run()
     }
 }
@@ -60,13 +60,13 @@ extension TApp {
 /// # Usage
 ///
 /// ```swift
-/// struct MyView: TView {
+/// struct MyView: View {
 ///     @Environment(\.statusBar) var statusBar
 ///
-///     var body: some TView {
+///     var body: some View {
 ///         Button("Action") {
 ///             statusBar.setItems([
-///                 TStatusBarItem(shortcut: "⎋", label: "cancel")
+///                 StatusBarItem(shortcut: "⎋", label: "cancel")
 ///             ])
 ///         }
 ///     }
@@ -74,16 +74,16 @@ extension TApp {
 /// ```
 public final class StatusBarState: @unchecked Sendable {
     /// Stack of contexts with their items.
-    private var contextStack: [(context: String, items: [any TStatusBarItemProtocol])] = []
+    private var contextStack: [(context: String, items: [any StatusBarItemProtocol])] = []
 
     /// Global items that are always shown (lowest priority).
-    private var globalItems: [any TStatusBarItemProtocol] = []
+    private var globalItems: [any StatusBarItemProtocol] = []
 
     /// The current status bar style.
-    public var style: TStatusBarStyle = .compact
+    public var style: StatusBarStyle = .compact
 
     /// The horizontal alignment of items.
-    public var alignment: TStatusBarAlignment = .justified
+    public var alignment: StatusBarAlignment = .justified
 
     /// The highlight color for shortcut keys.
     public var highlightColor: Color = .cyan
@@ -102,7 +102,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Triggers a re-render.
     ///
     /// - Parameter items: The items to display.
-    public func setItems(_ items: [any TStatusBarItemProtocol]) {
+    public func setItems(_ items: [any StatusBarItemProtocol]) {
         globalItems = items
         AppState.shared.setNeedsRender()
     }
@@ -112,7 +112,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Triggers a re-render.
     ///
     /// - Parameter builder: A closure that returns items.
-    public func setItems(@StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]) {
+    public func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
         globalItems = builder()
         AppState.shared.setNeedsRender()
     }
@@ -122,7 +122,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Use this during rendering (e.g., from modifiers) to avoid render loops.
     ///
     /// - Parameter items: The items to display.
-    internal func setItemsSilently(_ items: [any TStatusBarItemProtocol]) {
+    internal func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
         globalItems = items
     }
 
@@ -136,7 +136,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameters:
     ///   - context: A unique identifier for this context.
     ///   - items: The items to display for this context.
-    public func push(context: String, items: [any TStatusBarItemProtocol]) {
+    public func push(context: String, items: [any StatusBarItemProtocol]) {
         contextStack.removeAll { $0.context == context }
         contextStack.append((context, items))
         AppState.shared.setNeedsRender()
@@ -149,7 +149,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameters:
     ///   - context: A unique identifier for this context.
     ///   - items: The items to display for this context.
-    internal func pushSilently(context: String, items: [any TStatusBarItemProtocol]) {
+    internal func pushSilently(context: String, items: [any StatusBarItemProtocol]) {
         contextStack.removeAll { $0.context == context }
         contextStack.append((context, items))
     }
@@ -161,7 +161,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameters:
     ///   - context: A unique identifier for this context.
     ///   - builder: A closure that returns items.
-    public func push(context: String, @StatusBarItemBuilder _ builder: () -> [any TStatusBarItemProtocol]) {
+    public func push(context: String, @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
         push(context: context, items: builder())
     }
 
@@ -192,7 +192,7 @@ public final class StatusBarState: @unchecked Sendable {
     // MARK: - Current State
 
     /// The currently active items (topmost context or global).
-    public var currentItems: [any TStatusBarItemProtocol] {
+    public var currentItems: [any StatusBarItemProtocol] {
         if let topContext = contextStack.last {
             return topContext.items
         }
@@ -227,7 +227,7 @@ public final class StatusBarState: @unchecked Sendable {
     public func handleKeyEvent(_ event: KeyEvent) -> Bool {
         for item in currentItems {
             if item.matches(event) {
-                if let statusBarItem = item as? TStatusBarItem {
+                if let statusBarItem = item as? StatusBarItem {
                     // Only consume the event if the item has an action
                     if statusBarItem.hasAction {
                         statusBarItem.execute()
@@ -256,7 +256,7 @@ extension EnvironmentValues {
     /// @Environment(\.statusBar) var statusBar
     ///
     /// statusBar.setItems([
-    ///     TStatusBarItem(shortcut: "q", label: "quit")
+    ///     StatusBarItem(shortcut: "q", label: "quit")
     /// ])
     /// ```
     public var statusBar: StatusBarState {
@@ -273,14 +273,14 @@ private nonisolated(unsafe) var needsRerender = false
 
 // MARK: - App Runner
 
-/// Runs a TApp.
-internal final class AppRunner<App: TApp> {
-    let app: App
+/// Runs an App.
+internal final class AppRunner<A: App> {
+    let app: A
     let terminal: Terminal
     let statusBar: StatusBarState
     private var isRunning = false
 
-    init(app: App) {
+    init(app: A) {
         self.app = app
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
@@ -369,7 +369,7 @@ internal final class AppRunner<App: TApp> {
         }
     }
 
-    private func renderScene<S: TScene>(_ scene: S, context: RenderContext) {
+    private func renderScene<S: Scene>(_ scene: S, context: RenderContext) {
         if let renderable = scene as? SceneRenderable {
             renderable.renderScene(context: context)
         }
@@ -377,7 +377,7 @@ internal final class AppRunner<App: TApp> {
 
     /// Renders the status bar at the specified row.
     private func renderStatusBar(atRow row: Int) {
-        let statusBarView = TStatusBar(
+        let statusBarView = StatusBar(
             items: statusBar.currentItems,
             style: statusBar.style,
             alignment: statusBar.alignment,

@@ -10,7 +10,7 @@
 /// The overlay is rendered on top of the base content. Both views are rendered
 /// to their natural size, and the overlay is positioned according to the
 /// specified alignment within the base content's bounds.
-public struct OverlayModifier<Base: TView, Overlay: TView>: TView {
+public struct OverlayModifier<Base: View, Overlay: View>: View {
     /// The base content.
     let base: Base
 
@@ -74,9 +74,9 @@ extension OverlayModifier: Renderable {
     }
 }
 
-// MARK: - TView Extension
+// MARK: - View Extension
 
-extension TView {
+extension View {
     /// Layers the specified view on top of this view.
     ///
     /// The overlay is positioned according to the specified alignment
@@ -95,10 +95,10 @@ extension TView {
     ///   - alignment: The alignment of the overlay (default: .center).
     ///   - content: The overlay content.
     /// - Returns: A view with the overlay applied.
-    public func overlay<Overlay: TView>(
+    public func overlay<Overlay: View>(
         alignment: Alignment = .center,
-        @TViewBuilder content: () -> Overlay
-    ) -> some TView {
+        @ViewBuilder content: () -> Overlay
+    ) -> some View {
         OverlayModifier(base: self, overlay: content(), alignment: alignment)
     }
 }
