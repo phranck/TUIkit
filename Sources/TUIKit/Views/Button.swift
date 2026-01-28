@@ -32,16 +32,16 @@ public struct ButtonStyle: Sendable {
     /// Creates a button style.
     ///
     /// - Parameters:
-    ///   - foregroundColor: The label color.
+    ///   - foregroundColor: The label color (default: theme accent).
     ///   - backgroundColor: The background color.
-    ///   - borderStyle: The border style.
-    ///   - borderColor: The border color.
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
     ///   - isBold: Whether the label is bold.
     ///   - horizontalPadding: Horizontal padding inside the button.
     public init(
         foregroundColor: Color? = nil,
         backgroundColor: Color? = nil,
-        borderStyle: BorderStyle? = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         isBold: Bool = false,
         horizontalPadding: Int = 2
@@ -80,7 +80,7 @@ public struct ButtonStyle: Sendable {
 
     /// Plain button style (no border).
     public static let plain = ButtonStyle(
-        borderStyle: nil,
+        borderStyle: BorderStyle.none,
         horizontalPadding: 0
     )
 }
@@ -243,7 +243,25 @@ extension Button: Renderable {
         var buffer = FrameBuffer(lines: [styledLabel])
 
         // Apply border if specified
+        // Note: ButtonStyle.plain explicitly sets borderStyle to .none for no border
         if let borderStyle = currentStyle.borderStyle {
+            // Skip if it's the "none" style (invisible border)
+            if borderStyle != .none {
+                let borderColor: Color
+                if isDisabled {
+                    borderColor = Color.theme.disabled
+                } else {
+                    borderColor = currentStyle.borderColor ?? Color.theme.border
+                }
+                buffer = applyBorder(
+                    to: buffer,
+                    style: borderStyle,
+                    color: borderColor
+                )
+            }
+        } else {
+            // nil means use appearance default
+            let effectiveBorderStyle = context.environment.appearance.borderStyle
             let borderColor: Color
             if isDisabled {
                 borderColor = Color.theme.disabled
@@ -252,7 +270,7 @@ extension Button: Renderable {
             }
             buffer = applyBorder(
                 to: buffer,
-                style: borderStyle,
+                style: effectiveBorderStyle,
                 color: borderColor
             )
         }

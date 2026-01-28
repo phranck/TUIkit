@@ -48,8 +48,8 @@ public struct Dialog<Content: View>: View {
     /// The dialog content.
     public let content: Content
 
-    /// The border style.
-    public let borderStyle: BorderStyle
+    /// The border style (nil uses appearance default).
+    public let borderStyle: BorderStyle?
 
     /// The border color.
     public let borderColor: Color?
@@ -64,14 +64,14 @@ public struct Dialog<Content: View>: View {
     ///
     /// - Parameters:
     ///   - title: The dialog title.
-    ///   - borderStyle: The border style (default: .rounded).
-    ///   - borderColor: The border color (default: nil).
-    ///   - titleColor: The title color (default: nil).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: theme foreground).
     ///   - padding: The inner padding (default: horizontal 2, vertical 1).
     ///   - content: The dialog content.
     public init(
         title: String,
-        borderStyle: BorderStyle = .rounded,
+        borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
         padding: EdgeInsets = EdgeInsets(horizontal: 2, vertical: 1),
