@@ -104,6 +104,14 @@ public protocol Theme: Sendable {
 
     /// Status bar shortcut highlight color.
     var statusBarHighlight: Color { get }
+    
+    // MARK: - Container Colors (for block appearance)
+    
+    /// Container body background (used in block appearance).
+    var containerBackground: Color { get }
+    
+    /// Container header/footer background (darker than body, used in block appearance).
+    var containerHeaderBackground: Color { get }
 }
 
 // MARK: - Default Theme Implementation
@@ -124,6 +132,8 @@ extension Theme {
     public var statusBarBackground: Color { backgroundSecondary }
     public var statusBarForeground: Color { foreground }
     public var statusBarHighlight: Color { accent }
+    public var containerBackground: Color { backgroundSecondary }
+    public var containerHeaderBackground: Color { backgroundTertiary }
 }
 
 // MARK: - Theme Environment Key
@@ -252,6 +262,12 @@ public enum ThemeColors {
 
     /// Status bar highlight.
     public static var statusBarHighlight: Color { current.statusBarHighlight }
+    
+    /// Container body background (for block appearance).
+    public static var containerBackground: Color { current.containerBackground }
+    
+    /// Container header/footer background (for block appearance).
+    public static var containerHeaderBackground: Color { current.containerHeaderBackground }
 }
 
 // MARK: - Theme Modifier
