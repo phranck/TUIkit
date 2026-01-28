@@ -26,13 +26,15 @@ enum DemoPage: Int, CaseIterable {
 ///
 /// This class manages the current page and menu selection.
 /// Changes trigger automatic re-renders via `AppState`.
+///
+/// Status bar items are now managed declaratively via the
+/// `.statusBarItems()` modifier in `ContentView`.
 final class ExampleAppState: @unchecked Sendable {
     static let shared = ExampleAppState()
 
     /// The current page being displayed.
     var currentPage: DemoPage = .menu {
         didSet {
-            updateStatusBar()
             AppState.shared.setNeedsRender()
         }
     }
@@ -50,38 +52,5 @@ final class ExampleAppState: @unchecked Sendable {
         )
     }
 
-    private init() {
-        // Set up initial status bar
-        updateStatusBar()
-    }
-
-    /// Updates the status bar based on the current page.
-    ///
-    /// The status bar shows context-sensitive shortcuts:
-    /// - Main menu: navigation, selection, and quit
-    /// - Sub-pages: back navigation and quit
-    ///
-    /// Uses `Shortcut` constants for consistent Unicode symbols.
-    func updateStatusBar() {
-        switch currentPage {
-        case .menu:
-            // Main menu: navigation + quit
-            StatusBarManager.shared.setGlobalItems([
-                TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav"),
-                TStatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter),
-                TStatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump"),
-                TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
-            ])
-
-        default:
-            // Sub-pages: back + quit
-            StatusBarManager.shared.setGlobalItems([
-                TStatusBarItem(shortcut: Shortcut.escape, label: "back") { [weak self] in
-                    self?.currentPage = .menu
-                },
-                TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
-                TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
-            ])
-        }
-    }
+    private init() {}
 }

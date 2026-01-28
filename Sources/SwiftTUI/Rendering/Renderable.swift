@@ -20,8 +20,8 @@ public protocol Renderable {
 
 /// The context for rendering a view.
 ///
-/// Contains layout constraints and terminal information that views
-/// need to determine their size and content.
+/// Contains layout constraints, terminal information, and environment values
+/// that views need to determine their size and content.
 public struct RenderContext {
     /// The target terminal.
     public let terminal: Terminal
@@ -32,20 +32,39 @@ public struct RenderContext {
     /// The available height in lines.
     public var availableHeight: Int
 
+    /// The environment values for this render pass.
+    public var environment: EnvironmentValues
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
     ///   - terminal: The target terminal.
     ///   - availableWidth: The available width (defaults to terminal width).
     ///   - availableHeight: The available height (defaults to terminal height).
+    ///   - environment: The environment values (defaults to empty).
     public init(
         terminal: Terminal = .shared,
         availableWidth: Int? = nil,
-        availableHeight: Int? = nil
+        availableHeight: Int? = nil,
+        environment: EnvironmentValues = EnvironmentValues()
     ) {
         self.terminal = terminal
         self.availableWidth = availableWidth ?? terminal.width
         self.availableHeight = availableHeight ?? terminal.height
+        self.environment = environment
+    }
+
+    /// Creates a new context with the same terminal and size but different environment.
+    ///
+    /// - Parameter environment: The new environment values.
+    /// - Returns: A new RenderContext with the updated environment.
+    public func withEnvironment(_ environment: EnvironmentValues) -> RenderContext {
+        RenderContext(
+            terminal: terminal,
+            availableWidth: availableWidth,
+            availableHeight: availableHeight,
+            environment: environment
+        )
     }
 }
 

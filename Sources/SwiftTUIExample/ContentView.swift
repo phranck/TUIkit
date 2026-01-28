@@ -12,8 +12,8 @@ import SwiftTUI
 /// The main content view that switches between pages.
 ///
 /// This view acts as a router, displaying the appropriate demo page
-/// based on the current state. It also handles the ESC key to
-/// navigate back to the main menu.
+/// based on the current state. It uses the `.statusBarItems()` modifier
+/// to declaratively set context-sensitive status bar items.
 struct ContentView: TView {
     var body: some TView {
         let state = ExampleAppState.shared
@@ -41,18 +41,41 @@ struct ContentView: TView {
         switch page {
         case .menu:
             MainMenuPage()
+                .statusBarItems {
+                    TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
+                    TStatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
+                    TStatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump")
+                    TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
+                }
         case .textStyles:
             TextStylesPage()
+                .statusBarItems(subPageItems)
         case .colors:
             ColorsPage()
+                .statusBarItems(subPageItems)
         case .containers:
             ContainersPage()
+                .statusBarItems(subPageItems)
         case .overlays:
             OverlaysPage()
+                .statusBarItems(subPageItems)
         case .layout:
             LayoutPage()
+                .statusBarItems(subPageItems)
         case .buttons:
             ButtonsPage()
+                .statusBarItems(subPageItems)
         }
+    }
+
+    /// Common status bar items for sub-pages.
+    private var subPageItems: [any TStatusBarItemProtocol] {
+        [
+            TStatusBarItem(shortcut: Shortcut.escape, label: "back") {
+                ExampleAppState.shared.currentPage = .menu
+            },
+            TStatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
+            TStatusBarItem(shortcut: Shortcut.quit, label: "quit")
+        ]
     }
 }
