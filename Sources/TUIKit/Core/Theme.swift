@@ -126,7 +126,7 @@ extension Theme {
 
 /// Environment key for the current theme.
 private struct ThemeKey: EnvironmentKey {
-    static let defaultValue: Theme = DefaultTheme()
+    static let defaultValue: Theme = GreenPhosphorTheme()
 }
 
 extension EnvironmentValues {
@@ -267,28 +267,6 @@ extension View {
 }
 
 // MARK: - Predefined Themes
-
-/// The default theme using standard ANSI colors.
-public struct DefaultTheme: Theme {
-    public let id = "default"
-    public let name = "Default"
-
-    public let background = Color.default
-    public let backgroundSecondary = Color.brightBlack
-    public let foreground = Color.white
-    public let foregroundSecondary = Color.brightWhite
-    public let foregroundTertiary = Color.brightBlack
-    public let accent = Color.cyan
-    public let accentSecondary = Color.blue
-    public let success = Color.green
-    public let warning = Color.yellow
-    public let error = Color.red
-    public let info = Color.cyan
-    public let border = Color.brightBlack
-    public let statusBarHighlight = Color.cyan
-
-    public init() {}
-}
 
 /// Classic green phosphor terminal theme (P1 phosphor).
 ///
@@ -442,74 +420,19 @@ public struct NCursesTheme: Theme {
     public init() {}
 }
 
-/// Dark mode theme with modern colors.
-public struct DarkTheme: Theme {
-    public let id = "dark"
-    public let name = "Dark"
-
-    public let background = Color.hex(0x1E1E2E)
-    public let backgroundSecondary = Color.hex(0x313244)
-    public let backgroundTertiary = Color.hex(0x45475A)
-    public let foreground = Color.hex(0xCDD6F4)
-    public let foregroundSecondary = Color.hex(0xBAC2DE)
-    public let foregroundTertiary = Color.hex(0xA6ADC8)
-    public let accent = Color.hex(0x89B4FA)
-    public let accentSecondary = Color.hex(0x74C7EC)
-    public let success = Color.hex(0xA6E3A1)
-    public let warning = Color.hex(0xF9E2AF)
-    public let error = Color.hex(0xF38BA8)
-    public let info = Color.hex(0x89DCEB)
-    public let border = Color.hex(0x585B70)
-    public let borderFocused = Color.hex(0x89B4FA)
-    public let selection = Color.hex(0x45475A)
-    public let statusBarBackground = Color.hex(0x313244)
-    public let statusBarForeground = Color.hex(0xCDD6F4)
-    public let statusBarHighlight = Color.hex(0x89B4FA)
-
-    public init() {}
-}
-
-/// Light mode theme.
-public struct LightTheme: Theme {
-    public let id = "light"
-    public let name = "Light"
-
-    public let background = Color.hex(0xEFF1F5)
-    public let backgroundSecondary = Color.hex(0xE6E9EF)
-    public let backgroundTertiary = Color.hex(0xDCE0E8)
-    public let foreground = Color.hex(0x4C4F69)
-    public let foregroundSecondary = Color.hex(0x5C5F77)
-    public let foregroundTertiary = Color.hex(0x6C6F85)
-    public let accent = Color.hex(0x1E66F5)
-    public let accentSecondary = Color.hex(0x209FB5)
-    public let success = Color.hex(0x40A02B)
-    public let warning = Color.hex(0xDF8E1D)
-    public let error = Color.hex(0xD20F39)
-    public let info = Color.hex(0x04A5E5)
-    public let border = Color.hex(0x9CA0B0)
-    public let borderFocused = Color.hex(0x1E66F5)
-    public let selection = Color.hex(0xDCE0E8)
-    public let statusBarBackground = Color.hex(0xE6E9EF)
-    public let statusBarForeground = Color.hex(0x4C4F69)
-    public let statusBarHighlight = Color.hex(0x1E66F5)
-
-    public init() {}
-}
-
 // MARK: - Theme Registry
 
 /// Registry of available themes.
 public struct ThemeRegistry {
-    /// All available themes.
+    /// All available themes in cycling order.
+    ///
+    /// Order: Green → Amber → White → Red → NCurses
     public static let all: [Theme] = [
-        DefaultTheme(),
         GreenPhosphorTheme(),
         AmberPhosphorTheme(),
         WhitePhosphorTheme(),
         RedPhosphorTheme(),
-        NCursesTheme(),
-        DarkTheme(),
-        LightTheme()
+        NCursesTheme()
     ]
 
     /// Finds a theme by ID.
@@ -525,12 +448,9 @@ public struct ThemeRegistry {
 
 // MARK: - Convenience Theme Accessors
 
-extension Theme where Self == DefaultTheme {
-    /// The default theme.
-    public static var `default`: DefaultTheme { DefaultTheme() }
-}
-
 extension Theme where Self == GreenPhosphorTheme {
+    /// The default theme (green phosphor).
+    public static var `default`: GreenPhosphorTheme { GreenPhosphorTheme() }
     /// Green phosphor terminal theme.
     public static var green: GreenPhosphorTheme { GreenPhosphorTheme() }
     /// Green phosphor terminal theme (alias).
@@ -561,16 +481,6 @@ extension Theme where Self == RedPhosphorTheme {
 extension Theme where Self == NCursesTheme {
     /// Classic ncurses theme.
     public static var ncurses: NCursesTheme { NCursesTheme() }
-}
-
-extension Theme where Self == DarkTheme {
-    /// Modern dark theme.
-    public static var dark: DarkTheme { DarkTheme() }
-}
-
-extension Theme where Self == LightTheme {
-    /// Modern light theme.
-    public static var light: LightTheme { LightTheme() }
 }
 
 // MARK: - Theme Manager
