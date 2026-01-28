@@ -11,13 +11,41 @@ import SwiftTUI
 // MARK: - Demo Page Enum
 
 /// The available demo pages in the example app.
-enum DemoPage: String, CaseIterable {
-    case menu = "Main Menu"
-    case textStyles = "Text Styles"
-    case colors = "Colors"
-    case containers = "Containers"
-    case overlays = "Overlays"
-    case layout = "Layout"
+enum DemoPage: Int, CaseIterable {
+    case menu = 0
+    case textStyles = 1
+    case colors = 2
+    case containers = 3
+    case overlays = 4
+    case layout = 5
+}
+
+// MARK: - App State
+
+/// Global state for the example app.
+/// Using a simple class with manual AppState notification.
+final class ExampleAppState: @unchecked Sendable {
+    static let shared = ExampleAppState()
+
+    /// The current page being displayed.
+    var currentPage: DemoPage = .menu {
+        didSet { AppState.shared.setNeedsRender() }
+    }
+
+    /// The selected menu index.
+    var menuSelection: Int = 0 {
+        didSet { AppState.shared.setNeedsRender() }
+    }
+
+    /// Binding for menu selection.
+    var menuSelectionBinding: Binding<Int> {
+        Binding(
+            get: { self.menuSelection },
+            set: { self.menuSelection = $0 }
+        )
+    }
+
+    private init() {}
 }
 
 // MARK: - Shared Components
@@ -61,11 +89,11 @@ struct FooterView: TView {
             Divider(character: "─")
             HStack {
                 if showBackHint {
-                    Text("[B] Back to Menu")
+                    Text("[B] Back")
                         .dim()
                     Text("  ")
                 }
-                Text("[Q] Quit")
+                Text("[↑↓] Navigate  [Enter] Select  [Q] Quit")
                     .dim()
                 Spacer()
                 Text("SwiftTUI")
@@ -97,10 +125,50 @@ struct DemoSection<Content: TView>: TView {
     }
 }
 
+// MARK: - Content View (Page Router)
+
+/// The main content view that switches between pages.
+struct ContentView: TView {
+    var body: some TView {
+        let state = ExampleAppState.shared
+
+        // Show current page based on state
+        pageContent(for: state.currentPage)
+            .onKeyPress { event in
+                // Handle back navigation with 'B' key
+                if case .character(let char) = event.key,
+                   (char == "b" || char == "B"),
+                   state.currentPage != .menu {
+                    state.currentPage = .menu
+                }
+            }
+    }
+
+    @TViewBuilder
+    private func pageContent(for page: DemoPage) -> some TView {
+        switch page {
+        case .menu:
+            MainMenuPage()
+        case .textStyles:
+            TextStylesPage()
+        case .colors:
+            ColorsPage()
+        case .containers:
+            ContainersPage()
+        case .overlays:
+            OverlaysPage()
+        case .layout:
+            LayoutPage()
+        }
+    }
+}
+
 // MARK: - Main Menu Page
 
 struct MainMenuPage: TView {
     var body: some TView {
+        let state = ExampleAppState.shared
+
         VStack(spacing: 1) {
             HeaderView(
                 title: "SwiftTUI Example App",
@@ -118,10 +186,15 @@ struct MainMenuPage: TView {
                         MenuItem(label: "Colors", shortcut: "2"),
                         MenuItem(label: "Container Views", shortcut: "3"),
                         MenuItem(label: "Overlays & Modals", shortcut: "4"),
-                        MenuItem(label: "Layout System", shortcut: "5"),
-                        MenuItem(label: "Quit", shortcut: "q")
+                        MenuItem(label: "Layout System", shortcut: "5")
                     ],
-                    selectedIndex: 0,
+                    selection: state.menuSelectionBinding,
+                    onSelect: { index in
+                        // Navigate to the selected page
+                        if let page = DemoPage(rawValue: index + 1) {
+                            state.currentPage = page
+                        }
+                    },
                     selectedColor: .cyan,
                     borderStyle: .rounded,
                     borderColor: .brightBlack
@@ -236,22 +309,9 @@ struct ColorsPage: TView {
                 }
             }
 
-            DemoSection("Hex Colors") {
-                HStack(spacing: 2) {
-                    Text("#FF6B6B").foregroundColor(.hex(0xFF6B6B))
-                    Text("#4ECDC4").foregroundColor(.hex(0x4ECDC4))
-                    Text("#45B7D1").foregroundColor(.hex(0x45B7D1))
-                    Text("#96CEB4").foregroundColor(.hex(0x96CEB4))
-                }
-            }
-
             DemoSection("Semantic Colors") {
                 HStack(spacing: 2) {
                     Text("Primary").foregroundColor(.primary)
-                    Text("Secondary").foregroundColor(.secondary)
-                    Text("Accent").foregroundColor(.accent)
-                }
-                HStack(spacing: 2) {
                     Text("Success").foregroundColor(.success)
                     Text("Warning").foregroundColor(.warning)
                     Text("Error").foregroundColor(.error)
@@ -278,7 +338,6 @@ struct ContainersPage: TView {
                     Card(borderStyle: .rounded, borderColor: .cyan) {
                         Text("A Card view")
                         Text("with padding").dim()
-                        Text("and border")
                     }
                 }
 
@@ -287,28 +346,14 @@ struct ContainersPage: TView {
                     Text("Box").bold().foregroundColor(.yellow)
                     Box(.doubleLine, color: .green) {
                         Text("Simple Box")
-                        Text("Double line border")
                     }
                 }
-            }
 
-            HStack(spacing: 2) {
                 // Panel example
                 VStack(alignment: .leading) {
                     Text("Panel").bold().foregroundColor(.yellow)
-                    Panel("Settings", borderStyle: .line, titleColor: .magenta) {
+                    Panel("Info", borderStyle: .line, titleColor: .magenta) {
                         Text("Title in border")
-                        Text("Great for sections")
-                    }
-                }
-
-                // Nested containers
-                VStack(alignment: .leading) {
-                    Text("Nested").bold().foregroundColor(.yellow)
-                    Box(.rounded, color: .brightBlack) {
-                        Card(borderColor: .cyan) {
-                            Text("Box > Card")
-                        }
                     }
                 }
             }
@@ -365,33 +410,11 @@ struct OverlaysPage: TView {
                 Text("• .overlay() modifier - layer content on top")
                 Text("• .dimmed() modifier - reduce visual emphasis")
                 Text("• .modal() helper - combines dimmed + centered overlay")
-                Text("• Character-level compositing in FrameBuffer")
             }
 
-            DemoSection("Alert Presets") {
-                HStack(spacing: 2) {
-                    VStack {
-                        Text("Warning").foregroundColor(.yellow)
-                        Text("Yellow border")
-                    }
-                    VStack {
-                        Text("Error").foregroundColor(.red)
-                        Text("Red border")
-                    }
-                    VStack {
-                        Text("Info").foregroundColor(.cyan)
-                        Text("Cyan border")
-                    }
-                    VStack {
-                        Text("Success").foregroundColor(.green)
-                        Text("Green border")
-                    }
-                }
-            }
-
-            DemoSection("Dialog View") {
-                Text("Dialog is a flexible modal container")
-                Text("with a title bar (Panel-based)")
+            DemoSection("This page demonstrates a modal overlay") {
+                Text("The content behind is dimmed automatically")
+                Text("Press [B] to go back to the menu")
             }
 
             Spacer()
@@ -463,16 +486,10 @@ struct LayoutPage: TView {
 // MARK: - Main App
 
 /// The main example application.
-///
-/// This demonstrates the Menu view and multiple demo pages.
-/// In a real app with state management, you would switch pages
-/// based on user input.
 struct ExampleApp: TApp {
     var body: some TScene {
         WindowGroup {
-            // Show the main menu page
-            // In a real app, you'd switch between pages based on state
-            MainMenuPage()
+            ContentView()
         }
     }
 }
