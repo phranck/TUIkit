@@ -89,7 +89,7 @@ struct FooterView: TView {
             Divider(character: "─")
             HStack {
                 if showBackHint {
-                    Text("[B] Back")
+                    Text("[ESC] Back")
                         .dim()
                     Text("  ")
                 }
@@ -135,11 +135,22 @@ struct ContentView: TView {
         // Show current page based on state
         pageContent(for: state.currentPage)
             .onKeyPress { event in
-                // Handle back navigation with 'B' key
-                if case .character(let char) = event.key,
-                   (char == "b" || char == "B"),
-                   state.currentPage != .menu {
-                    state.currentPage = .menu
+                switch event.key {
+                case .escape:
+                    // ESC goes back to menu (or exits if already on menu)
+                    if state.currentPage != .menu {
+                        state.currentPage = .menu
+                    }
+                    // If on menu, let it fall through to default handler (exit)
+
+                case .character(let char) where char == "b" || char == "B":
+                    // B also goes back
+                    if state.currentPage != .menu {
+                        state.currentPage = .menu
+                    }
+
+                default:
+                    break
                 }
             }
     }
