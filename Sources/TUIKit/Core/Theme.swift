@@ -577,31 +577,44 @@ extension Theme where Self == LightTheme {
 
 /// Manages theme cycling for the application.
 ///
-/// The `ThemeManager` provides a centralized way to cycle through available themes.
-/// It works with the environment system to update the current theme and trigger re-renders.
+/// The `ThemeManager` provides methods to cycle through available themes
+/// and set specific themes. It works with the environment system to update
+/// the current theme and trigger re-renders.
 ///
 /// # Usage
 ///
+/// Access via environment:
+///
 /// ```swift
+/// @Environment(\.themeManager) var themeManager
+///
 /// // Cycle to the next theme
-/// ThemeManager.shared.cycleTheme()
+/// themeManager.cycleTheme()
+///
+/// // Set a specific theme
+/// themeManager.setTheme(.amber)
+/// themeManager.setTheme(.greenPhosphor)
 ///
 /// // Get the current theme
-/// let theme = ThemeManager.shared.currentTheme
-///
-/// // Set a specific theme by index
-/// ThemeManager.shared.setTheme(at: 2)
+/// let theme = themeManager.currentTheme
 /// ```
 public final class ThemeManager: @unchecked Sendable {
-    /// The shared theme manager instance.
-    public static let shared = ThemeManager()
-    
     /// The current theme index.
     private var currentIndex: Int = 0
     
     /// All available themes.
-    public var availableThemes: [Theme] {
-        ThemeRegistry.all
+    public let availableThemes: [Theme]
+    
+    /// Creates a new theme manager with the default themes.
+    public init() {
+        self.availableThemes = ThemeRegistry.all
+    }
+    
+    /// Creates a new theme manager with custom themes.
+    ///
+    /// - Parameter themes: The themes to cycle through.
+    public init(themes: [Theme]) {
+        self.availableThemes = themes.isEmpty ? ThemeRegistry.all : themes
     }
     
     /// The current theme.
@@ -614,44 +627,46 @@ public final class ThemeManager: @unchecked Sendable {
         currentTheme.name
     }
     
-    private init() {}
-    
     /// Cycles to the next theme.
     ///
-    /// This method updates the current theme index, updates the environment,
-    /// and triggers a re-render.
+    /// Updates the environment and triggers a re-render.
     public func cycleTheme() {
         currentIndex = (currentIndex + 1) % availableThemes.count
         applyCurrentTheme()
     }
     
     /// Cycles to the previous theme.
+    ///
+    /// Updates the environment and triggers a re-render.
     public func cyclePreviousTheme() {
         currentIndex = (currentIndex - 1 + availableThemes.count) % availableThemes.count
         applyCurrentTheme()
     }
     
-    /// Sets the theme at the specified index.
+    /// Sets a specific theme.
     ///
-    /// - Parameter index: The index of the theme to set.
-    public func setTheme(at index: Int) {
-        guard index >= 0 && index < availableThemes.count else { return }
-        currentIndex = index
-        applyCurrentTheme()
-    }
-    
-    /// Sets the theme by ID.
+    /// - Parameter theme: The theme to set.
     ///
-    /// - Parameter id: The theme ID to set.
-    /// - Returns: `true` if the theme was found and set.
-    @discardableResult
-    public func setTheme(withId id: String) -> Bool {
-        guard let index = availableThemes.firstIndex(where: { $0.id == id }) else {
-            return false
+    /// # Example
+    ///
+    /// ```swift
+    /// themeManager.setTheme(.amber)
+    /// themeManager.setTheme(.greenPhosphor)
+    /// themeManager.setTheme(.dark)
+    /// ```
+    public func setTheme(_ theme: Theme) {
+        if let index = availableThemes.firstIndex(where: { $0.id == theme.id }) {
+            currentIndex = index
+        } else {
+            // Theme not in list, add temporarily at current position
+            currentIndex = 0
         }
-        currentIndex = index
-        applyCurrentTheme()
-        return true
+        
+        // Apply the theme directly (even if not in availableThemes)
+        var environment = EnvironmentStorage.shared.environment
+        environment.theme = theme
+        EnvironmentStorage.shared.environment = environment
+        AppState.shared.setNeedsRender()
     }
     
     /// Applies the current theme to the environment and triggers a re-render.
@@ -660,5 +675,27 @@ public final class ThemeManager: @unchecked Sendable {
         environment.theme = currentTheme
         EnvironmentStorage.shared.environment = environment
         AppState.shared.setNeedsRender()
+    }
+}
+
+// MARK: - ThemeManager Environment Key
+
+/// Environment key for the theme manager.
+private struct ThemeManagerKey: EnvironmentKey {
+    static let defaultValue: ThemeManager = ThemeManager()
+}
+
+extension EnvironmentValues {
+    /// The theme manager for cycling and setting themes.
+    ///
+    /// ```swift
+    /// @Environment(\.themeManager) var themeManager
+    ///
+    /// themeManager.cycleTheme()
+    /// themeManager.setTheme(.amber)
+    /// ```
+    public var themeManager: ThemeManager {
+        get { self[ThemeManagerKey.self] }
+        set { self[ThemeManagerKey.self] = newValue }
     }
 }
