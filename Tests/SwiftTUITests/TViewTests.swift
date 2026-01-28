@@ -616,3 +616,194 @@ struct AnyViewTests {
         #expect(!buffer.isEmpty)
     }
 }
+
+@Suite("Focus System Tests")
+struct FocusSystemTests {
+
+    init() {
+        // Clear focus state before each test
+        FocusManager.shared.clear()
+    }
+
+    @Test("FocusManager is singleton")
+    func focusManagerSingleton() {
+        let manager1 = FocusManager.shared
+        let manager2 = FocusManager.shared
+        #expect(manager1 === manager2)
+    }
+
+    @Test("FocusState tracks focus correctly")
+    func focusStateTracking() {
+        let focusState = FocusState(id: "test-focus")
+        // Initially not focused (no focusables registered)
+        #expect(!focusState.isFocused)
+    }
+
+    @Test("FocusManager handles tab navigation")
+    func tabNavigation() {
+        FocusManager.shared.clear()
+
+        // Tab should trigger focus next
+        let tabEvent = KeyEvent(key: .tab)
+        let handled = FocusManager.shared.dispatchKeyEvent(tabEvent)
+        // Even without focusables, tab is "handled" by focus system
+        #expect(handled == true)
+    }
+
+    @Test("FocusManager handles shift+tab navigation")
+    func shiftTabNavigation() {
+        FocusManager.shared.clear()
+
+        let shiftTabEvent = KeyEvent(key: .tab, shift: true)
+        let handled = FocusManager.shared.dispatchKeyEvent(shiftTabEvent)
+        #expect(handled == true)
+    }
+}
+
+@Suite("Button Tests")
+struct ButtonTests {
+
+    init() {
+        // Clear focus state before each test
+        FocusManager.shared.clear()
+    }
+
+    @Test("Button can be created with label and action")
+    func buttonCreation() {
+        var wasPressed = false
+        let button = Button("Click Me") {
+            wasPressed = true
+        }
+        #expect(button.label == "Click Me")
+        #expect(button.isDisabled == false)
+        #expect(wasPressed == false)  // Not pressed yet
+    }
+
+    @Test("Button renders with border by default")
+    func buttonRendering() {
+        FocusManager.shared.clear()
+        let button = Button("OK") { }
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(button, context: context)
+
+        #expect(buffer.height == 3)  // Top border + content + bottom border
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("OK"))
+        // Should have rounded border characters
+        #expect(allContent.contains("╭") || allContent.contains("─"))
+    }
+
+    @Test("Button with primary style")
+    func primaryButtonStyle() {
+        FocusManager.shared.clear()
+        let button = Button("Submit", style: .primary) { }
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(button, context: context)
+
+        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Submit"))
+    }
+
+    @Test("Button with destructive style")
+    func destructiveButtonStyle() {
+        FocusManager.shared.clear()
+        let button = Button("Delete", style: .destructive) { }
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(button, context: context)
+
+        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Delete"))
+    }
+
+    @Test("Button with plain style has no border")
+    func plainButtonStyle() {
+        FocusManager.shared.clear()
+        let button = Button("Link", style: .plain) { }
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(button, context: context)
+
+        // Plain style should have only 1 line (no border)
+        #expect(buffer.height == 1)
+        // The button may have a focus indicator (▸) if it's the first focusable element
+        #expect(buffer.lines[0].stripped.contains("Link"))
+    }
+
+    @Test("Disabled button has dimmed appearance")
+    func disabledButton() {
+        FocusManager.shared.clear()
+        let button = Button("Disabled") { }.disabled()
+        #expect(button.isDisabled == true)
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(button, context: context)
+        #expect(!buffer.isEmpty)
+    }
+
+    @Test("ButtonStyle default preset")
+    func buttonStyleDefault() {
+        let style = ButtonStyle.default
+        #expect(style.borderStyle == .rounded)
+        #expect(style.isBold == false)
+        #expect(style.horizontalPadding == 2)
+    }
+
+    @Test("ButtonStyle primary preset")
+    func buttonStylePrimary() {
+        let style = ButtonStyle.primary
+        #expect(style.foregroundColor == .cyan)
+        #expect(style.borderColor == .cyan)
+        #expect(style.isBold == true)
+    }
+
+    @Test("ButtonStyle destructive preset")
+    func buttonStyleDestructive() {
+        let style = ButtonStyle.destructive
+        #expect(style.foregroundColor == .red)
+        #expect(style.borderColor == .red)
+    }
+
+    @Test("ButtonStyle success preset")
+    func buttonStyleSuccess() {
+        let style = ButtonStyle.success
+        #expect(style.foregroundColor == .green)
+        #expect(style.borderColor == .green)
+    }
+}
+
+@Suite("ButtonRow Tests")
+struct ButtonRowTests {
+
+    init() {
+        FocusManager.shared.clear()
+    }
+
+    @Test("ButtonRow renders multiple buttons horizontally")
+    func buttonRowRendering() {
+        FocusManager.shared.clear()
+        let row = ButtonRow {
+            Button("Cancel") { }
+            Button("OK") { }
+        }
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(row, context: context)
+
+        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Cancel"))
+        #expect(allContent.contains("OK"))
+    }
+
+    @Test("ButtonRow handles empty builder")
+    func emptyButtonRow() {
+        FocusManager.shared.clear()
+        let row = ButtonRow { }
+
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(row, context: context)
+
+        #expect(buffer.isEmpty)
+    }
+}
