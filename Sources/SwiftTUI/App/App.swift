@@ -278,12 +278,14 @@ internal final class AppRunner<A: App> {
     let app: A
     let terminal: Terminal
     let statusBar: StatusBarState
+    let focusManager: FocusManager
     private var isRunning = false
 
     init(app: A) {
         self.app = app
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
+        self.focusManager = FocusManager()
     }
 
     func run() {
@@ -293,9 +295,10 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with status bar
+        // Set up environment with status bar and focus manager
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
+        environment.focusManager = focusManager
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
@@ -333,7 +336,7 @@ internal final class AppRunner<A: App> {
 
         // Clear event handlers before re-rendering
         KeyEventDispatcher.shared.clearHandlers()
-        FocusManager.shared.clear()
+        focusManager.clear()
 
         // Begin lifecycle tracking for this render pass
         LifecycleTracker.shared.beginRenderPass()
@@ -345,6 +348,7 @@ internal final class AppRunner<A: App> {
         // Create render context with environment
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
+        environment.focusManager = focusManager
 
         let context = RenderContext(
             terminal: terminal,
@@ -430,7 +434,7 @@ internal final class AppRunner<A: App> {
         AppState.shared.clearObservers()
         KeyEventDispatcher.shared.clearHandlers()
         EnvironmentStorage.shared.reset()
-        FocusManager.shared.clear()
+        focusManager.clear()
         LifecycleTracker.shared.reset()
         DisappearCallbackStorage.shared.reset()
         TaskStorage.shared.reset()
