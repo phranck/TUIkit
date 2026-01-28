@@ -105,22 +105,62 @@ internal final class AppRunner<App: TApp> {
 
         // Clear event handlers before re-rendering
         KeyEventDispatcher.shared.clearHandlers()
+        FocusManager.shared.clear()
 
-        let renderer = ViewRenderer(terminal: terminal)
+        // Calculate available height (reserve space for status bar)
+        let statusBarHeight = StatusBarManager.shared.hasItems
+            ? (StatusBarManager.shared.style == .bordered ? 3 : 1)
+            : 0
+        let contentHeight = terminal.height - statusBarHeight
 
-        // Extract the root view from the scene
+        // Create renderer with adjusted height
+        let context = RenderContext(
+            terminal: terminal,
+            availableWidth: terminal.width,
+            availableHeight: contentHeight
+        )
+
+        // Render main content
         let scene = app.body
-        renderScene(scene, with: renderer)
+        renderScene(scene, context: context)
+
+        // Render status bar separately (never dimmed)
+        if StatusBarManager.shared.hasItems {
+            renderStatusBar(atRow: terminal.height - statusBarHeight + 1)
+        }
     }
 
-    private func renderScene<S: TScene>(_ scene: S, with renderer: ViewRenderer) {
+    private func renderScene<S: TScene>(_ scene: S, context: RenderContext) {
         if let renderable = scene as? SceneRenderable {
-            renderable.renderScene(with: renderer)
+            renderable.renderScene(context: context)
+        }
+    }
+
+    /// Renders the status bar at the specified row.
+    private func renderStatusBar(atRow row: Int) {
+        let statusBar = TStatusBar()
+        let context = RenderContext(
+            terminal: terminal,
+            availableWidth: terminal.width,
+            availableHeight: statusBar.height
+        )
+
+        let buffer = renderToBuffer(statusBar, context: context)
+
+        // Write directly to terminal at the bottom
+        for (index, line) in buffer.lines.enumerated() {
+            terminal.moveCursor(toRow: row + index, column: 1)
+            terminal.write(line)
         }
     }
 
     private func handleKeyEvent(_ event: KeyEvent) {
-        // First, let registered handlers try to handle the event
+        // First, let the status bar handle the event
+        if StatusBarManager.shared.handleKeyEvent(event) {
+            return
+        }
+
+        // Then, let registered handlers try to handle the event
         if KeyEventDispatcher.shared.dispatch(event) {
             return
         }
@@ -144,6 +184,8 @@ internal final class AppRunner<App: TApp> {
         terminal.exitAlternateScreen()
         AppState.shared.clearObservers()
         KeyEventDispatcher.shared.clearHandlers()
+        StatusBarManager.shared.clear()
+        FocusManager.shared.clear()
     }
 
     private func setupSignalHandlers() {
@@ -167,11 +209,17 @@ internal final class AppRunner<App: TApp> {
 
 /// Internal protocol for renderable scenes.
 internal protocol SceneRenderable {
-    func renderScene(with renderer: ViewRenderer)
+    func renderScene(context: RenderContext)
 }
 
 extension WindowGroup: SceneRenderable {
-    func renderScene(with renderer: ViewRenderer) {
-        renderer.render(content)
+    func renderScene(context: RenderContext) {
+        let buffer = renderToBuffer(content, context: context)
+        // Write buffer to terminal
+        let terminal = Terminal.shared
+        for (index, line) in buffer.lines.enumerated() {
+            terminal.moveCursor(toRow: 1 + index, column: 1)
+            terminal.write(line)
+        }
     }
 }
