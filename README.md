@@ -1,28 +1,46 @@
-![Swift 6.2](https://img.shields.io/badge/Swift-6.2-F05138?logo=swift&logoColor=white)
+![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![macOS](https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white)
+![Linux](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![Status](https://img.shields.io/badge/Status-Work_in_Progress-yellow)
+![Tests](https://img.shields.io/badge/Tests-181_passing-brightgreen)
 
-# SwiftTUI
+# TUIKit
 
 A SwiftUI-like framework for building Terminal User Interfaces in Swift — no ncurses, no C dependencies, just pure Swift.
 
 ## What is this?
 
-SwiftTUI lets you build TUI apps using the same declarative syntax you already know from SwiftUI. Define your UI with `TView`, compose views with `VStack`, `HStack`, and `ZStack`, style text with modifiers like `.bold()` and `.foregroundColor(.red)`, and run it all in your terminal.
+TUIKit lets you build TUI apps using the same declarative syntax you already know from SwiftUI. Define your UI with `View`, compose views with `VStack`, `HStack`, and `ZStack`, style text with modifiers like `.bold()` and `.foregroundColor(.red)`, and run it all in your terminal.
 
 ```swift
-struct ContentView: TView {
-    var body: some TView {
+import TUIKit
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+
+struct ContentView: View {
+    @State var count = 0
+    
+    var body: some View {
         VStack(spacing: 1) {
-            Text("Hello, SwiftTUI!")
+            Text("Hello, TUIKit!")
                 .bold()
                 .foregroundColor(.cyan)
-            Divider()
-            HStack {
-                Text("Status:")
-                Text("Running").foregroundColor(.green)
+            
+            Text("Count: \(count)")
+            
+            Button("Increment") {
+                count += 1
             }
+        }
+        .statusBarItems {
+            StatusBarItem(shortcut: "q", label: "quit")
         }
     }
 }
@@ -30,46 +48,123 @@ struct ContentView: TView {
 
 ## Features
 
-- **`TView` protocol** — the core building block, mirroring SwiftUI's `View`
-- **`@TViewBuilder`** — result builder for declarative view composition (up to 10 children, conditionals, optionals, loops)
+### Core
+
+- **`View` protocol** — the core building block, mirroring SwiftUI's `View`
+- **`@ViewBuilder`** — result builder for declarative view composition
+- **`@State`** — reactive state management with automatic re-rendering
+- **`@Environment`** — dependency injection for theme, focus manager, status bar
+- **`App` protocol** — app lifecycle with signal handling and run loop
+
+### Views & Components
+
 - **Primitive views** — `Text`, `EmptyView`, `Spacer`, `Divider`
 - **Layout containers** — `VStack`, `HStack`, `ZStack` with alignment and spacing
+- **Interactive** — `Button` with focus states, `Menu` with keyboard navigation
+- **Containers** — `Alert`, `Dialog`, `Panel`, `Box`, `Card`
+- **`StatusBar`** — context-sensitive keyboard shortcuts
 - **`ForEach`** — iterate over collections, ranges, or `Identifiable` data
+
+### Styling
+
 - **Text styling** — bold, italic, underline, strikethrough, dim, blink, inverted
-- **Full color support** — 8 standard ANSI colors, bright variants, 256-color palette, 24-bit RGB, hex values
-- **Terminal abstraction** — raw mode, cursor control, alternate screen buffer
-- **`TApp` protocol** — app lifecycle with signal handling and run loop
+- **Full color support** — ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
+- **Theming** — 8 predefined themes (Phosphor variants, ncurses, Dark/Light)
+- **Border styles** — rounded, line, double, thick, ASCII, and more
+
+### Advanced
+
+- **Lifecycle modifiers** — `.onAppear()`, `.onDisappear()`, `.task()`
+- **Storage** — `@AppStorage`, `@SceneStorage` with JSON backend
+- **Preferences** — bottom-up data flow with `PreferenceKey`
+- **Focus system** — Tab/Shift+Tab navigation between interactive elements
 
 ## Run the Example App
 
 ```bash
-swift run SwiftTUIExample
+swift run TUIKitExample
 ```
 
 Press `q` or `ESC` to exit.
 
-## Developer Notes
+## Installation
 
-- **Swift 6.2** with strict concurrency is required (swift-tools-version 6.2)
-- **macOS only** — this is a terminal framework, iOS/watchOS/tvOS don't apply
-- The rendering engine uses **pure ANSI escape codes** — no external dependencies
-- `TView` is a **protocol** (not a class), so views are value types by default
-- Primitive views (`Text`, `Spacer`, `Divider`, stacks, etc.) conform to the internal `Renderable` protocol for direct terminal output
-- Composite views just define a `body` and the renderer walks the tree recursively
-- The `Terminal` class handles raw mode, screen buffer switching, and cursor control via POSIX `termios`
-- Tests use Swift Testing (`@Test`, `#expect`) — run with `swift test`
+Add TUIKit to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/phranck/TUIKit.git", branch: "main")
+]
+```
+
+Then add it to your target:
+
+```swift
+.target(
+    name: "YourApp",
+    dependencies: ["TUIKit"]
+)
+```
+
+## Theming
+
+TUIKit includes 8 predefined themes inspired by classic terminals:
+
+```swift
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+        .environment(\.theme, GreenPhosphorTheme())  // Classic green terminal
+    }
+}
+```
+
+Available themes:
+- `DefaultTheme` — Standard ANSI colors
+- `GreenPhosphorTheme` — Classic green CRT
+- `AmberPhosphorTheme` — Amber monochrome
+- `WhitePhosphorTheme` — White on black
+- `RedPhosphorTheme` — Red terminal
+- `NCursesTheme` — ncurses-inspired colors
+- `DarkTheme` — Modern dark theme
+- `LightTheme` — Light background
+
+## Architecture
+
+- **No singletons for state** — All state flows through the Environment system
+- **Pure ANSI rendering** — No ncurses or other C dependencies
+- **Linux compatible** — Works on macOS and Linux (XDG paths supported)
+- **Value types** — Views are structs, just like SwiftUI
 
 ## Project Structure
 
 ```
 Sources/
-├── SwiftTUI/
-│   ├── App/              TApp, TScene, WindowGroup
-│   ├── Core/             TView, TViewBuilder, Color, TupleViews, PrimitiveViews
-│   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer, Renderable
-│   └── Views/            Text, Stacks, Spacer, Divider, ForEach
-└── SwiftTUIExample/      Example app (executable target)
+├── TUIKit/
+│   ├── App/              App, Scene, WindowGroup
+│   ├── Core/             View, ViewBuilder, State, Environment, Color, Theme
+│   ├── Modifiers/        Border, Frame, Padding, Overlay, Lifecycle
+│   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer, FrameBuffer
+│   └── Views/            Text, Stacks, Button, Menu, Alert, StatusBar, ...
+└── TUIKitExample/        Example app (executable target)
+
+Tests/
+└── TUIKitTests/          181 tests across 27 test suites
 ```
+
+## Requirements
+
+- Swift 6.0+
+- macOS 10.15+ or Linux
+
+## Developer Notes
+
+- Tests use Swift Testing (`@Test`, `#expect`) — run with `swift test`
+- All 181 tests run in parallel
+- The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## License
 
