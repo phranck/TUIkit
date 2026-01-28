@@ -42,10 +42,13 @@ public struct BorderModifier: TViewModifier {
         lines.append(colorize(topLine))
 
         // Content lines with side borders
+        // Important: Reset ANSI before right border to prevent color bleeding
+        let reset = "\u{1B}[0m"
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
             let borderedLine = colorize(String(style.vertical))
                 + paddedLine
+                + reset  // Reset any styling from content
                 + colorize(String(style.vertical))
             lines.append(borderedLine)
         }
