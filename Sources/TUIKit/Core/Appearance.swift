@@ -111,9 +111,6 @@ extension Appearance {
         
         /// Block/solid borders (███).
         public static let block = ID(rawValue: "block")
-        
-        /// ASCII-only borders (+--+).
-        public static let ascii = ID(rawValue: "ascii")
     }
 }
 
@@ -145,12 +142,6 @@ extension Appearance {
     /// Uses `BorderStyle.block` with solid block characters.
     public static let block = Appearance(id: .block, borderStyle: .block)
     
-    /// ASCII-only borders.
-    ///
-    /// Uses `BorderStyle.ascii` with only `+`, `-`, and `|` characters.
-    /// Maximum compatibility with all terminals.
-    public static let ascii = Appearance(id: .ascii, borderStyle: .ascii)
-    
     /// The default appearance (rounded).
     public static let `default`: Appearance = .rounded
 }
@@ -161,14 +152,13 @@ extension Appearance {
 public struct AppearanceRegistry {
     /// All available appearances in cycling order.
     ///
-    /// Order: line → rounded → doubleLine → heavy → block → ascii
+    /// Order: line → rounded → doubleLine → heavy → block
     public static let all: [Appearance] = [
         .line,
         .rounded,
         .doubleLine,
         .heavy,
-        .block,
-        .ascii
+        .block
     ]
     
     /// Finds an appearance by ID.
