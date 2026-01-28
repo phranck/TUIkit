@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftTUI",
+    name: "TUIKit",
     // Minimum deployment targets for Apple platforms
     // Linux is automatically supported (no platform specification needed)
     platforms: [
@@ -12,25 +12,25 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "SwiftTUI",
-            targets: ["SwiftTUI"]
+            name: "TUIKit",
+            targets: ["TUIKit"]
         ),
         .executable(
-            name: "SwiftTUIExample",
-            targets: ["SwiftTUIExample"]
+            name: "TUIKitExample",
+            targets: ["TUIKitExample"]
         ),
     ],
     targets: [
         .target(
-            name: "SwiftTUI"
+            name: "TUIKit"
         ),
         .executableTarget(
-            name: "SwiftTUIExample",
-            dependencies: ["SwiftTUI"]
+            name: "TUIKitExample",
+            dependencies: ["TUIKit"]
         ),
         .testTarget(
-            name: "SwiftTUITests",
-            dependencies: ["SwiftTUI"]
+            name: "TUIKitTests",
+            dependencies: ["TUIKit"]
         ),
     ]
 )
