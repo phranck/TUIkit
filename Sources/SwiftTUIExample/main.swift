@@ -364,11 +364,6 @@ struct ContainersPage: TView {
                     Box(.rounded) { Text("rounded") }
                     Box(.doubleLine) { Text("double") }
                     Box(.heavy) { Text("heavy") }
-                }
-                HStack(spacing: 1) {
-                    Box(.dashed) { Text("dashed") }
-                    Box(.dotted) { Text("dotted") }
-                    Box(.ascii) { Text("ascii") }
                     Box(.block) { Text("block") }
                 }
             }
