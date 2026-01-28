@@ -81,16 +81,25 @@ public final class StatusBarState: @unchecked Sendable {
     /// Global user items that are always shown (lowest priority).
     private var userGlobalItems: [any StatusBarItemProtocol] = []
     
-    // MARK: - System Items
+    // MARK: - System Items Configuration
     
-    /// System items that are always present (quit, help, theme).
-    private var systemItems: [StatusBarItem] = []
-    
-    /// Whether system items are shown.
+    /// Whether system items are shown at all.
     ///
     /// Set to `false` to hide all system items (quit, help, theme).
     /// Default is `true`.
     public var showSystemItems: Bool = true
+    
+    /// Whether the help item (`?`) is shown.
+    ///
+    /// When `true`, pressing `?` shows available shortcuts.
+    /// Default is `true`.
+    public var showHelpItem: Bool = true
+    
+    /// Whether the theme item (`t`) is shown.
+    ///
+    /// When `true`, pressing `t` cycles through available themes.
+    /// Default is `true`.
+    public var showThemeItem: Bool = true
     
     // MARK: - Appearance
     
@@ -108,37 +117,29 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// Creates a new status bar state.
     public init() {
-        // Initialize with all system items (quit, help, theme)
-        self.systemItems = SystemStatusBarItem.all
+        // System items are built dynamically based on flags
     }
     
-    // MARK: - System Items Configuration
+    // MARK: - System Items Access
     
-    /// Configures the system items with custom actions.
+    /// The current system items based on configuration flags.
     ///
-    /// Call this from `AppRunner` to set up system item actions.
-    ///
-    /// - Parameters:
-    ///   - onQuit: Action for quit (default: handled by AppRunner).
-    ///   - onHelp: Action for help. If nil, help item is not shown.
-    ///   - onTheme: Action for theme cycling. If nil, theme item is not shown.
-    internal func configureSystemItems(
-        onQuit: (@Sendable () -> Void)? = nil,
-        onHelp: (@Sendable () -> Void)? = nil,
-        onTheme: (@Sendable () -> Void)? = nil
-    ) {
-        systemItems = SystemStatusBarItem.items(
-            onQuit: onQuit,
-            onHelp: onHelp,
-            onTheme: onTheme
-        )
-    }
-    
-    /// The current system items.
-    ///
-    /// Returns an empty array if `showSystemItems` is false.
+    /// Returns items filtered by `showSystemItems`, `showHelpItem`, and `showThemeItem`.
+    /// The quit item is always included when `showSystemItems` is true.
     public var currentSystemItems: [StatusBarItem] {
-        showSystemItems ? systemItems : []
+        guard showSystemItems else { return [] }
+        
+        var items: [StatusBarItem] = [SystemStatusBarItem.quit]
+        
+        if showHelpItem {
+            items.append(SystemStatusBarItem.help)
+        }
+        
+        if showThemeItem {
+            items.append(SystemStatusBarItem.theme)
+        }
+        
+        return items
     }
 
     // MARK: - User Items Management
