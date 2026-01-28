@@ -581,12 +581,8 @@ internal final class AppRunner<A: App> {
 
         // Default handling (only if no handler consumed the event)
         switch event.key {
-        case .escape:
-            // ESC always exits (could also be made configurable)
-            isRunning = false
-            
         case .character(let char) where char == "q" || char == "Q":
-            // 'q' respects quitBehavior setting
+            // 'q' is the only way to quit (respects quitBehavior setting)
             if statusBar.isQuitAllowed {
                 isRunning = false
             }
