@@ -8,14 +8,13 @@ DerivedData/
 .netrc
 
 # Generated documentation (but keep landing page and jekyll config)
+/docs-api/
 /docs/api/
 /docs/css/
 /docs/js/
 /docs/data/
 /docs/documentation/
 /docs/downloads/
-/docs/images/
-/docs/videos/
 /docs/img/
 /docs/index/
 /docs/*.json
