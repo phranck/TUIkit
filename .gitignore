@@ -7,8 +7,25 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 
-# Generated documentation
-/docs/
+# Generated documentation (but keep landing page and jekyll config)
+/docs/api/
+/docs/css/
+/docs/js/
+/docs/data/
+/docs/documentation/
+/docs/downloads/
+/docs/images/
+/docs/videos/
+/docs/img/
+/docs/index/
+/docs/*.json
+/docs/*.jpg
+/docs/*.svg
+/docs/*.ico
+
+# Except for landing page and jekyll disable file
+!docs/index.html
+!docs/.nojekyll
 
 # Claude Code
 .claude/
