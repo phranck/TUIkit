@@ -32,10 +32,19 @@ jobs:
       - name: Create .nojekyll file
         run: touch ./docs/.nojekyll
 
+      - name: Prepare deployment directory
+        run: |
+          # Create a public directory with both docs and docs-api
+          mkdir -p public
+          cp -r docs/* public/
+          cp -r docs-api public/
+          cp -r docs-api/* public/docs-api/ 2>/dev/null || true
+          touch public/.nojekyll
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './public'
 
   deploy:
     needs: build-docs
