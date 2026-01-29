@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUIKit - Terminal UI Framework for Swift</title>
+    <meta name="description" content="Build beautiful, interactive terminal user interfaces in Swift with TUIKit - a modern, declarative framework for macOS and Linux.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #8b5cf6;
+            --dark: #1f2937;
+            --dark-lighter: #374151;
+            --light: #f9fafb;
+            --light-gray: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: #ffffff;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .cta-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .cta-button-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            margin-left: 1rem;
+        }
+
+        .cta-button-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 60px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 4rem 2rem;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .hero-text .highlight {
+            color: var(--primary);
+        }
+
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .hero-visual {
+            background: var(--dark);
+            border-radius: 1rem;
+            padding: 2rem;
+            color: var(--primary);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-visual code {
+            color: #e5e7eb;
+        }
+
+        .hero-visual .keyword {
+            color: var(--secondary);
+        }
+
+        .hero-visual .string {
+            color: #34d399;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: #ffffff;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            background: var(--light);
+            border-radius: 0.75rem;
+            border: 1px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Code Example Section */
+        .example {
+            padding: 6rem 2rem;
+            background: var(--dark);
+            color: #e5e7eb;
+        }
+
+        .example .section-header h2,
+        .example .section-header p {
+            color: #ffffff;
+        }
+
+        .example .section-header p {
+            color: #d1d5db;
+        }
+
+        .code-block {
+            background: #111827;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-width: 100%;
+            margin-top: 2rem;
+        }
+
+        .code-block code {
+            color: #e5e7eb;
+        }
+
+        .code-block .keyword {
+            color: var(--secondary);
+        }
+
+        .code-block .string {
+            color: #34d399;
+        }
+
+        .code-block .comment {
+            color: #6b7280;
+        }
+
+        .code-block .type {
+            color: #fbbf24;
+        }
+
+        /* Highlight Section */
+        .highlight {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #f0faf4 100%);
+        }
+
+        .highlight-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .highlight-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .highlight-text p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .highlight-features {
+            list-style: none;
+        }
+
+        .highlight-features li {
+            padding: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .highlight-features li::before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .highlight-image {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button-white {
+            background: white;
+            color: var(--primary);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .cta-button-white:hover {
+            background: var(--light);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: #d1d5db;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--dark-lighter);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            color: #9ca3af;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--dark-lighter);
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .highlight-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-section a {
+                display: inline-block;
+                margin: 0 1rem 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <span>▌</span> TUIKit
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#example">Example</a></li>
+                <li><a href="#getting-started">Getting Started</a></li>
+            </ul>
+            <a href="https://github.com/phranck/SwiftTUI" target="_blank" class="cta-button cta-button-secondary">GitHub</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Build Beautiful <span class="highlight">Terminal UIs</span> in Swift</h1>
+                <p>TUIKit is a modern Swift framework for creating sophisticated, interactive terminal user interfaces on macOS and Linux with a declarative, SwiftUI-like API.</p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/phranck/SwiftTUI#getting-started" class="cta-button">Get Started</a>
+                    <a href="https://github.com/phranck/SwiftTUI" class="cta-button cta-button-secondary">View on GitHub</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <pre><code><span class="keyword">import</span> TUIKit
+
+<span class="keyword">@main</span>
+<span class="keyword">struct</span> <span class="type">MyApp</span>: <span class="type">App</span> {
+    <span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">VStack</span>(spacing: <span class="string">1</span>) {
+                <span class="type">Text</span>(<span class="string">"Welcome!"</span>)
+                    .bold()
+                    .foregroundColor(
+                        .theme.accent
+                    )
+            }
+            .padding()
+        }
+    }
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p>Everything you need to build sophisticated terminal interfaces</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Declarative UI</h3>
+                    <p>Build interfaces using Swift's result builders and view composition, just like SwiftUI but for the terminal.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>5 Appearance Styles</h3>
+                    <p>Choose from line, rounded, doubleLine, heavy, and block rendering modes to match your design vision.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌈</div>
+                    <h3>4 Phosphor Themes</h3>
+                    <p>Green, Amber, White, and Red themes with fully customizable colors for complete visual control.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧩</div>
+                    <h3>Rich Components</h3>
+                    <p>Text, Button, Menu, Alert, Dialog, Card, Panel, and more components ready to use.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3>Focus Management</h3>
+                    <p>Tab/Shift+Tab navigation with keyboard shortcuts and intelligent focus tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>State Management</h3>
+                    <p>@State, @Environment, @AppStorage, @SceneStorage property wrappers for reactive UIs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlight Section -->
+    <section class="highlight">
+        <div class="highlight-content">
+            <div class="highlight-text">
+                <h2>No Dependencies</h2>
+                <p>TUIKit is a pure Swift implementation with zero external dependencies. It works perfectly on macOS 10.15+ and Linux with glibc.</p>
+                <ul class="highlight-features">
+                    <li>Swift 6.0 or later</li>
+                    <li>macOS 10.15+ support</li>
+                    <li>Full Linux compatibility</li>
+                    <li>Terminal with ANSI 256 color support</li>
+                    <li>Zero external dependencies</li>
+                </ul>
+            </div>
+            <div class="highlight-image">
+                <div style="font-family: Monaco, monospace; font-size: 0.85rem; color: var(--dark);">
+                    <div style="color: var(--primary); margin-bottom: 1rem;">$ swift run MyApp</div>
+                    <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; background: #f9fafb;">
+                        <div>┌─────────────────────────┐</div>
+                        <div>│ Welcome to TUIKit!      │</div>
+                        <div>│                         │</div>
+                        <div>│      [ Press me ]       │</div>
+                        <div>└─────────────────────────┘</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Example Section -->
+    <section class="example" id="example">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Complete Example</h2>
+                <p>Build an interactive menu with just a few lines of Swift code</p>
+            </div>
+            <div class="code-block">
+                <code><span class="keyword">import</span> TUIKit
+
+<span class="keyword">@main</span>
+<span class="keyword">struct</span> <span class="type">MenuApp</span>: <span class="type">App</span> {
+    @<span class="type">State</span> <span class="keyword">private</span> <span class="keyword">var</span> selectedItem = <span class="string">0</span>
+
+    <span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">VStack</span>(spacing: <span class="string">1</span>) {
+                <span class="type">Text</span>(<span class="string">"Select an option"</span>)
+                    .bold()
+
+                <span class="type">Menu</span> {
+                    <span class="type">Button</span>(<span class="string">"Create New"</span>) { <span class="comment">/* action */</span> }
+                    <span class="type">Button</span>(<span class="string">"Edit"</span>) { <span class="comment">/* action */</span> }
+                    <span class="type">Button</span>(<span class="string">"Delete"</span>) { <span class="comment">/* action */</span> }
+                }
+
+                <span class="type">Spacer</span>()
+            }
+            .padding()
+        }
+    }
+}</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section class="features" id="getting-started">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Quick Start</h2>
+                <p>Get up and running in minutes</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">1️⃣</div>
+                    <h3>Add to Package</h3>
+                    <p>Add TUIKit to your Swift Package manifest as a dependency.</p>
+                    <code style="background: var(--dark); color: var(--primary); padding: 0.75rem; border-radius: 0.25rem; display: block; margin-top: 1rem; font-size: 0.85rem;">.package(url: "...", from: "0.1.0")</code>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">2️⃣</div>
+                    <h3>Import TUIKit</h3>
+                    <p>Import the framework and create your @main App structure.</p>
+                    <code style="background: var(--dark); color: var(--primary); padding: 0.75rem; border-radius: 0.25rem; display: block; margin-top: 1rem; font-size: 0.85rem;">import TUIKit</code>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">3️⃣</div>
+                    <h3>Build Your UI</h3>
+                    <p>Use familiar SwiftUI-like syntax to compose your terminal interface.</p>
+                    <code style="background: var(--dark); color: var(--primary); padding: 0.75rem; border-radius: 0.25rem; display: block; margin-top: 1rem; font-size: 0.85rem;">swift run</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="section-container">
+            <h2>Ready to Build?</h2>
+            <p>Start creating beautiful terminal user interfaces today</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/phranck/SwiftTUI" target="_blank" class="cta-button-white">View on GitHub</a>
+                <a href="https://docs-tuikit.layered.work/documentation/tuikit/" target="_blank" class="cta-button-white">Read Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Product</h3>
+                <a href="https://github.com/phranck/SwiftTUI">GitHub Repository</a>
+                <a href="https://docs-tuikit.layered.work/documentation/tuikit/">Documentation</a>
+                <a href="https://github.com/phranck/SwiftTUI/issues">Issues & Feedback</a>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <a href="https://github.com/phranck/SwiftTUI/tree/main/Sources/TUIKitExample">Example Application</a>
+                <a href="https://docs-tuikit.layered.work/documentation/tuikit/buildyourfirstapp">Getting Started</a>
+                <a href="https://github.com/phranck/SwiftTUI/discussions">Discussions</a>
+            </div>
+            <div class="footer-section">
+                <h3>Community</h3>
+                <a href="https://github.com/phranck/SwiftTUI">GitHub</a>
+                <a href="https://swift.org/">Swift.org</a>
+                <a href="https://docs-tuikit.layered.work/">TUIKit Docs</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 TUIKit. All rights reserved. Built with Swift for the terminal.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Add active class to nav links based on scroll position
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+            } else {
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
