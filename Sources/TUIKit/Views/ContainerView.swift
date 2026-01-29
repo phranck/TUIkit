@@ -250,10 +250,12 @@ extension ContainerView: Renderable {
         let leftBorder = colorize(String(borderStyle.vertical), with: borderColor)
         let rightBorder = colorize(String(borderStyle.vertical), with: borderColor)
         
-        // Body lines
+        // Body lines with theme background
+        let bodyBg = context.environment.theme.containerBackground
         for line in bodyBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            lines.append(leftBorder + paddedLine + reset + rightBorder)
+            let styledContent = applyBackground(paddedLine, background: bodyBg)
+            lines.append(leftBorder + styledContent + reset + rightBorder)
         }
         
         // Footer section (if present)
@@ -269,7 +271,7 @@ extension ContainerView: Renderable {
                 lines.append(separatorLine)
             }
             
-            // Footer lines
+            // Footer lines (no background - footer has its own styling)
             for line in footerBuf.lines {
                 let paddedLine = line.padToVisibleWidth(innerWidth)
                 lines.append(leftBorder + paddedLine + reset + rightBorder)
