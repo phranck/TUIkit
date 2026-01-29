@@ -106,12 +106,15 @@ public protocol Theme: Sendable {
     var statusBarHighlight: Color { get }
     
     // MARK: - Container Colors (for block appearance)
-    
+
     /// Container body background (used in block appearance).
     var containerBackground: Color { get }
-    
+
     /// Container header/footer background (darker than body, used in block appearance).
     var containerHeaderBackground: Color { get }
+
+    /// Button background in block appearance (lighter than container body).
+    var buttonBackground: Color { get }
 }
 
 // MARK: - Default Theme Implementation
@@ -134,6 +137,7 @@ extension Theme {
     public var statusBarHighlight: Color { accent }
     public var containerBackground: Color { backgroundSecondary }
     public var containerHeaderBackground: Color { backgroundTertiary }
+    public var buttonBackground: Color { backgroundSecondary }
 }
 
 // MARK: - Theme Environment Key
@@ -306,7 +310,7 @@ public struct GreenPhosphorTheme: Theme {
     
     // Green phosphor text hierarchy
     public let foreground = Color.hex(0x33FF33)           // Bright green - primary text
-    public let foregroundSecondary = Color.hex(0x29CC29)  // Medium green - secondary text
+    public let foregroundSecondary = Color.hex(0x27C227)  // Medium green - secondary text
     public let foregroundTertiary = Color.hex(0x1F8F1F)   // Dim green - tertiary/muted text
     
     // Accent colors
@@ -326,13 +330,14 @@ public struct GreenPhosphorTheme: Theme {
     public let selectionBackground = Color.hex(0x1A4D1A)  // Dark green for selection bar bg
     
     // Status bar
-    public let statusBarBackground = Color.hex(0x131916)  // Same as header/footer
-    public let statusBarForeground = Color.hex(0x33FF33)
+    public let statusBarBackground = Color.hex(0x0F2215)  // Dark green for status bar
+    public let statusBarForeground = Color.hex(0x2FDD2F)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0x66FF66)
     
     // Container colors for block appearance
-    public var containerBackground: Color { backgroundSecondary }       // #112214 - body
-    public var containerHeaderBackground: Color { backgroundTertiary }  // #131916 - header/footer
+    public var containerBackground: Color { backgroundSecondary }       // #0E271C - body
+    public var containerHeaderBackground: Color { backgroundTertiary }  // #0A1B13 - header/footer
+    public var buttonBackground: Color { Color.hex(0x145523) }          // Lighter green for buttons
 
     public init() {}
 }
@@ -348,7 +353,7 @@ public struct AmberPhosphorTheme: Theme {
     // Background hierarchy
     public let background = Color.hex(0x0A0706)             // App background (darkest)
     public let backgroundSecondary = Color.hex(0x251710)    // Container body background (brighter)
-    public let backgroundTertiary = Color.hex(0x1D1210)     // Header/footer background
+    public let backgroundTertiary = Color.hex(0x1E110E)     // Header/footer background
     
     // Amber phosphor text hierarchy (matching Spotnik)
     public let foreground = Color.hex(0xFFAA00)           // Bright amber - primary text
@@ -379,6 +384,7 @@ public struct AmberPhosphorTheme: Theme {
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
+    public var buttonBackground: Color { Color.hex(0x3A2A1D) }          // Lighter amber for buttons
 
     public init() {}
 }
@@ -419,12 +425,13 @@ public struct WhitePhosphorTheme: Theme {
     
     // Status bar
     public let statusBarBackground = Color.hex(0x131619)  // Same as header/footer
-    public let statusBarForeground = Color.hex(0xE8E8E8)
+    public let statusBarForeground = Color.hex(0xDCDCDC)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0xFFFFFF)
     
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
+    public var buttonBackground: Color { Color.hex(0x1D2535) }          // Lighter gray for buttons
 
     public init() {}
 }
@@ -465,12 +472,13 @@ public struct RedPhosphorTheme: Theme {
     
     // Status bar
     public let statusBarBackground = Color.hex(0x191313)  // Same as header/footer
-    public let statusBarForeground = Color.hex(0xFF4444)
+    public let statusBarForeground = Color.hex(0xF23B3B)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0xFF6666)
     
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
+    public var buttonBackground: Color { Color.hex(0x3A1F22) }          // Lighter red for buttons
 
     public init() {}
 }
@@ -504,6 +512,10 @@ public struct NCursesTheme: Theme {
     public let statusBarBackground = Color.blue
     public let statusBarForeground = Color.white
     public let statusBarHighlight = Color.yellow
+
+    public var containerBackground: Color { backgroundSecondary }
+    public var containerHeaderBackground: Color { backgroundTertiary }
+    public var buttonBackground: Color { Color.brightBlue }
 
     public init() {}
 }
