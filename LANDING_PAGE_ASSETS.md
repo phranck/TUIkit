@@ -1,6 +1,6 @@
 # Landing Page Assets - Required Images & Media
 
-**Status**: 🚀 Landing page live with SVG placeholders - replace with real assets as needed
+**Status**: 🚀 Landing page live with real hero image + SVG placeholders for other assets
 
 **Landing Page**: https://docs-tuikit.layered.work/
 
