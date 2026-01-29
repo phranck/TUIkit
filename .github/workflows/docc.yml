@@ -23,7 +23,7 @@ jobs:
       - name: Build documentation
         run: |
           xcrun docc convert TUIKit.docc \
-            --output-path ./docs
+            --output-path ./docs/api
 
       - name: Create .nojekyll file
         run: touch ./docs/.nojekyll
