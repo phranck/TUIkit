@@ -497,6 +497,87 @@
             font-size: 0.9rem;
         }
 
+        /* Decorative Background Elements */
+        .bg-decoration {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+            animation: float 25s ease-in-out infinite;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+            bottom: -50px;
+            left: -50px;
+            animation: float 30s ease-in-out infinite reverse;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+            top: 50%;
+            left: 10%;
+            animation: float 22s ease-in-out infinite;
+        }
+
+        .blob-4 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+            bottom: 20%;
+            right: 5%;
+            animation: float 28s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+            75% {
+                transform: translate(20px, 10px) scale(1.02);
+            }
+        }
+
+        /* Gradient background sections */
+        section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero::before {
+            z-index: 2;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
@@ -530,6 +611,14 @@
     </style>
 </head>
 <body>
+    <!-- Decorative Background -->
+    <div class="bg-decoration">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+    </div>
+
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
