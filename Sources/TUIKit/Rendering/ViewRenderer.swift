@@ -128,6 +128,9 @@ extension VStack: Renderable {
         let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
         let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
 
+        // Calculate max width for alignment
+        let maxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
+
         var result = FrameBuffer()
         for (index, info) in infos.enumerated() {
             let spacingToApply = index > 0 ? spacing : 0
@@ -135,10 +138,40 @@ extension VStack: Renderable {
                 let height = max(info.spacerMinLength ?? 0, spacerHeight)
                 result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
             } else if let buffer = info.buffer {
-                result.appendVertically(buffer, spacing: spacingToApply)
+                // Apply horizontal alignment
+                let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
+                result.appendVertically(alignedBuffer, spacing: spacingToApply)
             }
         }
         return result
+    }
+    
+    /// Aligns a buffer horizontally within the given width.
+    private func alignBuffer(_ buffer: FrameBuffer, toWidth width: Int, alignment: HorizontalAlignment) -> FrameBuffer {
+        guard buffer.width < width else { return buffer }
+        
+        var alignedLines: [String] = []
+        
+        for line in buffer.lines {
+            let lineWidth = line.strippedLength
+            let linePadding = width - lineWidth
+            
+            switch alignment {
+            case .leading:
+                // Pad on right
+                alignedLines.append(line + String(repeating: " ", count: linePadding))
+            case .center:
+                // Pad on both sides
+                let leftPad = linePadding / 2
+                let rightPad = linePadding - leftPad
+                alignedLines.append(String(repeating: " ", count: leftPad) + line + String(repeating: " ", count: rightPad))
+            case .trailing:
+                // Pad on left
+                alignedLines.append(String(repeating: " ", count: linePadding) + line)
+            }
+        }
+        
+        return FrameBuffer(lines: alignedLines)
     }
 }
 
