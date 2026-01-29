@@ -896,27 +896,85 @@ extension StatusBar: Renderable {
 
     /// Renders the bordered style using the current appearance's border style.
     private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
-        // Use the current appearance's border style
-        let border = context.environment.appearance.borderStyle
         let innerWidth = width - 2  // Account for left and right border
-
         let content = alignContent(itemStrings: itemStrings, width: innerWidth)
 
-        // Build the three lines
-        let topBorder = String(border.topLeft)
-            + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.topRight)
+        // Check if we're using block appearance for special rendering
+        let isBlockAppearance = context.environment.appearance.id == .block
+        if isBlockAppearance {
+            return renderBlockBordered(content: content, innerWidth: innerWidth, context: context)
+        }
 
-        let contentLine = String(border.vertical)
+        // Standard bordered rendering with regular box-drawing characters
+        let border = context.environment.appearance.borderStyle
+        let borderColor = context.environment.theme.border
+
+        // Build the three lines with theme border color
+        let topBorder = colorizeBorder(String(border.topLeft)
+            + String(repeating: border.horizontal, count: innerWidth)
+            + String(border.topRight), color: borderColor)
+
+        let contentLine = colorizeBorder(String(border.vertical), color: borderColor)
             + content
             + ANSIRenderer.reset  // Prevent color bleeding
-            + String(border.vertical)
+            + colorizeBorder(String(border.vertical), color: borderColor)
 
-        let bottomBorder = String(border.bottomLeft)
+        let bottomBorder = colorizeBorder(String(border.bottomLeft)
             + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.bottomRight)
+            + String(border.bottomRight), color: borderColor)
 
         return FrameBuffer(lines: [topBorder, contentLine, bottomBorder])
+    }
+
+    /// Renders block-style status bar with half-block characters.
+    /// ```
+    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: ▄, statusBar BG color
+    /// █ Content █  ← Sides: █, statusBar BG color; content with statusBar BG
+    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: ▀, statusBar BG color
+    /// ```
+    private func renderBlockBordered(content: String, innerWidth: Int, context: RenderContext) -> FrameBuffer {
+        var lines: [String] = []
+
+        // Get colors from theme
+        let statusBarBg = context.environment.theme.statusBarBackground
+
+        // Top border: ▄▄▄ with statusBar background color
+        let topLine = String(repeating: "▄", count: innerWidth + 2)
+        lines.append(colorizeBorderWithForeground(topLine, foreground: statusBarBg))
+
+        // Content line with █ side borders and statusBar BG applied to content
+        let styledContent = applyBackground(content, background: statusBarBg)
+        let sideBorder = colorizeBorderWithForeground("█", foreground: statusBarBg)
+        let contentLine = sideBorder + styledContent + ANSIRenderer.reset + sideBorder
+        lines.append(contentLine)
+
+        // Bottom border: ▀▀▀ (upper half block) with statusBar background color
+        let bottomLine = String(repeating: "▀", count: innerWidth + 2)
+        lines.append(colorizeBorderWithForeground(bottomLine, foreground: statusBarBg))
+
+        return FrameBuffer(lines: lines)
+    }
+
+    /// Applies the theme border color to a string.
+    private func colorizeBorder(_ string: String, color: Color) -> String {
+        var textStyle = TextStyle()
+        textStyle.foregroundColor = color
+        return ANSIRenderer.render(string, with: textStyle)
+    }
+
+    /// Applies foreground color to a string (for block characters).
+    private func colorizeBorderWithForeground(_ string: String, foreground: Color) -> String {
+        var textStyle = TextStyle()
+        textStyle.foregroundColor = foreground
+        return ANSIRenderer.render(string, with: textStyle)
+    }
+
+    /// Applies a background color to content, re-applying after any resets.
+    private func applyBackground(_ string: String, background: Color) -> String {
+        let bgCode = ANSIRenderer.backgroundCode(for: background)
+        let resetCode = "\u{1B}[0m"
+        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        return bgCode + stringWithPersistentBg
     }
 }
 

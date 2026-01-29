@@ -427,6 +427,9 @@ internal final class AppRunner<A: App> {
         self.focusManager = FocusManager()
         self.themeManager = ThemeManager()
         self.appearanceManager = AppearanceManager()
+
+        // Configure status bar style
+        self.statusBar.style = .bordered
     }
 
     func run() {
@@ -527,11 +530,11 @@ internal final class AppRunner<A: App> {
     /// Renders the status bar at the specified row.
     private func renderStatusBar(atRow row: Int) {
         // Use theme colors for status bar (if not explicitly overridden)
-        let highlightColor = statusBar.highlightColor == .cyan 
-            ? Color.theme.statusBarHighlight 
+        let highlightColor = statusBar.highlightColor == .cyan
+            ? Color.theme.statusBarHighlight
             : statusBar.highlightColor
         let labelColor = statusBar.labelColor ?? Color.theme.statusBarForeground
-        
+
         let statusBarView = StatusBar(
             userItems: statusBar.currentUserItems,
             systemItems: statusBar.currentSystemItems,
@@ -540,10 +543,21 @@ internal final class AppRunner<A: App> {
             highlightColor: highlightColor,
             labelColor: labelColor
         )
+
+        // Create render context with current environment for theme colors
+        var environment = EnvironmentValues()
+        environment.statusBar = statusBar
+        environment.focusManager = focusManager
+        environment.themeManager = themeManager
+        environment.theme = themeManager.currentTheme
+        environment.appearanceManager = appearanceManager
+        environment.appearance = appearanceManager.currentAppearance
+
         let context = RenderContext(
             terminal: terminal,
             availableWidth: terminal.width,
-            availableHeight: statusBarView.height
+            availableHeight: statusBarView.height,
+            environment: environment
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)

@@ -18,18 +18,24 @@ struct OverlaysPage: View {
     var body: some View {
         // Background content with modal overlay
         backgroundContent
-            .modal {
-                Alert(
-                    title: "Modal Alert",
-                    message: "This alert overlays dimmed content!",
-                    // borderStyle uses appearance default
-                    borderColor: .theme.border,
-                    titleColor: .theme.accent
-                ) {
-                    HStack(spacing: 3) {
-                        Text("[OK]").bold().foregroundColor(.theme.accent)
-                        Text("[Cancel]").foregroundColor(.theme.foregroundSecondary)
+            .dimmed()
+            .overlay {
+                HStack {
+                    Spacer()
+                    Alert(
+                        title: "Alert",
+                        message: "This alert overlays dimmed content!",
+                        // borderStyle uses appearance default
+                        borderColor: .theme.border,
+                        titleColor: .theme.accent
+                    ) {
+                        VStack(spacing: 1) {
+                            Button("OK", style: .primary) { }
+                            Button("Cancel") { }
+                        }
                     }
+                    .frame(width: 55)
+                    Spacer()
                 }
             }
     }

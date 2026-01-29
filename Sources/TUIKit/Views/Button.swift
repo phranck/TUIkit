@@ -237,6 +237,12 @@ extension Button: Renderable {
         textStyle.backgroundColor = currentStyle.backgroundColor
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
+        // In block appearance, add buttonBackground to button
+        let isBlockAppearance = context.environment.appearance.id == .block
+        if isBlockAppearance && textStyle.backgroundColor == nil {
+            textStyle.backgroundColor = context.environment.theme.buttonBackground
+        }
+
         let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
 
         // Create content buffer
@@ -256,27 +262,31 @@ extension Button: Renderable {
                 buffer = applyBorder(
                     to: buffer,
                     style: borderStyle,
-                    color: borderColor
+                    color: borderColor,
+                    context: context
                 )
             }
         } else {
-            // nil means use appearance default
-            let effectiveBorderStyle = context.environment.appearance.borderStyle
-            let borderColor: Color
-            if isDisabled {
-                borderColor = Color.theme.disabled
-            } else {
-                borderColor = currentStyle.borderColor ?? Color.theme.border
+            // nil means use appearance default, but skip border for block appearance
+            if !isBlockAppearance {
+                let effectiveBorderStyle = context.environment.appearance.borderStyle
+                let borderColor: Color
+                if isDisabled {
+                    borderColor = Color.theme.disabled
+                } else {
+                    borderColor = currentStyle.borderColor ?? Color.theme.border
+                }
+                buffer = applyBorder(
+                    to: buffer,
+                    style: effectiveBorderStyle,
+                    color: borderColor,
+                    context: context
+                )
             }
-            buffer = applyBorder(
-                to: buffer,
-                style: effectiveBorderStyle,
-                color: borderColor
-            )
         }
 
-        // Add focus indicator if focused
-        if isFocused && !isDisabled {
+        // Add focus indicator if focused (but not for primary/bold buttons)
+        if isFocused && !isDisabled && !currentStyle.isBold {
             buffer = addFocusIndicator(to: buffer)
         }
 
@@ -284,7 +294,7 @@ extension Button: Renderable {
     }
 
     /// Applies a border to the buffer.
-    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color) -> FrameBuffer {
+    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color, context: RenderContext) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
         let innerWidth = buffer.width
@@ -447,14 +457,29 @@ extension ButtonRow: Renderable {
         // Find the maximum height
         let maxHeight = buttonBuffers.map { $0.height }.max() ?? 0
 
-        // Combine horizontally
+        // Calculate total width needed (buttons + spacing)
+        let totalButtonWidth = buttonBuffers.reduce(0) { $0 + $1.width }
+        let totalSpacingWidth = max(0, buttonBuffers.count - 1) * spacing
+        let totalNeededWidth = totalButtonWidth + totalSpacingWidth
+
+        // Available width from context
+        let availableWidth = context.availableWidth
+
+        // Right-align: calculate left padding
+        let leftPadding = max(0, availableWidth - totalNeededWidth)
+
+        // Combine horizontally (right-aligned)
         var resultLines: [String] = Array(repeating: "", count: maxHeight)
         let spacer = String(repeating: " ", count: spacing)
 
-        for (index, buffer) in buttonBuffers.enumerated() {
-            let buttonWidth = buffer.width
+        for lineIndex in 0..<maxHeight {
+            // Add left padding
+            resultLines[lineIndex] = String(repeating: " ", count: leftPadding)
 
-            for lineIndex in 0..<maxHeight {
+            // Add buttons
+            for (index, buffer) in buttonBuffers.enumerated() {
+                let buttonWidth = buffer.width
+
                 if index > 0 {
                     resultLines[lineIndex] += spacer
                 }
