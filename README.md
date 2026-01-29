@@ -4,6 +4,8 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Tests](https://img.shields.io/badge/Tests-181_passing-brightgreen)
 
+![Spotnik - Terminal based Sptoify Player](.github/assets/spotnik_1.png)
+
 # TUIKit
 
 A SwiftUI-like framework for building Terminal User Interfaces in Swift — no ncurses, no C dependencies, just pure Swift.
