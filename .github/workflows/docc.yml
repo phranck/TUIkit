@@ -7,11 +7,12 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: write
   pages: write
   id-token: write
 
 jobs:
-  build-docs:
+  build-and-deploy-docs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -23,36 +24,34 @@ jobs:
       - name: Build documentation
         run: |
           xcrun docc convert TUIKit.docc \
-            --output-path ./docs-api
+            --output-path ./docs/api
 
-      - name: Convert absolute paths to relative
+      - name: Commit and push documentation
         run: |
-          bash scripts/fix-docc-paths.sh ./docs-api
-
-      - name: Create .nojekyll file
-        run: touch ./docs/.nojekyll
-
-      - name: Prepare deployment directory
-        run: |
-          # Create a public directory with both docs and docs-api
-          mkdir -p public
-          cp -r docs/* public/
-          cp -r docs-api public/
-          cp -r docs-api/* public/docs-api/ 2>/dev/null || true
-          touch public/.nojekyll
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './public'
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/api/
+          git commit -m "docs: Generate DocC documentation" || echo "No changes to commit"
+          git push
 
   deploy:
-    needs: build-docs
+    needs: build-and-deploy-docs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
