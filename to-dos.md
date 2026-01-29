@@ -29,6 +29,22 @@
 
 ## COMPLETED
 
+### StatusBar, Buttons & Theme Styling (2026-01-29)
+- [x] StatusBar.bordered style with theme border colors
+- [x] StatusBar block appearance with half-block characters
+- [x] Pass current environment to StatusBar rendering for theme updates
+- [x] ButtonRow right-alignment with left padding calculation
+- [x] Button: Remove borders in block appearance
+- [x] Button: Remove focus indicator for primary buttons
+- [x] Button: Add buttonBackground in block appearance
+- [x] Theme: Add buttonBackground color for all themes
+- [x] Theme: Adjust foregroundSecondary and statusBarForeground
+- [x] Container: Add theme background to body content
+- [x] Alerts: Use real Button components instead of Text
+- [x] Alerts: Center modal with HStack/Spacer layout
+- [x] Amber theme: Update header/footer background to #1E110E
+- [x] StatusBar: Block style with ▄/█/▀ characters
+
 ### Half-Padding Cleanup & Demo Improvements (2026-01-29)
 - [x] Remove half-padding feature from BorderModifier
 - [x] Simplify `renderBlockStyle()` method
