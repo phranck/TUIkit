@@ -24,13 +24,13 @@ jobs:
       - name: Build documentation
         run: |
           xcrun docc convert TUIKit.docc \
-            --output-path ./docs/api
+            --output-path ./docs
 
       - name: Commit and push documentation
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/api/
+          git add docs/
           git commit -m "docs: Generate DocC documentation" || echo "No changes to commit"
           git push
 
