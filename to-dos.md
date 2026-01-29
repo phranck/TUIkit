@@ -1,8 +1,8 @@
-# TUIKit — To-Dos
+# TUIKit - To-Dos
 
 ## IN PROGRESS
 
-- [ ] Create PR for `feature/system-statusbar-items` branch
+- (none)
 
 ## PLANNED
 
@@ -27,7 +27,21 @@
 - [ ] Animation system (basic transitions)
 - [ ] Accessibility labels
 
-## ✅ COMPLETED
+## COMPLETED
+
+### Half-Padding Cleanup & Demo Improvements (2026-01-29)
+- [x] Remove half-padding feature from BorderModifier
+- [x] Simplify `renderBlockStyle()` method
+- [x] Remove half-padding from `.border()` view extension
+- [x] Remove half-padding demo from ContainersPage
+- [x] Fix Content Alignment demo to show actual alignment differences
+- [x] Update Padding demo to show h and v values
+
+### Block Appearance Implementation (2026-01-28)
+- [x] Half-block Unicode rendering (top/bottom borders, side borders)
+- [x] Container background colors for all themes
+- [x] Header/footer background colors
+- [x] ANSI reset code handling for persistent backgrounds
 
 ### Theme System Improvements (2026-01-28)
 - [x] Theme colors throughout UI components
@@ -38,11 +52,11 @@
   - [x] ANSI reset codes replaced with "reset + restore background"
   - [x] StatusBar uses same background treatment
 - [x] Subtle theme tints for backgrounds
-  - [x] Green: #0F1A0F (green tint)
-  - [x] Amber: #1A150F (amber tint)
-  - [x] White: #121418 (cool/blue tint)
-  - [x] Red: #1A0F0F (red tint)
-- [x] Simplified theme names (Green, Amber, White, Red, ncurses)
+  - [x] Green: #060A07 (app), #0E271C (container)
+  - [x] Amber: #0A0706 (app), #251710 (container)
+  - [x] White: #06070A (app), #111A2A (container)
+  - [x] Red: #0A0606 (app), #281112 (container)
+- [x] Simplified theme names (Green, Amber, White, Red)
 
 ### System StatusBar Items (2026-01-28)
 - [x] Two-container model (user items left, system items right)
@@ -54,12 +68,16 @@
 - [x] FocusManager: Refactored from singleton to Environment-based
 - [x] Parallel tests now work
 
+### Package Rename (2026-01-28)
+- [x] Renamed from SwiftTUI to TUIKit
+- [x] All imports and references updated
+
 ### Core Framework
 - [x] View protocol
 - [x] ViewBuilder result builder (up to 10 children, conditionals, optionals, arrays)
 - [x] Primitive views: Text, EmptyView, Spacer, Divider
 - [x] Container views: VStack, HStack, ZStack
-- [x] Container views: Card, Box, Panel
+- [x] Container views: Card, Box, Panel, ContainerView
 - [x] ForEach (Identifiable, KeyPath, Range)
 - [x] AnyView type erasure
 
@@ -71,7 +89,7 @@
 - [x] Theme System
   - [x] Theme protocol with semantic colors
   - [x] Environment-based ThemeManager
-  - [x] 5 predefined themes (Green, Amber, White, Red, NCurses)
+  - [x] 4 predefined phosphor themes
   - [x] `.theme()` modifier
   - [x] `Color.theme.foreground` etc. shortcuts
 
@@ -83,7 +101,7 @@
 - [x] `.padding()` modifier
 - [x] `.frame(width:height:alignment:)` - fixed size
 - [x] `.frame(minWidth:maxWidth:minHeight:maxHeight:)` - flexible size
-- [x] `.border()` modifier (8 border styles, width-aware, theme colors)
+- [x] `.border()` modifier (5 appearance styles, width-aware, theme colors)
 - [x] `.background()` modifier
 - [x] `.overlay(alignment:)` modifier
 - [x] `.dimmed()` modifier
@@ -128,7 +146,7 @@
 - [x] Shortcut constants (Unicode symbols)
 - [x] Context stack for modals (push/pop)
 - [x] StatusBarState via Environment
-- [x] System items (quit, help, theme)
+- [x] System items (quit, help, theme, appearance)
 
 ### Rendering
 - [x] Terminal abstraction (raw mode, alternate screen, cursor, fillBackground)
@@ -148,7 +166,7 @@
 - [x] Linux support (Glibc, XDG paths, JSON storage)
 
 ### Testing & Documentation
-- [x] Test suite (189 tests, 28 suites)
+- [x] Test suite (210 tests, 31 suites)
 - [x] README with badges
 - [x] Code documentation in English
 - [x] Example app with 7 demo pages

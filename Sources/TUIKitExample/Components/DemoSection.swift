@@ -33,7 +33,7 @@ struct DemoSection<Content: View>: View {
             Text(title)
                 .bold()
                 .underline()
-                .foregroundColor(.yellow)
+                .foregroundColor(.theme.accent)
             content
         }
     }
