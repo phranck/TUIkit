@@ -4,22 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build-and-deploy:
+  build-docs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -31,16 +19,17 @@ jobs:
       - name: Build documentation
         run: |
           xcrun docc convert TUIKit.docc \
-            --output-path ./docs \
-            --hosting-base-path TUIKit
+            --output-path ./docs
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Commit documentation
+        run: |
+          git config user.name "Documentation Bot"
+          git config user.email "docs@example.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "docs: Update DocC documentation"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          path: './docs'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        continue-on-error: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
