@@ -23,12 +23,12 @@ struct OverlaysPage: View {
                     title: "Modal Alert",
                     message: "This alert overlays dimmed content!",
                     // borderStyle uses appearance default
-                    borderColor: .yellow,
-                    titleColor: .yellow
+                    borderColor: .theme.border,
+                    titleColor: .theme.accent
                 ) {
                     HStack(spacing: 3) {
-                        Text("[OK]").bold().foregroundColor(.green)
-                        Text("[Cancel]").foregroundColor(.red)
+                        Text("[OK]").bold().foregroundColor(.theme.accent)
+                        Text("[Cancel]").foregroundColor(.theme.foregroundSecondary)
                     }
                 }
             }
@@ -48,7 +48,7 @@ struct OverlaysPage: View {
                 Text("The content behind is dimmed automatically")
                 Text("Note: The status bar is NOT dimmed!")
                     .bold()
-                    .foregroundColor(.green)
+                    .foregroundColor(.theme.accent)
             }
 
             Spacer()
