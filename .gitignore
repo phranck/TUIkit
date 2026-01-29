@@ -12,6 +12,10 @@ DerivedData/
 
 # Keep docs/ for documentation source files
 
+# VitePress and dependencies
+docs/node_modules/
+docs/.vitepress/dist/
+
 # Claude Code
 .claude/
 img/
