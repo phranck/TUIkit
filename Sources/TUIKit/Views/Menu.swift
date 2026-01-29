@@ -342,39 +342,58 @@ extension Menu: Renderable {
         
         if isBlockStyle {
             // Block style: use half-blocks with special coloring
-            let headerBackground = Color.theme.containerHeaderBackground
-            let vertical = String(style.vertical)  // █
+            // Header/Footer BG = darker (containerHeaderBackground)
+            // Body BG = lighter (containerBackground)
+            // App BG = transparent (no background set)
+            let headerFooterBg = Color.theme.containerHeaderBackground
+            let bodyBg = Color.theme.containerBackground
             
-            // Top border: ▄▄▄ with header background as foreground (title section)
+            // Determine if we have a header (divider present)
+            let hasHeader = dividerLineIndex != nil
+            
+            // Top border: ▄▄▄
+            // FG = header background, BG = App background (transparent/none)
             let topLine = String(repeating: "▄", count: innerWidth + 2)
-            result.append(colorizeWithForeground(topLine, foreground: headerBackground))
+            if hasHeader {
+                result.append(colorizeWithForeground(topLine, foreground: headerFooterBg))
+            } else {
+                // No header: use body background for top
+                result.append(colorizeWithForeground(topLine, foreground: bodyBg))
+            }
             
             // Content lines with side borders
             for (index, line) in buffer.lines.enumerated() {
-                if let dividerIndex = dividerLineIndex, index == dividerIndex {
+                let isHeaderLine = hasHeader && index < dividerLineIndex!
+                let isDividerLine = hasHeader && index == dividerLineIndex!
+                
+                if isDividerLine {
                     // Header/Body separator: ▀▀▀
-                    // FG = header background, BG = transparent (body background)
+                    // FG = header BG, BG = body BG (creates smooth transition)
                     let dividerLine = String(repeating: "▀", count: innerWidth + 2)
-                    result.append(colorizeWithForeground(dividerLine, foreground: headerBackground))
-                } else if index < (dividerLineIndex ?? 0) {
-                    // Header line (before divider): with background
+                    result.append(colorizeWithBoth(dividerLine, foreground: headerFooterBg, background: bodyBg))
+                } else if isHeaderLine {
+                    // Header line: █ borders and content with header background
                     let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let leftBorder = colorizeWithBoth(vertical, foreground: color ?? Color.theme.border, background: headerBackground)
-                    let rightBorder = colorizeWithBoth(vertical, foreground: color ?? Color.theme.border, background: headerBackground)
-                    let styledContent = applyHeaderBackground(paddedLine, background: headerBackground)
-                    result.append(leftBorder + styledContent + reset + rightBorder)
+                    let sideBorder = colorizeWithForeground("█", foreground: headerFooterBg)
+                    let styledContent = applyBackground(paddedLine, background: headerFooterBg)
+                    result.append(sideBorder + styledContent + reset + sideBorder)
                 } else {
-                    // Body line (after divider): transparent
+                    // Body line: █ borders with body background
                     let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let leftBorder = colorizeBorder(vertical, with: color)
-                    let rightBorder = colorizeBorder(vertical, with: color)
-                    result.append(leftBorder + paddedLine + reset + rightBorder)
+                    let sideBorder = colorizeWithForeground("█", foreground: bodyBg)
+                    let styledContent = applyBackground(paddedLine, background: bodyBg)
+                    result.append(sideBorder + styledContent + reset + sideBorder)
                 }
             }
             
-            // Bottom border: ▀▀▀ with border color (body section)
+            // Bottom border: ▀▀▀
+            // FG = body background (or header if no header section), BG = App background (transparent)
             let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-            result.append(colorizeBorder(bottomLine, with: color))
+            if hasHeader {
+                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
+            } else {
+                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
+            }
         } else {
             // Standard style: regular box-drawing characters
             let vertical = colorizeBorder(String(style.vertical), with: color)
@@ -424,10 +443,14 @@ extension Menu: Renderable {
         return ANSIRenderer.render(string, with: style)
     }
     
-    /// Applies header background to content.
-    private func applyHeaderBackground(_ string: String, background: Color) -> String {
+    /// Applies a background color to content, re-applying after any resets.
+    private func applyBackground(_ string: String, background: Color) -> String {
+        // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
         let bgCode = ANSIRenderer.backgroundCode(for: background)
-        return "\u{1B}[\(bgCode)m" + string
+        // Replace any reset codes with reset + background to maintain the background
+        let resetCode = "\u{1B}[0m"
+        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        return bgCode + stringWithPersistentBg
     }
 
     /// Colorizes border characters.

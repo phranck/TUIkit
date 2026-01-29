@@ -30,6 +30,7 @@ extension BorderedView: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Resolve border style - use explicit or fall back to appearance default
         let effectiveStyle = style ?? context.environment.appearance.borderStyle
+        let isBlockAppearance = context.environment.appearance.id == .block
         
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context
@@ -42,38 +43,46 @@ extension BorderedView: Renderable {
 
         let contentWidth = buffer.width
         let innerWidth = max(contentWidth, 1)
-
+        
+        if isBlockAppearance {
+            return renderBlockStyle(buffer: buffer, innerWidth: innerWidth)
+        } else {
+            return renderStandardStyle(buffer: buffer, innerWidth: innerWidth, style: effectiveStyle)
+        }
+    }
+    
+    /// Renders with standard box-drawing characters.
+    private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle) -> FrameBuffer {
         // Build the top border line
         let topLine = buildBorderLine(
-            left: effectiveStyle.topLeft,
-            fill: effectiveStyle.horizontal,
-            right: effectiveStyle.topRight,
+            left: style.topLeft,
+            fill: style.horizontal,
+            right: style.topRight,
             width: innerWidth
         )
 
         // Build the bottom border line
         let bottomLine = buildBorderLine(
-            left: effectiveStyle.bottomLeft,
-            fill: effectiveStyle.horizontal,
-            right: effectiveStyle.bottomRight,
+            left: style.bottomLeft,
+            fill: style.horizontal,
+            right: style.bottomRight,
             width: innerWidth
         )
 
         // Build the result
         var lines: [String] = []
+        let reset = "\u{1B}[0m"
 
         // Top border
         lines.append(colorize(topLine))
 
         // Content lines with side borders
-        // Important: Reset ANSI before right border to prevent color bleeding
-        let reset = "\u{1B}[0m"
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = colorize(String(effectiveStyle.vertical))
+            let borderedLine = colorize(String(style.vertical))
                 + paddedLine
-                + reset  // Reset any styling from content
-                + colorize(String(effectiveStyle.vertical))
+                + reset
+                + colorize(String(style.vertical))
             lines.append(borderedLine)
         }
 
@@ -81,6 +90,55 @@ extension BorderedView: Renderable {
         lines.append(colorize(bottomLine))
 
         return FrameBuffer(lines: lines)
+    }
+    
+    /// Renders with half-block characters for block appearance.
+    ///
+    /// Block style design:
+    /// ```
+    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: ▄, FG = container BG, BG = transparent
+    /// █ Content █  ← Sides: █, FG = container BG, content has container BG
+    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: ▀, FG = container BG, BG = transparent
+    /// ```
+    private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int) -> FrameBuffer {
+        var lines: [String] = []
+        let reset = "\u{1B}[0m"
+        
+        // For block style, use container background color for borders
+        let containerBg = Color.theme.containerBackground
+        let sideBorder = colorizeWithForeground("█", foreground: containerBg)
+        
+        // Top border: ▄▄▄ with FG = container BG
+        let topLine = String(repeating: "▄", count: innerWidth + 2)
+        lines.append(colorizeWithForeground(topLine, foreground: containerBg))
+        
+        // Content lines with █ side borders and container background
+        for line in buffer.lines {
+            let paddedLine = line.padToVisibleWidth(innerWidth)
+            let styledContent = applyBackground(paddedLine, background: containerBg)
+            lines.append(sideBorder + styledContent + reset + sideBorder)
+        }
+        
+        // Bottom border: ▀▀▀ with FG = container BG
+        let bottomLine = String(repeating: "▀", count: innerWidth + 2)
+        lines.append(colorizeWithForeground(bottomLine, foreground: containerBg))
+        
+        return FrameBuffer(lines: lines)
+    }
+    
+    /// Colorizes with only foreground color.
+    private func colorizeWithForeground(_ string: String, foreground: Color) -> String {
+        var textStyle = TextStyle()
+        textStyle.foregroundColor = foreground
+        return ANSIRenderer.render(string, with: textStyle)
+    }
+    
+    /// Applies a background color to content, re-applying after any resets.
+    private func applyBackground(_ string: String, background: Color) -> String {
+        let bgCode = ANSIRenderer.backgroundCode(for: background)
+        let resetCode = "\u{1B}[0m"
+        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        return bgCode + stringWithPersistentBg
     }
 
     /// Builds a horizontal border line.

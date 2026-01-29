@@ -84,6 +84,13 @@ public struct Edge: OptionSet, Sendable {
 public struct PaddingModifier: ViewModifier {
     /// The padding insets.
     public let insets: EdgeInsets
+    
+    /// Creates a padding modifier.
+    ///
+    /// - Parameter insets: The padding insets.
+    public init(insets: EdgeInsets) {
+        self.insets = insets
+    }
 
     public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         var result: [String] = []
@@ -91,9 +98,11 @@ public struct PaddingModifier: ViewModifier {
         let leadingPad = String(repeating: " ", count: insets.leading)
         let trailingPad = String(repeating: " ", count: insets.trailing)
 
-        // Top padding
+        // Calculate line width
         let lineWidth = buffer.width + insets.leading + insets.trailing
         let emptyLine = String(repeating: " ", count: lineWidth)
+        
+        // Top padding (full lines)
         for _ in 0..<insets.top {
             result.append(emptyLine)
         }
@@ -103,7 +112,7 @@ public struct PaddingModifier: ViewModifier {
             result.append(leadingPad + line + trailingPad)
         }
 
-        // Bottom padding
+        // Bottom padding (full lines)
         for _ in 0..<insets.bottom {
             result.append(emptyLine)
         }

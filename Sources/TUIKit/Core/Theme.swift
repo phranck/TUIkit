@@ -299,10 +299,10 @@ public struct GreenPhosphorTheme: Theme {
     public let id = "green-phosphor"
     public let name = "Green"
 
-    // Dark background with subtle green tint
-    public let background = Color.hex(0x0F1A0F)             // Very dark with green tint
-    public let backgroundSecondary = Color.hex(0x162016)    // Slightly lighter
-    public let backgroundTertiary = Color.hex(0x0A120A)     // Darkest
+    // Background hierarchy
+    public let background = Color.hex(0x060A07)             // App background (darkest)
+    public let backgroundSecondary = Color.hex(0x0E271C)    // Container body background (brighter)
+    public let backgroundTertiary = Color.hex(0x0A1B13)     // Header/footer background
     
     // Green phosphor text hierarchy
     public let foreground = Color.hex(0x33FF33)           // Bright green - primary text
@@ -326,9 +326,13 @@ public struct GreenPhosphorTheme: Theme {
     public let selectionBackground = Color.hex(0x1A4D1A)  // Dark green for selection bar bg
     
     // Status bar
-    public let statusBarBackground = Color.hex(0x162016)
+    public let statusBarBackground = Color.hex(0x131916)  // Same as header/footer
     public let statusBarForeground = Color.hex(0x33FF33)
     public let statusBarHighlight = Color.hex(0x66FF66)
+    
+    // Container colors for block appearance
+    public var containerBackground: Color { backgroundSecondary }       // #112214 - body
+    public var containerHeaderBackground: Color { backgroundTertiary }  // #131916 - header/footer
 
     public init() {}
 }
@@ -341,10 +345,10 @@ public struct AmberPhosphorTheme: Theme {
     public let id = "amber-phosphor"
     public let name = "Amber"
 
-    // Dark background with subtle amber tint
-    public let background = Color.hex(0x1A150F)             // Very dark with amber tint
-    public let backgroundSecondary = Color.hex(0x201A14)    // Slightly lighter
-    public let backgroundTertiary = Color.hex(0x120E0A)     // Darkest
+    // Background hierarchy
+    public let background = Color.hex(0x0A0706)             // App background (darkest)
+    public let backgroundSecondary = Color.hex(0x251710)    // Container body background (brighter)
+    public let backgroundTertiary = Color.hex(0x1D1210)     // Header/footer background
     
     // Amber phosphor text hierarchy (matching Spotnik)
     public let foreground = Color.hex(0xFFAA00)           // Bright amber - primary text
@@ -368,9 +372,13 @@ public struct AmberPhosphorTheme: Theme {
     public let selectionBackground = Color.hex(0x4D3A1F)  // Dark amber for selection bar bg
     
     // Status bar
-    public let statusBarBackground = Color.hex(0x201A14)
+    public let statusBarBackground = Color.hex(0x191613)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xFFAA00)
     public let statusBarHighlight = Color.hex(0xFFCC33)
+    
+    // Container colors for block appearance
+    public var containerBackground: Color { backgroundSecondary }       // Body
+    public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
 
     public init() {}
 }
@@ -383,10 +391,10 @@ public struct WhitePhosphorTheme: Theme {
     public let id = "white-phosphor"
     public let name = "White"
 
-    // Dark background with subtle cool/blue tint
-    public let background = Color.hex(0x121418)             // Very dark with blue tint
-    public let backgroundSecondary = Color.hex(0x181C20)    // Slightly lighter
-    public let backgroundTertiary = Color.hex(0x0C0E10)     // Darkest
+    // Background hierarchy
+    public let background = Color.hex(0x06070A)             // App background (darkest)
+    public let backgroundSecondary = Color.hex(0x111A2A)    // Container body background (brighter)
+    public let backgroundTertiary = Color.hex(0x0D131D)     // Header/footer background
     
     // White/gray phosphor text hierarchy
     public let foreground = Color.hex(0xE8E8E8)           // Bright white - primary text
@@ -410,9 +418,13 @@ public struct WhitePhosphorTheme: Theme {
     public let selectionBackground = Color.hex(0x3A3A3A)  // Dark gray for selection bar bg
     
     // Status bar
-    public let statusBarBackground = Color.hex(0x181C20)
+    public let statusBarBackground = Color.hex(0x131619)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xE8E8E8)
     public let statusBarHighlight = Color.hex(0xFFFFFF)
+    
+    // Container colors for block appearance
+    public var containerBackground: Color { backgroundSecondary }       // Body
+    public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
 
     public init() {}
 }
@@ -425,10 +437,10 @@ public struct RedPhosphorTheme: Theme {
     public let id = "red-phosphor"
     public let name = "Red"
 
-    // Dark background with subtle red tint
-    public let background = Color.hex(0x1A0F0F)             // Very dark with red tint
-    public let backgroundSecondary = Color.hex(0x201414)    // Slightly lighter
-    public let backgroundTertiary = Color.hex(0x120A0A)     // Darkest
+    // Background hierarchy
+    public let background = Color.hex(0x0A0606)             // App background (darkest)
+    public let backgroundSecondary = Color.hex(0x281112)    // Container body background (brighter)
+    public let backgroundTertiary = Color.hex(0x1E0F10)     // Header/footer background
     
     // Red phosphor text hierarchy
     public let foreground = Color.hex(0xFF4444)           // Bright red - primary text
@@ -452,9 +464,13 @@ public struct RedPhosphorTheme: Theme {
     public let selectionBackground = Color.hex(0x4D1F1F)  // Dark red for selection bar bg
     
     // Status bar
-    public let statusBarBackground = Color.hex(0x201414)
+    public let statusBarBackground = Color.hex(0x191313)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xFF4444)
     public let statusBarHighlight = Color.hex(0xFF6666)
+    
+    // Container colors for block appearance
+    public var containerBackground: Color { backgroundSecondary }       // Body
+    public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
 
     public init() {}
 }
