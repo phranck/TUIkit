@@ -22,8 +22,7 @@ jobs:
       - name: Build documentation
         run: |
           xcrun docc convert TUIKit.docc \
-            --output-path ./docs \
-            --hosting-base-path /TUIKit
+            --output-path ./docs
 
       - name: Commit documentation
         run: |
