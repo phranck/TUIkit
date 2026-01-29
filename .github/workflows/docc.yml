@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-docs:
@@ -24,15 +25,18 @@ jobs:
           xcrun docc convert TUIKit.docc \
             --output-path ./docs
 
-      - name: Commit documentation
-        run: |
-          git config user.name "Documentation Bot"
-          git config user.email "docs@example.com"
-          git add docs/
-          git diff --cached --quiet || git commit -m "docs: Update DocC documentation"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          path: './docs'
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
