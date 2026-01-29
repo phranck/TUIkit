@@ -7,6 +7,9 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 
+# Generated documentation
+/docs/
+
 # Claude Code
 .claude/
 img/
