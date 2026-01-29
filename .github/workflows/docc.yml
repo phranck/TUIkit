@@ -25,6 +25,9 @@ jobs:
           xcrun docc convert TUIKit.docc \
             --output-path ./docs
 
+      - name: Create .nojekyll file
+        run: touch ./docs/.nojekyll
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
