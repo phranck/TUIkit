@@ -7,24 +7,13 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 
-# Generated documentation (but keep landing page and jekyll config)
-/docs-api/
-/docs/api/
-/docs/css/
-/docs/js/
-/docs/data/
-/docs/documentation/
-/docs/downloads/
-/docs/img/
-/docs/index/
-/docs/*.json
-/docs/*.jpg
-/docs/*.svg
-/docs/*.ico
+# DocC generates documentation to docs/api/
+# This is committed to the repository for GitHub Pages deployment
 
 # Except for landing page and jekyll disable file
 !docs/index.html
 !docs/.nojekyll
+!docs/api/
 
 # Claude Code
 .claude/
