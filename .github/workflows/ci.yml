@@ -91,8 +91,8 @@ jobs:
               "button": { "border-radius": "15px", "border-width": "1px" },
               "code": { "border-radius": "8px", "border-style": "solid", "border-width": "1px" },
               "color": {
-                "documentation-intro-fill": "radial-gradient(circle at top, var(--color-documentation-intro-accent) 30%, #1a1a2e 100%)",
-                "documentation-intro-accent": "#7044ff",
+                "documentation-intro-fill": "radial-gradient(circle at top, var(--color-documentation-intro-accent) 30%, #0a0f0a 100%)",
+                "documentation-intro-accent": "#33ff33",
                 "logo-base": { "dark": "#f0f0f0", "light": "#333333" },
                 "logo-shape": { "dark": "#000000", "light": "#ffffff" },
                 "fill": { "dark": "#000000", "light": "#ffffff" }
