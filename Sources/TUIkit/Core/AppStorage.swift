@@ -55,9 +55,6 @@ private func appConfigDirectory() -> URL {
 /// Data is stored in `$XDG_CONFIG_HOME/[appName]/settings.json`
 /// or `~/.config/[appName]/settings.json` as fallback.
 public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
-    /// The shared instance.
-    public static let shared = JSONFileStorage()
-
     /// The file URL for the storage file.
     private let fileURL: URL
 
@@ -167,24 +164,22 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
     }
 }
 
-// MARK: - Storage Manager
+// MARK: - Storage Defaults
 
-/// Central manager for app storage.
-public final class StorageManager: @unchecked Sendable {
-    /// The shared storage manager.
-    public static let shared = StorageManager()
-
-    /// The current storage backend.
-    public var backend: StorageBackend
-
-    private init() {
-        self.backend = JSONFileStorage.shared
-    }
-
-    /// Sets the storage backend to use.
-    public func setBackend(_ backend: StorageBackend) {
-        self.backend = backend
-    }
+/// Provides the default storage backend for ``AppStorage``.
+///
+/// Override the backend before creating any `@AppStorage` properties
+/// if you want to use a custom storage backend.
+///
+/// ```swift
+/// StorageDefaults.backend = MyCustomBackend()
+/// ```
+public enum StorageDefaults {
+    /// The default storage backend used by ``AppStorage``.
+    ///
+    /// Defaults to a ``JSONFileStorage`` instance that persists to
+    /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
+    public nonisolated(unsafe) static var backend: StorageBackend = JSONFileStorage()
 }
 
 // MARK: - AppStorage Property Wrapper
@@ -237,7 +232,7 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
     public init(wrappedValue: Value, _ key: String) {
         self.key = key
         self.defaultValue = wrappedValue
-        self.storage = StorageManager.shared.backend
+        self.storage = StorageDefaults.backend
     }
 
     /// Creates an AppStorage with a custom storage backend.
@@ -282,7 +277,7 @@ extension AppStorage where Value: ExpressibleByNilLiteral {
     public init(_ key: String) where Value == String? {
         self.key = key
         self.defaultValue = nil
-        self.storage = StorageManager.shared.backend
+        self.storage = StorageDefaults.backend
     }
 
     /// Creates an AppStorage for an optional value.
@@ -292,7 +287,7 @@ extension AppStorage where Value: ExpressibleByNilLiteral {
     public init(_ key: String) where Value == Int? {
         self.key = key
         self.defaultValue = nil
-        self.storage = StorageManager.shared.backend
+        self.storage = StorageDefaults.backend
     }
 
     /// Creates an AppStorage for an optional value.
@@ -302,7 +297,7 @@ extension AppStorage where Value: ExpressibleByNilLiteral {
     public init(_ key: String) where Value == Double? {
         self.key = key
         self.defaultValue = nil
-        self.storage = StorageManager.shared.backend
+        self.storage = StorageDefaults.backend
     }
 
     /// Creates an AppStorage for an optional value.
@@ -312,7 +307,7 @@ extension AppStorage where Value: ExpressibleByNilLiteral {
     public init(_ key: String) where Value == Bool? {
         self.key = key
         self.defaultValue = nil
-        self.storage = StorageManager.shared.backend
+        self.storage = StorageDefaults.backend
     }
 }
 
