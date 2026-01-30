@@ -164,7 +164,7 @@ extension ContainerView where Footer == EmptyView {
 extension ContainerView: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let appearance = context.environment.appearance
-        let isBlockAppearance = appearance.id == .block
+        let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
         let borderColor = style.borderColor ?? Color.theme.border
         
@@ -234,7 +234,7 @@ extension ContainerView: Renderable {
         }
         
         // Body lines with theme background
-        let bodyBg = context.environment.theme.containerBackground
+        let bodyBg = context.environment.palette.containerBackground
         for line in bodyBuffer.lines {
             lines.append(BorderRenderer.standardContentLine(
                 content: line, innerWidth: innerWidth, style: borderStyle,

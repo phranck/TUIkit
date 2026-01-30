@@ -247,7 +247,7 @@ extension Menu: Renderable {
         // Apply border - use explicit style, or fall back to appearance default
         let appearance = context.environment.appearance
         let effectiveBorderStyle = borderStyle ?? appearance.borderStyle
-        let isBlockStyle = appearance.id == .block
+        let isBlockStyle = appearance.rawId == .block
         
         contentBuffer = applyBorder(
             to: contentBuffer,
