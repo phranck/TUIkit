@@ -75,10 +75,14 @@ extension View {
     ///   - action: The action to perform.
     /// - Returns: A view that handles the specific key press.
     public func onKeyPress(_ key: Key, action: @escaping () -> Void) -> KeyPressModifier<Self> {
-        KeyPressModifier(content: self, keys: [key], handler: { _ in
-            action()
-            return true
-        })
+        KeyPressModifier(
+            content: self,
+            keys: [key],
+            handler: { _ in
+                action()
+                return true
+            }
+        )
     }
 }
 

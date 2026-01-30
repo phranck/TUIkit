@@ -345,45 +345,72 @@ extension ContainerView: Renderable {
 
         // Top border (with title if present)
         if let titleText = title {
-            lines.append(BorderRenderer.standardTopBorder(
-                style: borderStyle, innerWidth: innerWidth, color: borderColor,
-                title: titleText, titleColor: titleColor ?? Color.theme.accent
-            ))
+            lines.append(
+                BorderRenderer.standardTopBorder(
+                    style: borderStyle,
+                    innerWidth: innerWidth,
+                    color: borderColor,
+                    title: titleText,
+                    titleColor: titleColor ?? Color.theme.accent
+                )
+            )
         } else {
-            lines.append(BorderRenderer.standardTopBorder(
-                style: borderStyle, innerWidth: innerWidth, color: borderColor
-            ))
+            lines.append(
+                BorderRenderer.standardTopBorder(
+                    style: borderStyle,
+                    innerWidth: innerWidth,
+                    color: borderColor
+                )
+            )
         }
 
         // Body lines with theme background
         let bodyBg = context.environment.palette.containerBackground
         for line in bodyBuffer.lines {
-            lines.append(BorderRenderer.standardContentLine(
-                content: line, innerWidth: innerWidth, style: borderStyle,
-                color: borderColor, backgroundColor: bodyBg
-            ))
+            lines.append(
+                BorderRenderer.standardContentLine(
+                    content: line,
+                    innerWidth: innerWidth,
+                    style: borderStyle,
+                    color: borderColor,
+                    backgroundColor: bodyBg
+                )
+            )
         }
 
         // Footer section (if present)
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             if style.showFooterSeparator {
-                lines.append(BorderRenderer.standardDivider(
-                    style: borderStyle, innerWidth: innerWidth, color: borderColor
-                ))
+                lines.append(
+                    BorderRenderer.standardDivider(
+                        style: borderStyle,
+                        innerWidth: innerWidth,
+                        color: borderColor
+                    )
+                )
             }
 
             // Footer lines (no background - footer has its own styling)
             for line in footerBuf.lines {
-                lines.append(BorderRenderer.standardContentLine(
-                    content: line, innerWidth: innerWidth, style: borderStyle, color: borderColor
-                ))
+                lines.append(
+                    BorderRenderer.standardContentLine(
+                        content: line,
+                        innerWidth: innerWidth,
+                        style: borderStyle,
+                        color: borderColor
+                    )
+                )
             }
         }
 
         // Bottom border
-        lines.append(BorderRenderer.standardBottomBorder(
-            style: borderStyle, innerWidth: innerWidth, color: borderColor
-        ))
+        lines.append(
+            BorderRenderer.standardBottomBorder(
+                style: borderStyle,
+                innerWidth: innerWidth,
+                color: borderColor
+            )
+        )
 
         return FrameBuffer(lines: lines)
     }
@@ -423,51 +450,77 @@ extension ContainerView: Renderable {
         let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
 
         // === TOP BORDER ===
-        lines.append(BorderRenderer.blockTopBorder(
-            innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
-        ))
+        lines.append(
+            BorderRenderer.blockTopBorder(
+                innerWidth: innerWidth,
+                color: hasHeader ? headerFooterBg : bodyBg
+            )
+        )
 
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
             let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
-            lines.append(BorderRenderer.blockContentLine(
-                content: titleStyled, innerWidth: innerWidth, sectionColor: headerFooterBg
-            ))
+            lines.append(
+                BorderRenderer.blockContentLine(
+                    content: titleStyled,
+                    innerWidth: innerWidth,
+                    sectionColor: headerFooterBg
+                )
+            )
 
             if style.showHeaderSeparator {
-                lines.append(BorderRenderer.blockSeparator(
-                    innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
-                ))
+                lines.append(
+                    BorderRenderer.blockSeparator(
+                        innerWidth: innerWidth,
+                        foregroundColor: headerFooterBg,
+                        backgroundColor: bodyBg
+                    )
+                )
             }
         }
 
         // === BODY LINES ===
         for line in bodyBuffer.lines {
-            lines.append(BorderRenderer.blockContentLine(
-                content: line, innerWidth: innerWidth, sectionColor: bodyBg
-            ))
+            lines.append(
+                BorderRenderer.blockContentLine(
+                    content: line,
+                    innerWidth: innerWidth,
+                    sectionColor: bodyBg
+                )
+            )
         }
 
         // === FOOTER SECTION (if present) ===
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             if style.showFooterSeparator {
-                lines.append(BorderRenderer.blockSeparator(
-                    innerWidth: innerWidth, character: BorderStyle.blockFooterSeparator,
-                    foregroundColor: headerFooterBg, backgroundColor: bodyBg
-                ))
+                lines.append(
+                    BorderRenderer.blockSeparator(
+                        innerWidth: innerWidth,
+                        character: BorderStyle.blockFooterSeparator,
+                        foregroundColor: headerFooterBg,
+                        backgroundColor: bodyBg
+                    )
+                )
             }
 
             for line in footerBuf.lines {
-                lines.append(BorderRenderer.blockContentLine(
-                    content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
-                ))
+                lines.append(
+                    BorderRenderer.blockContentLine(
+                        content: line,
+                        innerWidth: innerWidth,
+                        sectionColor: headerFooterBg
+                    )
+                )
             }
         }
 
         // === BOTTOM BORDER ===
-        lines.append(BorderRenderer.blockBottomBorder(
-            innerWidth: innerWidth, color: hasFooter ? headerFooterBg : bodyBg
-        ))
+        lines.append(
+            BorderRenderer.blockBottomBorder(
+                innerWidth: innerWidth,
+                color: hasFooter ? headerFooterBg : bodyBg
+            )
+        )
 
         return FrameBuffer(lines: lines)
     }
