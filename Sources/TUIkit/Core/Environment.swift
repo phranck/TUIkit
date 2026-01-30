@@ -89,6 +89,9 @@ public final class EnvironmentStorage: @unchecked Sendable {
     /// The shared environment storage.
     public static let shared = EnvironmentStorage()
 
+    /// Lock protecting all mutable state.
+    private let lock = NSLock()
+
     /// The current environment values.
     private var current = EnvironmentValues()
 
@@ -99,20 +102,32 @@ public final class EnvironmentStorage: @unchecked Sendable {
 
     /// The current environment values.
     public var environment: EnvironmentValues {
-        get { current }
-        set { current = newValue }
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return current
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            current = newValue
+        }
     }
 
     /// Pushes a new environment onto the stack.
     ///
     /// - Parameter environment: The environment to push.
     public func push(_ environment: EnvironmentValues) {
+        lock.lock()
+        defer { lock.unlock() }
         stack.append(current)
         current = environment
     }
 
     /// Pops the current environment and restores the previous one.
     public func pop() {
+        lock.lock()
+        defer { lock.unlock() }
         if let previous = stack.popLast() {
             current = previous
         }
@@ -132,6 +147,8 @@ public final class EnvironmentStorage: @unchecked Sendable {
 
     /// Resets the environment to its initial state.
     public func reset() {
+        lock.lock()
+        defer { lock.unlock() }
         current = EnvironmentValues()
         stack.removeAll()
     }
