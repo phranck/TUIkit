@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  StatusBarTests.swift
 //  TUIKit
@@ -250,7 +251,7 @@ struct StatusBarStateTests {
         #expect(state.currentItems.count >= 1)
         #expect(state.currentItems.contains { $0.shortcut == "q" })
     }
-    
+
     @Test("StatusBarState without system items is empty")
     func stateWithoutSystemItems() {
         let state = StatusBarState()
@@ -508,7 +509,7 @@ struct StatusBarStateTests {
         state.showSystemItems = false
         #expect(state.height == 0)
     }
-    
+
     @Test("Height is 1 when only system items")
     func heightWithSystemItems() {
         let state = StatusBarState()
@@ -1021,7 +1022,7 @@ struct StatusBarItemsModifierTests {
 
 @Suite("System Status Bar Items Tests")
 struct SystemStatusBarItemsTests {
-    
+
     @Test("System items are present by default")
     func systemItemsPresentByDefault() {
         let state = StatusBarState()
@@ -1029,84 +1030,84 @@ struct SystemStatusBarItemsTests {
         #expect(state.currentSystemItems.count >= 1)
         #expect(state.currentSystemItems.contains { $0.shortcut == "q" })
     }
-    
+
     @Test("System items can be disabled")
     func systemItemsCanBeDisabled() {
         let state = StatusBarState()
         state.showSystemItems = false
         #expect(state.currentSystemItems.isEmpty)
     }
-    
+
     @Test("System items appear on the right (high order values)")
     func systemItemsAppearOnRight() {
         let state = StatusBarState()
         state.setItems([
             StatusBarItem(shortcut: "s", label: "save")
         ])
-        
+
         // User items should come before system items (lower order)
         let items = state.currentItems
         let saveIndex = items.firstIndex { $0.shortcut == "s" }
         let quitIndex = items.firstIndex { $0.shortcut == "q" }
-        
+
         #expect(saveIndex != nil)
         #expect(quitIndex != nil)
         #expect(saveIndex! < quitIndex!)  // save appears before quit
     }
-    
+
     @Test("User items can override system items with same shortcut")
     func userItemsOverrideSystemItems() {
         let state = StatusBarState()
-        
+
         // Set user item with same shortcut as system quit
         state.setItems([
             StatusBarItem(shortcut: "q", label: "custom-quit") {
                 // Custom action
             }
         ])
-        
+
         // Should only have one "q" item, and it should be the user's
         let qItems = state.currentItems.filter { $0.shortcut == "q" }
         #expect(qItems.count == 1)
         #expect(qItems[0].label == "custom-quit")
     }
-    
+
     @Test("System item order constants are correct")
     func systemItemOrderConstants() {
         // System items should have high order values (900+)
         #expect(StatusBarItemOrder.quit.value == 900)
         #expect(StatusBarItemOrder.appearance.value == 910)
         #expect(StatusBarItemOrder.theme.value == 920)
-        
+
         // User items should have lower order values
         #expect(StatusBarItemOrder.default.value == 500)
         #expect(StatusBarItemOrder.early.value == 100)
         #expect(StatusBarItemOrder.late.value == 800)
-        
+
         // User items < system items
         #expect(StatusBarItemOrder.late < StatusBarItemOrder.quit)
     }
-    
+
     @Test("Items are sorted by order")
     func itemsSortedByOrder() {
         let state = StatusBarState()
-        
+
         // Add items in random order
         state.setItems([
             StatusBarItem(shortcut: "l", label: "late", order: .late),
             StatusBarItem(shortcut: "e", label: "early", order: .early),
             StatusBarItem(shortcut: "d", label: "default", order: .default)
         ])
-        
+
         let items = state.currentItems
-        
+
         // Should be sorted: early, default, late, quit (system)
         let labels = items.map { $0.label }
         let earlyIndex = labels.firstIndex(of: "early")!
         let defaultIndex = labels.firstIndex(of: "default")!
         let lateIndex = labels.firstIndex(of: "late")!
         let quitIndex = labels.firstIndex(of: "quit")!
-        
+
         #expect(earlyIndex < defaultIndex)
         #expect(defaultIndex < lateIndex)
         #expect(lateIndex < quitIndex)

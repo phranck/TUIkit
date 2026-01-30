@@ -57,29 +57,29 @@ public struct ButtonStyle: Sendable {
     // MARK: - Preset Styles
 
     /// Default button style with border.
-    public static let `default` = ButtonStyle()
+    public static let `default` = Self()
 
     /// Primary button style (cyan, bold).
-    public static let primary = ButtonStyle(
+    public static let primary = Self(
         foregroundColor: .cyan,
         borderColor: .cyan,
         isBold: true
     )
 
     /// Destructive button style (red).
-    public static let destructive = ButtonStyle(
+    public static let destructive = Self(
         foregroundColor: .red,
         borderColor: .red
     )
 
     /// Success button style (green).
-    public static let success = ButtonStyle(
+    public static let success = Self(
         foregroundColor: .green,
         borderColor: .green
     )
 
     /// Plain button style (no border).
-    public static let plain = ButtonStyle(
+    public static let plain = Self(
         borderStyle: BorderStyle.none,
         horizontalPadding: 0
     )

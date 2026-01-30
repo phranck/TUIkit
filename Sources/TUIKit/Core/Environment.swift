@@ -72,7 +72,7 @@ public struct EnvironmentValues: @unchecked Sendable {
     ///   - keyPath: The key path to the value to modify.
     ///   - value: The new value.
     /// - Returns: A new EnvironmentValues with the modified value.
-    public func setting<V>(_ keyPath: WritableKeyPath<EnvironmentValues, V>, to value: V) -> EnvironmentValues {
+    public func setting<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) -> Self {
         var copy = self
         copy[keyPath: keyPath] = value
         return copy
@@ -90,7 +90,7 @@ public final class EnvironmentStorage: @unchecked Sendable {
     public static let shared = EnvironmentStorage()
 
     /// The current environment values.
-    private var current: EnvironmentValues = EnvironmentValues()
+    private var current = EnvironmentValues()
 
     /// Stack of environments for nested rendering.
     private var stack: [EnvironmentValues] = []

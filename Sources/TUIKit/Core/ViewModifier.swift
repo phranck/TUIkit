@@ -57,5 +57,3 @@ extension ModifiedView: Renderable {
         return modifier.modify(buffer: childBuffer, context: context)
     }
 }
-
-
