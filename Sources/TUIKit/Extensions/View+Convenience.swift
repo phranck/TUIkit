@@ -1,9 +1,11 @@
 //
-//  View+Modal.swift
+//  View+Convenience.swift
 //  TUIKit
 //
-//  The .modal() view extension for modal dialog presentation.
+//  Convenience view extensions: modal, asAnyView.
 //
+
+// MARK: - Modal
 
 extension View {
     /// Presents this view as a modal dialog over dimmed content.
@@ -29,5 +31,17 @@ extension View {
     ) -> some View {
         self.dimmed()
             .overlay(alignment: .center, content: content)
+    }
+}
+
+// MARK: - Type Erasure
+
+extension View {
+    /// Wraps this view in an AnyView for type erasure.
+    ///
+    /// Use this when you need to return different view types from
+    /// conditional branches.
+    public func asAnyView() -> AnyView {
+        AnyView(self)
     }
 }
