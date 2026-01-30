@@ -24,12 +24,36 @@ public protocol StorageBackend: Sendable {
     func synchronize()
 }
 
+// MARK: - Config Directory
+
+/// Returns the app-specific configuration directory.
+///
+/// Resolves the directory in this order:
+/// 1. `$XDG_CONFIG_HOME/<appName>` (Linux convention)
+/// 2. `~/.config/<appName>` (fallback)
+///
+/// This ensures correct behavior on Linux where `$XDG_CONFIG_HOME`
+/// may differ from `~/.config`.
+private func appConfigDirectory() -> URL {
+    let appName = ProcessInfo.processInfo.processName
+
+    if let xdgConfig = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"], !xdgConfig.isEmpty {
+        return URL(fileURLWithPath: xdgConfig)
+            .appendingPathComponent(appName)
+    }
+
+    return FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent(".config")
+        .appendingPathComponent(appName)
+}
+
 // MARK: - JSON File Storage
 
 /// A storage backend that persists data to a JSON file.
 ///
 /// This is the default storage backend for TUIKit apps.
-/// Data is stored in `~/.config/[appName]/settings.json`.
+/// Data is stored in `$XDG_CONFIG_HOME/[appName]/settings.json`
+/// or `~/.config/[appName]/settings.json` as fallback.
 public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
     /// The shared instance.
     public static let shared = JSONFileStorage()
@@ -45,10 +69,7 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
 
     /// Creates a JSON file storage with default location.
     public init() {
-        let appName = ProcessInfo.processInfo.processName
-        let configDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config")
-            .appendingPathComponent(appName)
+        let configDir = appConfigDirectory()
 
         // Create directory if needed
         try? FileManager.default.createDirectory(at: configDir, withIntermediateDirectories: true)
@@ -125,7 +146,7 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
     }
 
     private func saveToDiskAsync() {
-        DispatchQueue.global(qos: .utility).async { [weak self] in
+        Task.detached(priority: .utility) { [weak self] in
             self?.saveToDiskSync()
         }
     }
@@ -327,10 +348,7 @@ public struct SceneStorage<Value: Codable>: @unchecked Sendable {
 
     /// Scene-specific storage file.
     private static var sceneStorage: JSONFileStorage {
-        let appName = ProcessInfo.processInfo.processName
-        let configDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config")
-            .appendingPathComponent(appName)
+        let configDir = appConfigDirectory()
 
         try? FileManager.default.createDirectory(at: configDir, withIntermediateDirectories: true)
 
