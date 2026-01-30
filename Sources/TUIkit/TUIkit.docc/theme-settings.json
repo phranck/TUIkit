@@ -11,7 +11,7 @@
       "logo-shape": { "dark": "#000000", "light": "#ffffff" },
       "fill": { "dark": "#000000", "light": "#ffffff" }
     },
-    "icons": { "technology": "/icon.png" }
+    "icons": { "technology": "/images/TUIkit/tuikit-logo.png" }
   },
   "features": {
     "docs": {
