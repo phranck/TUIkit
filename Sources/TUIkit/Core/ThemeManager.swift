@@ -61,7 +61,7 @@ public protocol Cyclable: Sendable {
 /// # Environment Integration
 ///
 /// On every change the manager writes the current item into
-/// `EnvironmentStorage.shared` via the closure provided at init,
+/// `EnvironmentStorage.active` via the closure provided at init,
 /// then triggers a re-render through `AppState.active.setNeedsRender()`.
 public final class ThemeManager: @unchecked Sendable {
     /// The current item index.
@@ -78,7 +78,7 @@ public final class ThemeManager: @unchecked Sendable {
     /// - Parameters:
     ///   - items: The items to cycle through. Must not be empty.
     ///   - applyToEnvironment: A closure that writes the current item
-    ///     into `EnvironmentStorage.shared.environment`.
+    ///     into `EnvironmentStorage.active.environment`.
     public init(items: [any Cyclable], applyToEnvironment: @escaping @Sendable (any Cyclable) -> Void) {
         precondition(!items.isEmpty, "ThemeManager requires at least one item")
         self.items = items
