@@ -19,11 +19,11 @@ public struct BackgroundModifier: ViewModifier {
         for line in buffer.lines {
             // Pad the line to full width so background covers everything
             let paddedLine = line.padToVisibleWidth(width)
-            
+
             // Apply background color to the entire line
             var style = TextStyle()
             style.backgroundColor = color
-            
+
             // We need to handle existing ANSI codes in the line
             // For simplicity, we wrap the whole line with background
             let colored = applyBackground(to: paddedLine, color: color)
@@ -38,5 +38,3 @@ public struct BackgroundModifier: ViewModifier {
         ANSIRenderer.backgroundCode(for: color) + string + ANSIRenderer.reset
     }
 }
-
-

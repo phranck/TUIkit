@@ -67,5 +67,3 @@ extension StatusBarItemsModifier: Renderable {
         return TUIKit.renderToBuffer(content, context: renderContext)
     }
 }
-
-

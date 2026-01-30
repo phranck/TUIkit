@@ -180,12 +180,12 @@ extension Menu: Renderable {
         }
 
         var lines: [String] = []
-        
+
         // Calculate the content width for full-width selection bar
         let contentWidth = maxItemWidth + 2  // +2 for padding
-        
+
         // Track the divider line index (for T-junction rendering)
-        var dividerLineIndex: Int? = nil
+        var dividerLineIndex: Int?
 
         // Title if present
         if let menuTitle = title {
@@ -204,10 +204,10 @@ extension Menu: Renderable {
 
         // Menu items
         let currentSelection = selectionBinding?.wrappedValue ?? selectedIndex
-        
+
         for (index, item) in items.enumerated() {
             let isSelected = index == currentSelection
-            
+
             // Build the label with optional shortcut
             let labelText: String
             if let shortcut = item.shortcut {
@@ -218,7 +218,7 @@ extension Menu: Renderable {
 
             // Build the full text with padding
             let fullText = " " + labelText
-            
+
             // Pad to full width for selection bar
             let visibleLength = fullText.count
             let padding = max(0, contentWidth - visibleLength)
@@ -248,7 +248,7 @@ extension Menu: Renderable {
         let appearance = context.environment.appearance
         let effectiveBorderStyle = borderStyle ?? appearance.borderStyle
         let isBlockStyle = appearance.rawId == .block
-        
+
         contentBuffer = applyBorder(
             to: contentBuffer,
             style: effectiveBorderStyle,
@@ -338,22 +338,22 @@ extension Menu: Renderable {
 
         let innerWidth = buffer.width
         var result: [String] = []
-        
+
         if isBlockStyle {
             let headerFooterBg = Color.theme.containerHeaderBackground
             let bodyBg = Color.theme.containerBackground
             let hasHeader = dividerLineIndex != nil
-            
+
             // Top border
             result.append(BorderRenderer.blockTopBorder(
                 innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
             ))
-            
+
             // Content lines with section-aware coloring
             for (index, line) in buffer.lines.enumerated() {
                 let isHeaderLine = hasHeader && dividerLineIndex.map({ index < $0 }) ?? false
                 let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
-                
+
                 if isDividerLine {
                     result.append(BorderRenderer.blockSeparator(
                         innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
@@ -368,7 +368,7 @@ extension Menu: Renderable {
                     ))
                 }
             }
-            
+
             // Bottom border
             result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
         } else {
@@ -419,5 +419,3 @@ extension AnyView: Renderable {
         _render(context)
     }
 }
-
-

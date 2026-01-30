@@ -51,7 +51,7 @@ struct RenderingTests {
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 3)
         #expect(buffer.lines[0] == "A")
-        #expect(buffer.lines[1] == "")
+        #expect(buffer.lines[1].isEmpty)
         #expect(buffer.lines[2] == "B")
     }
 

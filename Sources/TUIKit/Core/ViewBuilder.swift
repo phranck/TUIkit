@@ -1,3 +1,4 @@
+// swiftlint:disable function_parameter_count
 //
 //  ViewBuilder.swift
 //  TUIKit
@@ -190,3 +191,4 @@ public struct ViewBuilder {
         expression
     }
 }
+// swiftlint:enable function_parameter_count

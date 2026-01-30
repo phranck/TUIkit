@@ -49,7 +49,7 @@ public struct Panel<Content: View, Footer: View>: View {
 
     /// The content of the panel.
     public let content: Content
-    
+
     /// The footer content (typically buttons).
     public let footer: Footer?
 

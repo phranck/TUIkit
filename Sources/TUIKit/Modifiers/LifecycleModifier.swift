@@ -286,5 +286,3 @@ final class TokenGenerator: @unchecked Sendable {
         return "lifecycle-\(counter)"
     }
 }
-
-

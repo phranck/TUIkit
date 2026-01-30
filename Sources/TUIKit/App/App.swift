@@ -59,7 +59,7 @@ public enum QuitBehavior: Sendable {
     /// Pressing `q` will always exit the application, regardless of
     /// the current navigation state.
     case always
-    
+
     /// Quit only works from the root/main screen.
     ///
     /// Pressing `q` will only exit when no context is pushed onto the
@@ -92,33 +92,33 @@ public enum QuitBehavior: Sendable {
 /// ```
 public final class StatusBarState: @unchecked Sendable {
     // MARK: - User Items
-    
+
     /// Stack of user contexts with their items.
     private var userContextStack: [(context: String, items: [any StatusBarItemProtocol])] = []
 
     /// Global user items that are always shown (lowest priority).
     private var userGlobalItems: [any StatusBarItemProtocol] = []
-    
+
     // MARK: - System Items Configuration
-    
+
     /// Whether system items are shown at all.
     ///
     /// Set to `false` to hide all system items (quit, help, theme).
     /// Default is `true`.
     public var showSystemItems: Bool = true
-    
+
     /// Whether the appearance item (`a`) is shown.
     ///
     /// When `true`, pressing `a` cycles through available appearances (border styles).
     /// Default is `true`.
     public var showAppearanceItem: Bool = true
-    
+
     /// Whether the theme item (`t`) is shown.
     ///
     /// When `true`, pressing `t` cycles through available themes.
     /// Default is `true`.
     public var showThemeItem: Bool = true
-    
+
     /// Controls when the quit shortcut (`q`) is active.
     ///
     /// - `.always`: Quit works from any screen (default).
@@ -127,9 +127,9 @@ public final class StatusBarState: @unchecked Sendable {
     /// When set to `.rootOnly`, pressing `q` on a subpage does nothing,
     /// allowing the app to handle navigation (e.g., go back) instead.
     public var quitBehavior: QuitBehavior = .always
-    
+
     // MARK: - Appearance
-    
+
     /// The current status bar style.
     public var style: StatusBarStyle = .compact
 
@@ -140,20 +140,20 @@ public final class StatusBarState: @unchecked Sendable {
     public var highlightColor: Color = .cyan
 
     /// The label color.
-    public var labelColor: Color? = nil
+    public var labelColor: Color?
 
     /// Creates a new status bar state.
     public init() {
         // System items are built dynamically based on flags
     }
-    
+
     // MARK: - System Items Access
-    
+
     /// Whether we are at the root level (no context pushed).
     public var isAtRoot: Bool {
         userContextStack.isEmpty
     }
-    
+
     /// Whether quit is currently allowed based on `quitBehavior`.
     public var isQuitAllowed: Bool {
         switch quitBehavior {
@@ -163,29 +163,29 @@ public final class StatusBarState: @unchecked Sendable {
             return isAtRoot
         }
     }
-    
+
     /// The current system items based on configuration flags.
     ///
     /// Returns items filtered by `showSystemItems`, `showAppearanceItem`, `showThemeItem`,
     /// and `quitBehavior`. The quit item is only included when quit is allowed.
     public var currentSystemItems: [StatusBarItem] {
         guard showSystemItems else { return [] }
-        
+
         var items: [StatusBarItem] = []
-        
+
         // Quit item respects quitBehavior
         if isQuitAllowed {
             items.append(SystemStatusBarItem.quit)
         }
-        
+
         if showAppearanceItem {
             items.append(SystemStatusBarItem.appearance)
         }
-        
+
         if showThemeItem {
             items.append(SystemStatusBarItem.theme)
         }
-        
+
         return items
     }
 
@@ -221,7 +221,7 @@ public final class StatusBarState: @unchecked Sendable {
     internal func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
         userGlobalItems = items
     }
-    
+
     /// The current user items (topmost context or global user items).
     ///
     /// Does not include system items.
@@ -319,13 +319,13 @@ public final class StatusBarState: @unchecked Sendable {
     public var currentItems: [any StatusBarItemProtocol] {
         // Get shortcuts used by user items (for deduplication)
         let userShortcuts = Set(currentUserItems.map { $0.shortcut })
-        
+
         // Filter out system items that are overridden by user items
         let filteredSystemItems = currentSystemItems.filter { !userShortcuts.contains($0.shortcut) }
-        
+
         // Sort user items by order, then append system items (fixed order)
         let sortedUserItems = currentUserItems.sorted { $0.order < $1.order }
-        
+
         return sortedUserItems + filteredSystemItems
     }
 
@@ -333,7 +333,7 @@ public final class StatusBarState: @unchecked Sendable {
     public var hasItems: Bool {
         !currentItems.isEmpty
     }
-    
+
     /// Whether there are any user items (ignoring system items).
     public var hasUserItems: Bool {
         !currentUserItems.isEmpty
@@ -362,14 +362,12 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Returns: True if an item with an action handled the event.
     @discardableResult
     public func handleKeyEvent(_ event: KeyEvent) -> Bool {
-        for item in currentItems {
-            if item.matches(event) {
-                if let statusBarItem = item as? StatusBarItem {
-                    // Only consume the event if the item has an action
-                    if statusBarItem.hasAction {
-                        statusBarItem.execute()
-                        return true
-                    }
+        for item in currentItems where item.matches(event) {
+            if let statusBarItem = item as? StatusBarItem {
+                // Only consume the event if the item has an action
+                if statusBarItem.hasAction {
+                    statusBarItem.execute()
+                    return true
                 }
             }
         }
@@ -381,7 +379,7 @@ public final class StatusBarState: @unchecked Sendable {
 
 /// Environment key for accessing the status bar state.
 private struct StatusBarKey: EnvironmentKey {
-    static let defaultValue: StatusBarState = StatusBarState()
+    static let defaultValue = StatusBarState()
 }
 
 extension EnvironmentValues {
@@ -410,14 +408,14 @@ extension EnvironmentValues {
 /// and read from the main loop. A single-word Bool write/read is practically
 /// atomic on arm64/x86_64. Using `Atomic<Bool>` from the `Synchronization`
 /// module would be cleaner but requires macOS 15+.
-private nonisolated(unsafe) var needsRerender = false
+nonisolated(unsafe) private var needsRerender = false
 
 /// Flag set by the SIGINT signal handler to request a graceful shutdown.
 ///
 /// The actual cleanup (disabling raw mode, restoring cursor, exiting
 /// alternate screen) happens in the main loop — signal handlers must
 /// not call non-async-signal-safe functions like `write()` or `fflush()`.
-private nonisolated(unsafe) var needsShutdown = false
+nonisolated(unsafe) private var needsShutdown = false
 
 // MARK: - App Runner
 
@@ -593,7 +591,7 @@ internal final class AppRunner<A: App> {
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)
-        
+
         // Get background color from palette
         let bgColor = paletteManager.currentPalette?.background ?? .black
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
@@ -603,10 +601,10 @@ internal final class AppRunner<A: App> {
         // Write status bar with theme background
         for (index, line) in buffer.lines.enumerated() {
             terminal.moveCursor(toRow: row + index, column: 1)
-            
+
             let visibleWidth = line.strippedLength
             let padding = max(0, terminalWidth - visibleWidth)
-            
+
             // Replace all reset codes with "reset + restore background"
             let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
             let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
@@ -632,17 +630,17 @@ internal final class AppRunner<A: App> {
             if statusBar.isQuitAllowed {
                 isRunning = false
             }
-            
+
         case .character(let character) where character == "t" || character == "T":
             // 't' cycles palette (if theme item is enabled)
             if statusBar.showThemeItem {
                 paletteManager.cycleNext()
             }
-            
+
         case .character(let character) where character == "a" || character == "A":
             // 'a' cycles appearance
             appearanceManager.cycleNext()
-            
+
         default:
             break
         }
@@ -690,25 +688,25 @@ extension WindowGroup: SceneRenderable {
         let terminal = Terminal.shared
         let terminalWidth = terminal.width
         let terminalHeight = context.availableHeight
-        
+
         // Get background color from palette
         let bgColor = context.environment.palette.background
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
-        
+
         // Write buffer to terminal, ensuring consistent background color
         for row in 0..<terminalHeight {
             terminal.moveCursor(toRow: 1 + row, column: 1)
-            
+
             if row < buffer.lines.count {
                 let line = buffer.lines[row]
                 let visibleWidth = line.strippedLength
                 let padding = max(0, terminalWidth - visibleWidth)
-                
+
                 // Replace all reset codes with "reset + restore background"
                 // This ensures background color persists after styled text
                 let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
-                
+
                 // Wrap entire line with background
                 let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
                 terminal.write(paddedLine)

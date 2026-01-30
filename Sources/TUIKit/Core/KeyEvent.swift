@@ -67,7 +67,7 @@ public enum Key: Hashable, Sendable {
     case character(Character)
 
     /// Creates a Key from a character if it's a simple character.
-    public static func from(_ char: Character) -> Key {
+    public static func from(_ char: Character) -> Self {
         .character(char)
     }
 }
@@ -274,10 +274,8 @@ public final class KeyEventDispatcher: @unchecked Sendable {
     @discardableResult
     public func dispatch(_ event: KeyEvent) -> Bool {
         // Process in reverse order (most recent handlers first)
-        for handler in handlers.reversed() {
-            if handler(event) {
-                return true
-            }
+        for handler in handlers.reversed() where handler(event) {
+            return true
         }
         return false
     }

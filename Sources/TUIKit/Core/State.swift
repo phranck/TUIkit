@@ -104,7 +104,7 @@ public struct Binding<Value> {
     /// - Parameter value: The constant value.
     /// - Returns: A binding that always returns the given value.
     public static func constant(_ value: Value) -> Binding<Value> {
-        Binding(get: { value }, set: { _ in })
+        Self(get: { value }, set: { _ in })
     }
 }
 
