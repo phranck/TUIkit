@@ -354,10 +354,10 @@ extension Menu: Renderable {
             // FG = header background, BG = App background (transparent/none)
             let topLine = String(repeating: "▄", count: innerWidth + 2)
             if hasHeader {
-                result.append(colorizeWithForeground(topLine, foreground: headerFooterBg))
+                result.append(ANSIRenderer.colorize(topLine, foreground: headerFooterBg))
             } else {
                 // No header: use body background for top
-                result.append(colorizeWithForeground(topLine, foreground: bodyBg))
+                result.append(ANSIRenderer.colorize(topLine, foreground: bodyBg))
             }
             
             // Content lines with side borders
@@ -369,18 +369,18 @@ extension Menu: Renderable {
                     // Header/Body separator: ▀▀▀
                     // FG = header BG, BG = body BG (creates smooth transition)
                     let dividerLine = String(repeating: "▀", count: innerWidth + 2)
-                    result.append(colorizeWithBoth(dividerLine, foreground: headerFooterBg, background: bodyBg))
+                    result.append(ANSIRenderer.colorize(dividerLine, foreground: headerFooterBg, background: bodyBg))
                 } else if isHeaderLine {
                     // Header line: █ borders and content with header background
                     let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = colorizeWithForeground("█", foreground: headerFooterBg)
-                    let styledContent = applyBackground(paddedLine, background: headerFooterBg)
+                    let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
+                    let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: headerFooterBg)
                     result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
                 } else {
                     // Body line: █ borders with body background
                     let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = colorizeWithForeground("█", foreground: bodyBg)
-                    let styledContent = applyBackground(paddedLine, background: bodyBg)
+                    let sideBorder = ANSIRenderer.colorize("█", foreground: bodyBg)
+                    let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
                     result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
                 }
             }
@@ -388,16 +388,17 @@ extension Menu: Renderable {
             // Bottom border: ▀▀▀
             // FG = body background, BG = App background (transparent)
             let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-            result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
+            result.append(ANSIRenderer.colorize(bottomLine, foreground: bodyBg))
         } else {
             // Standard style: regular box-drawing characters
-            let vertical = colorizeBorder(String(style.vertical), with: color)
+            let borderForeground = color ?? Color.theme.border
+            let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
 
             // Top border
             let topLine = String(style.topLeft)
                 + String(repeating: style.horizontal, count: innerWidth)
                 + String(style.topRight)
-            result.append(colorizeBorder(topLine, with: color))
+            result.append(ANSIRenderer.colorize(topLine, foreground: borderForeground))
 
             // Content lines with side borders
             for (index, line) in buffer.lines.enumerated() {
@@ -406,7 +407,7 @@ extension Menu: Renderable {
                     let dividerLine = String(style.leftT)
                         + String(repeating: style.horizontal, count: innerWidth)
                         + String(style.rightT)
-                    result.append(colorizeBorder(dividerLine, with: color))
+                    result.append(ANSIRenderer.colorize(dividerLine, foreground: borderForeground))
                 } else {
                     let paddedLine = line.padToVisibleWidth(innerWidth)
                     result.append(vertical + paddedLine + ANSIRenderer.reset + vertical)
@@ -417,41 +418,10 @@ extension Menu: Renderable {
             let bottomLine = String(style.bottomLeft)
                 + String(repeating: style.horizontal, count: innerWidth)
                 + String(style.bottomRight)
-            result.append(colorizeBorder(bottomLine, with: color))
+            result.append(ANSIRenderer.colorize(bottomLine, foreground: borderForeground))
         }
 
         return FrameBuffer(lines: result)
-    }
-    
-    /// Colorizes with only foreground color (for separator transitions).
-    private func colorizeWithForeground(_ string: String, foreground: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = foreground
-        return ANSIRenderer.render(string, with: style)
-    }
-    
-    /// Colorizes with both foreground and background.
-    private func colorizeWithBoth(_ string: String, foreground: Color, background: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = foreground
-        style.backgroundColor = background
-        return ANSIRenderer.render(string, with: style)
-    }
-    
-    /// Applies a background color to content, re-applying after any resets.
-    private func applyBackground(_ string: String, background: Color) -> String {
-        // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
-        let bgCode = ANSIRenderer.backgroundCode(for: background)
-        // Replace any reset codes with reset + background to maintain the background
-        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
-        return bgCode + stringWithPersistentBg
-    }
-
-    /// Colorizes border characters.
-    private func colorizeBorder(_ string: String, with color: Color?) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color ?? Color.theme.border
-        return ANSIRenderer.render(string, with: style)
     }
 }
 
