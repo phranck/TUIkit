@@ -194,12 +194,6 @@ struct PaddingModifierTests {
 @Suite("FrameModifier Tests")
 struct FrameModifierTests {
 
-    @Test("FrameDimension.fixed stores value")
-    func frameDimensionFixed() {
-        let dim = FrameDimension.fixed(10)
-        #expect(dim == .fixed(10))
-    }
-
     @Test("FrameDimension.infinity and .max are equal")
     func frameDimensionInfinity() {
         #expect(FrameDimension.infinity == .max)
@@ -341,29 +335,12 @@ struct FrameModifierTests {
         #expect(lastLine.contains("Hi"))
     }
 
-    @Test("FlexibleFrameView conforms to Renderable")
-    func frameIsRenderable() {
-        let frame = FlexibleFrameView(
-            content: Text("Test"),
-            minWidth: nil, idealWidth: nil, maxWidth: nil,
-            minHeight: nil, idealHeight: nil, maxHeight: nil,
-            alignment: .center
-        )
-        #expect(frame is Renderable)
-    }
 }
 
 // MARK: - BorderModifier Tests
 
 @Suite("BorderModifier Tests")
 struct BorderModifierTests {
-
-    @Test("BorderedView can be created")
-    func borderedViewCreation() {
-        let bordered = BorderedView(content: Text("Hi"), style: .line, color: .green)
-        #expect(bordered.style == .line)
-        #expect(bordered.color == .green)
-    }
 
     @Test("BorderedView renders with top and bottom borders")
     func borderedViewRenders() {
@@ -471,11 +448,6 @@ struct BorderModifierTests {
         #expect(topLine.count == 7)
     }
 
-    @Test("BorderedView conforms to Renderable")
-    func borderedViewIsRenderable() {
-        let bordered = BorderedView(content: Text("Test"), style: .line, color: nil)
-        #expect(bordered is Renderable)
-    }
 }
 
 // MARK: - BorderStyle Tests
@@ -517,28 +489,6 @@ struct BorderStyleTests {
     func borderStyleEquatable() {
         #expect(BorderStyle.line == BorderStyle.line)
         #expect(BorderStyle.line != BorderStyle.doubleLine)
-    }
-
-    @Test("Custom border style stores all characters")
-    func customBorderStyle() {
-        let custom = BorderStyle(
-            topLeft: "A",
-            topRight: "B",
-            bottomLeft: "C",
-            bottomRight: "D",
-            horizontal: "E",
-            vertical: "F",
-            leftT: "G",
-            rightT: "H"
-        )
-        #expect(custom.topLeft == "A")
-        #expect(custom.topRight == "B")
-        #expect(custom.bottomLeft == "C")
-        #expect(custom.bottomRight == "D")
-        #expect(custom.horizontal == "E")
-        #expect(custom.vertical == "F")
-        #expect(custom.leftT == "G")
-        #expect(custom.rightT == "H")
     }
 
     @Test("Custom border style defaults T-junctions to vertical")

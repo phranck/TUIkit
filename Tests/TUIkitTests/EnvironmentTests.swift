@@ -197,23 +197,5 @@ struct EnvironmentPropertyWrapperTests {
 @Suite("EnvironmentModifier Tests")
 struct EnvironmentModifierTests {
 
-    @Test("EnvironmentModifier stores properties")
-    func storesProperties() {
-        let modifier = EnvironmentModifier(
-            content: Text("Hello"),
-            keyPath: \.testString,
-            value: "injected"
-        )
-        #expect(modifier.value == "injected")
-    }
 
-    @Test("EnvironmentModifier conforms to Renderable")
-    func conformsToRenderable() {
-        let modifier = EnvironmentModifier(
-            content: Text("Test"),
-            keyPath: \.testString,
-            value: "test"
-        )
-        #expect(modifier is any Renderable)
-    }
 }

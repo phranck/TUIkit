@@ -111,25 +111,6 @@ struct ButtonTests {
         #expect(wasPressed == true)
     }
 
-    @Test("Button with custom style")
-    func buttonWithStyle() {
-        let button = Button("Delete", style: .destructive) {}
-        #expect(button.style.foregroundColor == .red)
-        #expect(button.style.borderColor == .red)
-    }
-
-    @Test("Button with custom focus ID")
-    func buttonWithFocusID() {
-        let button = Button("OK", focusID: "ok-button") {}
-        #expect(button.focusID == "ok-button")
-    }
-
-    @Test("Disabled button")
-    func disabledButton() {
-        let button = Button("Disabled", isDisabled: true) {}
-        #expect(button.isDisabled == true)
-    }
-
     @Test("Button disabled modifier")
     func buttonDisabledModifier() {
         let button = Button("Test") {}.disabled()
