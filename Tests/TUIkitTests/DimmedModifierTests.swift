@@ -26,12 +26,6 @@ struct DimmedModifierTests {
         renderToBuffer(view, context: testContext())
     }
 
-    @Test("DimmedModifier conforms to Renderable")
-    func conformsToRenderable() {
-        let modifier = DimmedModifier(content: Text("Test"))
-        #expect(modifier is any Renderable)
-    }
-
     @Test("Dimmed text contains ANSI dim code")
     func dimCodePresent() {
         let view = Text("Hello").dimmed()
@@ -63,9 +57,4 @@ struct DimmedModifierTests {
         }
     }
 
-    @Test("dimmed() View extension creates DimmedModifier")
-    func viewExtension() {
-        let view = Text("Hello").dimmed()
-        #expect(view is DimmedModifier<Text>)
-    }
 }

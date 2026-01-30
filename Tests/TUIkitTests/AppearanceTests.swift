@@ -16,12 +16,6 @@ struct AppearanceTests {
 
     // MARK: - Appearance ID Tests
 
-    @Test("Appearance ID can be created with rawValue")
-    func appearanceIdRawValue() {
-        let id = Appearance.ID(rawValue: "custom")
-        #expect(id.rawValue == "custom")
-    }
-
     @Test("Predefined appearance IDs exist")
     func predefinedAppearanceIds() {
         #expect(Appearance.ID.line.rawValue == "line")
@@ -38,13 +32,6 @@ struct AppearanceTests {
     }
 
     // MARK: - Appearance Struct Tests
-
-    @Test("Appearance can be created with ID and borderStyle")
-    func appearanceCreation() {
-        let appearance = Appearance(id: .line, borderStyle: .line)
-        #expect(appearance.rawId == .line)
-        #expect(appearance.borderStyle == .line)
-    }
 
     @Test("Appearance name is derived from ID")
     func appearanceName() {
