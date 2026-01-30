@@ -29,6 +29,33 @@ jobs:
             --output-path docs-output \
             --transform-for-static-hosting
 
+      - name: Add theme-settings.json for DocC renderer
+        run: |
+          cat > docs-output/theme-settings.json << 'EOF'
+          {
+            "theme": {
+              "aside": { "border-radius": "6px", "border-style": "solid", "border-width": "1px" },
+              "border-radius": "12px",
+              "button": { "border-radius": "15px", "border-width": "1px" },
+              "code": { "border-radius": "8px", "border-style": "solid", "border-width": "1px" },
+              "color": {
+                "documentation-intro-fill": "radial-gradient(circle at top, var(--color-documentation-intro-accent) 30%, #1a1a2e 100%)",
+                "documentation-intro-accent": "#7044ff",
+                "logo-base": { "dark": "#f0f0f0", "light": "#333333" },
+                "logo-shape": { "dark": "#000000", "light": "#ffffff" },
+                "fill": { "dark": "#000000", "light": "#ffffff" }
+              },
+              "icons": { "technology": "/icon.png" }
+            },
+            "features": {
+              "docs": {
+                "quickNavigation": { "enable": true },
+                "i18n": { "enable": true }
+              }
+            }
+          }
+          EOF
+
       - name: Add CNAME for custom domain
         run: echo "tuikit.layered.work" > docs-output/CNAME
 
