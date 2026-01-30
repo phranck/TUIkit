@@ -95,10 +95,6 @@ public struct PreferenceValues: @unchecked Sendable {
 
 /// Thread-local storage for collecting preferences during rendering.
 public final class PreferenceStorage: @unchecked Sendable {
-    /// The shared preference storage.
-    @available(*, deprecated, message: "Use TUIContext.preferences instead")
-    public static let shared = PreferenceStorage()
-
     /// Stack of preference values for nested rendering.
     private var stack: [PreferenceValues] = [PreferenceValues()]
 
