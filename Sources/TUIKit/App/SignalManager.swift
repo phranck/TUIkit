@@ -7,6 +7,14 @@
 
 import Foundation
 
+#if canImport(Glibc)
+    import Glibc
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Darwin)
+    import Darwin
+#endif
+
 // MARK: - Signal Flags
 
 /// Flag set by the SIGWINCH signal handler to request a re-render.
