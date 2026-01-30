@@ -909,50 +909,22 @@ extension StatusBar: Renderable {
         let border = context.environment.appearance.borderStyle
         let borderColor = context.environment.theme.border
 
-        // Build the three lines with theme border color
-        let topBorder = ANSIRenderer.colorize(String(border.topLeft)
-            + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.topRight), foreground: borderColor)
-
-        let contentLine = ANSIRenderer.colorize(String(border.vertical), foreground: borderColor)
-            + content
-            + ANSIRenderer.reset  // Prevent color bleeding
-            + ANSIRenderer.colorize(String(border.vertical), foreground: borderColor)
-
-        let bottomBorder = ANSIRenderer.colorize(String(border.bottomLeft)
-            + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.bottomRight), foreground: borderColor)
-
-        return FrameBuffer(lines: [topBorder, contentLine, bottomBorder])
+        return FrameBuffer(lines: [
+            BorderRenderer.standardTopBorder(style: border, innerWidth: innerWidth, color: borderColor),
+            BorderRenderer.standardContentLine(content: content, innerWidth: innerWidth, style: border, color: borderColor),
+            BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor),
+        ])
     }
 
     /// Renders block-style status bar with half-block characters.
-    /// ```
-    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: ▄, statusBar BG color
-    /// █ Content █  ← Sides: █, statusBar BG color; content with statusBar BG
-    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: ▀, statusBar BG color
-    /// ```
     private func renderBlockBordered(content: String, innerWidth: Int, context: RenderContext) -> FrameBuffer {
-        var lines: [String] = []
-
-        // Get colors from theme
         let statusBarBg = context.environment.theme.statusBarBackground
 
-        // Top border: ▄▄▄ with statusBar background color
-        let topLine = String(repeating: "▄", count: innerWidth + 2)
-        lines.append(ANSIRenderer.colorize(topLine, foreground: statusBarBg))
-
-        // Content line with █ side borders and statusBar BG applied to content
-        let styledContent = ANSIRenderer.applyPersistentBackground(content, color: statusBarBg)
-        let sideBorder = ANSIRenderer.colorize("█", foreground: statusBarBg)
-        let contentLine = sideBorder + styledContent + ANSIRenderer.reset + sideBorder
-        lines.append(contentLine)
-
-        // Bottom border: ▀▀▀ (upper half block) with statusBar background color
-        let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-        lines.append(ANSIRenderer.colorize(bottomLine, foreground: statusBarBg))
-
-        return FrameBuffer(lines: lines)
+        return FrameBuffer(lines: [
+            BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: statusBarBg),
+            BorderRenderer.blockContentLine(content: content, innerWidth: innerWidth, sectionColor: statusBarBg),
+            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg),
+        ])
     }
 
 }

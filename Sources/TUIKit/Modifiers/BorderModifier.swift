@@ -53,87 +53,32 @@ extension BorderedView: Renderable {
     
     /// Renders with standard box-drawing characters.
     private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle) -> FrameBuffer {
-        let borderForeground = color ?? Color.theme.border
-
-        // Build the top border line
-        let topLine = buildBorderLine(
-            left: style.topLeft,
-            fill: style.horizontal,
-            right: style.topRight,
-            width: innerWidth
-        )
-
-        // Build the bottom border line
-        let bottomLine = buildBorderLine(
-            left: style.bottomLeft,
-            fill: style.horizontal,
-            right: style.bottomRight,
-            width: innerWidth
-        )
-
-        // Build the result
+        let borderColor = color ?? Color.theme.border
         var lines: [String] = []
 
-        // Top border
-        lines.append(ANSIRenderer.colorize(topLine, foreground: borderForeground))
-
-        // Content lines with side borders
+        lines.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderColor))
         for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
-                + paddedLine
-                + ANSIRenderer.reset
-                + ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
-            lines.append(borderedLine)
+            lines.append(BorderRenderer.standardContentLine(
+                content: line, innerWidth: innerWidth, style: style, color: borderColor
+            ))
         }
-
-        // Bottom border
-        lines.append(ANSIRenderer.colorize(bottomLine, foreground: borderForeground))
+        lines.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderColor))
 
         return FrameBuffer(lines: lines)
     }
     
     /// Renders with half-block characters for block appearance.
-    ///
-    /// Block style design:
-    /// ```
-    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: ▄, FG = container BG, BG = transparent
-    /// █ Content █  ← Sides: █, FG = container BG, content has container BG
-    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: ▀, FG = container BG, BG = transparent
-    /// ```
     private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int) -> FrameBuffer {
-        var lines: [String] = []
-        
-        // For block style, use container background color for borders
         let containerBg = Color.theme.containerBackground
-        let sideBorder = ANSIRenderer.colorize("█", foreground: containerBg)
-        
-        // Top border: ▄▄▄ with FG = container BG
-        let topLine = String(repeating: "▄", count: innerWidth + 2)
-        lines.append(ANSIRenderer.colorize(topLine, foreground: containerBg))
-        
-        // Content lines with █ side borders and container background
-        for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: containerBg)
-            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
-        }
-        
-        // Bottom border: ▀▀▀ with FG = container BG
-        let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-        lines.append(ANSIRenderer.colorize(bottomLine, foreground: containerBg))
-        
-        return FrameBuffer(lines: lines)
-    }
+        var lines: [String] = []
 
-    /// Builds a horizontal border line.
-    private func buildBorderLine(
-        left: Character,
-        fill: Character,
-        right: Character,
-        width: Int
-    ) -> String {
-        String(left) + String(repeating: fill, count: width) + String(right)
+        lines.append(BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: containerBg))
+        for line in buffer.lines {
+            lines.append(BorderRenderer.blockContentLine(content: line, innerWidth: innerWidth, sectionColor: containerBg))
+        }
+        lines.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: containerBg))
+
+        return FrameBuffer(lines: lines)
     }
 }
 
