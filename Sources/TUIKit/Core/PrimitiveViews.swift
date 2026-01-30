@@ -5,19 +5,6 @@
 //  Primitive view types that serve as leaves in the view tree.
 //
 
-// MARK: - Never as View
-
-/// `Never` conforms to View for views that have no body.
-///
-/// Primitive views like `Text` or containers like `TupleView` have no
-/// body of their own - they are rendered directly. This extension allows
-/// using `Never` as the body type.
-extension Never: View {
-    public var body: Never {
-        fatalError("Never.body should never be called")
-    }
-}
-
 // MARK: - EmptyView
 
 /// A view that displays no content.
@@ -85,16 +72,4 @@ public struct ViewArray<Element: View>: View {
     }
 }
 
-// MARK: - Optional View Conformance
 
-/// Optional views conform to View when their Wrapped type does.
-extension Optional: View where Wrapped: View {
-    public var body: some View {
-        switch self {
-        case .some(let view):
-            view
-        case .none:
-            EmptyView()
-        }
-    }
-}

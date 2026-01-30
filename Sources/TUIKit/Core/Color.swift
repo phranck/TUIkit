@@ -179,32 +179,34 @@ public struct Color: Sendable, Equatable {
     ///   - lightness: The lightness component (0-100).
     /// - Returns: The corresponding RGB color.
     public static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Color {
-        let h = hue / 360.0
-        let s = saturation / 100.0
-        let l = lightness / 100.0
+        let normalizedHue = hue / 360.0
+        let normalizedSaturation = saturation / 100.0
+        let normalizedLightness = lightness / 100.0
 
-        if s == 0 {
+        if normalizedSaturation == 0 {
             // Achromatic (gray)
-            let gray = UInt8(l * 255)
+            let gray = UInt8(normalizedLightness * 255)
             return .rgb(gray, gray, gray)
         }
 
-        let q = l < 0.5 ? l * (1 + s) : l + s - l * s
-        let p = 2 * l - q
+        let chromaFactor = normalizedLightness < 0.5
+            ? normalizedLightness * (1 + normalizedSaturation)
+            : normalizedLightness + normalizedSaturation - normalizedLightness * normalizedSaturation
+        let luminanceFactor = 2 * normalizedLightness - chromaFactor
 
-        func hueToRGB(_ p: Double, _ q: Double, _ t: Double) -> Double {
-            var t = t
-            if t < 0 { t += 1 }
-            if t > 1 { t -= 1 }
-            if t < 1/6 { return p + (q - p) * 6 * t }
-            if t < 1/2 { return q }
-            if t < 2/3 { return p + (q - p) * (2/3 - t) * 6 }
-            return p
+        func hueToRGB(_ luminance: Double, _ chroma: Double, _ hueComponent: Double) -> Double {
+            var adjustedHue = hueComponent
+            if adjustedHue < 0 { adjustedHue += 1 }
+            if adjustedHue > 1 { adjustedHue -= 1 }
+            if adjustedHue < 1/6 { return luminance + (chroma - luminance) * 6 * adjustedHue }
+            if adjustedHue < 1/2 { return chroma }
+            if adjustedHue < 2/3 { return luminance + (chroma - luminance) * (2/3 - adjustedHue) * 6 }
+            return luminance
         }
 
-        let red = UInt8(hueToRGB(p, q, h + 1/3) * 255)
-        let green = UInt8(hueToRGB(p, q, h) * 255)
-        let blue = UInt8(hueToRGB(p, q, h - 1/3) * 255)
+        let red = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue + 1/3) * 255)
+        let green = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue) * 255)
+        let blue = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue - 1/3) * 255)
 
         return .rgb(red, green, blue)
     }
@@ -214,15 +216,7 @@ public struct Color: Sendable, Equatable {
     /// - Parameter amount: The amount to lighten (0-1, default 0.2).
     /// - Returns: A lighter color.
     public func lighter(by amount: Double = 0.2) -> Color {
-        guard case .rgb(let red, let green, let blue) = value else {
-            return self
-        }
-
-        let newRed = UInt8(min(255, Double(red) + 255 * amount))
-        let newGreen = UInt8(min(255, Double(green) + 255 * amount))
-        let newBlue = UInt8(min(255, Double(blue) + 255 * amount))
-
-        return .rgb(newRed, newGreen, newBlue)
+        adjusted(by: amount)
     }
 
     /// Returns a darker version of this color.
@@ -230,13 +224,24 @@ public struct Color: Sendable, Equatable {
     /// - Parameter amount: The amount to darken (0-1, default 0.2).
     /// - Returns: A darker color.
     public func darker(by amount: Double = 0.2) -> Color {
+        adjusted(by: -amount)
+    }
+
+    /// Adjusts brightness by a signed amount.
+    ///
+    /// Positive values lighten, negative values darken.
+    ///
+    /// - Parameter amount: The adjustment amount (-1 to 1).
+    /// - Returns: The adjusted color, or self if not an RGB color.
+    private func adjusted(by amount: Double) -> Color {
         guard case .rgb(let red, let green, let blue) = value else {
             return self
         }
 
-        let newRed = UInt8(max(0, Double(red) - 255 * amount))
-        let newGreen = UInt8(max(0, Double(green) - 255 * amount))
-        let newBlue = UInt8(max(0, Double(blue) - 255 * amount))
+        let shift = 255 * amount
+        let newRed = UInt8(min(255, max(0, Double(red) + shift)))
+        let newGreen = UInt8(min(255, max(0, Double(green) + shift)))
+        let newBlue = UInt8(min(255, max(0, Double(blue) + shift)))
 
         return .rgb(newRed, newGreen, newBlue)
     }

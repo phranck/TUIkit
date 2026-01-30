@@ -99,22 +99,8 @@ public struct Panel<Content: View, Footer: View>: View {
         self.showFooterSeparator = showFooterSeparator
     }
 
-    public var body: some View {
-        ContainerView(
-            title: title,
-            titleColor: titleColor,
-            style: ContainerStyle(
-                showHeaderSeparator: true,
-                showFooterSeparator: showFooterSeparator,
-                borderStyle: borderStyle,
-                borderColor: borderColor
-            ),
-            padding: padding
-        ) {
-            content
-        } footer: {
-            footer!
-        }
+    public var body: Never {
+        fatalError("Panel renders via Renderable")
     }
 }
 

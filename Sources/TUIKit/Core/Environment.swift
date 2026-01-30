@@ -202,39 +202,7 @@ extension EnvironmentModifier: Renderable {
 
         // Render content with modified environment
         return EnvironmentStorage.shared.withEnvironment(modifiedEnvironment) {
-            renderView(content, context: modifiedContext)
+            TUIKit.renderToBuffer(content, context: modifiedContext)
         }
-    }
-}
-
-// MARK: - Internal Rendering Helper
-
-/// Internal helper to render a view (avoids name collision with Renderable.renderToBuffer).
-private func renderView<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
-    if let renderable = view as? Renderable {
-        return renderable.renderToBuffer(context: context)
-    }
-
-    if V.Body.self != Never.self {
-        return renderView(view.body, context: context)
-    }
-
-    return FrameBuffer()
-}
-
-// MARK: - View Extension for Environment
-
-extension View {
-    /// Sets an environment value for this view and its children.
-    ///
-    /// - Parameters:
-    ///   - keyPath: The key path to the environment value.
-    ///   - value: The value to set.
-    /// - Returns: A view with the modified environment.
-    public func environment<V>(
-        _ keyPath: WritableKeyPath<EnvironmentValues, V>,
-        _ value: V
-    ) -> some View {
-        EnvironmentModifier(content: self, keyPath: keyPath, value: value)
     }
 }
