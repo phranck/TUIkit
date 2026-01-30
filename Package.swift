@@ -22,14 +22,21 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.58.2"),
     ],
     targets: [
         .target(
-            name: "TUIKit"
+            name: "TUIKit",
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
+            ]
         ),
         .executableTarget(
             name: "TUIKitExample",
-            dependencies: ["TUIKit"]
+            dependencies: ["TUIKit"],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
+            ]
         ),
         .testTarget(
             name: "TUIKitTests",

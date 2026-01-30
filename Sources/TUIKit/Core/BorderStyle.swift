@@ -27,10 +27,10 @@ public struct BorderStyle: Sendable, Equatable {
 
     /// Vertical edge character.
     public let vertical: Character
-    
+
     /// Left T-junction character (├).
     public let leftT: Character
-    
+
     /// Right T-junction character (┤).
     public let rightT: Character
 
@@ -67,7 +67,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// │ Content│
     /// └────────┘
     /// ```
-    public static let line = BorderStyle(
+    public static let line = Self(
         topLeft: "┌",
         topRight: "┐",
         bottomLeft: "└",
@@ -87,7 +87,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// ║ Content║
     /// ╚════════╝
     /// ```
-    public static let doubleLine = BorderStyle(
+    public static let doubleLine = Self(
         topLeft: "╔",
         topRight: "╗",
         bottomLeft: "╚",
@@ -107,7 +107,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// │ Content│
     /// ╰────────╯
     /// ```
-    public static let rounded = BorderStyle(
+    public static let rounded = Self(
         topLeft: "╭",
         topRight: "╮",
         bottomLeft: "╰",
@@ -127,7 +127,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// ┃ Content┃
     /// ┗━━━━━━━━┛
     /// ```
-    public static let heavy = BorderStyle(
+    public static let heavy = Self(
         topLeft: "┏",
         topRight: "┓",
         bottomLeft: "┗",
@@ -152,7 +152,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// █ Footer █
     /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: upper half block
     /// ```
-    public static let block = BorderStyle(
+    public static let block = Self(
         topLeft: "▄",
         topRight: "▄",
         bottomLeft: "▀",
@@ -162,19 +162,19 @@ public struct BorderStyle: Sendable, Equatable {
         leftT: "▀",            // Header/Body separator (upper half)
         rightT: "▀"
     )
-    
+
     /// The character used for the bottom edge of block style.
     ///
     /// Block style uses different characters for top (▄) and bottom (▀).
     public static let blockBottomHorizontal: Character = "▀"
-    
+
     /// The character used for body/footer separator in block style.
     ///
     /// Uses lower half block (▄) to create visual separation.
     public static let blockFooterSeparator: Character = "▄"
 
     /// No visible border (space characters).
-    public static let none = BorderStyle(
+    public static let none = Self(
         topLeft: " ",
         topRight: " ",
         bottomLeft: " ",
@@ -184,7 +184,7 @@ public struct BorderStyle: Sendable, Equatable {
         leftT: " ",
         rightT: " "
     )
-    
+
     /// ASCII-only border (+ - |).
     ///
     /// Maximum compatibility with all terminals, including those that
@@ -197,7 +197,7 @@ public struct BorderStyle: Sendable, Equatable {
     /// | Content|
     /// +--------+
     /// ```
-    public static let ascii = BorderStyle(
+    public static let ascii = Self(
         topLeft: "+",
         topRight: "+",
         bottomLeft: "+",

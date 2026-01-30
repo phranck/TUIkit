@@ -31,7 +31,7 @@ extension BorderedView: Renderable {
         // Resolve border style - use explicit or fall back to appearance default
         let effectiveStyle = style ?? context.environment.appearance.borderStyle
         let isBlockAppearance = context.environment.appearance.rawId == .block
-        
+
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context
         contentContext.availableWidth = max(1, context.availableWidth - BorderRenderer.borderWidthOverhead)
@@ -43,14 +43,14 @@ extension BorderedView: Renderable {
 
         let contentWidth = buffer.width
         let innerWidth = max(contentWidth, 1)
-        
+
         if isBlockAppearance {
             return renderBlockStyle(buffer: buffer, innerWidth: innerWidth)
         } else {
             return renderStandardStyle(buffer: buffer, innerWidth: innerWidth, style: effectiveStyle)
         }
     }
-    
+
     /// Renders with standard box-drawing characters.
     private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle) -> FrameBuffer {
         let borderColor = color ?? Color.theme.border
@@ -66,7 +66,7 @@ extension BorderedView: Renderable {
 
         return FrameBuffer(lines: lines)
     }
-    
+
     /// Renders with half-block characters for block appearance.
     private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int) -> FrameBuffer {
         let containerBg = Color.theme.containerBackground
@@ -81,4 +81,3 @@ extension BorderedView: Renderable {
         return FrameBuffer(lines: lines)
     }
 }
-

@@ -58,8 +58,8 @@ public struct RenderContext {
     ///
     /// - Parameter environment: The new environment values.
     /// - Returns: A new RenderContext with the updated environment.
-    public func withEnvironment(_ environment: EnvironmentValues) -> RenderContext {
-        RenderContext(
+    public func withEnvironment(_ environment: EnvironmentValues) -> Self {
+        Self(
             terminal: terminal,
             availableWidth: availableWidth,
             availableHeight: availableHeight,

@@ -57,5 +57,3 @@ extension DimmedModifier: Renderable {
         return ANSIRenderer.dim + text + ANSIRenderer.reset
     }
 }
-
-
