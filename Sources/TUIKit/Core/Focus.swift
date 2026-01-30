@@ -250,7 +250,7 @@ public final class FocusManager: @unchecked Sendable {
 
 /// Environment key for the focus manager.
 private struct FocusManagerKey: EnvironmentKey {
-    static let defaultValue: FocusManager = FocusManager()
+    static let defaultValue = FocusManager()
 }
 
 extension EnvironmentValues {

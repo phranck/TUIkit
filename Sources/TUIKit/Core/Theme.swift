@@ -83,7 +83,7 @@ public protocol Palette: Cyclable {
 
     /// Selection highlight color (foreground).
     var selection: Color { get }
-    
+
     /// Selection background color (dimmed accent).
     var selectionBackground: Color { get }
 
@@ -100,7 +100,7 @@ public protocol Palette: Cyclable {
 
     /// Status bar shortcut highlight color.
     var statusBarHighlight: Color { get }
-    
+
     // MARK: - Container Colors (for block appearance)
 
     /// Container body background (used in block appearance).
@@ -254,7 +254,7 @@ public enum PaletteColors {
 
     /// Selection color.
     public static var selection: Color { current.selection }
-    
+
     /// Selection background color.
     public static var selectionBackground: Color { current.selectionBackground }
 
@@ -269,10 +269,10 @@ public enum PaletteColors {
 
     /// Status bar highlight.
     public static var statusBarHighlight: Color { current.statusBarHighlight }
-    
+
     /// Container body background (for block appearance).
     public static var containerBackground: Color { current.containerBackground }
-    
+
     /// Container header/footer background (for block appearance).
     public static var containerHeaderBackground: Color { current.containerHeaderBackground }
 }
@@ -291,33 +291,33 @@ public struct GreenPhosphorPalette: Palette {
     public let background = Color.hex(0x060A07)             // App background (darkest)
     public let backgroundSecondary = Color.hex(0x0E271C)    // Container body background (brighter)
     public let backgroundTertiary = Color.hex(0x0A1B13)     // Header/footer background
-    
+
     // Green phosphor text hierarchy
     public let foreground = Color.hex(0x33FF33)           // Bright green - primary text
     public let foregroundSecondary = Color.hex(0x27C227)  // Medium green - secondary text
     public let foregroundTertiary = Color.hex(0x1F8F1F)   // Dim green - tertiary/muted text
-    
+
     // Accent colors
     public let accent = Color.hex(0x66FF66)               // Lighter green for highlights
     public let accentSecondary = Color.hex(0x00CC00)      // Darker accent
-    
+
     // Semantic colors (stay in green family)
     public let success = Color.hex(0x33FF33)
     public let warning = Color.hex(0xCCFF33)              // Yellow-green
     public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
     public let info = Color.hex(0x33FFCC)                 // Cyan-green
-    
+
     // UI elements
     public let border = Color.hex(0x2D5A2D)               // Subtle green border
     public let borderFocused = Color.hex(0x33FF33)        // Bright when focused
     public let selection = Color.hex(0x66FF66)            // Bright green for selection text
     public let selectionBackground = Color.hex(0x1A4D1A)  // Dark green for selection bar bg
-    
+
     // Status bar
     public let statusBarBackground = Color.hex(0x0F2215)  // Dark green for status bar
     public let statusBarForeground = Color.hex(0x2FDD2F)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0x66FF66)
-    
+
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // #0E271C - body
     public var containerHeaderBackground: Color { backgroundTertiary }  // #0A1B13 - header/footer
@@ -338,33 +338,33 @@ public struct AmberPhosphorPalette: Palette {
     public let background = Color.hex(0x0A0706)             // App background (darkest)
     public let backgroundSecondary = Color.hex(0x251710)    // Container body background (brighter)
     public let backgroundTertiary = Color.hex(0x1E110E)     // Header/footer background
-    
+
     // Amber phosphor text hierarchy (matching Spotnik)
     public let foreground = Color.hex(0xFFAA00)           // Bright amber - primary text
     public let foregroundSecondary = Color.hex(0xCC8800)  // Medium amber - secondary text
     public let foregroundTertiary = Color.hex(0x8F6600)   // Dim amber - tertiary/muted text
-    
+
     // Accent colors
     public let accent = Color.hex(0xFFCC33)               // Lighter amber for highlights
     public let accentSecondary = Color.hex(0xCC9900)      // Darker accent
-    
+
     // Semantic colors (stay in amber family)
     public let success = Color.hex(0xFFCC00)
     public let warning = Color.hex(0xFFE066)              // Light amber
     public let error = Color.hex(0xFF6633)                // Orange-red (contrast)
     public let info = Color.hex(0xFFD966)                 // Light amber
-    
+
     // UI elements
     public let border = Color.hex(0x5A4A2D)               // Subtle amber border
     public let borderFocused = Color.hex(0xFFAA00)        // Bright when focused
     public let selection = Color.hex(0xFFCC33)            // Bright amber for selection text
     public let selectionBackground = Color.hex(0x4D3A1F)  // Dark amber for selection bar bg
-    
+
     // Status bar
     public let statusBarBackground = Color.hex(0x191613)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xFFAA00)
     public let statusBarHighlight = Color.hex(0xFFCC33)
-    
+
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
@@ -385,33 +385,33 @@ public struct WhitePhosphorPalette: Palette {
     public let background = Color.hex(0x06070A)             // App background (darkest)
     public let backgroundSecondary = Color.hex(0x111A2A)    // Container body background (brighter)
     public let backgroundTertiary = Color.hex(0x0D131D)     // Header/footer background
-    
+
     // White/gray phosphor text hierarchy
     public let foreground = Color.hex(0xE8E8E8)           // Bright white - primary text
     public let foregroundSecondary = Color.hex(0xB0B0B0)  // Medium gray - secondary text
     public let foregroundTertiary = Color.hex(0x787878)   // Dim gray - tertiary/muted text
-    
+
     // Accent colors
     public let accent = Color.hex(0xFFFFFF)               // Pure white for highlights
     public let accentSecondary = Color.hex(0xC0C0C0)      // Light gray accent
-    
+
     // Semantic colors (subtle tints)
     public let success = Color.hex(0xC0FFC0)              // Slight green tint
     public let warning = Color.hex(0xFFE0A0)              // Slight amber tint
     public let error = Color.hex(0xFFA0A0)                // Slight red tint
     public let info = Color.hex(0xA0D0FF)                 // Slight blue tint
-    
+
     // UI elements
     public let border = Color.hex(0x484848)               // Subtle gray border
     public let borderFocused = Color.hex(0xE8E8E8)        // Bright when focused
     public let selection = Color.hex(0xFFFFFF)            // White for selection text
     public let selectionBackground = Color.hex(0x3A3A3A)  // Dark gray for selection bar bg
-    
+
     // Status bar
     public let statusBarBackground = Color.hex(0x131619)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xDCDCDC)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0xFFFFFF)
-    
+
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
@@ -432,33 +432,33 @@ public struct RedPhosphorPalette: Palette {
     public let background = Color.hex(0x0A0606)             // App background (darkest)
     public let backgroundSecondary = Color.hex(0x281112)    // Container body background (brighter)
     public let backgroundTertiary = Color.hex(0x1E0F10)     // Header/footer background
-    
+
     // Red phosphor text hierarchy
     public let foreground = Color.hex(0xFF4444)           // Bright red - primary text
     public let foregroundSecondary = Color.hex(0xCC3333)  // Medium red - secondary text
     public let foregroundTertiary = Color.hex(0x8F2222)   // Dim red - tertiary/muted text
-    
+
     // Accent colors
     public let accent = Color.hex(0xFF6666)               // Lighter red for highlights
     public let accentSecondary = Color.hex(0xCC4444)      // Darker accent
-    
+
     // Semantic colors (stay in red family)
     public let success = Color.hex(0xFF8080)              // Light red (success in red theme)
     public let warning = Color.hex(0xFFAA66)              // Orange
     public let error = Color.hex(0xFFFFFF)                // White (stands out as error)
     public let info = Color.hex(0xFF9999)                 // Light red
-    
+
     // UI elements
     public let border = Color.hex(0x5A2D2D)               // Subtle red border
     public let borderFocused = Color.hex(0xFF4444)        // Bright when focused
     public let selection = Color.hex(0xFF6666)            // Bright red for selection text
     public let selectionBackground = Color.hex(0x4D1F1F)  // Dark red for selection bar bg
-    
+
     // Status bar
     public let statusBarBackground = Color.hex(0x191313)  // Same as header/footer
     public let statusBarForeground = Color.hex(0xF23B3B)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0xFF6666)
-    
+
     // Container colors for block appearance
     public var containerBackground: Color { backgroundSecondary }       // Body
     public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
@@ -600,19 +600,19 @@ public struct GeneratedPalette: Palette, Sendable {
 
         // --- Semantic: hue-shifted from base ---
         // success = base + 120° (toward green family)
-        let successHue = GeneratedPalette.wrapHue(hue + 120)
+        let successHue = Self.wrapHue(hue + 120)
         self.success = Color.hsl(successHue, baseSaturation * 0.70, 65)
 
         // warning = base + 60° (toward yellow family)
-        let warningHue = GeneratedPalette.wrapHue(hue + 60)
+        let warningHue = Self.wrapHue(hue + 60)
         self.warning = Color.hsl(warningHue, baseSaturation * 0.80, 70)
 
         // error = base + 180° (complementary)
-        let errorHue = GeneratedPalette.wrapHue(hue + 180)
+        let errorHue = Self.wrapHue(hue + 180)
         self.error = Color.hsl(errorHue, baseSaturation * 0.85, 65)
 
         // info = base − 60° (analogous cool side)
-        let infoHue = GeneratedPalette.wrapHue(hue - 60)
+        let infoHue = Self.wrapHue(hue - 60)
         self.info = Color.hsl(infoHue, baseSaturation * 0.70, 70)
 
         // --- UI elements ---
@@ -652,9 +652,9 @@ public struct GeneratedPalette: Palette, Sendable {
     // MARK: - Presets
 
     /// A green generated palette — for direct comparison with GreenPhosphorPalette.
-    public static let green = GeneratedPalette(name: "Gen. Green", hue: Hue.green)
+    public static let green = Self(name: "Gen. Green", hue: Hue.green)
     /// A violet generated palette.
-    public static let violet = GeneratedPalette(name: "Violet", hue: Hue.violet)
+    public static let violet = Self(name: "Violet", hue: Hue.violet)
 }
 
 // MARK: - Palette Registry
@@ -731,7 +731,7 @@ extension Palette where Self == GeneratedPalette {
 
 /// Environment key for the palette manager.
 private struct PaletteManagerKey: EnvironmentKey {
-    static let defaultValue: ThemeManager = ThemeManager(
+    static let defaultValue = ThemeManager(
         items: PaletteRegistry.all,
         applyToEnvironment: { item in
             if let palette = item as? any Palette {

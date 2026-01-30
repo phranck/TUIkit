@@ -61,7 +61,7 @@ public struct ContainerConfig: Sendable {
     }
 
     /// Default configuration.
-    public static let `default` = ContainerConfig()
+    public static let `default` = Self()
 }
 
 // MARK: - Container Style
@@ -75,16 +75,16 @@ public struct ContainerStyle: Sendable {
     /// Note: Only applies to `Appearance.block`. For other appearances,
     /// the title is rendered in the top border.
     public var showHeaderSeparator: Bool
-    
+
     /// Whether to show a separator line between body and footer.
     public var showFooterSeparator: Bool
-    
+
     /// The border style (nil uses appearance default).
     public var borderStyle: BorderStyle?
-    
+
     /// The border color (nil uses theme default).
     public var borderColor: Color?
-    
+
     /// Creates a container style with the specified options.
     ///
     /// - Parameters:
@@ -115,7 +115,7 @@ public struct ContainerStyle: Sendable {
     }
 
     /// Default container style.
-    public static let `default` = ContainerStyle()
+    public static let `default` = Self()
 }
 
 // MARK: - Render Helper
@@ -208,22 +208,22 @@ internal func renderContainer<Content: View, Footer: View>(
 public struct ContainerView<Content: View, Footer: View>: View {
     /// The container title (rendered in border or header section).
     public let title: String?
-    
+
     /// The title color.
     public let titleColor: Color?
-    
+
     /// The main content.
     public let content: Content
-    
+
     /// The footer content (typically buttons).
     public let footer: Footer?
-    
+
     /// The container style configuration.
     public let style: ContainerStyle
-    
+
     /// The inner padding for the body.
     public let padding: EdgeInsets
-    
+
     /// Creates a container with all options.
     ///
     /// - Parameters:
@@ -248,7 +248,7 @@ public struct ContainerView<Content: View, Footer: View>: View {
         self.content = content()
         self.footer = footer()
     }
-    
+
     public var body: Never {
         fatalError("ContainerView renders via Renderable")
     }
@@ -289,11 +289,11 @@ extension ContainerView: Renderable {
         let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
         let borderColor = style.borderColor ?? Color.theme.border
-        
+
         // Render body content
         let paddedContent = content.padding(padding)
         let bodyBuffer = TUIKit.renderToBuffer(paddedContent, context: context)
-        
+
         // Render footer if present
         let footerBuffer: FrameBuffer?
         if let footerView = footer {
@@ -302,13 +302,13 @@ extension ContainerView: Renderable {
         } else {
             footerBuffer = nil
         }
-        
+
         // Calculate inner width
         let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
         let bodyWidth = bodyBuffer.width
         let footerWidth = footerBuffer?.width ?? 0
         let innerWidth = max(titleWidth, bodyWidth, footerWidth)
-        
+
         if isBlockAppearance {
             return renderBlockStyle(
                 bodyBuffer: bodyBuffer,
@@ -329,9 +329,9 @@ extension ContainerView: Renderable {
             )
         }
     }
-    
+
     // MARK: - Standard Style Rendering
-    
+
     /// Renders with title in top border (line, rounded, doubleLine, heavy).
     private func renderStandardStyle(
         bodyBuffer: FrameBuffer,
@@ -342,7 +342,7 @@ extension ContainerView: Renderable {
         context: RenderContext
     ) -> FrameBuffer {
         var lines: [String] = []
-        
+
         // Top border (with title if present)
         if let titleText = title {
             lines.append(BorderRenderer.standardTopBorder(
@@ -354,7 +354,7 @@ extension ContainerView: Renderable {
                 style: borderStyle, innerWidth: innerWidth, color: borderColor
             ))
         }
-        
+
         // Body lines with theme background
         let bodyBg = context.environment.palette.containerBackground
         for line in bodyBuffer.lines {
@@ -363,7 +363,7 @@ extension ContainerView: Renderable {
                 color: borderColor, backgroundColor: bodyBg
             ))
         }
-        
+
         // Footer section (if present)
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             if style.showFooterSeparator {
@@ -371,7 +371,7 @@ extension ContainerView: Renderable {
                     style: borderStyle, innerWidth: innerWidth, color: borderColor
                 ))
             }
-            
+
             // Footer lines (no background - footer has its own styling)
             for line in footerBuf.lines {
                 lines.append(BorderRenderer.standardContentLine(
@@ -379,17 +379,17 @@ extension ContainerView: Renderable {
                 ))
             }
         }
-        
+
         // Bottom border
         lines.append(BorderRenderer.standardBottomBorder(
             style: borderStyle, innerWidth: innerWidth, color: borderColor
         ))
-        
+
         return FrameBuffer(lines: lines)
     }
-    
+
     // MARK: - Block Style Rendering
-    
+
     /// Renders with half-block characters for smooth visual edges.
     ///
     /// Block style design:
@@ -412,42 +412,42 @@ extension ContainerView: Renderable {
         context: RenderContext
     ) -> FrameBuffer {
         var lines: [String] = []
-        
+
         // Get theme colors for block appearance
         // Header/Footer = darker background
         // Body = lighter background (containerBackground)
         let headerFooterBg = Color.theme.containerHeaderBackground
         let bodyBg = Color.theme.containerBackground
-        
+
         let hasHeader = title != nil
         let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
-        
+
         // === TOP BORDER ===
         lines.append(BorderRenderer.blockTopBorder(
             innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
         ))
-        
+
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
             let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
             lines.append(BorderRenderer.blockContentLine(
                 content: titleStyled, innerWidth: innerWidth, sectionColor: headerFooterBg
             ))
-            
+
             if style.showHeaderSeparator {
                 lines.append(BorderRenderer.blockSeparator(
                     innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
                 ))
             }
         }
-        
+
         // === BODY LINES ===
         for line in bodyBuffer.lines {
             lines.append(BorderRenderer.blockContentLine(
                 content: line, innerWidth: innerWidth, sectionColor: bodyBg
             ))
         }
-        
+
         // === FOOTER SECTION (if present) ===
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             if style.showFooterSeparator {
@@ -456,19 +456,19 @@ extension ContainerView: Renderable {
                     foregroundColor: headerFooterBg, backgroundColor: bodyBg
                 ))
             }
-            
+
             for line in footerBuf.lines {
                 lines.append(BorderRenderer.blockContentLine(
                     content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
                 ))
             }
         }
-        
+
         // === BOTTOM BORDER ===
         lines.append(BorderRenderer.blockBottomBorder(
             innerWidth: innerWidth, color: hasFooter ? headerFooterBg : bodyBg
         ))
-        
+
         return FrameBuffer(lines: lines)
     }
 }

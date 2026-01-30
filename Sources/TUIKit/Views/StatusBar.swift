@@ -263,37 +263,37 @@ public enum Shortcut {
 /// ```
 public struct StatusBarItemOrder: Comparable, Sendable {
     public let value: Int
-    
+
     public init(_ value: Int) {
         self.value = value
     }
-    
-    public static func < (lhs: StatusBarItemOrder, rhs: StatusBarItemOrder) -> Bool {
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.value < rhs.value
     }
-    
+
     // MARK: - User Item Orders
-    
+
     /// Default order for user-defined items (appears on the left).
-    public static let `default` = StatusBarItemOrder(500)
-    
+    public static let `default` = Self(500)
+
     /// Order for items that should appear early (leftmost user items).
-    public static let early = StatusBarItemOrder(100)
-    
+    public static let early = Self(100)
+
     /// Order for items that should appear late (rightmost user items, before system items).
-    public static let late = StatusBarItemOrder(800)
-    
+    public static let late = Self(800)
+
     // MARK: - System Item Orders (right side)
-    
+
     /// Order for the quit item (leftmost of system items).
     /// Appears as: `[...user items] [q quit] [a appearance] [t theme]`
-    public static let quit = StatusBarItemOrder(900)
-    
+    public static let quit = Self(900)
+
     /// Order for the appearance item (middle system item).
-    public static let appearance = StatusBarItemOrder(910)
-    
+    public static let appearance = Self(910)
+
     /// Order for the theme item (rightmost).
-    public static let theme = StatusBarItemOrder(920)
+    public static let theme = Self(920)
 }
 
 // MARK: - Status Bar Item Protocol
@@ -316,7 +316,7 @@ public protocol StatusBarItemProtocol: Sendable {
     ///
     /// Return nil if the item is purely informational (no action).
     var triggerKey: Key? { get }
-    
+
     /// The display order of this item.
     ///
     /// Items are sorted by order (ascending). Lower values appear first.
@@ -332,7 +332,7 @@ public protocol StatusBarItemProtocol: Sendable {
 public extension StatusBarItemProtocol {
     /// Default order for user-defined items.
     var order: StatusBarItemOrder { .default }
-    
+
     func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
@@ -488,7 +488,7 @@ public enum SystemStatusBarItem {
         label: "quit",
         order: .quit
     )
-    
+
     /// The appearance item (`a appearance`).
     ///
     /// Cycles through available appearances (border styles).
@@ -498,7 +498,7 @@ public enum SystemStatusBarItem {
         label: "appearance",
         order: .appearance
     )
-    
+
     /// The theme item (`t theme`).
     ///
     /// Cycles through available themes. Action must be set by the framework.
@@ -507,12 +507,12 @@ public enum SystemStatusBarItem {
         label: "theme",
         order: .theme
     )
-    
+
     /// All system items in their default order.
     public static var all: [StatusBarItem] {
         [quit, appearance, theme]
     }
-    
+
     /// Creates system items with custom actions.
     ///
     /// - Parameters:
@@ -526,7 +526,7 @@ public enum SystemStatusBarItem {
         onTheme: (@Sendable () -> Void)? = nil
     ) -> [StatusBarItem] {
         var result: [StatusBarItem] = []
-        
+
         // Quit is always present
         result.append(StatusBarItem(
             shortcut: "q",
@@ -534,9 +534,9 @@ public enum SystemStatusBarItem {
             order: .quit,
             action: onQuit
         ))
-        
+
         // Appearance is present if action is provided
-        if let onAppearance = onAppearance {
+        if let onAppearance {
             result.append(StatusBarItem(
                 shortcut: "a",
                 label: "appearance",
@@ -544,9 +544,9 @@ public enum SystemStatusBarItem {
                 action: onAppearance
             ))
         }
-        
+
         // Theme is present if action is provided
-        if let onTheme = onTheme {
+        if let onTheme {
             result.append(StatusBarItem(
                 shortcut: "t",
                 label: "theme",
@@ -554,7 +554,7 @@ public enum SystemStatusBarItem {
                 action: onTheme
             ))
         }
-        
+
         return result
     }
 }
@@ -633,7 +633,7 @@ public struct StatusBarItemBuilder {
 public struct StatusBar: View {
     /// User items (left container).
     public let userItems: [any StatusBarItemProtocol]
-    
+
     /// System items (right container).
     public let systemItems: [any StatusBarItemProtocol]
 
@@ -673,7 +673,7 @@ public struct StatusBar: View {
         self.highlightColor = highlightColor
         self.labelColor = labelColor
     }
-    
+
     /// Creates a status bar with all items combined (legacy compatibility).
     ///
     /// - Parameters:
@@ -719,7 +719,7 @@ public struct StatusBar: View {
         self.highlightColor = highlightColor
         self.labelColor = labelColor
     }
-    
+
     /// All items combined (sorted user items, then filtered system items).
     ///
     /// User items are sorted by their `order` property.
@@ -731,7 +731,7 @@ public struct StatusBar: View {
         let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
         return userItems.sorted { $0.order < $1.order } + filteredSystemItems
     }
-    
+
     /// Whether the status bar has any items to display.
     public var hasItems: Bool {
         !userItems.isEmpty || !systemItems.isEmpty
@@ -748,14 +748,14 @@ extension StatusBar: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Get shortcuts used by user items (for deduplication)
         let userShortcuts = Set(userItems.map { $0.shortcut })
-        
+
         // Filter out system items that are overridden by user items
         let filteredSystemItems = systemItems.filter { !userShortcuts.contains($0.shortcut) }
-        
+
         // Combine: sorted user items + filtered system items (fixed order)
         let sortedUserItems = userItems.sorted { $0.order < $1.order }
         let combinedItems = sortedUserItems + filteredSystemItems
-        
+
         guard !combinedItems.isEmpty else {
             return FrameBuffer()
         }
@@ -912,7 +912,7 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [
             BorderRenderer.standardTopBorder(style: border, innerWidth: innerWidth, color: borderColor),
             BorderRenderer.standardContentLine(content: content, innerWidth: innerWidth, style: border, color: borderColor),
-            BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor),
+            BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor)
         ])
     }
 
@@ -923,10 +923,9 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [
             BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: statusBarBg),
             BorderRenderer.blockContentLine(content: content, innerWidth: innerWidth, sectionColor: statusBarBg),
-            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg),
+            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg)
         ])
     }
-
 }
 
 // MARK: - Status Bar Height Helper

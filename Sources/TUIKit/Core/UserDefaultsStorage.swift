@@ -174,7 +174,7 @@ public final class UserDefaultsStorage: StorageBackend, @unchecked Sendable {
 
     /// Sets a string value for the given key.
     public func set(_ value: String?, forKey key: String) {
-        if let value = value {
+        if let value {
             setValue(value, forKey: key)
         } else {
             removeValue(forKey: key)
@@ -198,7 +198,7 @@ public final class UserDefaultsStorage: StorageBackend, @unchecked Sendable {
 
     /// Sets a data value for the given key.
     public func set(_ value: Data?, forKey key: String) {
-        if let value = value {
+        if let value {
             setValue(value, forKey: key)
         } else {
             removeValue(forKey: key)
