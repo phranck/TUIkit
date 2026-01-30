@@ -42,17 +42,8 @@ public struct Alert<Actions: View>: View {
     /// The alert message.
     public let message: String
 
-    /// The border style for the alert box (nil uses appearance default).
-    public let borderStyle: BorderStyle?
-
-    /// The border color.
-    public let borderColor: Color?
-
-    /// The title color.
-    public let titleColor: Color?
-    
-    /// Whether to show a separator before the action buttons.
-    public let showFooterSeparator: Bool
+    /// The shared visual configuration.
+    public let config: ContainerConfig
 
     /// The action views (typically buttons).
     public let actions: Actions
@@ -78,10 +69,13 @@ public struct Alert<Actions: View>: View {
     ) {
         self.title = title
         self.message = message
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
-        self.showFooterSeparator = showFooterSeparator
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: EdgeInsets(horizontal: 2, vertical: 1),
+            showFooterSeparator: showFooterSeparator
+        )
         self.actions = actions()
     }
 
@@ -94,44 +88,24 @@ public struct Alert<Actions: View>: View {
 
 extension Alert: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let containerStyle = ContainerStyle(
-            showHeaderSeparator: true,
-            showFooterSeparator: showFooterSeparator,
-            borderStyle: borderStyle,
-            borderColor: borderColor
-        )
-        
-        // Check if actions is EmptyView (no actions)
         let hasActions = !(actions is EmptyView)
-        
-        if hasActions {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: containerStyle,
-                padding: EdgeInsets(horizontal: 2, vertical: 1)
-            ) {
-                Text(message)
-            } footer: {
-                actions
-            }
-            return container.renderToBuffer(context: context)
-        } else {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: ContainerStyle(
-                    showHeaderSeparator: true,
-                    showFooterSeparator: false,
-                    borderStyle: borderStyle,
-                    borderColor: borderColor
-                ),
-                padding: EdgeInsets(horizontal: 2, vertical: 1)
-            ) {
-                Text(message)
-            }
-            return container.renderToBuffer(context: context)
-        }
+        let effectiveConfig = hasActions
+            ? config
+            : ContainerConfig(
+                borderStyle: config.borderStyle,
+                borderColor: config.borderColor,
+                titleColor: config.titleColor,
+                padding: config.padding,
+                showFooterSeparator: false
+            )
+
+        return renderContainer(
+            title: title,
+            config: effectiveConfig,
+            content: Text(message),
+            footer: hasActions ? actions : nil,
+            context: context
+        )
     }
 }
 
@@ -155,10 +129,13 @@ extension Alert where Actions == EmptyView {
     ) {
         self.title = title
         self.message = message
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
-        self.showFooterSeparator = false
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: EdgeInsets(horizontal: 2, vertical: 1),
+            showFooterSeparator: false
+        )
         self.actions = EmptyView()
     }
 }
