@@ -910,18 +910,18 @@ extension StatusBar: Renderable {
         let borderColor = context.environment.theme.border
 
         // Build the three lines with theme border color
-        let topBorder = colorizeBorder(String(border.topLeft)
+        let topBorder = ANSIRenderer.colorize(String(border.topLeft)
             + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.topRight), color: borderColor)
+            + String(border.topRight), foreground: borderColor)
 
-        let contentLine = colorizeBorder(String(border.vertical), color: borderColor)
+        let contentLine = ANSIRenderer.colorize(String(border.vertical), foreground: borderColor)
             + content
             + ANSIRenderer.reset  // Prevent color bleeding
-            + colorizeBorder(String(border.vertical), color: borderColor)
+            + ANSIRenderer.colorize(String(border.vertical), foreground: borderColor)
 
-        let bottomBorder = colorizeBorder(String(border.bottomLeft)
+        let bottomBorder = ANSIRenderer.colorize(String(border.bottomLeft)
             + String(repeating: border.horizontal, count: innerWidth)
-            + String(border.bottomRight), color: borderColor)
+            + String(border.bottomRight), foreground: borderColor)
 
         return FrameBuffer(lines: [topBorder, contentLine, bottomBorder])
     }
@@ -940,41 +940,21 @@ extension StatusBar: Renderable {
 
         // Top border: ▄▄▄ with statusBar background color
         let topLine = String(repeating: "▄", count: innerWidth + 2)
-        lines.append(colorizeBorderWithForeground(topLine, foreground: statusBarBg))
+        lines.append(ANSIRenderer.colorize(topLine, foreground: statusBarBg))
 
         // Content line with █ side borders and statusBar BG applied to content
-        let styledContent = applyBackground(content, background: statusBarBg)
-        let sideBorder = colorizeBorderWithForeground("█", foreground: statusBarBg)
+        let styledContent = ANSIRenderer.applyPersistentBackground(content, color: statusBarBg)
+        let sideBorder = ANSIRenderer.colorize("█", foreground: statusBarBg)
         let contentLine = sideBorder + styledContent + ANSIRenderer.reset + sideBorder
         lines.append(contentLine)
 
         // Bottom border: ▀▀▀ (upper half block) with statusBar background color
         let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-        lines.append(colorizeBorderWithForeground(bottomLine, foreground: statusBarBg))
+        lines.append(ANSIRenderer.colorize(bottomLine, foreground: statusBarBg))
 
         return FrameBuffer(lines: lines)
     }
 
-    /// Applies the theme border color to a string.
-    private func colorizeBorder(_ string: String, color: Color) -> String {
-        var textStyle = TextStyle()
-        textStyle.foregroundColor = color
-        return ANSIRenderer.render(string, with: textStyle)
-    }
-
-    /// Applies foreground color to a string (for block characters).
-    private func colorizeBorderWithForeground(_ string: String, foreground: Color) -> String {
-        var textStyle = TextStyle()
-        textStyle.foregroundColor = foreground
-        return ANSIRenderer.render(string, with: textStyle)
-    }
-
-    /// Applies a background color to content, re-applying after any resets.
-    private func applyBackground(_ string: String, background: Color) -> String {
-        let bgCode = ANSIRenderer.backgroundCode(for: background)
-        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
-        return bgCode + stringWithPersistentBg
-    }
 }
 
 // MARK: - Status Bar Height Helper
