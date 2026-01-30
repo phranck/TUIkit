@@ -274,25 +274,6 @@ public enum ThemeColors {
     public static var containerHeaderBackground: Color { current.containerHeaderBackground }
 }
 
-// MARK: - Theme Modifier
-
-extension View {
-    /// Sets the theme for this view and its descendants.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// ContentView()
-    ///     .theme(GreenPhosphorTheme())
-    /// ```
-    ///
-    /// - Parameter theme: The theme to apply.
-    /// - Returns: A view with the theme applied.
-    public func theme(_ theme: Theme) -> some View {
-        environment(\.theme, theme)
-    }
-}
-
 // MARK: - Predefined Themes
 
 /// Classic green phosphor terminal theme (P1 phosphor).

@@ -201,31 +201,6 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - View Extension
-
-extension View {
-    /// Sets the appearance for this view and its descendants.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// ContentView()
-    ///     .appearance(.rounded)
-    ///
-    /// // Local override
-    /// Panel("ASCII Style") {
-    ///     content()
-    /// }
-    /// .appearance(.ascii)
-    /// ```
-    ///
-    /// - Parameter appearance: The appearance to apply.
-    /// - Returns: A view with the appearance applied.
-    public func appearance(_ appearance: Appearance) -> some View {
-        environment(\.appearance, appearance)
-    }
-}
-
 // MARK: - Appearance Manager
 
 /// Manages appearance cycling for the application.
