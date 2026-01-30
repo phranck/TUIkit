@@ -174,12 +174,19 @@ public final class PreferenceStorage: @unchecked Sendable {
         callbacks[keyId]?.append(wrappedCallback)
     }
 
-    /// Clears all callbacks.
-    public func clearCallbacks() {
+    /// Prepares preference storage for a new render pass.
+    ///
+    /// Clears all accumulated callbacks and resets the value stack
+    /// to a single empty context. Called at the start of each frame
+    /// by ``RenderLoop/render()`` to prevent callback accumulation.
+    public func beginRenderPass() {
         callbacks.removeAll()
+        stack = [PreferenceValues()]
     }
 
     /// Resets all preference state.
+    ///
+    /// Called once during app shutdown by ``TUIContext/reset()``.
     public func reset() {
         stack = [PreferenceValues()]
         callbacks.removeAll()
