@@ -405,8 +405,19 @@ extension EnvironmentValues {
 // MARK: - Signal Handler Flag
 
 /// Flag set by the SIGWINCH signal handler to request a re-render.
-/// Must be an atomic type safe for signal context.
+///
+/// Marked `nonisolated(unsafe)` because it is written from a signal handler
+/// and read from the main loop. A single-word Bool write/read is practically
+/// atomic on arm64/x86_64. Using `Atomic<Bool>` from the `Synchronization`
+/// module would be cleaner but requires macOS 15+.
 private nonisolated(unsafe) var needsRerender = false
+
+/// Flag set by the SIGINT signal handler to request a graceful shutdown.
+///
+/// The actual cleanup (disabling raw mode, restoring cursor, exiting
+/// alternate screen) happens in the main loop — signal handlers must
+/// not call non-async-signal-safe functions like `write()` or `fflush()`.
+private nonisolated(unsafe) var needsShutdown = false
 
 // MARK: - App Runner
 
@@ -459,6 +470,12 @@ internal final class AppRunner<A: App> {
 
         // Main loop
         while isRunning {
+            // Check for graceful shutdown request (from SIGINT handler)
+            if needsShutdown {
+                isRunning = false
+                break
+            }
+
             // Check if terminal was resized or state changed
             if needsRerender || AppState.shared.needsRender {
                 needsRerender = false
@@ -629,12 +646,11 @@ internal final class AppRunner<A: App> {
     }
 
     private func setupSignalHandlers() {
-        // Catch SIGINT (Ctrl+C)
+        // Catch SIGINT (Ctrl+C) — set a flag and let the main loop
+        // handle cleanup. Signal handlers must only use async-signal-safe
+        // operations; writing ANSI escapes or calling fflush() is NOT safe.
         signal(SIGINT) { _ in
-            Terminal.shared.disableRawMode()
-            Terminal.shared.showCursor()
-            Terminal.shared.exitAlternateScreen()
-            exit(0)
+            needsShutdown = true
         }
 
         // Catch SIGWINCH (terminal size change) — sets a flag
