@@ -238,9 +238,9 @@ extension Button: Renderable {
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
         // In block appearance, add buttonBackground to button
-        let isBlockAppearance = context.environment.appearance.id == .block
+        let isBlockAppearance = context.environment.appearance.rawId == .block
         if isBlockAppearance && textStyle.backgroundColor == nil {
-            textStyle.backgroundColor = context.environment.theme.buttonBackground
+            textStyle.backgroundColor = context.environment.palette.buttonBackground
         }
 
         let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
