@@ -5,6 +5,7 @@ A declarative, SwiftUI-like framework for building Terminal User Interfaces in S
 @Metadata {
     @DisplayName("TUIkit")
     @PageImage(purpose: icon, source: "tuikit-logo", alt: "TUIkit Logo")
+    @PageImage(purpose: card, source: "tuikit-logo", alt: "TUIkit Logo")
 }
 
 ## Overview
