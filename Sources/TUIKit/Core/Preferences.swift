@@ -261,5 +261,6 @@ extension OnPreferenceChangeModifier: Renderable {
 
 /// A preference key for the navigation title.
 public struct NavigationTitleKey: PreferenceKey {
+    /// The default navigation title (empty string).
     public static let defaultValue: String = ""
 }

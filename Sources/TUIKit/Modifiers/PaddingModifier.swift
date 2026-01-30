@@ -52,8 +52,12 @@ public struct EdgeInsets: Sendable, Equatable {
 
 /// The edges of a view.
 public struct Edge: OptionSet, Sendable {
+    /// The raw bitmask value for this edge set.
     public let rawValue: UInt8
 
+    /// Creates an edge set from a raw bitmask value.
+    ///
+    /// - Parameter rawValue: The bitmask value.
     public init(rawValue: UInt8) {
         self.rawValue = rawValue
     }
