@@ -155,7 +155,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter items: The user items to display.
     public func setItems(_ items: [any StatusBarItemProtocol]) {
         userGlobalItems = items
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 
     /// Sets the global user items using a builder.
@@ -165,7 +165,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter builder: A closure that returns items.
     public func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
         userGlobalItems = builder()
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 
     /// Sets the global user items without triggering a re-render.
@@ -201,7 +201,7 @@ public final class StatusBarState: @unchecked Sendable {
     public func push(context: String, items: [any StatusBarItemProtocol]) {
         userContextStack.removeAll { $0.context == context }
         userContextStack.append((context, items))
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 
     /// Pushes a new user context without triggering a re-render.
@@ -234,7 +234,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter context: The context identifier to remove.
     public func pop(context: String) {
         userContextStack.removeAll { $0.context == context }
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 
     /// Clears all user contexts (keeps global user items and system items).
@@ -242,7 +242,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Triggers a re-render.
     public func clearContexts() {
         userContextStack.removeAll()
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 
     /// Clears all user items (global and contexts).

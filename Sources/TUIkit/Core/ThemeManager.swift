@@ -62,7 +62,7 @@ public protocol Cyclable: Sendable {
 ///
 /// On every change the manager writes the current item into
 /// `EnvironmentStorage.shared` via the closure provided at init,
-/// then triggers a re-render through `AppState.shared.setNeedsRender()`.
+/// then triggers a re-render through `AppState.active.setNeedsRender()`.
 public final class ThemeManager: @unchecked Sendable {
     /// The current item index.
     private var currentIndex: Int = 0
@@ -138,7 +138,7 @@ public final class ThemeManager: @unchecked Sendable {
     /// Applies the current item to the environment and triggers a re-render.
     private func applyCurrentItem() {
         applyToEnvironment(current)
-        AppState.shared.setNeedsRender()
+        AppState.active.setNeedsRender()
     }
 }
 
