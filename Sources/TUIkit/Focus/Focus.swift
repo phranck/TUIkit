@@ -269,31 +269,40 @@ extension EnvironmentValues {
 
 /// Tracks focus state for a specific element.
 ///
-/// This is a lightweight wrapper that can be embedded in views
-/// to track whether they are focused. It accesses the FocusManager
-/// via the Environment system.
+/// `FocusState` is a lightweight wrapper around a ``FocusManager`` that
+/// provides a simple focused/unfocused API for a single element.
+///
+/// Create a `FocusState` with a reference to the focus manager
+/// (typically obtained from `context.environment.focusManager`):
+///
+/// ```swift
+/// let focus = FocusState(focusManager: context.environment.focusManager)
+/// if focus.isFocused { /* render focused style */ }
+/// ```
 public class FocusState {
     /// The focus ID.
     public let id: String
 
-    /// Creates a focus state with the given ID.
+    /// The focus manager that tracks focus state.
+    private let focusManager: FocusManager
+
+    /// Creates a focus state with the given ID and focus manager.
     ///
-    /// - Parameter id: The unique focus ID.
-    public init(id: String = UUID().uuidString) {
+    /// - Parameters:
+    ///   - id: The unique focus ID. Defaults to a new UUID.
+    ///   - focusManager: The focus manager to query and mutate.
+    public init(id: String = UUID().uuidString, focusManager: FocusManager) {
         self.id = id
+        self.focusManager = focusManager
     }
 
     /// Whether this element is currently focused.
-    ///
-    /// Reads from the current environment's focus manager.
     public var isFocused: Bool {
-        EnvironmentStorage.active.environment.focusManager.isFocused(id: id)
+        focusManager.isFocused(id: id)
     }
 
     /// Requests focus for this element.
-    ///
-    /// Uses the current environment's focus manager.
     public func requestFocus() {
-        EnvironmentStorage.active.environment.focusManager.focus(id: id)
+        focusManager.focus(id: id)
     }
 }
