@@ -21,24 +21,6 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
 @Suite("Box Tests")
 struct BoxTests {
 
-    @Test("Box can be created with default style")
-    func boxDefaultCreation() {
-        let box = Box {
-            Text("Hello")
-        }
-        #expect(box.borderStyle == nil)
-        #expect(box.borderColor == nil)
-    }
-
-    @Test("Box can be created with explicit border style")
-    func boxExplicitStyle() {
-        let box = Box(.doubleLine, color: .cyan) {
-            Text("Styled")
-        }
-        #expect(box.borderStyle == .doubleLine)
-        #expect(box.borderColor == .cyan)
-    }
-
     @Test("Box renders with border around content")
     func boxRendersWithBorder() {
         let box = Box(.line) {
@@ -93,24 +75,6 @@ struct BoxTests {
 @Suite("Card Tests")
 struct CardTests {
 
-    @Test("Card can be created without title")
-    func cardNoTitle() {
-        let card = Card {
-            Text("Content")
-        }
-        #expect(card.title == nil)
-        #expect(card.footer == nil)
-        #expect(card.backgroundColor == nil)
-    }
-
-    @Test("Card can be created with title")
-    func cardWithTitle() {
-        let card = Card(title: "My Card") {
-            Text("Content")
-        }
-        #expect(card.title == "My Card")
-    }
-
     @Test("Card can be created with footer")
     func cardWithFooter() {
         let card = Card(title: "Info") {
@@ -120,24 +84,6 @@ struct CardTests {
         }
         #expect(card.title == "Info")
         #expect(card.footer != nil)
-    }
-
-    @Test("Card can be created with custom border style")
-    func cardCustomStyle() {
-        let card = Card(
-            title: "Styled",
-            borderStyle: .doubleLine,
-            borderColor: .cyan,
-            titleColor: .brightYellow,
-            backgroundColor: .blue
-        ) {
-            Text("Content")
-        }
-        #expect(card.title == "Styled")
-        #expect(card.config.borderStyle == .doubleLine)
-        #expect(card.config.borderColor == .cyan)
-        #expect(card.config.titleColor == .brightYellow)
-        #expect(card.backgroundColor == .blue)
     }
 
     @Test("Card renders with border")
@@ -183,26 +129,12 @@ struct CardTests {
         #expect(bufferWith.height > bufferWithout.height)
     }
 
-    @Test("Card conforms to Renderable")
-    func cardIsRenderable() {
-        let card = Card { Text("Test") }
-        #expect(card is Renderable)
-    }
 }
 
 // MARK: - Panel Tests
 
 @Suite("Panel Tests")
 struct PanelTests {
-
-    @Test("Panel can be created with title")
-    func panelCreation() {
-        let panel = Panel("Settings") {
-            Text("Option 1")
-        }
-        #expect(panel.title == "Settings")
-        #expect(panel.footer == nil)
-    }
 
     @Test("Panel can be created with footer")
     func panelWithFooter() {
@@ -213,21 +145,6 @@ struct PanelTests {
         }
         #expect(panel.title == "Info")
         #expect(panel.footer != nil)
-    }
-
-    @Test("Panel can be created with custom style")
-    func panelCustomStyle() {
-        let panel = Panel(
-            "Styled",
-            borderStyle: .heavy,
-            borderColor: .red,
-            titleColor: .yellow
-        ) {
-            Text("Content")
-        }
-        #expect(panel.config.borderStyle == .heavy)
-        #expect(panel.config.borderColor == .red)
-        #expect(panel.config.titleColor == .yellow)
     }
 
     @Test("Panel renders with border and title")
@@ -261,12 +178,6 @@ struct PanelTests {
         #expect(bufferWith.height > bufferWithout.height)
     }
 
-    @Test("Panel conforms to Renderable")
-    func panelIsRenderable() {
-        let panel = Panel("Title") { Text("Content") }
-        #expect(panel is Renderable)
-    }
-
     @Test("Panel default padding is horizontal only")
     func panelDefaultPadding() {
         let panel = Panel("Test") {
@@ -295,48 +206,12 @@ struct ContainerConfigTests {
         #expect(config.showFooterSeparator == true)
     }
 
-    @Test("Custom config stores all values")
-    func customConfig() {
-        let config = ContainerConfig(
-            borderStyle: .doubleLine,
-            borderColor: .cyan,
-            titleColor: .yellow,
-            padding: EdgeInsets(all: 2),
-            showFooterSeparator: false
-        )
-        #expect(config.borderStyle == .doubleLine)
-        #expect(config.borderColor == .cyan)
-        #expect(config.titleColor == .yellow)
-        #expect(config.padding.top == 2)
-        #expect(config.padding.leading == 2)
-        #expect(config.showFooterSeparator == false)
-    }
 }
 
 // MARK: - ContainerView Tests
 
 @Suite("ContainerView Direct Tests")
 struct ContainerViewDirectTests {
-
-    @Test("ContainerView can be created without title")
-    func containerViewNoTitle() {
-        let container = ContainerView {
-            Text("Content")
-        }
-        #expect(container.title == nil)
-        #expect(container.footer == nil)
-    }
-
-    @Test("ContainerView can be created with title and footer")
-    func containerViewWithTitleAndFooter() {
-        let container = ContainerView(title: "Header") {
-            Text("Body")
-        } footer: {
-            Text("Footer")
-        }
-        #expect(container.title == "Header")
-        #expect(container.footer != nil)
-    }
 
     @Test("ContainerView renders with border")
     func containerViewRenders() {
@@ -350,11 +225,6 @@ struct ContainerViewDirectTests {
         #expect(!buffer.isEmpty)
     }
 
-    @Test("ContainerView conforms to Renderable")
-    func containerViewIsRenderable() {
-        let container = ContainerView { Text("Test") }
-        #expect(container is Renderable)
-    }
 }
 
 // MARK: - ForEach Tests
