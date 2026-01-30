@@ -300,27 +300,13 @@ extension Button: Renderable {
         let innerWidth = buffer.width
         var result: [String] = []
 
-        // Border characters (optionally colored)
-        let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: color)
-
-        // Top border
-        let topLine = String(style.topLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.topRight)
-        result.append(ANSIRenderer.colorize(topLine, foreground: color))
-
-        // Content lines with side borders
+        result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: color))
         for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = vertical + paddedLine + ANSIRenderer.reset + vertical
-            result.append(borderedLine)
+            result.append(BorderRenderer.standardContentLine(
+                content: line, innerWidth: innerWidth, style: style, color: color
+            ))
         }
-
-        // Bottom border
-        let bottomLine = String(style.bottomLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.bottomRight)
-        result.append(ANSIRenderer.colorize(bottomLine, foreground: color))
+        result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: color))
 
         return FrameBuffer(lines: result)
     }

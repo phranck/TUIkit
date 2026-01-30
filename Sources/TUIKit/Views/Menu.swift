@@ -340,85 +340,53 @@ extension Menu: Renderable {
         var result: [String] = []
         
         if isBlockStyle {
-            // Block style: use half-blocks with special coloring
-            // Header/Footer BG = darker (containerHeaderBackground)
-            // Body BG = lighter (containerBackground)
-            // App BG = transparent (no background set)
             let headerFooterBg = Color.theme.containerHeaderBackground
             let bodyBg = Color.theme.containerBackground
-            
-            // Determine if we have a header (divider present)
             let hasHeader = dividerLineIndex != nil
             
-            // Top border: ▄▄▄
-            // FG = header background, BG = App background (transparent/none)
-            let topLine = String(repeating: "▄", count: innerWidth + 2)
-            if hasHeader {
-                result.append(ANSIRenderer.colorize(topLine, foreground: headerFooterBg))
-            } else {
-                // No header: use body background for top
-                result.append(ANSIRenderer.colorize(topLine, foreground: bodyBg))
-            }
+            // Top border
+            result.append(BorderRenderer.blockTopBorder(
+                innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
+            ))
             
-            // Content lines with side borders
+            // Content lines with section-aware coloring
             for (index, line) in buffer.lines.enumerated() {
                 let isHeaderLine = hasHeader && dividerLineIndex.map({ index < $0 }) ?? false
                 let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
                 
                 if isDividerLine {
-                    // Header/Body separator: ▀▀▀
-                    // FG = header BG, BG = body BG (creates smooth transition)
-                    let dividerLine = String(repeating: "▀", count: innerWidth + 2)
-                    result.append(ANSIRenderer.colorize(dividerLine, foreground: headerFooterBg, background: bodyBg))
+                    result.append(BorderRenderer.blockSeparator(
+                        innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
+                    ))
                 } else if isHeaderLine {
-                    // Header line: █ borders and content with header background
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
-                    let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: headerFooterBg)
-                    result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
+                    result.append(BorderRenderer.blockContentLine(
+                        content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
+                    ))
                 } else {
-                    // Body line: █ borders with body background
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = ANSIRenderer.colorize("█", foreground: bodyBg)
-                    let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
-                    result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
+                    result.append(BorderRenderer.blockContentLine(
+                        content: line, innerWidth: innerWidth, sectionColor: bodyBg
+                    ))
                 }
             }
             
-            // Bottom border: ▀▀▀
-            // FG = body background, BG = App background (transparent)
-            let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-            result.append(ANSIRenderer.colorize(bottomLine, foreground: bodyBg))
+            // Bottom border
+            result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
         } else {
-            // Standard style: regular box-drawing characters
             let borderForeground = color ?? Color.theme.border
-            let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
 
-            // Top border
-            let topLine = String(style.topLeft)
-                + String(repeating: style.horizontal, count: innerWidth)
-                + String(style.topRight)
-            result.append(ANSIRenderer.colorize(topLine, foreground: borderForeground))
+            result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 
-            // Content lines with side borders
             for (index, line) in buffer.lines.enumerated() {
                 if let dividerIndex = dividerLineIndex, index == dividerIndex {
-                    // Render horizontal divider with T-junctions
-                    let dividerLine = String(style.leftT)
-                        + String(repeating: style.horizontal, count: innerWidth)
-                        + String(style.rightT)
-                    result.append(ANSIRenderer.colorize(dividerLine, foreground: borderForeground))
+                    result.append(BorderRenderer.standardDivider(style: style, innerWidth: innerWidth, color: borderForeground))
                 } else {
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    result.append(vertical + paddedLine + ANSIRenderer.reset + vertical)
+                    result.append(BorderRenderer.standardContentLine(
+                        content: line, innerWidth: innerWidth, style: style, color: borderForeground
+                    ))
                 }
             }
 
-            // Bottom border
-            let bottomLine = String(style.bottomLeft)
-                + String(repeating: style.horizontal, count: innerWidth)
-                + String(style.bottomRight)
-            result.append(ANSIRenderer.colorize(bottomLine, foreground: borderForeground))
+            result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderForeground))
         }
 
         return FrameBuffer(lines: result)
