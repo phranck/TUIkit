@@ -8,9 +8,9 @@
 import Foundation
 
 #if canImport(Glibc)
-    import Glibc
+    @preconcurrency import Glibc
 #elseif canImport(Musl)
-    import Musl
+    @preconcurrency import Musl
 #elseif canImport(Darwin)
     import Darwin
 #endif
@@ -144,23 +144,12 @@ public final class Terminal: @unchecked Sendable {
 
     // MARK: - Output
 
-    /// Flushes the standard output stream.
-    ///
-    /// On Linux (Glibc/Musl), `stdout` is a shared mutable global.
-    /// Swift 6 strict concurrency flags direct access as unsafe.
-    /// `nonisolated(unsafe)` suppresses the diagnostic — this is safe
-    /// because `fflush` is called single-threaded from the main loop.
-    private func flushStdout() {
-        nonisolated(unsafe) let stdoutHandle = stdout
-        fflush(stdoutHandle)
-    }
-
     /// Writes a string to the terminal.
     ///
     /// - Parameter string: The string to write.
     public func write(_ string: String) {
         print(string, terminator: "")
-        flushStdout()
+        fflush(stdout)
     }
 
     /// Writes a string and moves to a new line.
@@ -168,7 +157,7 @@ public final class Terminal: @unchecked Sendable {
     /// - Parameter string: The string to write.
     public func writeLine(_ string: String = "") {
         print(string)
-        flushStdout()
+        fflush(stdout)
     }
 
     /// Clears the screen and moves cursor to position (1,1).
