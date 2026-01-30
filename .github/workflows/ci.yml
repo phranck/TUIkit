@@ -1,7 +1,9 @@
-name: Build and Deploy DocC
+name: CI
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -15,8 +17,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  lint:
+    name: SwiftLint
     runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint
+
+  build-docs:
+    name: Build DocC
+    needs: lint
+    runs-on: macos-15
+    # Only build and deploy docs on push to main (not on PRs)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,7 +100,8 @@ jobs:
           path: docs-output
 
   deploy:
-    needs: build
+    name: Deploy to GitHub Pages
+    needs: build-docs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
