@@ -27,11 +27,11 @@ struct StatePropertyWrapperTests {
 
     @Test("State mutation triggers render")
     func stateTriggerRender() {
-        AppState.shared.didRender()
+        AppState.active.didRender()
         let state = State(wrappedValue: "initial")
         state.wrappedValue = "changed"
-        #expect(AppState.shared.needsRender == true)
-        AppState.shared.didRender()
+        #expect(AppState.active.needsRender == true)
+        AppState.active.didRender()
     }
 
     @Test("State projectedValue returns a Binding")
@@ -61,7 +61,7 @@ struct StatePropertyWrapperTests {
         let state = State(wrappedValue: false)
         state.wrappedValue = true
         #expect(state.wrappedValue == true)
-        AppState.shared.didRender()
+        AppState.active.didRender()
     }
 
     @Test("State with optional type")
@@ -70,6 +70,6 @@ struct StatePropertyWrapperTests {
         #expect(state.wrappedValue == nil)
         state.wrappedValue = "now set"
         #expect(state.wrappedValue == "now set")
-        AppState.shared.didRender()
+        AppState.active.didRender()
     }
 }
