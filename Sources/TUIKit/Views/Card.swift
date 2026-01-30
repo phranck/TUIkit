@@ -52,23 +52,11 @@ public struct Card<Content: View, Footer: View>: View {
     /// The footer content (optional).
     public let footer: Footer?
 
-    /// The border style (nil uses appearance default).
-    public let borderStyle: BorderStyle?
-
-    /// The border color.
-    public let borderColor: Color?
-    
-    /// The title color.
-    public let titleColor: Color?
+    /// The shared visual configuration.
+    public let config: ContainerConfig
 
     /// The background color (nil for transparent).
     public let backgroundColor: Color?
-
-    /// The padding inside the card.
-    public let padding: EdgeInsets
-    
-    /// Whether to show a separator before the footer.
-    public let showFooterSeparator: Bool
 
     /// Creates a card with all options including footer.
     ///
@@ -96,12 +84,14 @@ public struct Card<Content: View, Footer: View>: View {
         self.title = title
         self.content = content()
         self.footer = footer()
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: padding,
+            showFooterSeparator: showFooterSeparator
+        )
         self.backgroundColor = backgroundColor
-        self.padding = padding
-        self.showFooterSeparator = showFooterSeparator
     }
 
     public var body: Never {
@@ -113,13 +103,6 @@ public struct Card<Content: View, Footer: View>: View {
 
 extension Card: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let containerStyle = ContainerStyle(
-            showHeaderSeparator: true,
-            showFooterSeparator: showFooterSeparator,
-            borderStyle: borderStyle,
-            borderColor: borderColor
-        )
-        
         // Wrap content with background if specified
         let bodyContent: AnyView
         if let bgColor = backgroundColor {
@@ -127,30 +110,14 @@ extension Card: Renderable {
         } else {
             bodyContent = AnyView(content)
         }
-        
-        if let footerView = footer {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: containerStyle,
-                padding: padding
-            ) {
-                bodyContent
-            } footer: {
-                footerView
-            }
-            return container.renderToBuffer(context: context)
-        } else {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: containerStyle,
-                padding: padding
-            ) {
-                bodyContent
-            }
-            return container.renderToBuffer(context: context)
-        }
+
+        return renderContainer(
+            title: title,
+            config: config,
+            content: bodyContent,
+            footer: footer,
+            context: context
+        )
     }
 }
 
@@ -179,12 +146,14 @@ extension Card where Footer == EmptyView {
         self.title = title
         self.content = content()
         self.footer = nil
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: padding,
+            showFooterSeparator: false
+        )
         self.backgroundColor = backgroundColor
-        self.padding = padding
-        self.showFooterSeparator = false
     }
 }
 
@@ -211,11 +180,13 @@ extension Card where Footer == EmptyView {
         self.title = nil
         self.content = content()
         self.footer = nil
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = nil
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: nil,
+            padding: padding,
+            showFooterSeparator: false
+        )
         self.backgroundColor = backgroundColor
-        self.padding = padding
-        self.showFooterSeparator = false
     }
 }
