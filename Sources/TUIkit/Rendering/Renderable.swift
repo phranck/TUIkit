@@ -91,7 +91,7 @@ public struct RenderContext {
     ///   - environment: The environment values (defaults to empty).
     ///   - tuiContext: The TUI context (defaults to a fresh instance).
     public init(
-        terminal: Terminal = .shared,
+        terminal: Terminal = Terminal(),
         availableWidth: Int? = nil,
         availableHeight: Int? = nil,
         environment: EnvironmentValues = EnvironmentValues(),
