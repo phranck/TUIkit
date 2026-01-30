@@ -71,5 +71,3 @@ public struct ViewArray<Element: View>: View {
         fatalError("ViewArray renders its children directly")
     }
 }
-
-

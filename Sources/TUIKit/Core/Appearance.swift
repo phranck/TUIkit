@@ -55,10 +55,10 @@ public struct Appearance: Cyclable, Equatable {
 
     /// The type-safe identifier.
     public let rawId: ID
-    
+
     /// The border style used for all controls.
     public let borderStyle: BorderStyle
-    
+
     /// Creates a custom appearance.
     ///
     /// - Parameters:
@@ -68,14 +68,14 @@ public struct Appearance: Cyclable, Equatable {
         self.rawId = id
         self.borderStyle = borderStyle
     }
-    
+
     /// Human-readable name derived from ID (conforms to ``Cyclable``).
     public var name: String {
         rawId.rawValue.capitalized
     }
 
     /// Equatable conformance based on the type-safe ID.
-    public static func == (lhs: Appearance, rhs: Appearance) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.rawId == rhs.rawId && lhs.borderStyle == rhs.borderStyle
     }
 }
@@ -100,25 +100,25 @@ extension Appearance {
     /// ```
     public struct ID: RawRepresentable, Hashable, Sendable {
         public let rawValue: String
-        
+
         public init(rawValue: String) {
             self.rawValue = rawValue
         }
-        
+
         /// Single line borders (┌─┐).
-        public static let line = ID(rawValue: "line")
-        
+        public static let line = Self(rawValue: "line")
+
         /// Rounded corners (╭─╮).
-        public static let rounded = ID(rawValue: "rounded")
-        
+        public static let rounded = Self(rawValue: "rounded")
+
         /// Double-line borders (╔═╗).
-        public static let doubleLine = ID(rawValue: "doubleLine")
-        
+        public static let doubleLine = Self(rawValue: "doubleLine")
+
         /// Heavy/bold borders (┏━┓).
-        public static let heavy = ID(rawValue: "heavy")
-        
+        public static let heavy = Self(rawValue: "heavy")
+
         /// Block/solid borders (███).
-        public static let block = ID(rawValue: "block")
+        public static let block = Self(rawValue: "block")
     }
 }
 
@@ -129,27 +129,27 @@ extension Appearance {
     ///
     /// Uses `BorderStyle.line` with standard box-drawing characters.
     public static let line = Appearance(id: .line, borderStyle: .line)
-    
+
     /// Rounded corners (default).
     ///
     /// Uses `BorderStyle.rounded` with curved corner characters.
     public static let rounded = Appearance(id: .rounded, borderStyle: .rounded)
-    
+
     /// Double-line borders.
     ///
     /// Uses `BorderStyle.doubleLine` for a more prominent look.
     public static let doubleLine = Appearance(id: .doubleLine, borderStyle: .doubleLine)
-    
+
     /// Heavy/bold borders.
     ///
     /// Uses `BorderStyle.heavy` for bold, prominent borders.
     public static let heavy = Appearance(id: .heavy, borderStyle: .heavy)
-    
+
     /// Block/solid borders.
     ///
     /// Uses `BorderStyle.block` with solid block characters.
     public static let block = Appearance(id: .block, borderStyle: .block)
-    
+
     /// The default appearance (rounded).
     public static let `default`: Appearance = .rounded
 }
@@ -168,7 +168,7 @@ public struct AppearanceRegistry {
         .heavy,
         .block
     ]
-    
+
     /// Finds an appearance by ID.
     ///
     /// - Parameter id: The appearance ID to find.
@@ -213,7 +213,7 @@ extension EnvironmentValues {
 
 /// Environment key for the appearance manager.
 private struct AppearanceManagerKey: EnvironmentKey {
-    static let defaultValue: ThemeManager = ThemeManager(
+    static let defaultValue = ThemeManager(
         items: AppearanceRegistry.all,
         applyToEnvironment: { item in
             if let appearance = item as? Appearance {

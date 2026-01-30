@@ -1,0 +1,107 @@
+# SwiftLint Configuration for TUIKit
+
+# Only lint project sources (not build artifacts or dependencies)
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - .swiftpm
+
+# Rules
+disabled_rules:
+  # We use fatalError() intentionally in body properties for Renderable views
+  - fatal_error_message
+  # Nesting is acceptable for enums inside structs (e.g. Appearance.ID, GeneratedPalette.Hue)
+  - nesting
+  # BorderStyle.none follows SwiftUI convention (e.g. Font.Weight.none)
+  - discouraged_none_name
+
+opt_in_rules:
+  - closure_end_indentation
+  - closure_spacing
+  - collection_alignment
+  - comma_inheritance
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - enum_case_associated_values_count
+  - explicit_init
+  - first_where
+  - flatmap_over_map_reduce
+  - identical_operands
+  - implicitly_unwrapped_optional
+  - joined_default_parameter
+  - last_where
+  - legacy_multiple
+  - modifier_order
+  - operator_usage_whitespace
+  - prefer_self_in_static_references
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - return_value_from_void_function
+  - shorthand_optional_binding
+  - sorted_first_last
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+  - yoda_condition
+
+# Rule Configuration
+line_length:
+  warning: 140
+  error: 200
+  ignores_urls: true
+  ignores_comments: true
+
+file_length:
+  warning: 500
+  error: 1200
+  ignore_comment_only_lines: true
+
+type_body_length:
+  warning: 400
+  error: 600
+
+function_body_length:
+  warning: 80
+  error: 150
+
+function_parameter_count:
+  warning: 8
+  error: 12
+
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  max_length:
+    warning: 60
+    error: 80
+  excluded:
+    - id
+    - to
+
+large_tuple:
+  warning: 6
+  error: 12
+
+type_name:
+  min_length:
+    warning: 3
+    error: 1
+  max_length:
+    warning: 50
+    error: 60
+  excluded:
+    - ID

@@ -137,7 +137,7 @@ public enum ANSIRenderer {
             return ["48", "2", "\(red)", "\(green)", "\(blue)"]
         }
     }
-    
+
     /// Generates the ANSI escape sequence for a background color.
     ///
     /// Use this to set only the background color without other styles.
