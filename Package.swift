@@ -2,6 +2,16 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import Foundation
+
+// SwiftLint runs as a build plugin on local builds only.
+// Set DISABLE_SWIFTLINT=1 to skip it (used in CI where the
+// prebuild plugin cannot execute binary artifacts).
+let enableSwiftLint = ProcessInfo.processInfo.environment["DISABLE_SWIFTLINT"] == nil
+
+let swiftLintPlugin: [Target.PluginUsage] = enableSwiftLint
+    ? [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")]
+    : []
 
 let package = Package(
     name: "TUIKit",
@@ -27,16 +37,12 @@ let package = Package(
     targets: [
         .target(
             name: "TUIKit",
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
-            ]
+            plugins: swiftLintPlugin
         ),
         .executableTarget(
             name: "TUIKitExample",
             dependencies: ["TUIKit"],
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
-            ]
+            plugins: swiftLintPlugin
         ),
         .testTarget(
             name: "TUIKitTests",
