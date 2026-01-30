@@ -7,10 +7,8 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 
-# MkDocs generated files
-/site/
-
-# Keep docs/ for documentation source files
+# DocC generated output
+/docs-output/
 
 # Claude Code
 .claude/
