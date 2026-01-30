@@ -222,69 +222,46 @@ extension ContainerView: Renderable {
         var lines: [String] = []
         
         // Top border (with title if present)
-        let topLine: String
         if let titleText = title {
-            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
-            let leftPart = ANSIRenderer.colorize(
-                String(borderStyle.topLeft) + String(borderStyle.horizontal),
-                foreground: borderColor
-            )
-            let rightPartLength = max(0, innerWidth - 1 - titleText.count - 2)
-            let rightPart = ANSIRenderer.colorize(
-                String(repeating: borderStyle.horizontal, count: rightPartLength) + String(borderStyle.topRight),
-                foreground: borderColor
-            )
-            topLine = leftPart + titleStyled + rightPart
+            lines.append(BorderRenderer.standardTopBorder(
+                style: borderStyle, innerWidth: innerWidth, color: borderColor,
+                title: titleText, titleColor: titleColor ?? Color.theme.accent
+            ))
         } else {
-            topLine = ANSIRenderer.colorize(
-                String(borderStyle.topLeft)
-                    + String(repeating: borderStyle.horizontal, count: innerWidth)
-                    + String(borderStyle.topRight),
-                foreground: borderColor
-            )
+            lines.append(BorderRenderer.standardTopBorder(
+                style: borderStyle, innerWidth: innerWidth, color: borderColor
+            ))
         }
-        lines.append(topLine)
-        
-        // Vertical border characters
-        let leftBorder = ANSIRenderer.colorize(String(borderStyle.vertical), foreground: borderColor)
-        let rightBorder = ANSIRenderer.colorize(String(borderStyle.vertical), foreground: borderColor)
         
         // Body lines with theme background
         let bodyBg = context.environment.theme.containerBackground
         for line in bodyBuffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
-            lines.append(leftBorder + styledContent + ANSIRenderer.reset + rightBorder)
+            lines.append(BorderRenderer.standardContentLine(
+                content: line, innerWidth: innerWidth, style: borderStyle,
+                color: borderColor, backgroundColor: bodyBg
+            ))
         }
         
         // Footer section (if present)
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
-            // Footer separator
             if style.showFooterSeparator {
-                let separatorLine = ANSIRenderer.colorize(
-                    String(borderStyle.leftT)
-                        + String(repeating: borderStyle.horizontal, count: innerWidth)
-                        + String(borderStyle.rightT),
-                    foreground: borderColor
-                )
-                lines.append(separatorLine)
+                lines.append(BorderRenderer.standardDivider(
+                    style: borderStyle, innerWidth: innerWidth, color: borderColor
+                ))
             }
             
             // Footer lines (no background - footer has its own styling)
             for line in footerBuf.lines {
-                let paddedLine = line.padToVisibleWidth(innerWidth)
-                lines.append(leftBorder + paddedLine + ANSIRenderer.reset + rightBorder)
+                lines.append(BorderRenderer.standardContentLine(
+                    content: line, innerWidth: innerWidth, style: borderStyle, color: borderColor
+                ))
             }
         }
         
         // Bottom border
-        let bottomLine = ANSIRenderer.colorize(
-            String(borderStyle.bottomLeft)
-                + String(repeating: borderStyle.horizontal, count: innerWidth)
-                + String(borderStyle.bottomRight),
-            foreground: borderColor
-        )
-        lines.append(bottomLine)
+        lines.append(BorderRenderer.standardBottomBorder(
+            style: borderStyle, innerWidth: innerWidth, color: borderColor
+        ))
         
         return FrameBuffer(lines: lines)
     }
@@ -324,66 +301,51 @@ extension ContainerView: Renderable {
         let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
         
         // === TOP BORDER ===
-        // ▄▄▄: FG = header/body BG, BG = transparent (App BG shows through)
-        let topLine = String(repeating: "▄", count: innerWidth + 2)
-        if hasHeader {
-            lines.append(ANSIRenderer.colorize(topLine, foreground: headerFooterBg))
-        } else {
-            lines.append(ANSIRenderer.colorize(topLine, foreground: bodyBg))
-        }
+        lines.append(BorderRenderer.blockTopBorder(
+            innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
+        ))
         
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
-            // █ TITLE █: FG = header BG for █, content has header BG
             let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
-            let paddedTitle = titleStyled.padToVisibleWidth(innerWidth)
-            let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
-            let styledContent = ANSIRenderer.applyPersistentBackground(paddedTitle, color: headerFooterBg)
-            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
+            lines.append(BorderRenderer.blockContentLine(
+                content: titleStyled, innerWidth: innerWidth, sectionColor: headerFooterBg
+            ))
             
-            // Header/Body separator: ▀▀▀
-            // FG = header BG, BG = body BG (creates smooth transition)
             if style.showHeaderSeparator {
-                let sepLine = String(repeating: "▀", count: innerWidth + 2)
-                lines.append(ANSIRenderer.colorize(sepLine, foreground: headerFooterBg, background: bodyBg))
+                lines.append(BorderRenderer.blockSeparator(
+                    innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
+                ))
             }
         }
         
         // === BODY LINES ===
-        // █ Content █: FG = body BG for █, content has body BG
         for line in bodyBuffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let sideBorder = ANSIRenderer.colorize("█", foreground: bodyBg)
-            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
-            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
+            lines.append(BorderRenderer.blockContentLine(
+                content: line, innerWidth: innerWidth, sectionColor: bodyBg
+            ))
         }
         
         // === FOOTER SECTION (if present) ===
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
-            // Body/Footer separator: ▄▄▄
-            // FG = footer BG, BG = body BG (creates smooth transition)
             if style.showFooterSeparator {
-                let sepLine = String(repeating: "▄", count: innerWidth + 2)
-                lines.append(ANSIRenderer.colorize(sepLine, foreground: headerFooterBg, background: bodyBg))
+                lines.append(BorderRenderer.blockSeparator(
+                    innerWidth: innerWidth, character: "▄",
+                    foregroundColor: headerFooterBg, backgroundColor: bodyBg
+                ))
             }
             
-            // █ Footer █: FG = footer BG for █, content has footer BG
             for line in footerBuf.lines {
-                let paddedLine = line.padToVisibleWidth(innerWidth)
-                let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
-                let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: headerFooterBg)
-                lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
+                lines.append(BorderRenderer.blockContentLine(
+                    content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
+                ))
             }
         }
         
         // === BOTTOM BORDER ===
-        // ▀▀▀: FG = footer/body BG, BG = transparent (App BG shows through)
-        let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-        if hasFooter {
-            lines.append(ANSIRenderer.colorize(bottomLine, foreground: headerFooterBg))
-        } else {
-            lines.append(ANSIRenderer.colorize(bottomLine, foreground: bodyBg))
-        }
+        lines.append(BorderRenderer.blockBottomBorder(
+            innerWidth: innerWidth, color: hasFooter ? headerFooterBg : bodyBg
+        ))
         
         return FrameBuffer(lines: lines)
     }
