@@ -146,12 +146,13 @@ internal struct RenderLoop<A: App> {
     /// height differs from the main content area. Theme background is
     /// applied line-by-line with ANSI code injection.
     private func renderStatusBar(atRow row: Int) {
-        // Use theme colors for status bar (if not explicitly overridden)
+        // Use palette colors for status bar (if not explicitly overridden)
+        let palette = buildEnvironment().palette
         let highlightColor =
             statusBar.highlightColor == .cyan
-            ? Color.theme.statusBarHighlight
+            ? palette.statusBarHighlight
             : statusBar.highlightColor
-        let labelColor = statusBar.labelColor ?? Color.theme.statusBarForeground
+        let labelColor = statusBar.labelColor ?? palette.statusBarForeground
 
         let statusBarView = StatusBar(
             userItems: statusBar.currentUserItems,
