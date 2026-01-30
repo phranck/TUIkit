@@ -1,8 +1,9 @@
+[![CI](https://github.com/phranck/TUIKit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIKit/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/Tests-181_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![macOS](https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white)
 ![Linux](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
-![License](https://img.shields.io/badge/License-MIT-blue)
-![Tests](https://img.shields.io/badge/Tests-181_passing-brightgreen)
+![License](https://img.shields.io/badge/License-CC--BY--NC--SA%204.0-lightgrey?style=flat)
 
 ![Spotnik - Terminal based Sptoify Player](.github/assets/spotnik_1.png)
 
@@ -170,4 +171,4 @@ Tests/
 
 ## License
 
-MIT
+This repository has been published under the [CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
