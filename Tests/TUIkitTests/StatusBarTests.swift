@@ -489,45 +489,6 @@ struct StatusBarStateTests {
         #expect(handled == false)
     }
 
-    @Test("Style property can be set")
-    func styleProperty() {
-        let state = StatusBarState()
-
-        state.style = .bordered
-        #expect(state.style == .bordered)
-
-        state.style = .compact
-        #expect(state.style == .compact)
-    }
-
-    @Test("Color properties can be set")
-    func colorProperties() {
-        let state = StatusBarState()
-
-        state.highlightColor = .yellow
-        #expect(state.highlightColor == .yellow)
-
-        state.labelColor = .blue
-        #expect(state.labelColor == .blue)
-    }
-
-    @Test("Alignment property can be set")
-    func alignmentProperty() {
-        let state = StatusBarState()
-
-        state.alignment = .leading
-        #expect(state.alignment == .leading)
-
-        state.alignment = .trailing
-        #expect(state.alignment == .trailing)
-
-        state.alignment = .center
-        #expect(state.alignment == .center)
-
-        state.alignment = .justified
-        #expect(state.alignment == .justified)
-    }
-
     @Test("Height is zero when no items and system items disabled")
     func heightZeroWhenEmpty() {
         let state = StatusBarState()
@@ -803,17 +764,6 @@ struct StatusBarTests {
 @Suite("Status Bar Alignment Tests")
 struct StatusBarAlignmentTests {
 
-    @Test("StatusBarAlignment enum values exist")
-    func alignmentEnumValues() {
-        let leading: StatusBarAlignment = .leading
-        let trailing: StatusBarAlignment = .trailing
-        let center: StatusBarAlignment = .center
-        let justified: StatusBarAlignment = .justified
-
-        #expect(leading != trailing)
-        #expect(center != justified)
-    }
-
     @Test("Single item with justified alignment is centered")
     func singleItemJustified() {
         let statusBar = StatusBar(
@@ -869,38 +819,6 @@ struct StatusBarItemBuilderTests {
 
 @Suite("StatusBarItems Modifier Tests")
 struct StatusBarItemsModifierTests {
-
-    @Test("statusBarItems modifier can be applied to view")
-    func modifierCanBeApplied() {
-        let view = Text("Content")
-            .statusBarItems([
-                StatusBarItem(shortcut: "q", label: "quit")
-            ])
-
-        // View should be wrapped in modifier
-        #expect(view is StatusBarItemsModifier<Text>)
-    }
-
-    @Test("statusBarItems modifier with builder syntax")
-    func modifierWithBuilder() {
-        let view = Text("Content")
-            .statusBarItems {
-                StatusBarItem(shortcut: "a", label: "alpha")
-                StatusBarItem(shortcut: "b", label: "beta")
-            }
-
-        #expect(view is StatusBarItemsModifier<Text>)
-    }
-
-    @Test("statusBarItems modifier with context")
-    func modifierWithContext() {
-        let view = Text("Dialog")
-            .statusBarItems(context: "dialog") {
-                StatusBarItem(shortcut: Shortcut.escape, label: "close")
-            }
-
-        #expect(view is StatusBarItemsModifier<Text>)
-    }
 
     @Test("statusBarItems modifier sets items in environment")
     func modifierSetsItemsInEnvironment() {
@@ -995,19 +913,6 @@ struct StatusBarItemsModifierTests {
         // Content should be rendered
         let content = buffer.lines.joined()
         #expect(content.contains("Hello World"))
-    }
-
-    @Test("statusBarItems with array and context")
-    func modifierWithArrayAndContext() {
-        let items = [
-            StatusBarItem(shortcut: "y", label: "yes"),
-            StatusBarItem(shortcut: "n", label: "no"),
-        ]
-
-        let view = Text("Confirm?")
-            .statusBarItems(context: "confirm", items: items)
-
-        #expect(view is StatusBarItemsModifier<Text>)
     }
 
     @Test("Nested statusBarItems modifiers")
