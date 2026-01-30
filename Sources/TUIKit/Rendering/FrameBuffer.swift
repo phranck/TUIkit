@@ -65,7 +65,7 @@ public struct FrameBuffer {
     /// - Parameters:
     ///   - other: The buffer to append below.
     ///   - spacing: Number of empty lines between the two buffers.
-    public mutating func appendVertically(_ other: FrameBuffer, spacing: Int = 0) {
+    public mutating func appendVertically(_ other: Self, spacing: Int = 0) {
         if !lines.isEmpty && !other.isEmpty && spacing > 0 {
             lines.append(contentsOf: Array(repeating: "", count: spacing))
         }
@@ -77,7 +77,7 @@ public struct FrameBuffer {
     /// - Parameters:
     ///   - other: The buffer to append to the right.
     ///   - spacing: Number of space characters between the two buffers.
-    public mutating func appendHorizontally(_ other: FrameBuffer, spacing: Int = 0) {
+    public mutating func appendHorizontally(_ other: Self, spacing: Int = 0) {
         let maxHeight = max(height, other.height)
         let myWidth = width
         let spacer = String(repeating: " ", count: spacing)
@@ -100,7 +100,7 @@ public struct FrameBuffer {
     /// For simplicity, this just overlays line by line.
     ///
     /// - Parameter overlay: The buffer to overlay on top.
-    public mutating func overlay(_ overlay: FrameBuffer) {
+    public mutating func overlay(_ overlay: Self) {
         let maxHeight = max(height, overlay.height)
         var result: [String] = []
         for row in 0..<maxHeight {
@@ -124,7 +124,7 @@ public struct FrameBuffer {
     ///   - overlay: The buffer to composite on top.
     ///   - position: The (x, y) offset where the overlay should be placed.
     /// - Returns: A new buffer with the overlay composited.
-    public func composited(with overlay: FrameBuffer, at position: (x: Int, y: Int)) -> FrameBuffer {
+    public func composited(with overlay: Self, at position: (x: Int, y: Int)) -> Self {
         guard !overlay.isEmpty else { return self }
 
         let resultWidth = max(width, position.x + overlay.width)
@@ -158,7 +158,7 @@ public struct FrameBuffer {
             result.append(baseLine)
         }
 
-        return FrameBuffer(lines: result)
+        return Self(lines: result)
     }
 
     /// Inserts overlay text into base text at the specified column position.
@@ -206,12 +206,10 @@ public struct FrameBuffer {
     /// (the parent stack then decides the actual layout direction).
     ///
     /// - Parameter buffers: The buffers to stack vertically.
-    public init(verticallyStacking buffers: [FrameBuffer]) {
+    public init(verticallyStacking buffers: [Self]) {
         self.init()
         for buffer in buffers {
             appendVertically(buffer)
         }
     }
 }
-
-

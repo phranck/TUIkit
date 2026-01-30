@@ -59,16 +59,16 @@ public struct Edge: OptionSet, Sendable {
     }
 
     /// The top edge.
-    public static let top = Edge(rawValue: 1 << 0)
+    public static let top = Self(rawValue: 1 << 0)
 
     /// The leading (left) edge.
-    public static let leading = Edge(rawValue: 1 << 1)
+    public static let leading = Self(rawValue: 1 << 1)
 
     /// The bottom edge.
-    public static let bottom = Edge(rawValue: 1 << 2)
+    public static let bottom = Self(rawValue: 1 << 2)
 
     /// The trailing (right) edge.
-    public static let trailing = Edge(rawValue: 1 << 3)
+    public static let trailing = Self(rawValue: 1 << 3)
 
     /// All edges.
     public static let all: Edge = [.top, .leading, .bottom, .trailing]
@@ -84,7 +84,7 @@ public struct Edge: OptionSet, Sendable {
 public struct PaddingModifier: ViewModifier {
     /// The padding insets.
     public let insets: EdgeInsets
-    
+
     /// Creates a padding modifier.
     ///
     /// - Parameter insets: The padding insets.
@@ -101,7 +101,7 @@ public struct PaddingModifier: ViewModifier {
         // Calculate line width
         let lineWidth = buffer.width + insets.leading + insets.trailing
         let emptyLine = String(repeating: " ", count: lineWidth)
-        
+
         // Top padding (full lines)
         for _ in 0..<insets.top {
             result.append(emptyLine)
@@ -120,5 +120,3 @@ public struct PaddingModifier: ViewModifier {
         return FrameBuffer(lines: result)
     }
 }
-
-

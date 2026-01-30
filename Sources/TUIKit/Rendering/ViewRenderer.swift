@@ -145,17 +145,17 @@ extension VStack: Renderable {
         }
         return result
     }
-    
+
     /// Aligns a buffer horizontally within the given width.
     private func alignBuffer(_ buffer: FrameBuffer, toWidth width: Int, alignment: HorizontalAlignment) -> FrameBuffer {
         guard buffer.width < width else { return buffer }
-        
+
         var alignedLines: [String] = []
-        
+
         for line in buffer.lines {
             let lineWidth = line.strippedLength
             let linePadding = width - lineWidth
-            
+
             switch alignment {
             case .leading:
                 // Pad on right
@@ -170,7 +170,7 @@ extension VStack: Renderable {
                 alignedLines.append(String(repeating: " ", count: linePadding) + line)
             }
         }
-        
+
         return FrameBuffer(lines: alignedLines)
     }
 }
@@ -233,7 +233,7 @@ extension TupleView2: Renderable, ChildInfoProvider {
     func childInfos(context: RenderContext) -> [ChildInfo] {
         [
             makeChildInfo(for: value.0, context: context),
-            makeChildInfo(for: value.1, context: context),
+            makeChildInfo(for: value.1, context: context)
         ]
     }
 }
@@ -247,7 +247,7 @@ extension TupleView3: Renderable, ChildInfoProvider {
         [
             makeChildInfo(for: value.0, context: context),
             makeChildInfo(for: value.1, context: context),
-            makeChildInfo(for: value.2, context: context),
+            makeChildInfo(for: value.2, context: context)
         ]
     }
 }
@@ -262,7 +262,7 @@ extension TupleView4: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.0, context: context),
             makeChildInfo(for: value.1, context: context),
             makeChildInfo(for: value.2, context: context),
-            makeChildInfo(for: value.3, context: context),
+            makeChildInfo(for: value.3, context: context)
         ]
     }
 }
@@ -278,7 +278,7 @@ extension TupleView5: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.1, context: context),
             makeChildInfo(for: value.2, context: context),
             makeChildInfo(for: value.3, context: context),
-            makeChildInfo(for: value.4, context: context),
+            makeChildInfo(for: value.4, context: context)
         ]
     }
 }
@@ -295,7 +295,7 @@ extension TupleView6: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.2, context: context),
             makeChildInfo(for: value.3, context: context),
             makeChildInfo(for: value.4, context: context),
-            makeChildInfo(for: value.5, context: context),
+            makeChildInfo(for: value.5, context: context)
         ]
     }
 }
@@ -313,7 +313,7 @@ extension TupleView7: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.3, context: context),
             makeChildInfo(for: value.4, context: context),
             makeChildInfo(for: value.5, context: context),
-            makeChildInfo(for: value.6, context: context),
+            makeChildInfo(for: value.6, context: context)
         ]
     }
 }
@@ -332,7 +332,7 @@ extension TupleView8: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.4, context: context),
             makeChildInfo(for: value.5, context: context),
             makeChildInfo(for: value.6, context: context),
-            makeChildInfo(for: value.7, context: context),
+            makeChildInfo(for: value.7, context: context)
         ]
     }
 }
@@ -352,7 +352,7 @@ extension TupleView9: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.5, context: context),
             makeChildInfo(for: value.6, context: context),
             makeChildInfo(for: value.7, context: context),
-            makeChildInfo(for: value.8, context: context),
+            makeChildInfo(for: value.8, context: context)
         ]
     }
 }
@@ -373,7 +373,7 @@ extension TupleView10: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.6, context: context),
             makeChildInfo(for: value.7, context: context),
             makeChildInfo(for: value.8, context: context),
-            makeChildInfo(for: value.9, context: context),
+            makeChildInfo(for: value.9, context: context)
         ]
     }
 }

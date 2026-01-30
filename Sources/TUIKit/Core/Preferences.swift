@@ -84,7 +84,7 @@ public struct PreferenceValues: @unchecked Sendable {
     /// Merges another set of preference values into this one.
     ///
     /// - Parameter other: The other preference values to merge.
-    public mutating func merge(_ other: PreferenceValues) {
+    public mutating func merge(_ other: Self) {
         for (key, value) in other.storage {
             storage[key] = value
         }
@@ -246,8 +246,6 @@ extension OnPreferenceChangeModifier: Renderable {
     }
 }
 
-
-
 // MARK: - Common Preference Keys
 
 /// A preference key for the navigation title.
@@ -272,5 +270,3 @@ public struct AnchorPreferenceKey: PreferenceKey {
         value.merge(nextValue()) { _, new in new }
     }
 }
-
-

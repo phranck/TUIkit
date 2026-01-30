@@ -46,5 +46,3 @@ extension KeyPressModifier: Renderable {
         return TUIKit.renderToBuffer(content, context: context)
     }
 }
-
-

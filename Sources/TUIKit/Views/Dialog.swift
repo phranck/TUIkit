@@ -56,7 +56,7 @@ public struct Dialog<Content: View, Footer: View>: View {
 
     /// The dialog content.
     public let content: Content
-    
+
     /// The footer content (typically buttons).
     public let footer: Footer?
 

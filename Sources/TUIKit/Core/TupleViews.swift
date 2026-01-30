@@ -1,3 +1,4 @@
+// swiftlint:disable large_tuple
 //
 //  TupleViews.swift
 //  TUIKit
@@ -139,3 +140,4 @@ public struct TupleView10<V0: View, V1: View, V2: View, V3: View, V4: View, V5: 
         fatalError("TupleView10 renders its children directly")
     }
 }
+// swiftlint:enable large_tuple
