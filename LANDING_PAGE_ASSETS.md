@@ -17,23 +17,23 @@
 - **Aspect Ratio**: 16:9 (landscape)
 - **Recommended Size**: 1000×560px or larger (up to 2000px width for retina)
 - **Format**: PNG, JPG, or WebP (lossless recommended)
-- **Content**: Screenshot/demo of TUIKit in action
+- **Content**: Screenshot/demo of TUIkit in action
   - Terminal UI showing an interactive application
-  - Nice visualization of TUIKit components
+  - Nice visualization of TUIkit components
   - Colors: Green (#10b981), dark background (#030712)
   - Examples: Menu selection, modal dialogs, text input, etc.
 
 **HTML Location**: `docs/index.html` - Line ~555-591
 ```html
 <div class="hero-video">
-    <!-- Replace this SVG with: <img src="images/hero-demo.png" alt="TUIKit Demo"> -->
+    <!-- Replace this SVG with: <img src="images/hero-demo.png" alt="TUIkit Demo"> -->
     <svg>...</svg>
 </div>
 ```
 
 **Placeholder Preview**:
 - Terminal window with green border
-- Shows TUIKit menu example
+- Shows TUIkit menu example
 - Command: `$ swift run MyApp`
 - Interactive menu selection
 
@@ -48,8 +48,8 @@
 - **Aspect Ratio**: 16:9 or Square (1:1)
 - **Recommended Size**: 600×400px (or 600×600px)
 - **Format**: PNG, JPG, or WebP
-- **Content**: Professional screenshot of TUIKit features
-  - Shows real TUIKit app with actual components
+- **Content**: Professional screenshot of TUIkit features
+  - Shows real TUIkit app with actual components
   - Terminal UI showcase with multiple features
   - Examples of: Menu, Button, Text, Panel, Dialog, etc.
   - Color scheme: Green theme with different appearance styles
@@ -59,13 +59,13 @@
 **HTML Location**: `docs/index.html` - Line ~641-685
 ```html
 <div class="advanced-image">
-    <!-- Replace this SVG with: <img src="images/advanced-demo.png" alt="Advanced TUIKit Features"> -->
+    <!-- Replace this SVG with: <img src="images/advanced-demo.png" alt="Advanced TUIkit Features"> -->
     <svg>...</svg>
 </div>
 ```
 
 **Placeholder Preview**:
-- Advanced TUIKit Demo terminal window
+- Advanced TUIkit Demo terminal window
 - Two feature boxes: "Theme: Green Phosphor" + "Components"
 - Live example: Interactive menu with selection
 
@@ -157,7 +157,7 @@ Find this in `docs/index.html` around line 554:
 Replace with:
 ```html
 <div class="hero-video">
-    <img src="images/hero-demo.png" alt="TUIKit Demo Application" style="width: 100%; height: 100%; object-fit: cover; border-radius: 1rem;">
+    <img src="images/hero-demo.png" alt="TUIkit Demo Application" style="width: 100%; height: 100%; object-fit: cover; border-radius: 1rem;">
 </div>
 ```
 
@@ -172,7 +172,7 @@ Find this in `docs/index.html` around line 641:
 Replace with:
 ```html
 <div class="advanced-image">
-    <img src="images/advanced-demo.png" alt="Advanced TUIKit Features" style="width: 100%; height: 100%; object-fit: cover; border-radius: 1rem;">
+    <img src="images/advanced-demo.png" alt="Advanced TUIkit Features" style="width: 100%; height: 100%; object-fit: cover; border-radius: 1rem;">
 </div>
 ```
 
@@ -193,7 +193,7 @@ With:
 
 All current images are high-quality SVG placeholders that:
 - ✅ Match the dark theme and color scheme
-- ✅ Show relevant TUIKit UI examples
+- ✅ Show relevant TUIkit UI examples
 - ✅ Are vector-based (scale perfectly)
 - ✅ Look professional on their own
 - ✅ Are easy to replace
