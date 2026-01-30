@@ -17,24 +17,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: SwiftLint
-    runs-on: macos-15
+  # ── Lint, Build & Test on macOS and Linux ──────────────────────
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "macOS"
+            runner: macos-15
+            container: ""
+            install-swiftlint: brew install swiftlint
+          - name: "Linux"
+            runner: ubuntu-latest
+            container: swift:6.0
+            install-swiftlint: |
+              apt-get update && apt-get install -y curl unzip
+              SWIFTLINT_VERSION="0.58.2"
+              curl -fsSL "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/swiftlint_linux.zip" -o swiftlint.zip
+              unzip -o swiftlint.zip -d /usr/local/bin
+              chmod +x /usr/local/bin/swiftlint
+              rm swiftlint.zip
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install SwiftLint
-        run: brew install swiftlint
+        run: ${{ matrix.install-swiftlint }}
 
-      - name: Run SwiftLint
+      - name: Lint
         run: swiftlint
 
+      - name: Build
+        env:
+          DISABLE_SWIFTLINT: "1"
+        run: swift build
+
+      - name: Test
+        env:
+          DISABLE_SWIFTLINT: "1"
+        run: swift test
+
+  # ── DocC Documentation (macOS only, main branch only) ──────────
   build-docs:
     name: Build DocC
-    needs: lint
+    needs: build
     runs-on: macos-15
-    # Only build and deploy docs on push to main (not on PRs)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
@@ -99,6 +130,7 @@ jobs:
         with:
           path: docs-output
 
+  # ── Deploy to GitHub Pages ─────────────────────────────────────
   deploy:
     name: Deploy to GitHub Pages
     needs: build-docs

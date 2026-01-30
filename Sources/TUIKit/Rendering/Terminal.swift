@@ -7,10 +7,22 @@
 
 import Foundation
 
-#if os(Linux)
+#if canImport(Glibc)
     import Glibc
-#else
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Darwin)
     import Darwin
+#endif
+
+/// Platform-specific type for `termios` flag fields.
+///
+/// Darwin uses `UInt` (64-bit), Linux uses `tcflag_t` (`UInt32`).
+/// This typealias ensures flag bitmask operations compile on both.
+#if os(Linux)
+    private typealias TermFlag = UInt32
+#else
+    private typealias TermFlag = UInt
 #endif
 
 /// Represents the terminal and controls input and output.
@@ -57,7 +69,7 @@ public final class Terminal: @unchecked Sendable {
     public func getSize() -> (width: Int, height: Int) {
         var windowSize = winsize()
 
-        #if os(Linux)
+        #if canImport(Glibc) || canImport(Musl)
             let result = ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &windowSize)
         #else
             let result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &windowSize)
@@ -94,7 +106,7 @@ public final class Terminal: @unchecked Sendable {
         // ICANON: Canonical mode (line by line)
         // ISIG: Ctrl+C/Ctrl+Z signals
         // IEXTEN: Ctrl+V
-        raw.c_lflag &= ~(UInt(ECHO | ICANON | ISIG | IEXTEN))
+        raw.c_lflag &= ~TermFlag(ECHO | ICANON | ISIG | IEXTEN)
 
         // Disable:
         // IXON: Ctrl+S/Ctrl+Q software flow control
@@ -102,13 +114,13 @@ public final class Terminal: @unchecked Sendable {
         // BRKINT: Break signal
         // INPCK: Parity check
         // ISTRIP: Strip 8th bit
-        raw.c_iflag &= ~(UInt(IXON | ICRNL | BRKINT | INPCK | ISTRIP))
+        raw.c_iflag &= ~TermFlag(IXON | ICRNL | BRKINT | INPCK | ISTRIP)
 
         // Disable output processing
-        raw.c_oflag &= ~(UInt(OPOST))
+        raw.c_oflag &= ~TermFlag(OPOST)
 
         // Set character size to 8 bits
-        raw.c_cflag |= UInt(CS8)
+        raw.c_cflag |= TermFlag(CS8)
 
         // Set timeouts: VMIN=0, VTIME=1 (100ms timeout)
         // c_cc is a tuple in Swift, so we need to use withUnsafeMutablePointer
@@ -134,18 +146,34 @@ public final class Terminal: @unchecked Sendable {
 
     /// Writes a string to the terminal.
     ///
+    /// Uses the POSIX `write` syscall to bypass `stdout` entirely.
+    /// On Linux (Glibc), `stdout` is a shared mutable global that
+    /// Swift 6 strict concurrency rejects. Writing directly to
+    /// `STDOUT_FILENO` avoids the issue without `@preconcurrency`
+    /// or `nonisolated(unsafe)` workarounds.
+    ///
     /// - Parameter string: The string to write.
     public func write(_ string: String) {
-        print(string, terminator: "")
-        fflush(stdout)
+        string.utf8CString.withUnsafeBufferPointer { buffer in
+            // buffer includes null terminator — exclude it
+            let count = buffer.count - 1
+            guard count >= 1 else { return }
+            buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
+                var written = 0
+                while written < count {
+                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
+                    if result <= 0 { break }
+                    written += result
+                }
+            }
+        }
     }
 
     /// Writes a string and moves to a new line.
     ///
     /// - Parameter string: The string to write.
     public func writeLine(_ string: String = "") {
-        print(string)
-        fflush(stdout)
+        write(string + "\n")
     }
 
     /// Clears the screen and moves cursor to position (1,1).
