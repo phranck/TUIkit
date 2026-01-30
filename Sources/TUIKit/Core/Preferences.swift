@@ -96,6 +96,7 @@ public struct PreferenceValues: @unchecked Sendable {
 /// Thread-local storage for collecting preferences during rendering.
 public final class PreferenceStorage: @unchecked Sendable {
     /// The shared preference storage.
+    @available(*, deprecated, message: "Use TUIContext.preferences instead")
     public static let shared = PreferenceStorage()
 
     /// Stack of preference values for nested rendering.
@@ -104,7 +105,8 @@ public final class PreferenceStorage: @unchecked Sendable {
     /// Callbacks registered to receive preference changes.
     private var callbacks: [ObjectIdentifier: [(Any) -> Void]] = [:]
 
-    private init() {}
+    /// Creates a new preference storage.
+    public init() {}
 
     /// The current preference values.
     public var current: PreferenceValues {
@@ -202,7 +204,7 @@ public struct PreferenceModifier<Content: View, K: PreferenceKey>: View {
 extension PreferenceModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Set the preference value
-        PreferenceStorage.shared.setValue(value, forKey: K.self)
+        context.tuiContext.preferences.setValue(value, forKey: K.self)
 
         // Render content
         return TUIKit.renderToBuffer(content, context: context)
@@ -227,17 +229,19 @@ where K.Value: Equatable {
 
 extension OnPreferenceChangeModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let prefs = context.tuiContext.preferences
+
         // Register callback for preference changes
-        PreferenceStorage.shared.onPreferenceChange(K.self, callback: action)
+        prefs.onPreferenceChange(K.self, callback: action)
 
         // Push a new preference context
-        PreferenceStorage.shared.push()
+        prefs.push()
 
         // Render content
         let buffer = TUIKit.renderToBuffer(content, context: context)
 
         // Pop and get collected preferences
-        let preferences = PreferenceStorage.shared.pop()
+        let preferences = prefs.pop()
 
         // Trigger action with current value
         action(preferences[K.self])

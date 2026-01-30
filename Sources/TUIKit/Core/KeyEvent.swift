@@ -250,12 +250,14 @@ extension KeyEvent {
 /// Handlers are processed in reverse order (most recent first).
 public final class KeyEventDispatcher: @unchecked Sendable {
     /// The shared dispatcher instance.
+    @available(*, deprecated, message: "Use TUIContext.keyEventDispatcher instead")
     public static let shared = KeyEventDispatcher()
 
     /// Registered key handlers.
     private var handlers: [(KeyEvent) -> Bool] = []
 
-    private init() {}
+    /// Creates a new key event dispatcher.
+    public init() {}
 
     /// Registers a key handler.
     ///

@@ -5,6 +5,8 @@
 //  Event handling and lifecycle view modifiers: onKeyPress, onAppear, onDisappear, task, statusBarItems.
 //
 
+import Foundation
+
 // MARK: - Key Press
 
 extension View {
@@ -112,7 +114,7 @@ extension View {
     public func onAppear(perform action: @escaping () -> Void) -> some View {
         OnAppearModifier(
             content: self,
-            token: TokenGenerator.shared.next(),
+            token: UUID().uuidString,
             action: action
         )
     }
@@ -139,7 +141,7 @@ extension View {
     public func onDisappear(perform action: @escaping () -> Void) -> some View {
         OnDisappearModifier(
             content: self,
-            token: TokenGenerator.shared.next(),
+            token: UUID().uuidString,
             action: action
         )
     }
@@ -171,7 +173,7 @@ extension View {
     ) -> some View {
         TaskModifier(
             content: self,
-            token: TokenGenerator.shared.next(),
+            token: UUID().uuidString,
             task: action,
             priority: priority
         )
