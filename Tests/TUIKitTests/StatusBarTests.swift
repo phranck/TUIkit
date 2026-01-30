@@ -7,6 +7,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 // MARK: - Shortcut Constants Tests
@@ -266,17 +267,17 @@ struct StatusBarStateTests {
 
         state.setItems([
             StatusBarItem(shortcut: "s", label: "save"),
-            StatusBarItem(shortcut: "x", label: "extra")
+            StatusBarItem(shortcut: "x", label: "extra"),
         ])
 
         // User items (s, x) + system items (q, a, t) = 5 total
         #expect(state.currentItems.count == 5)
         #expect(state.hasItems == true)
-        #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
-        #expect(state.currentItems.contains { $0.shortcut == "a" }) // system appearance
-        #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
-        #expect(state.currentItems.contains { $0.shortcut == "s" }) // user save
-        #expect(state.currentItems.contains { $0.shortcut == "x" }) // user extra
+        #expect(state.currentItems.contains { $0.shortcut == "q" })  // system quit
+        #expect(state.currentItems.contains { $0.shortcut == "a" })  // system appearance
+        #expect(state.currentItems.contains { $0.shortcut == "t" })  // system theme
+        #expect(state.currentItems.contains { $0.shortcut == "s" })  // user save
+        #expect(state.currentItems.contains { $0.shortcut == "x" })  // user extra
     }
 
     @Test("Set global items with builder merges with system items")
@@ -300,16 +301,19 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "s", label: "save")
         ])
 
-        state.push(context: "dialog", items: [
-            StatusBarItem(shortcut: Shortcut.escape, label: "close"),
-            StatusBarItem(shortcut: Shortcut.enter, label: "confirm")
-        ])
+        state.push(
+            context: "dialog",
+            items: [
+                StatusBarItem(shortcut: Shortcut.escape, label: "close"),
+                StatusBarItem(shortcut: Shortcut.enter, label: "confirm"),
+            ]
+        )
 
         // Context items (escape, enter) + system items (q, a, t) = 5 total
         #expect(state.currentItems.count == 5)
-        #expect(state.currentItems.contains { $0.shortcut == "q" }) // system quit
-        #expect(state.currentItems.contains { $0.shortcut == "a" }) // system appearance
-        #expect(state.currentItems.contains { $0.shortcut == "t" }) // system theme
+        #expect(state.currentItems.contains { $0.shortcut == "q" })  // system quit
+        #expect(state.currentItems.contains { $0.shortcut == "a" })  // system appearance
+        #expect(state.currentItems.contains { $0.shortcut == "t" })  // system theme
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.escape })
         #expect(state.currentItems.contains { $0.shortcut == Shortcut.enter })
     }
@@ -338,9 +342,12 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "g", label: "global")
         ])
 
-        state.push(context: "temp", items: [
-            StatusBarItem(shortcut: "x", label: "temp")
-        ])
+        state.push(
+            context: "temp",
+            items: [
+                StatusBarItem(shortcut: "x", label: "temp")
+            ]
+        )
 
         state.pop(context: "temp")
 
@@ -357,13 +364,19 @@ struct StatusBarStateTests {
         let state = StatusBarState()
         state.showSystemItems = false  // Disable system items for cleaner test
 
-        state.push(context: "first", items: [
-            StatusBarItem(shortcut: "1", label: "first")
-        ])
+        state.push(
+            context: "first",
+            items: [
+                StatusBarItem(shortcut: "1", label: "first")
+            ]
+        )
 
-        state.push(context: "second", items: [
-            StatusBarItem(shortcut: "2", label: "second")
-        ])
+        state.push(
+            context: "second",
+            items: [
+                StatusBarItem(shortcut: "2", label: "second")
+            ]
+        )
 
         // Top of stack is shown (only user items)
         #expect(state.currentUserItems.count == 1)
@@ -378,13 +391,19 @@ struct StatusBarStateTests {
         let state = StatusBarState()
         state.showSystemItems = false  // Disable system items for cleaner test
 
-        state.push(context: "same", items: [
-            StatusBarItem(shortcut: "a", label: "original")
-        ])
+        state.push(
+            context: "same",
+            items: [
+                StatusBarItem(shortcut: "a", label: "original")
+            ]
+        )
 
-        state.push(context: "same", items: [
-            StatusBarItem(shortcut: "b", label: "replaced")
-        ])
+        state.push(
+            context: "same",
+            items: [
+                StatusBarItem(shortcut: "b", label: "replaced")
+            ]
+        )
 
         #expect(state.currentUserItems.count == 1)
         #expect(state.currentUserItems[0].label == "replaced")
@@ -399,9 +418,12 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "g", label: "global")
         ])
 
-        state.push(context: "ctx", items: [
-            StatusBarItem(shortcut: "c", label: "context")
-        ])
+        state.push(
+            context: "ctx",
+            items: [
+                StatusBarItem(shortcut: "c", label: "context")
+            ]
+        )
 
         state.clearContexts()
 
@@ -417,9 +439,12 @@ struct StatusBarStateTests {
             StatusBarItem(shortcut: "g", label: "global")
         ])
 
-        state.push(context: "ctx", items: [
-            StatusBarItem(shortcut: "c", label: "context")
-        ])
+        state.push(
+            context: "ctx",
+            items: [
+                StatusBarItem(shortcut: "c", label: "context")
+            ]
+        )
 
         state.clear()
 
@@ -543,7 +568,7 @@ struct StatusBarTests {
     func statusBarCreation() {
         let statusBar = StatusBar(items: [
             StatusBarItem(shortcut: "q", label: "quit"),
-            StatusBarItem(shortcut: "h", label: "help")
+            StatusBarItem(shortcut: "h", label: "help"),
         ])
 
         #expect(statusBar.userItems.count == 2)
@@ -598,9 +623,12 @@ struct StatusBarTests {
 
     @Test("StatusBar renders compact style")
     func rendersCompact() {
-        let statusBar = StatusBar(items: [
-            StatusBarItem(shortcut: "q", label: "quit")
-        ], style: .compact)
+        let statusBar = StatusBar(
+            items: [
+                StatusBarItem(shortcut: "q", label: "quit")
+            ],
+            style: .compact
+        )
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(statusBar, context: context)
@@ -613,9 +641,12 @@ struct StatusBarTests {
 
     @Test("StatusBar renders bordered style")
     func rendersBordered() {
-        let statusBar = StatusBar(items: [
-            StatusBarItem(shortcut: "h", label: "help")
-        ], style: .bordered)
+        let statusBar = StatusBar(
+            items: [
+                StatusBarItem(shortcut: "h", label: "help")
+            ],
+            style: .bordered
+        )
 
         // Use default appearance (rounded)
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
@@ -624,8 +655,10 @@ struct StatusBarTests {
         #expect(buffer.height == 3)
         // Should have border characters (appearance-based, default is rounded: ╭─╮)
         let allContent = buffer.lines.joined()
-        #expect(allContent.contains("╭") || allContent.contains("─") || allContent.contains("╮") ||
-                allContent.contains("│") || allContent.contains("╰") || allContent.contains("╯"))
+        #expect(
+            allContent.contains("╭") || allContent.contains("─") || allContent.contains("╮") || allContent.contains("│")
+                || allContent.contains("╰") || allContent.contains("╯")
+        )
     }
 
     @Test("Empty StatusBar returns empty buffer")
@@ -642,7 +675,7 @@ struct StatusBarTests {
     func multipleItemsWithSeparator() {
         let statusBar = StatusBar(items: [
             StatusBarItem(shortcut: "a", label: "alpha"),
-            StatusBarItem(shortcut: "b", label: "beta")
+            StatusBarItem(shortcut: "b", label: "beta"),
         ])
 
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
@@ -667,7 +700,7 @@ struct StatusBarTests {
         let statusBar = StatusBar(
             items: [
                 StatusBarItem(shortcut: "a", label: "alpha"),
-                StatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "b", label: "beta"),
             ],
             alignment: .leading
         )
@@ -688,7 +721,7 @@ struct StatusBarTests {
         let statusBar = StatusBar(
             items: [
                 StatusBarItem(shortcut: "a", label: "alpha"),
-                StatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "b", label: "beta"),
             ],
             alignment: .trailing
         )
@@ -707,7 +740,7 @@ struct StatusBarTests {
         let statusBar = StatusBar(
             items: [
                 StatusBarItem(shortcut: "a", label: "alpha"),
-                StatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "b", label: "beta"),
             ],
             alignment: .center
         )
@@ -727,7 +760,7 @@ struct StatusBarTests {
             items: [
                 StatusBarItem(shortcut: "a", label: "first"),
                 StatusBarItem(shortcut: "b", label: "second"),
-                StatusBarItem(shortcut: "c", label: "third")
+                StatusBarItem(shortcut: "c", label: "third"),
             ],
             alignment: .justified
         )
@@ -749,7 +782,7 @@ struct StatusBarTests {
         let statusBar = StatusBar(
             items: [
                 StatusBarItem(shortcut: "a", label: "alpha"),
-                StatusBarItem(shortcut: "b", label: "beta")
+                StatusBarItem(shortcut: "b", label: "beta"),
             ],
             style: .bordered,
             alignment: .center
@@ -968,7 +1001,7 @@ struct StatusBarItemsModifierTests {
     func modifierWithArrayAndContext() {
         let items = [
             StatusBarItem(shortcut: "y", label: "yes"),
-            StatusBarItem(shortcut: "n", label: "no")
+            StatusBarItem(shortcut: "n", label: "no"),
         ]
 
         let view = Text("Confirm?")
@@ -1096,7 +1129,7 @@ struct SystemStatusBarItemsTests {
         state.setItems([
             StatusBarItem(shortcut: "l", label: "late", order: .late),
             StatusBarItem(shortcut: "e", label: "early", order: .early),
-            StatusBarItem(shortcut: "d", label: "default", order: .default)
+            StatusBarItem(shortcut: "d", label: "default", order: .default),
         ])
 
         let items = state.currentItems

@@ -157,9 +157,9 @@ public struct BorderStyle: Sendable, Equatable {
         topRight: "▄",
         bottomLeft: "▀",
         bottomRight: "▀",
-        horizontal: "▄",       // Top edge uses lower half
-        vertical: "█",         // Sides use full block
-        leftT: "▀",            // Header/Body separator (upper half)
+        horizontal: "▄",  // Top edge uses lower half
+        vertical: "█",  // Sides use full block
+        leftT: "▀",  // Header/Body separator (upper half)
         rightT: "▀"
     )
 

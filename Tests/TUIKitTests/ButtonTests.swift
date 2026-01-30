@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 // MARK: - Test Helpers
@@ -198,7 +199,7 @@ struct ButtonTests {
 
         // First button is auto-focused and should be bold (no ▸ indicator)
         let allContent = buffer.lines.joined()
-        let boldCode = "\u{1b}[" // ANSI escape — bold style is applied via SGR
+        let boldCode = "\u{1b}["  // ANSI escape — bold style is applied via SGR
         #expect(allContent.contains(boldCode), "Focused button should contain ANSI styling")
         #expect(!allContent.contains("▸"), "Focused bold button should not have ▸ indicator")
     }
@@ -345,7 +346,7 @@ struct ButtonRowTests {
 
         let row = ButtonRow {
             Button("Border", style: .default) {}  // 3 lines with border
-            Button("Plain", style: .plain) {}     // 1 line without border
+            Button("Plain", style: .plain) {}  // 1 line without border
         }
 
         let buffer = renderToBuffer(row, context: context)
@@ -406,7 +407,7 @@ struct ButtonRowBuilderTests {
     func builderHandlesArray() {
         let groups: [[Button]] = [
             [Button("A") {}],
-            [Button("B") {}, Button("C") {}]
+            [Button("B") {}, Button("C") {}],
         ]
         let result = ButtonRowBuilder.buildArray(groups)
 
