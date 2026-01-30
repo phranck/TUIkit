@@ -238,9 +238,9 @@ extension Button: Renderable {
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
         // In block appearance, add buttonBackground to button
-        let isBlockAppearance = context.environment.appearance.id == .block
+        let isBlockAppearance = context.environment.appearance.rawId == .block
         if isBlockAppearance && textStyle.backgroundColor == nil {
-            textStyle.backgroundColor = context.environment.theme.buttonBackground
+            textStyle.backgroundColor = context.environment.palette.buttonBackground
         }
 
         let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
@@ -300,37 +300,15 @@ extension Button: Renderable {
         let innerWidth = buffer.width
         var result: [String] = []
 
-        // Border characters (optionally colored)
-        let vertical = colorizeBorder(String(style.vertical), with: color)
-        let reset = "\u{1B}[0m"
-
-        // Top border
-        let topLine = String(style.topLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.topRight)
-        result.append(colorizeBorder(topLine, with: color))
-
-        // Content lines with side borders
+        result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: color))
         for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = vertical + paddedLine + reset + vertical
-            result.append(borderedLine)
+            result.append(BorderRenderer.standardContentLine(
+                content: line, innerWidth: innerWidth, style: style, color: color
+            ))
         }
-
-        // Bottom border
-        let bottomLine = String(style.bottomLeft)
-            + String(repeating: style.horizontal, count: innerWidth)
-            + String(style.bottomRight)
-        result.append(colorizeBorder(bottomLine, with: color))
+        result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: color))
 
         return FrameBuffer(lines: result)
-    }
-
-    /// Colorizes border characters.
-    private func colorizeBorder(_ string: String, with color: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color
-        return ANSIRenderer.render(string, with: style)
     }
 
     /// Adds a focus indicator (▸) to the left of the button.

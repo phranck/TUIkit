@@ -247,7 +247,7 @@ extension Menu: Renderable {
         // Apply border - use explicit style, or fall back to appearance default
         let appearance = context.environment.appearance
         let effectiveBorderStyle = borderStyle ?? appearance.borderStyle
-        let isBlockStyle = appearance.id == .block
+        let isBlockStyle = appearance.rawId == .block
         
         contentBuffer = applyBorder(
             to: contentBuffer,
@@ -293,11 +293,11 @@ extension Menu: Renderable {
                 selectCallback?(binding.wrappedValue)
                 return true
 
-            case .character(let char):
+            case .character(let character):
                 // Check for shortcut
                 for (index, item) in menuItems.enumerated() {
                     if let shortcut = item.shortcut,
-                       shortcut.lowercased() == char.lowercased() {
+                       shortcut.lowercased() == character.lowercased() {
                         binding.wrappedValue = index
                         selectCallback?(index)
                         return true
@@ -314,7 +314,7 @@ extension Menu: Renderable {
     /// The maximum width of menu items (for sizing).
     private var maxItemWidth: Int {
         items.map { item -> Int in
-            let shortcutPart = item.shortcut != nil ? 4 : 4  // "[x] " or "    "
+            let shortcutPart = 4  // "[x] " or "    " — always 4 characters wide
             return shortcutPart + item.label.count
         }.max() ?? 0
     }
@@ -338,126 +338,58 @@ extension Menu: Renderable {
 
         let innerWidth = buffer.width
         var result: [String] = []
-        let reset = "\u{1B}[0m"
         
         if isBlockStyle {
-            // Block style: use half-blocks with special coloring
-            // Header/Footer BG = darker (containerHeaderBackground)
-            // Body BG = lighter (containerBackground)
-            // App BG = transparent (no background set)
             let headerFooterBg = Color.theme.containerHeaderBackground
             let bodyBg = Color.theme.containerBackground
-            
-            // Determine if we have a header (divider present)
             let hasHeader = dividerLineIndex != nil
             
-            // Top border: ▄▄▄
-            // FG = header background, BG = App background (transparent/none)
-            let topLine = String(repeating: "▄", count: innerWidth + 2)
-            if hasHeader {
-                result.append(colorizeWithForeground(topLine, foreground: headerFooterBg))
-            } else {
-                // No header: use body background for top
-                result.append(colorizeWithForeground(topLine, foreground: bodyBg))
-            }
+            // Top border
+            result.append(BorderRenderer.blockTopBorder(
+                innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
+            ))
             
-            // Content lines with side borders
+            // Content lines with section-aware coloring
             for (index, line) in buffer.lines.enumerated() {
-                let isHeaderLine = hasHeader && index < dividerLineIndex!
-                let isDividerLine = hasHeader && index == dividerLineIndex!
+                let isHeaderLine = hasHeader && dividerLineIndex.map({ index < $0 }) ?? false
+                let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
                 
                 if isDividerLine {
-                    // Header/Body separator: ▀▀▀
-                    // FG = header BG, BG = body BG (creates smooth transition)
-                    let dividerLine = String(repeating: "▀", count: innerWidth + 2)
-                    result.append(colorizeWithBoth(dividerLine, foreground: headerFooterBg, background: bodyBg))
+                    result.append(BorderRenderer.blockSeparator(
+                        innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
+                    ))
                 } else if isHeaderLine {
-                    // Header line: █ borders and content with header background
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = colorizeWithForeground("█", foreground: headerFooterBg)
-                    let styledContent = applyBackground(paddedLine, background: headerFooterBg)
-                    result.append(sideBorder + styledContent + reset + sideBorder)
+                    result.append(BorderRenderer.blockContentLine(
+                        content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
+                    ))
                 } else {
-                    // Body line: █ borders with body background
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    let sideBorder = colorizeWithForeground("█", foreground: bodyBg)
-                    let styledContent = applyBackground(paddedLine, background: bodyBg)
-                    result.append(sideBorder + styledContent + reset + sideBorder)
+                    result.append(BorderRenderer.blockContentLine(
+                        content: line, innerWidth: innerWidth, sectionColor: bodyBg
+                    ))
                 }
             }
             
-            // Bottom border: ▀▀▀
-            // FG = body background (or header if no header section), BG = App background (transparent)
-            let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-            if hasHeader {
-                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
-            } else {
-                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
-            }
+            // Bottom border
+            result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
         } else {
-            // Standard style: regular box-drawing characters
-            let vertical = colorizeBorder(String(style.vertical), with: color)
+            let borderForeground = color ?? Color.theme.border
 
-            // Top border
-            let topLine = String(style.topLeft)
-                + String(repeating: style.horizontal, count: innerWidth)
-                + String(style.topRight)
-            result.append(colorizeBorder(topLine, with: color))
+            result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 
-            // Content lines with side borders
             for (index, line) in buffer.lines.enumerated() {
                 if let dividerIndex = dividerLineIndex, index == dividerIndex {
-                    // Render horizontal divider with T-junctions
-                    let dividerLine = String(style.leftT)
-                        + String(repeating: style.horizontal, count: innerWidth)
-                        + String(style.rightT)
-                    result.append(colorizeBorder(dividerLine, with: color))
+                    result.append(BorderRenderer.standardDivider(style: style, innerWidth: innerWidth, color: borderForeground))
                 } else {
-                    let paddedLine = line.padToVisibleWidth(innerWidth)
-                    result.append(vertical + paddedLine + reset + vertical)
+                    result.append(BorderRenderer.standardContentLine(
+                        content: line, innerWidth: innerWidth, style: style, color: borderForeground
+                    ))
                 }
             }
 
-            // Bottom border
-            let bottomLine = String(style.bottomLeft)
-                + String(repeating: style.horizontal, count: innerWidth)
-                + String(style.bottomRight)
-            result.append(colorizeBorder(bottomLine, with: color))
+            result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderForeground))
         }
 
         return FrameBuffer(lines: result)
-    }
-    
-    /// Colorizes with only foreground color (for separator transitions).
-    private func colorizeWithForeground(_ string: String, foreground: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = foreground
-        return ANSIRenderer.render(string, with: style)
-    }
-    
-    /// Colorizes with both foreground and background.
-    private func colorizeWithBoth(_ string: String, foreground: Color, background: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = foreground
-        style.backgroundColor = background
-        return ANSIRenderer.render(string, with: style)
-    }
-    
-    /// Applies a background color to content, re-applying after any resets.
-    private func applyBackground(_ string: String, background: Color) -> String {
-        // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
-        let bgCode = ANSIRenderer.backgroundCode(for: background)
-        // Replace any reset codes with reset + background to maintain the background
-        let resetCode = "\u{1B}[0m"
-        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
-        return bgCode + stringWithPersistentBg
-    }
-
-    /// Colorizes border characters.
-    private func colorizeBorder(_ string: String, with color: Color?) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color ?? Color.theme.border
-        return ANSIRenderer.render(string, with: style)
     }
 }
 
@@ -488,12 +420,4 @@ extension AnyView: Renderable {
     }
 }
 
-extension View {
-    /// Wraps this view in an AnyView for type erasure.
-    ///
-    /// Use this when you need to return different view types from
-    /// conditional branches.
-    public func asAnyView() -> AnyView {
-        AnyView(self)
-    }
-}
+

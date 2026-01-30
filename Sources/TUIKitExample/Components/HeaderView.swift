@@ -39,8 +39,8 @@ struct HeaderView: View {
                 Text("TUIKit v\(tuiKitVersion)")
                     .foregroundColor(.theme.foregroundTertiary)
             }
-            if let sub = subtitle {
-                Text(sub)
+            if let subtitleText = subtitle {
+                Text(subtitleText)
                     .foregroundColor(.theme.foregroundSecondary)
                     .italic()
             }
