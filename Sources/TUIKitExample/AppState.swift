@@ -30,6 +30,10 @@ enum DemoPage: Int, CaseIterable {
 /// Status bar items are now managed declaratively via the
 /// `.statusBarItems()` modifier in `ContentView`.
 final class ExampleAppState: @unchecked Sendable {
+    /// The shared instance for the example app.
+    ///
+    /// This is acceptable for the example app since it is a simple demo.
+    /// In production code, prefer dependency injection via Environment.
     static let shared = ExampleAppState()
 
     /// The current page being displayed.
