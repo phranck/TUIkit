@@ -99,8 +99,12 @@ extension Appearance {
     /// }
     /// ```
     public struct ID: RawRepresentable, Hashable, Sendable {
+        /// The string identifier for this appearance.
         public let rawValue: String
 
+        /// Creates an appearance ID from a raw string value.
+        ///
+        /// - Parameter rawValue: The string identifier.
         public init(rawValue: String) {
             self.rawValue = rawValue
         }
