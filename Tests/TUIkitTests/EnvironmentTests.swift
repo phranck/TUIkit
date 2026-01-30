@@ -85,7 +85,7 @@ struct EnvironmentStorageTests {
 
     @Test("push and pop restore previous environment")
     func pushPop() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
         let original = storage.environment
 
@@ -100,7 +100,7 @@ struct EnvironmentStorageTests {
 
     @Test("Nested push/pop restores correctly")
     func nestedPushPop() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
 
         var first = EnvironmentValues()
@@ -120,7 +120,7 @@ struct EnvironmentStorageTests {
 
     @Test("Pop on empty stack is safe")
     func popEmptyStack() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
         // Should not crash
         storage.pop()
@@ -128,7 +128,7 @@ struct EnvironmentStorageTests {
 
     @Test("withEnvironment scopes environment correctly")
     func withEnvironment() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
 
         var scoped = EnvironmentValues()
@@ -143,7 +143,7 @@ struct EnvironmentStorageTests {
 
     @Test("reset clears all state")
     func reset() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         var modified = EnvironmentValues()
         modified[TestStringKey.self] = "dirty"
         storage.push(modified)
@@ -160,7 +160,7 @@ struct EnvironmentPropertyWrapperTests {
 
     @Test("@Environment reads current value from shared storage")
     func readsFromStorage() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
 
         var env = storage.environment
@@ -176,7 +176,7 @@ struct EnvironmentPropertyWrapperTests {
 
     @Test("@Environment reflects changes after storage update")
     func reflectsChanges() {
-        let storage = EnvironmentStorage.shared
+        let storage = EnvironmentStorage.active
         storage.reset()
 
         let wrapper = Environment(\.testString)
