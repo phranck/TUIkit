@@ -1,4 +1,4 @@
-# SwiftLint Configuration for TUIKit
+# SwiftLint Configuration for TUIkit
 
 # Only lint project sources (not build artifacts or dependencies)
 included:
