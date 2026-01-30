@@ -60,20 +60,8 @@ public struct Dialog<Content: View, Footer: View>: View {
     /// The footer content (typically buttons).
     public let footer: Footer?
 
-    /// The border style (nil uses appearance default).
-    public let borderStyle: BorderStyle?
-
-    /// The border color.
-    public let borderColor: Color?
-
-    /// The title color.
-    public let titleColor: Color?
-
-    /// The inner padding.
-    public let padding: EdgeInsets
-    
-    /// Whether to show a separator before the footer.
-    public let showFooterSeparator: Bool
+    /// The shared visual configuration.
+    public let config: ContainerConfig
 
     /// Creates a dialog with content and footer.
     ///
@@ -97,11 +85,13 @@ public struct Dialog<Content: View, Footer: View>: View {
         @ViewBuilder footer: () -> Footer
     ) {
         self.title = title
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
-        self.padding = padding
-        self.showFooterSeparator = showFooterSeparator
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: padding,
+            showFooterSeparator: showFooterSeparator
+        )
         self.content = content()
         self.footer = footer()
     }
@@ -115,36 +105,13 @@ public struct Dialog<Content: View, Footer: View>: View {
 
 extension Dialog: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let containerStyle = ContainerStyle(
-            showHeaderSeparator: true,
-            showFooterSeparator: showFooterSeparator,
-            borderStyle: borderStyle,
-            borderColor: borderColor
+        renderContainer(
+            title: title,
+            config: config,
+            content: content,
+            footer: footer,
+            context: context
         )
-        
-        if let footerView = footer {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: containerStyle,
-                padding: padding
-            ) {
-                content
-            } footer: {
-                footerView
-            }
-            return container.renderToBuffer(context: context)
-        } else {
-            let container = ContainerView(
-                title: title,
-                titleColor: titleColor,
-                style: containerStyle,
-                padding: padding
-            ) {
-                content
-            }
-            return container.renderToBuffer(context: context)
-        }
     }
 }
 
@@ -169,11 +136,13 @@ extension Dialog where Footer == EmptyView {
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
-        self.titleColor = titleColor
-        self.padding = padding
-        self.showFooterSeparator = false
+        self.config = ContainerConfig(
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            padding: padding,
+            showFooterSeparator: false
+        )
         self.content = content()
         self.footer = nil
     }
@@ -228,5 +197,3 @@ extension Dialog where Footer == EmptyView {
         )
     }
 }
-
-
