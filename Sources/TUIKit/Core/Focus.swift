@@ -148,24 +148,23 @@ public final class FocusManager: @unchecked Sendable {
 
     /// Moves focus to the next focusable element.
     public func focusNext() {
-        guard !focusables.isEmpty else { return }
-
-        let availableFocusables = focusables.filter { $0.canBeFocused }
-        guard !availableFocusables.isEmpty else { return }
-
-        if let currentID = focusedID,
-           let currentIndex = availableFocusables.firstIndex(where: { $0.focusID == currentID }) {
-            // Move to next (wrap around)
-            let nextIndex = (currentIndex + 1) % availableFocusables.count
-            focus(availableFocusables[nextIndex])
-        } else {
-            // Focus first available
-            focus(availableFocusables[0])
-        }
+        moveFocus(direction: .forward)
     }
 
     /// Moves focus to the previous focusable element.
     public func focusPrevious() {
+        moveFocus(direction: .backward)
+    }
+
+    /// The direction in which focus moves.
+    private enum FocusDirection {
+        case forward, backward
+    }
+
+    /// Moves focus in the specified direction (wrapping around).
+    ///
+    /// - Parameter direction: The direction to move focus.
+    private func moveFocus(direction: FocusDirection) {
         guard !focusables.isEmpty else { return }
 
         let availableFocusables = focusables.filter { $0.canBeFocused }
@@ -173,12 +172,18 @@ public final class FocusManager: @unchecked Sendable {
 
         if let currentID = focusedID,
            let currentIndex = availableFocusables.firstIndex(where: { $0.focusID == currentID }) {
-            // Move to previous (wrap around)
-            let prevIndex = currentIndex == 0 ? availableFocusables.count - 1 : currentIndex - 1
-            focus(availableFocusables[prevIndex])
+            let targetIndex: Int
+            switch direction {
+            case .forward:
+                targetIndex = (currentIndex + 1) % availableFocusables.count
+            case .backward:
+                targetIndex = currentIndex == 0 ? availableFocusables.count - 1 : currentIndex - 1
+            }
+            focus(availableFocusables[targetIndex])
         } else {
-            // Focus last available
-            focus(availableFocusables[availableFocusables.count - 1])
+            // No current focus: forward → first, backward → last
+            let fallbackIndex = direction == .forward ? 0 : availableFocusables.count - 1
+            focus(availableFocusables[fallbackIndex])
         }
     }
 

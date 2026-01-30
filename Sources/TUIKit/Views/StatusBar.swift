@@ -896,7 +896,7 @@ extension StatusBar: Renderable {
 
     /// Renders the bordered style using the current appearance's border style.
     private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
-        let innerWidth = width - 2  // Account for left and right border
+        let innerWidth = width - BorderRenderer.borderWidthOverhead
         let content = alignContent(itemStrings: itemStrings, width: innerWidth)
 
         // Check if we're using block appearance for special rendering

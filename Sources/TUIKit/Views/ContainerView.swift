@@ -330,7 +330,7 @@ extension ContainerView: Renderable {
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             if style.showFooterSeparator {
                 lines.append(BorderRenderer.blockSeparator(
-                    innerWidth: innerWidth, character: "▄",
+                    innerWidth: innerWidth, character: BorderStyle.blockFooterSeparator,
                     foregroundColor: headerFooterBg, backgroundColor: bodyBg
                 ))
             }
