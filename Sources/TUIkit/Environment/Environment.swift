@@ -229,13 +229,11 @@ public struct EnvironmentModifier<Content: View, V>: View {
 
 extension EnvironmentModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Create modified environment
+        // Create modified environment and render content with it.
+        // The modified context carries the environment through the render tree —
+        // no singleton sync needed.
         let modifiedEnvironment = context.environment.setting(keyPath, to: value)
         let modifiedContext = context.withEnvironment(modifiedEnvironment)
-
-        // Render content with modified environment
-        return EnvironmentStorage.active.withEnvironment(modifiedEnvironment) {
-            TUIkit.renderToBuffer(content, context: modifiedContext)
-        }
+        return TUIkit.renderToBuffer(content, context: modifiedContext)
     }
 }
