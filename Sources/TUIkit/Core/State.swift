@@ -14,9 +14,17 @@ import Foundation
 /// Since TUIkit runs in a single-threaded event loop, we use a simple
 /// observable pattern. The AppRunner subscribes to state changes and
 /// re-renders when notified.
+///
+/// `AppRunner` creates and assigns the active instance on startup.
+/// Property wrappers like ``State`` and ``AppStorage`` access it
+/// through ``active``.
 public final class AppState: @unchecked Sendable {
-    /// The shared app state instance.
-    public static let shared = AppState()
+    /// The active app state for the current application.
+    ///
+    /// Set by `AppRunner` during initialization. Property wrappers
+    /// (`@State`, `@AppStorage`, `@SceneStorage`) and services
+    /// (`StatusBarState`, `ThemeManager`) use this to trigger re-renders.
+    public nonisolated(unsafe) static var active = AppState()
 
     /// Callbacks to invoke when state changes.
     private var observers: [() -> Void] = []
@@ -24,7 +32,8 @@ public final class AppState: @unchecked Sendable {
     /// Whether state has changed since last render.
     private(set) var needsRender = false
 
-    private init() {}
+    /// Creates a new app state instance.
+    public init() {}
 
     /// Registers an observer to be notified of state changes.
     ///
@@ -143,7 +152,7 @@ public struct State<Value> {
     private final class Storage {
         var value: Value {
             didSet {
-                AppState.shared.setNeedsRender()
+                AppState.active.setNeedsRender()
             }
         }
 
