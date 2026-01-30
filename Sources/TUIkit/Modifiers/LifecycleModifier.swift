@@ -7,92 +7,6 @@
 
 import Foundation
 
-// MARK: - Lifecycle Tracker
-
-/// Tracks which views have appeared to prevent duplicate onAppear calls.
-///
-/// Since views are recreated on each render, we use a token-based system
-/// to track which views have already triggered their onAppear action.
-public final class LifecycleTracker: @unchecked Sendable {
-    /// Shared instance for the running application.
-    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
-    public static let shared = LifecycleTracker()
-
-    /// Lock protecting all mutable state.
-    private let lock = NSLock()
-
-    /// Set of tokens that have appeared.
-    private var appearedTokens: Set<String> = []
-
-    /// Set of tokens that are currently visible (for onDisappear tracking).
-    private var visibleTokens: Set<String> = []
-
-    /// Tokens seen during the current render pass.
-    private var currentRenderTokens: Set<String> = []
-
-    /// Creates a new lifecycle tracker.
-    public init() {}
-
-    /// Marks the start of a new render pass.
-    internal func beginRenderPass() {
-        lock.lock()
-        defer { lock.unlock() }
-        currentRenderTokens.removeAll()
-    }
-
-    /// Marks the end of a render pass and triggers onDisappear for views that are no longer visible.
-    internal func endRenderPass(onDisappear: [String: () -> Void]) {
-        lock.lock()
-        let disappearedTokens = visibleTokens.subtracting(currentRenderTokens)
-        for token in disappearedTokens {
-            appearedTokens.remove(token)
-        }
-        visibleTokens = currentRenderTokens
-        lock.unlock()
-
-        // Execute callbacks outside the lock to avoid deadlocks
-        for token in disappearedTokens {
-            onDisappear[token]?()
-        }
-    }
-
-    /// Records that a view with the given token appeared.
-    ///
-    /// - Parameters:
-    ///   - token: Unique identifier for the view.
-    ///   - action: The onAppear action to execute.
-    /// - Returns: True if this is the first appearance (action should run).
-    internal func recordAppear(token: String, action: () -> Void) -> Bool {
-        lock.lock()
-        currentRenderTokens.insert(token)
-
-        if !appearedTokens.contains(token) {
-            appearedTokens.insert(token)
-            lock.unlock()
-            action()
-            return true
-        }
-        lock.unlock()
-        return false
-    }
-
-    /// Checks if a view has appeared before.
-    internal func hasAppeared(token: String) -> Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return appearedTokens.contains(token)
-    }
-
-    /// Resets all tracking state.
-    internal func reset() {
-        lock.lock()
-        defer { lock.unlock() }
-        appearedTokens.removeAll()
-        visibleTokens.removeAll()
-        currentRenderTokens.removeAll()
-    }
-}
-
 // MARK: - OnAppear Modifier
 
 /// A modifier that executes an action when a view first appears.
@@ -122,43 +36,6 @@ extension OnAppearModifier: Renderable {
 }
 
 // MARK: - OnDisappear Modifier
-
-/// Storage for onDisappear callbacks.
-public final class DisappearCallbackStorage: @unchecked Sendable {
-    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
-    public static let shared = DisappearCallbackStorage()
-
-    /// Lock protecting the callbacks dictionary.
-    private let lock = NSLock()
-    private var callbacks: [String: () -> Void] = [:]
-
-    /// Creates a new disappear callback storage.
-    public init() {}
-
-    internal func register(token: String, action: @escaping () -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        callbacks[token] = action
-    }
-
-    internal func unregister(token: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        callbacks.removeValue(forKey: token)
-    }
-
-    internal var allCallbacks: [String: () -> Void] {
-        lock.lock()
-        defer { lock.unlock() }
-        return callbacks
-    }
-
-    internal func reset() {
-        lock.lock()
-        defer { lock.unlock() }
-        callbacks.removeAll()
-    }
-}
 
 /// A modifier that executes an action when a view disappears.
 public struct OnDisappearModifier<Content: View>: View {
@@ -209,47 +86,6 @@ public struct TaskModifier<Content: View>: View {
 
     public var body: Never {
         fatalError("TaskModifier renders via Renderable")
-    }
-}
-
-/// Storage for running tasks.
-public final class TaskStorage: @unchecked Sendable {
-    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
-    public static let shared = TaskStorage()
-
-    /// Lock protecting the tasks dictionary.
-    private let lock = NSLock()
-    private var tasks: [String: Task<Void, Never>] = [:]
-
-    /// Creates a new task storage.
-    public init() {}
-
-    internal func startTask(token: String, priority: TaskPriority, operation: @escaping @Sendable () async -> Void) {
-        lock.lock()
-        // Cancel existing task if any
-        tasks[token]?.cancel()
-
-        // Start new task
-        tasks[token] = Task(priority: priority) {
-            await operation()
-        }
-        lock.unlock()
-    }
-
-    internal func cancelTask(token: String) {
-        lock.lock()
-        tasks[token]?.cancel()
-        tasks.removeValue(forKey: token)
-        lock.unlock()
-    }
-
-    internal func reset() {
-        lock.lock()
-        for task in tasks.values {
-            task.cancel()
-        }
-        tasks.removeAll()
-        lock.unlock()
     }
 }
 
