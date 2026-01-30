@@ -95,7 +95,7 @@ struct ButtonStyleTests {
 
 // MARK: - Button Tests
 
-@Suite("Button Tests")
+@Suite("Button Tests", .serialized)
 struct ButtonTests {
 
     @Test("Button can be created with label and action")
