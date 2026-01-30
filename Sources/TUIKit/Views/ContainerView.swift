@@ -5,6 +5,65 @@
 //  A unified container component with Header/Body/Footer architecture.
 //
 
+// MARK: - Container Config
+
+/// Shared visual configuration for container-type views.
+///
+/// Groups the common appearance properties used by ``Alert``, ``Dialog``,
+/// ``Panel``, and ``Card``. Each view stores a `ContainerConfig` instead
+/// of repeating the same five properties.
+///
+/// # Example
+///
+/// ```swift
+/// let config = ContainerConfig(
+///     borderStyle: .doubleLine,
+///     borderColor: .cyan,
+///     titleColor: .cyan
+/// )
+/// ```
+public struct ContainerConfig: Sendable {
+    /// The border style (nil uses appearance default).
+    public var borderStyle: BorderStyle?
+
+    /// The border color (nil uses theme default).
+    public var borderColor: Color?
+
+    /// The title color (nil uses theme accent).
+    public var titleColor: Color?
+
+    /// The inner padding for the body content.
+    public var padding: EdgeInsets
+
+    /// Whether to show a separator line between body and footer.
+    public var showFooterSeparator: Bool
+
+    /// Creates a container configuration.
+    ///
+    /// - Parameters:
+    ///   - borderStyle: The border style (default: appearance default).
+    ///   - borderColor: The border color (default: theme border).
+    ///   - titleColor: The title color (default: theme accent).
+    ///   - padding: The inner padding (default: horizontal 1, vertical 0).
+    ///   - showFooterSeparator: Show separator before footer (default: true).
+    public init(
+        borderStyle: BorderStyle? = nil,
+        borderColor: Color? = nil,
+        titleColor: Color? = nil,
+        padding: EdgeInsets = EdgeInsets(horizontal: 1, vertical: 0),
+        showFooterSeparator: Bool = true
+    ) {
+        self.borderStyle = borderStyle
+        self.borderColor = borderColor
+        self.titleColor = titleColor
+        self.padding = padding
+        self.showFooterSeparator = showFooterSeparator
+    }
+
+    /// Default configuration.
+    public static let `default` = ContainerConfig()
+}
+
 // MARK: - Container Style
 
 /// Configuration options for container appearance.
@@ -44,9 +103,72 @@ public struct ContainerStyle: Sendable {
         self.borderStyle = borderStyle
         self.borderColor = borderColor
     }
-    
+
+    /// Creates a `ContainerStyle` from a ``ContainerConfig``.
+    ///
+    /// - Parameter config: The container configuration to use.
+    public init(from config: ContainerConfig) {
+        self.showHeaderSeparator = true
+        self.showFooterSeparator = config.showFooterSeparator
+        self.borderStyle = config.borderStyle
+        self.borderColor = config.borderColor
+    }
+
     /// Default container style.
     public static let `default` = ContainerStyle()
+}
+
+// MARK: - Render Helper
+
+/// Renders a ``ContainerView`` from a ``ContainerConfig`` and content/footer views.
+///
+/// Eliminates the duplicated `if/else` footer pattern found in Alert, Dialog,
+/// Panel, and Card.
+///
+/// - Parameters:
+///   - title: The container title (optional).
+///   - config: The shared visual configuration.
+///   - content: The body content view.
+///   - footer: The footer view (optional).
+///   - context: The current render context.
+/// - Returns: The rendered frame buffer.
+internal func renderContainer<Content: View, Footer: View>(
+    title: String?,
+    config: ContainerConfig,
+    content: Content,
+    footer: Footer?,
+    context: RenderContext
+) -> FrameBuffer {
+    let containerStyle = ContainerStyle(from: config)
+
+    if let footerView = footer {
+        let container = ContainerView(
+            title: title,
+            titleColor: config.titleColor,
+            style: containerStyle,
+            padding: config.padding
+        ) {
+            content
+        } footer: {
+            footerView
+        }
+        return container.renderToBuffer(context: context)
+    } else {
+        let container = ContainerView(
+            title: title,
+            titleColor: config.titleColor,
+            style: ContainerStyle(
+                showHeaderSeparator: true,
+                showFooterSeparator: false,
+                borderStyle: config.borderStyle,
+                borderColor: config.borderColor
+            ),
+            padding: config.padding
+        ) {
+            content
+        }
+        return container.renderToBuffer(context: context)
+    }
 }
 
 // MARK: - Container View
