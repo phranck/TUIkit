@@ -93,7 +93,7 @@ internal struct RenderLoop<A: App> {
         )
 
         // Update global environment storage
-        EnvironmentStorage.shared.environment = environment
+        EnvironmentStorage.active.environment = environment
 
         // Render main content (background fill happens in renderScene)
         let scene = app.body

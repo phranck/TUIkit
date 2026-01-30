@@ -178,7 +178,7 @@ extension EnvironmentValues {
 extension Color {
     /// Access palette colors from the current environment.
     ///
-    /// These colors read from `EnvironmentStorage.shared` during rendering.
+    /// These colors read from `EnvironmentStorage.active` during rendering.
     ///
     /// # Example
     ///
@@ -204,7 +204,7 @@ extension Color {
 public enum PaletteColors {
     /// Gets the current palette from environment storage.
     private static var current: any Palette {
-        EnvironmentStorage.shared.environment.palette
+        EnvironmentStorage.active.environment.palette
     }
 
     /// Primary background color.
@@ -735,7 +735,7 @@ private struct PaletteManagerKey: EnvironmentKey {
         items: PaletteRegistry.all,
         applyToEnvironment: { item in
             if let palette = item as? any Palette {
-                EnvironmentStorage.shared.environment.palette = palette
+                EnvironmentStorage.active.environment.palette = palette
             }
         }
     )
