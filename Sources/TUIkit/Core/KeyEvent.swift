@@ -250,10 +250,6 @@ extension KeyEvent {
 /// Views can register handlers that are called when keys are pressed.
 /// Handlers are processed in reverse order (most recent first).
 public final class KeyEventDispatcher: @unchecked Sendable {
-    /// The shared dispatcher instance.
-    @available(*, deprecated, message: "Use TUIContext.keyEventDispatcher instead")
-    public static let shared = KeyEventDispatcher()
-
     /// Registered key handlers.
     private var handlers: [(KeyEvent) -> Bool] = []
 
