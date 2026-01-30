@@ -7,11 +7,22 @@
 
 import Foundation
 
-/// Renders Views to terminal output.
+/// Convenience class for standalone view rendering.
 ///
-/// The `ViewRenderer` uses a two-pass approach:
-/// 1. Render the entire view tree into a `FrameBuffer`
-/// 2. Flush the buffer to the terminal at the correct position
+/// `ViewRenderer` wraps the free function ``renderToBuffer(_:context:)``
+/// with terminal cursor positioning. It is a thin wrapper — the actual
+/// rendering dispatch happens in `renderToBuffer`, not here.
+///
+/// The main app uses ``RenderLoop`` instead, which owns the full
+/// pipeline (environment assembly, lifecycle, status bar). Use
+/// `ViewRenderer` for one-off rendering outside the main loop.
+///
+/// ## Renderable conformances
+///
+/// This file also contains ``Renderable`` extensions for core view
+/// types (`Text`, `VStack`, `HStack`, etc.). These live here rather
+/// than in each type's file to keep the rendering logic centralized
+/// and the view type files focused on public API and data.
 public final class ViewRenderer {
     /// The terminal to render to.
     private let terminal: Terminal
@@ -78,6 +89,13 @@ func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
         spacerMinLength: nil
     )
 }
+
+// MARK: - Renderable Conformances
+//
+// The following extensions provide Renderable conformance for all
+// core view types. Each type declares body: Never (fatalError) and
+// relies on renderToBuffer(context:) for output. They are grouped
+// here to keep rendering logic centralized.
 
 // MARK: - Text Rendering
 
