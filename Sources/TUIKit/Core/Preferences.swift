@@ -263,21 +263,3 @@ extension OnPreferenceChangeModifier: Renderable {
 public struct NavigationTitleKey: PreferenceKey {
     public static let defaultValue: String = ""
 }
-
-/// A preference key for tab bar badge values.
-public struct TabBadgeKey: PreferenceKey {
-    public static let defaultValue: [Int: String] = [:]
-
-    public static func reduce(value: inout [Int: String], nextValue: () -> [Int: String]) {
-        value.merge(nextValue()) { _, new in new }
-    }
-}
-
-/// A preference key for anchor positions (useful for scroll targets).
-public struct AnchorPreferenceKey: PreferenceKey {
-    public static let defaultValue: [String: Int] = [:]
-
-    public static func reduce(value: inout [String: Int], nextValue: () -> [String: Int]) {
-        value.merge(nextValue()) { _, new in new }
-    }
-}
