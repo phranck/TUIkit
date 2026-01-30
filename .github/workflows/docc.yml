@@ -23,7 +23,7 @@ jobs:
 
       - name: Build DocC documentation
         run: |
-          swift package --allow-writing-to-directory docs-output \
+          swift package --disable-sandbox --allow-writing-to-directory docs-output \
             generate-documentation \
             --target TUIKit \
             --output-path docs-output \
