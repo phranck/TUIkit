@@ -32,9 +32,6 @@ import Foundation
 /// - Raw mode configuration
 /// - Safe input and output
 public final class Terminal: @unchecked Sendable {
-    /// The shared terminal instance.
-    public static let shared = Terminal()
-
     /// The width of the terminal in characters.
     public var width: Int {
         getSize().width
@@ -51,8 +48,8 @@ public final class Terminal: @unchecked Sendable {
     /// The original terminal settings.
     private var originalTermios: termios?
 
-    /// Private initializer for singleton.
-    private init() {}
+    /// Creates a new terminal instance.
+    public init() {}
 
     /// Destructor ensures raw mode is disabled.
     deinit {

@@ -74,7 +74,7 @@ internal final class AppRunner<A: App> {
 
     init(app: A) {
         self.app = app
-        self.terminal = Terminal.shared
+        self.terminal = Terminal()
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
         self.tuiContext = TUIContext()
@@ -203,7 +203,7 @@ internal protocol SceneRenderable {
 extension WindowGroup: SceneRenderable {
     func renderScene(context: RenderContext) {
         let buffer = renderToBuffer(content, context: context)
-        let terminal = Terminal.shared
+        let terminal = context.terminal
         let terminalWidth = terminal.width
         let terminalHeight = context.availableHeight
 
