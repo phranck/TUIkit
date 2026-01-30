@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 // MARK: - Appearance Tests
@@ -172,7 +173,7 @@ struct AppearanceEnvironmentTests {
     @Test("Appearance can be accessed via environment")
     func environmentAccess() {
         let env = EnvironmentValues()
-        #expect(env.appearance.rawId == .rounded) // Default
+        #expect(env.appearance.rawId == .rounded)  // Default
     }
 
     @Test("Appearance can be set via environment")

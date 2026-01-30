@@ -56,13 +56,13 @@ struct LayoutPage: View {
                         Text(".padding()").dim()
                         Text("Padded")
                             .padding(EdgeInsets(all: 1))
-                            .border() // Uses appearance default
+                            .border()  // Uses appearance default
                     }
                     VStack {
                         Text(".frame()").dim()
                         Text("Framed")
                             .frame(width: 15, alignment: .center)
-                            .border() // Uses appearance default
+                            .border()  // Uses appearance default
                     }
                 }
             }

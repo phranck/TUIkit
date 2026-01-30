@@ -189,12 +189,15 @@ extension Menu: Renderable {
 
         // Title if present
         if let menuTitle = title {
-            let titleStyled = ANSIRenderer.render(menuTitle, with: {
-                var style = TextStyle()
-                style.isBold = true
-                style.foregroundColor = selectedColor ?? Color.theme.accent
-                return style
-            }())
+            let titleStyled = ANSIRenderer.render(
+                menuTitle,
+                with: {
+                    var style = TextStyle()
+                    style.isBold = true
+                    style.foregroundColor = selectedColor ?? Color.theme.accent
+                    return style
+                }()
+            )
             lines.append(" " + titleStyled)
 
             // Mark divider position - actual divider will be rendered by applyBorder
@@ -297,7 +300,8 @@ extension Menu: Renderable {
                 // Check for shortcut
                 for (index, item) in menuItems.enumerated() {
                     if let shortcut = item.shortcut,
-                       shortcut.lowercased() == character.lowercased() {
+                        shortcut.lowercased() == character.lowercased()
+                    {
                         binding.wrappedValue = index
                         selectCallback?(index)
                         return true
@@ -345,9 +349,12 @@ extension Menu: Renderable {
             let hasHeader = dividerLineIndex != nil
 
             // Top border
-            result.append(BorderRenderer.blockTopBorder(
-                innerWidth: innerWidth, color: hasHeader ? headerFooterBg : bodyBg
-            ))
+            result.append(
+                BorderRenderer.blockTopBorder(
+                    innerWidth: innerWidth,
+                    color: hasHeader ? headerFooterBg : bodyBg
+                )
+            )
 
             // Content lines with section-aware coloring
             for (index, line) in buffer.lines.enumerated() {
@@ -355,17 +362,29 @@ extension Menu: Renderable {
                 let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
 
                 if isDividerLine {
-                    result.append(BorderRenderer.blockSeparator(
-                        innerWidth: innerWidth, foregroundColor: headerFooterBg, backgroundColor: bodyBg
-                    ))
+                    result.append(
+                        BorderRenderer.blockSeparator(
+                            innerWidth: innerWidth,
+                            foregroundColor: headerFooterBg,
+                            backgroundColor: bodyBg
+                        )
+                    )
                 } else if isHeaderLine {
-                    result.append(BorderRenderer.blockContentLine(
-                        content: line, innerWidth: innerWidth, sectionColor: headerFooterBg
-                    ))
+                    result.append(
+                        BorderRenderer.blockContentLine(
+                            content: line,
+                            innerWidth: innerWidth,
+                            sectionColor: headerFooterBg
+                        )
+                    )
                 } else {
-                    result.append(BorderRenderer.blockContentLine(
-                        content: line, innerWidth: innerWidth, sectionColor: bodyBg
-                    ))
+                    result.append(
+                        BorderRenderer.blockContentLine(
+                            content: line,
+                            innerWidth: innerWidth,
+                            sectionColor: bodyBg
+                        )
+                    )
                 }
             }
 
@@ -380,9 +399,14 @@ extension Menu: Renderable {
                 if let dividerIndex = dividerLineIndex, index == dividerIndex {
                     result.append(BorderRenderer.standardDivider(style: style, innerWidth: innerWidth, color: borderForeground))
                 } else {
-                    result.append(BorderRenderer.standardContentLine(
-                        content: line, innerWidth: innerWidth, style: style, color: borderForeground
-                    ))
+                    result.append(
+                        BorderRenderer.standardContentLine(
+                            content: line,
+                            innerWidth: innerWidth,
+                            style: style,
+                            color: borderForeground
+                        )
+                    )
                 }
             }
 
