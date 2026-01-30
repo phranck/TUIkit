@@ -427,8 +427,8 @@ internal final class AppRunner<A: App> {
     let terminal: Terminal
     let statusBar: StatusBarState
     let focusManager: FocusManager
-    let themeManager: ThemeManager
-    let appearanceManager: AppearanceManager
+    let paletteManager: ThemeManager
+    let appearanceManager: ThemeManager
     private var isRunning = false
 
     init(app: A) {
@@ -436,8 +436,22 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
-        self.themeManager = ThemeManager()
-        self.appearanceManager = AppearanceManager()
+        self.paletteManager = ThemeManager(
+            items: PaletteRegistry.all,
+            applyToEnvironment: { item in
+                if let palette = item as? any Palette {
+                    EnvironmentStorage.shared.environment.palette = palette
+                }
+            }
+        )
+        self.appearanceManager = ThemeManager(
+            items: AppearanceRegistry.all,
+            applyToEnvironment: { item in
+                if let appearance = item as? Appearance {
+                    EnvironmentStorage.shared.environment.appearance = appearance
+                }
+            }
+        )
 
         // Configure status bar style
         self.statusBar.style = .bordered
@@ -454,7 +468,7 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
+        environment.paletteManager = paletteManager
         environment.appearanceManager = appearanceManager
         EnvironmentStorage.shared.environment = environment
 
@@ -509,10 +523,14 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
-        environment.theme = themeManager.currentTheme  // Apply current theme
+        environment.paletteManager = paletteManager
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
         environment.appearanceManager = appearanceManager
-        environment.appearance = appearanceManager.currentAppearance  // Apply current appearance
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
 
         let context = RenderContext(
             terminal: terminal,
@@ -560,14 +578,18 @@ internal final class AppRunner<A: App> {
             labelColor: labelColor
         )
 
-        // Create render context with current environment for theme colors
+        // Create render context with current environment for palette colors
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
-        environment.theme = themeManager.currentTheme
+        environment.paletteManager = paletteManager
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
         environment.appearanceManager = appearanceManager
-        environment.appearance = appearanceManager.currentAppearance
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
 
         let context = RenderContext(
             terminal: terminal,
@@ -578,8 +600,8 @@ internal final class AppRunner<A: App> {
 
         let buffer = renderToBuffer(statusBarView, context: context)
         
-        // Get background color from theme
-        let bgColor = themeManager.currentTheme.background
+        // Get background color from palette
+        let bgColor = paletteManager.currentPalette?.background ?? .black
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
         let terminalWidth = terminal.width
@@ -618,14 +640,14 @@ internal final class AppRunner<A: App> {
             }
             
         case .character(let character) where character == "t" || character == "T":
-            // 't' cycles theme (if theme item is enabled)
+            // 't' cycles palette (if theme item is enabled)
             if statusBar.showThemeItem {
-                themeManager.cycleTheme()
+                paletteManager.cycleNext()
             }
             
         case .character(let character) where character == "a" || character == "A":
             // 'a' cycles appearance
-            appearanceManager.cycleAppearance()
+            appearanceManager.cycleNext()
             
         default:
             break
@@ -675,8 +697,8 @@ extension WindowGroup: SceneRenderable {
         let terminalWidth = terminal.width
         let terminalHeight = context.availableHeight
         
-        // Get background color from theme
-        let bgColor = context.environment.theme.background
+        // Get background color from palette
+        let bgColor = context.environment.palette.background
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
         
