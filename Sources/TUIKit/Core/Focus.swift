@@ -202,8 +202,8 @@ public final class FocusManager: @unchecked Sendable {
 
     /// The currently focused element, if any.
     public var currentFocused: Focusable? {
-        guard let id = focusedID else { return nil }
-        return focusables.first { $0.focusID == id }
+        guard let focusedIdentifier = focusedID else { return nil }
+        return focusables.first { $0.focusID == focusedIdentifier }
     }
 
     /// The ID of the currently focused element, if any.

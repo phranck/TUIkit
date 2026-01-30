@@ -972,8 +972,7 @@ extension StatusBar: Renderable {
     /// Applies a background color to content, re-applying after any resets.
     private func applyBackground(_ string: String, background: Color) -> String {
         let bgCode = ANSIRenderer.backgroundCode(for: background)
-        let resetCode = "\u{1B}[0m"
-        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
         return bgCode + stringWithPersistentBg
     }
 }

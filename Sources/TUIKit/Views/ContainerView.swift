@@ -220,7 +220,6 @@ extension ContainerView: Renderable {
         context: RenderContext
     ) -> FrameBuffer {
         var lines: [String] = []
-        let reset = "\u{1B}[0m"
         
         // Top border (with title if present)
         let topLine: String
@@ -255,7 +254,7 @@ extension ContainerView: Renderable {
         for line in bodyBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
             let styledContent = applyBackground(paddedLine, background: bodyBg)
-            lines.append(leftBorder + styledContent + reset + rightBorder)
+            lines.append(leftBorder + styledContent + ANSIRenderer.reset + rightBorder)
         }
         
         // Footer section (if present)
@@ -274,7 +273,7 @@ extension ContainerView: Renderable {
             // Footer lines (no background - footer has its own styling)
             for line in footerBuf.lines {
                 let paddedLine = line.padToVisibleWidth(innerWidth)
-                lines.append(leftBorder + paddedLine + reset + rightBorder)
+                lines.append(leftBorder + paddedLine + ANSIRenderer.reset + rightBorder)
             }
         }
         
@@ -314,7 +313,6 @@ extension ContainerView: Renderable {
         context: RenderContext
     ) -> FrameBuffer {
         var lines: [String] = []
-        let reset = "\u{1B}[0m"
         
         // Get theme colors for block appearance
         // Header/Footer = darker background
@@ -341,7 +339,7 @@ extension ContainerView: Renderable {
             let paddedTitle = titleStyled.padToVisibleWidth(innerWidth)
             let sideBorder = colorize("█", with: headerFooterBg)
             let styledContent = applyBackground(paddedTitle, background: headerFooterBg)
-            lines.append(sideBorder + styledContent + reset + sideBorder)
+            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
             
             // Header/Body separator: ▀▀▀
             // FG = header BG, BG = body BG (creates smooth transition)
@@ -357,7 +355,7 @@ extension ContainerView: Renderable {
             let paddedLine = line.padToVisibleWidth(innerWidth)
             let sideBorder = colorize("█", with: bodyBg)
             let styledContent = applyBackground(paddedLine, background: bodyBg)
-            lines.append(sideBorder + styledContent + reset + sideBorder)
+            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
         }
         
         // === FOOTER SECTION (if present) ===
@@ -374,7 +372,7 @@ extension ContainerView: Renderable {
                 let paddedLine = line.padToVisibleWidth(innerWidth)
                 let sideBorder = colorize("█", with: headerFooterBg)
                 let styledContent = applyBackground(paddedLine, background: headerFooterBg)
-                lines.append(sideBorder + styledContent + reset + sideBorder)
+                lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
             }
         }
         
@@ -411,8 +409,7 @@ extension ContainerView: Renderable {
         // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
         let bgCode = ANSIRenderer.backgroundCode(for: background)
         // Replace any reset codes with reset + background to maintain the background
-        let resetCode = "\u{1B}[0m"
-        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
         return bgCode + stringWithPersistentBg
     }
 }

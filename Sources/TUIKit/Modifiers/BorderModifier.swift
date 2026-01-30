@@ -71,7 +71,6 @@ extension BorderedView: Renderable {
 
         // Build the result
         var lines: [String] = []
-        let reset = "\u{1B}[0m"
 
         // Top border
         lines.append(colorize(topLine))
@@ -81,7 +80,7 @@ extension BorderedView: Renderable {
             let paddedLine = line.padToVisibleWidth(innerWidth)
             let borderedLine = colorize(String(style.vertical))
                 + paddedLine
-                + reset
+                + ANSIRenderer.reset
                 + colorize(String(style.vertical))
             lines.append(borderedLine)
         }
@@ -102,7 +101,6 @@ extension BorderedView: Renderable {
     /// ```
     private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int) -> FrameBuffer {
         var lines: [String] = []
-        let reset = "\u{1B}[0m"
         
         // For block style, use container background color for borders
         let containerBg = Color.theme.containerBackground
@@ -116,7 +114,7 @@ extension BorderedView: Renderable {
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
             let styledContent = applyBackground(paddedLine, background: containerBg)
-            lines.append(sideBorder + styledContent + reset + sideBorder)
+            lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
         }
         
         // Bottom border: ▀▀▀ with FG = container BG
@@ -136,8 +134,7 @@ extension BorderedView: Renderable {
     /// Applies a background color to content, re-applying after any resets.
     private func applyBackground(_ string: String, background: Color) -> String {
         let bgCode = ANSIRenderer.backgroundCode(for: background)
-        let resetCode = "\u{1B}[0m"
-        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
         return bgCode + stringWithPersistentBg
     }
 
@@ -192,79 +189,4 @@ extension View {
     }
 }
 
-// MARK: - Legacy ViewModifier (kept for compatibility)
 
-/// A modifier that adds a border around a view.
-///
-/// Note: This is the legacy implementation. The new `BorderedView`
-/// correctly handles available width constraints.
-public struct BorderModifier: ViewModifier {
-    /// The border style to use.
-    public let style: BorderStyle
-
-    /// The color of the border (nil uses default terminal color).
-    public let color: Color?
-
-    public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
-        guard !buffer.isEmpty else { return buffer }
-
-        let contentWidth = buffer.width
-        let innerWidth = max(contentWidth, 1)
-
-        // Build the top border line
-        let topLine = buildBorderLine(
-            left: style.topLeft,
-            fill: style.horizontal,
-            right: style.topRight,
-            width: innerWidth
-        )
-
-        // Build the bottom border line
-        let bottomLine = buildBorderLine(
-            left: style.bottomLeft,
-            fill: style.horizontal,
-            right: style.bottomRight,
-            width: innerWidth
-        )
-
-        // Build the result
-        var lines: [String] = []
-
-        // Top border
-        lines.append(colorize(topLine))
-
-        // Content lines with side borders
-        // Important: Reset ANSI before right border to prevent color bleeding
-        let reset = "\u{1B}[0m"
-        for line in buffer.lines {
-            let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = colorize(String(style.vertical))
-                + paddedLine
-                + reset  // Reset any styling from content
-                + colorize(String(style.vertical))
-            lines.append(borderedLine)
-        }
-
-        // Bottom border
-        lines.append(colorize(bottomLine))
-
-        return FrameBuffer(lines: lines)
-    }
-
-    /// Builds a horizontal border line.
-    private func buildBorderLine(
-        left: Character,
-        fill: Character,
-        right: Character,
-        width: Int
-    ) -> String {
-        String(left) + String(repeating: fill, count: width) + String(right)
-    }
-
-    /// Applies color to a string, using theme border color as default.
-    private func colorize(_ string: String) -> String {
-        var textStyle = TextStyle()
-        textStyle.foregroundColor = color ?? Color.theme.border
-        return ANSIRenderer.render(string, with: textStyle)
-    }
-}

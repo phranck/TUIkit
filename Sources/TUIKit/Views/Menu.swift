@@ -293,11 +293,11 @@ extension Menu: Renderable {
                 selectCallback?(binding.wrappedValue)
                 return true
 
-            case .character(let char):
+            case .character(let character):
                 // Check for shortcut
                 for (index, item) in menuItems.enumerated() {
                     if let shortcut = item.shortcut,
-                       shortcut.lowercased() == char.lowercased() {
+                       shortcut.lowercased() == character.lowercased() {
                         binding.wrappedValue = index
                         selectCallback?(index)
                         return true
@@ -314,7 +314,7 @@ extension Menu: Renderable {
     /// The maximum width of menu items (for sizing).
     private var maxItemWidth: Int {
         items.map { item -> Int in
-            let shortcutPart = item.shortcut != nil ? 4 : 4  // "[x] " or "    "
+            let shortcutPart = 4  // "[x] " or "    " — always 4 characters wide
             return shortcutPart + item.label.count
         }.max() ?? 0
     }
@@ -338,7 +338,6 @@ extension Menu: Renderable {
 
         let innerWidth = buffer.width
         var result: [String] = []
-        let reset = "\u{1B}[0m"
         
         if isBlockStyle {
             // Block style: use half-blocks with special coloring
@@ -363,8 +362,8 @@ extension Menu: Renderable {
             
             // Content lines with side borders
             for (index, line) in buffer.lines.enumerated() {
-                let isHeaderLine = hasHeader && index < dividerLineIndex!
-                let isDividerLine = hasHeader && index == dividerLineIndex!
+                let isHeaderLine = hasHeader && dividerLineIndex.map({ index < $0 }) ?? false
+                let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
                 
                 if isDividerLine {
                     // Header/Body separator: ▀▀▀
@@ -376,24 +375,20 @@ extension Menu: Renderable {
                     let paddedLine = line.padToVisibleWidth(innerWidth)
                     let sideBorder = colorizeWithForeground("█", foreground: headerFooterBg)
                     let styledContent = applyBackground(paddedLine, background: headerFooterBg)
-                    result.append(sideBorder + styledContent + reset + sideBorder)
+                    result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
                 } else {
                     // Body line: █ borders with body background
                     let paddedLine = line.padToVisibleWidth(innerWidth)
                     let sideBorder = colorizeWithForeground("█", foreground: bodyBg)
                     let styledContent = applyBackground(paddedLine, background: bodyBg)
-                    result.append(sideBorder + styledContent + reset + sideBorder)
+                    result.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
                 }
             }
             
             // Bottom border: ▀▀▀
-            // FG = body background (or header if no header section), BG = App background (transparent)
+            // FG = body background, BG = App background (transparent)
             let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-            if hasHeader {
-                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
-            } else {
-                result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
-            }
+            result.append(colorizeWithForeground(bottomLine, foreground: bodyBg))
         } else {
             // Standard style: regular box-drawing characters
             let vertical = colorizeBorder(String(style.vertical), with: color)
@@ -414,7 +409,7 @@ extension Menu: Renderable {
                     result.append(colorizeBorder(dividerLine, with: color))
                 } else {
                     let paddedLine = line.padToVisibleWidth(innerWidth)
-                    result.append(vertical + paddedLine + reset + vertical)
+                    result.append(vertical + paddedLine + ANSIRenderer.reset + vertical)
                 }
             }
 
@@ -448,8 +443,7 @@ extension Menu: Renderable {
         // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
         let bgCode = ANSIRenderer.backgroundCode(for: background)
         // Replace any reset codes with reset + background to maintain the background
-        let resetCode = "\u{1B}[0m"
-        let stringWithPersistentBg = string.replacingOccurrences(of: resetCode, with: resetCode + bgCode)
+        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
         return bgCode + stringWithPersistentBg
     }
 
