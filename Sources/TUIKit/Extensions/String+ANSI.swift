@@ -15,11 +15,7 @@ extension String {
 
     /// The string with all ANSI escape codes removed.
     var stripped: String {
-        replacingOccurrences(
-            of: ANSIRenderer.ansiPattern,
-            with: "",
-            options: .regularExpression
-        )
+        replacing(ANSIRenderer.ansiRegex, with: "")
     }
 
     /// Pads the string to the specified visible width using spaces.
