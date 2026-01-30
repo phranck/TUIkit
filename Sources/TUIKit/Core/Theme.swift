@@ -501,19 +501,169 @@ public struct NCursesTheme: Theme {
     public init() {}
 }
 
+// MARK: - Generated Theme
+
+/// A theme that generates its entire color palette from a single base hue.
+///
+/// All colors are derived algorithmically using HSL transformations.
+/// This allows creating new themes with a single line of code.
+///
+/// # How it works
+///
+/// Given a base hue (0–360), the theme generates:
+/// - **Backgrounds**: very low lightness, subtle saturation tinted toward the hue
+/// - **Foregrounds**: high lightness with full saturation at the base hue
+/// - **Accents**: slightly lighter/shifted versions of the foreground
+/// - **Semantic colors**: hue-shifted variants (success = +120°, warning = +60°, error = +180°, info = −60°)
+/// - **UI elements**: mid-range lightness/saturation for borders, selection, status bar
+///
+/// # Example
+///
+/// ```swift
+/// // Create a violet theme
+/// let violet = GeneratedTheme(name: "Violet", hue: 270)
+///
+/// // Create a teal theme
+/// let teal = GeneratedTheme(name: "Teal", hue: 180)
+/// ```
+public struct GeneratedTheme: Theme, Sendable {
+    public let id: String
+    public let name: String
+
+    // Background hierarchy
+    public let background: Color
+    public let backgroundSecondary: Color
+    public let backgroundTertiary: Color
+
+    // Foreground hierarchy
+    public let foreground: Color
+    public let foregroundSecondary: Color
+    public let foregroundTertiary: Color
+
+    // Accents
+    public let accent: Color
+    public let accentSecondary: Color
+
+    // Semantic
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let info: Color
+
+    // UI elements
+    public let border: Color
+    public let borderFocused: Color
+    public let selection: Color
+    public let selectionBackground: Color
+
+    // Status bar
+    public let statusBarBackground: Color
+    public let statusBarForeground: Color
+    public let statusBarHighlight: Color
+
+    // Container (block appearance)
+    public let containerBackground: Color
+    public let containerHeaderBackground: Color
+    public let buttonBackground: Color
+
+    /// Creates a generated theme from a single base hue.
+    ///
+    /// - Parameters:
+    ///   - name: The display name for the theme.
+    ///   - hue: The base hue (0–360). Examples: red=0, green=120, blue=240, violet=270.
+    ///   - saturation: The base saturation (0–100, default: 100). Lower values produce more muted palettes.
+    public init(name: String, hue: Double, saturation: Double = 100) {
+        self.id = "generated-\(name.lowercased())"
+        self.name = name
+
+        let baseSaturation = min(100, max(0, saturation))
+
+        // --- Backgrounds: very dark, subtly tinted ---
+        // App background — near black with a hint of the hue
+        self.background = Color.hsl(hue, baseSaturation * 0.30, 3)
+        // Container body — slightly brighter
+        self.backgroundSecondary = Color.hsl(hue, baseSaturation * 0.40, 10)
+        // Header/footer — between app and body
+        self.backgroundTertiary = Color.hsl(hue, baseSaturation * 0.35, 7)
+
+        // --- Foregrounds: bright, saturated text ---
+        self.foreground = Color.hsl(hue, baseSaturation * 0.80, 70)
+        self.foregroundSecondary = Color.hsl(hue, baseSaturation * 0.70, 55)
+        self.foregroundTertiary = Color.hsl(hue, baseSaturation * 0.60, 40)
+
+        // --- Accents: lighter/brighter variant ---
+        self.accent = Color.hsl(hue, baseSaturation * 0.85, 78)
+        self.accentSecondary = Color.hsl(hue, baseSaturation * 0.75, 50)
+
+        // --- Semantic: hue-shifted from base ---
+        // success = base + 120° (toward green family)
+        let successHue = GeneratedTheme.wrapHue(hue + 120)
+        self.success = Color.hsl(successHue, baseSaturation * 0.70, 65)
+
+        // warning = base + 60° (toward yellow family)
+        let warningHue = GeneratedTheme.wrapHue(hue + 60)
+        self.warning = Color.hsl(warningHue, baseSaturation * 0.80, 70)
+
+        // error = base + 180° (complementary)
+        let errorHue = GeneratedTheme.wrapHue(hue + 180)
+        self.error = Color.hsl(errorHue, baseSaturation * 0.85, 65)
+
+        // info = base − 60° (analogous cool side)
+        let infoHue = GeneratedTheme.wrapHue(hue - 60)
+        self.info = Color.hsl(infoHue, baseSaturation * 0.70, 70)
+
+        // --- UI elements ---
+        self.border = Color.hsl(hue, baseSaturation * 0.40, 25)
+        self.borderFocused = Color.hsl(hue, baseSaturation * 0.80, 70)
+        self.selection = Color.hsl(hue, baseSaturation * 0.85, 78)
+        self.selectionBackground = Color.hsl(hue, baseSaturation * 0.50, 18)
+
+        // --- Status bar ---
+        self.statusBarBackground = Color.hsl(hue, baseSaturation * 0.35, 8)
+        self.statusBarForeground = Color.hsl(hue, baseSaturation * 0.75, 65)
+        self.statusBarHighlight = Color.hsl(hue, baseSaturation * 0.85, 78)
+
+        // --- Container (block appearance) ---
+        self.containerBackground = Color.hsl(hue, baseSaturation * 0.40, 10)
+        self.containerHeaderBackground = Color.hsl(hue, baseSaturation * 0.35, 7)
+        self.buttonBackground = Color.hsl(hue, baseSaturation * 0.45, 15)
+    }
+
+    /// Wraps a hue value to the 0–360 range.
+    private static func wrapHue(_ hue: Double) -> Double {
+        var wrapped = hue.truncatingRemainder(dividingBy: 360)
+        if wrapped < 0 { wrapped += 360 }
+        return wrapped
+    }
+
+    // MARK: - Preset Hues
+
+    /// Predefined hue values for common generated themes.
+    public enum Hue {
+        /// Violet hue (270°).
+        public static let violet: Double = 270
+    }
+
+    // MARK: - Presets
+
+    /// A violet generated theme.
+    public static let violet = GeneratedTheme(name: "Violet", hue: Hue.violet)
+}
+
 // MARK: - Theme Registry
 
 /// Registry of available themes.
 public struct ThemeRegistry {
     /// All available themes in cycling order.
     ///
-    /// Order: Green → Amber → White → Red → NCurses
+    /// Order: Green → Amber → White → Red → NCurses → Violet (generated)
     public static let all: [Theme] = [
         GreenPhosphorTheme(),
         AmberPhosphorTheme(),
         WhitePhosphorTheme(),
         RedPhosphorTheme(),
-        NCursesTheme()
+        NCursesTheme(),
+        GeneratedTheme.violet
     ]
 
     /// Finds a theme by ID.
@@ -562,6 +712,11 @@ extension Theme where Self == RedPhosphorTheme {
 extension Theme where Self == NCursesTheme {
     /// Classic ncurses theme.
     public static var ncurses: NCursesTheme { NCursesTheme() }
+}
+
+extension Theme where Self == GeneratedTheme {
+    /// Violet generated theme (hue 270°).
+    public static var violet: GeneratedTheme { GeneratedTheme.violet }
 }
 
 // MARK: - Theme Manager
