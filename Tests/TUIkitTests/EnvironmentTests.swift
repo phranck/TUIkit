@@ -155,12 +155,14 @@ struct EnvironmentStorageTests {
 
 // MARK: - Environment Property Wrapper Tests
 
-@Suite("Environment Property Wrapper Tests")
+@Suite("Environment Property Wrapper Tests", .serialized)
 struct EnvironmentPropertyWrapperTests {
 
     @Test("@Environment reads current value from shared storage")
     func readsFromStorage() {
         let storage = EnvironmentStorage.shared
+        storage.reset()
+
         var env = storage.environment
         env[TestStringKey.self] = "from-storage"
         storage.environment = env
