@@ -225,7 +225,7 @@ extension String {
     /// The string with all ANSI escape codes removed.
     var stripped: String {
         replacingOccurrences(
-            of: "\u{1B}\\[[0-9;]*[a-zA-Z]",
+            of: ANSIRenderer.ansiPattern,
             with: "",
             options: .regularExpression
         )

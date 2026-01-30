@@ -667,16 +667,11 @@ public final class ThemeManager: @unchecked Sendable {
     public func setTheme(_ theme: Theme) {
         if let index = availableThemes.firstIndex(where: { $0.id == theme.id }) {
             currentIndex = index
-        } else {
-            // Theme not in list, add temporarily at current position
-            currentIndex = 0
         }
-        
-        // Apply the theme directly (even if not in availableThemes)
-        var environment = EnvironmentStorage.shared.environment
-        environment.theme = theme
-        EnvironmentStorage.shared.environment = environment
-        AppState.shared.setNeedsRender()
+        // If theme is not in availableThemes, currentIndex stays unchanged.
+        // Only apply themes that are in the available list to keep
+        // currentTheme and environment in sync.
+        applyCurrentTheme()
     }
     
     /// Applies the current theme to the environment and triggers a re-render.

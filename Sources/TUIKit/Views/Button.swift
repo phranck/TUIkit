@@ -302,7 +302,6 @@ extension Button: Renderable {
 
         // Border characters (optionally colored)
         let vertical = colorizeBorder(String(style.vertical), with: color)
-        let reset = "\u{1B}[0m"
 
         // Top border
         let topLine = String(style.topLeft)
@@ -313,7 +312,7 @@ extension Button: Renderable {
         // Content lines with side borders
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = vertical + paddedLine + reset + vertical
+            let borderedLine = vertical + paddedLine + ANSIRenderer.reset + vertical
             result.append(borderedLine)
         }
 

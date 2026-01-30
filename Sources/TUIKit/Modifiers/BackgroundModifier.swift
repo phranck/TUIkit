@@ -35,23 +35,7 @@ public struct BackgroundModifier: ViewModifier {
 
     /// Applies background color to a string, preserving existing formatting.
     private func applyBackground(to string: String, color: Color) -> String {
-        // Build the background escape sequence
-        let bgCodes: [String]
-        switch color.value {
-        case .standard(let ansi):
-            bgCodes = ["\(ansi.backgroundCode)"]
-        case .bright(let ansi):
-            bgCodes = ["\(ansi.brightBackgroundCode)"]
-        case .palette256(let index):
-            bgCodes = ["48", "5", "\(index)"]
-        case .rgb(let red, let green, let blue):
-            bgCodes = ["48", "2", "\(red)", "\(green)", "\(blue)"]
-        }
-
-        let bgStart = "\u{1B}[\(bgCodes.joined(separator: ";"))m"
-        let reset = ANSIRenderer.reset
-
-        return bgStart + string + reset
+        ANSIRenderer.backgroundCode(for: color) + string + ANSIRenderer.reset
     }
 }
 

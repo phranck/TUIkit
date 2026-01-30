@@ -19,6 +19,12 @@ public enum ANSIRenderer {
     /// Reset code that clears all formatting.
     public static let reset = "\(csi)0m"
 
+    /// Dim/faint text style code.
+    public static let dim = "\(csi)2m"
+
+    /// Regex pattern that matches any ANSI escape sequence.
+    public static let ansiPattern = "\u{1B}\\[[0-9;]*[a-zA-Z]"
+
     // MARK: - Style Rendering
 
     /// Renders text with the specified style.
