@@ -1,22 +1,21 @@
-[![CI](https://github.com/phranck/TUIKit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIKit/actions/workflows/ci.yml)
+[![CI](https://github.com/phranck/TUIkit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIkit/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/Tests-181_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
-![macOS](https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white)
-![Linux](https://img.shields.io/badge/Platform-Linux-FCC624?logo=linux&logoColor=black)
+![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-CC--BY--NC--SA%204.0-lightgrey?style=flat)
 
-![Spotnik - Terminal based Sptoify Player](.github/assets/spotnik_1.png)
+![TUIkit Banner](.github/assets/github-banner.png)
 
-# TUIKit
+# TUIkit
 
 A SwiftUI-like framework for building Terminal User Interfaces in Swift — no ncurses, no C dependencies, just pure Swift.
 
 ## What is this?
 
-TUIKit lets you build TUI apps using the same declarative syntax you already know from SwiftUI. Define your UI with `View`, compose views with `VStack`, `HStack`, and `ZStack`, style text with modifiers like `.bold()` and `.foregroundColor(.red)`, and run it all in your terminal.
+TUIkit lets you build TUI apps using the same declarative syntax you already know from SwiftUI. Define your UI with `View`, compose views with `VStack`, `HStack`, and `ZStack`, style text with modifiers like `.bold()` and `.foregroundColor(.red)`, and run it all in your terminal.
 
 ```swift
-import TUIKit
+import TUIkit
 
 @main
 struct MyApp: App {
@@ -32,7 +31,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 1) {
-            Text("Hello, TUIKit!")
+            Text("Hello, TUIkit!")
                 .bold()
                 .foregroundColor(.cyan)
             
@@ -85,18 +84,18 @@ struct ContentView: View {
 ## Run the Example App
 
 ```bash
-swift run TUIKitExample
+swift run TUIkitExample
 ```
 
 Press `q` or `ESC` to exit.
 
 ## Installation
 
-Add TUIKit to your `Package.swift`:
+Add TUIkit to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/phranck/TUIKit.git", branch: "main")
+    .package(url: "https://github.com/phranck/TUIkit.git", branch: "main")
 ]
 ```
 
@@ -105,13 +104,13 @@ Then add it to your target:
 ```swift
 .target(
     name: "YourApp",
-    dependencies: ["TUIKit"]
+    dependencies: ["TUIkit"]
 )
 ```
 
 ## Theming
 
-TUIKit includes 8 predefined themes inspired by classic terminals:
+TUIkit includes 8 predefined themes inspired by classic terminals:
 
 ```swift
 @main
@@ -146,16 +145,16 @@ Available themes:
 
 ```
 Sources/
-├── TUIKit/
+├── TUIkit/
 │   ├── App/              App, Scene, WindowGroup
 │   ├── Core/             View, ViewBuilder, State, Environment, Color, Theme
 │   ├── Modifiers/        Border, Frame, Padding, Overlay, Lifecycle
 │   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer, FrameBuffer
 │   └── Views/            Text, Stacks, Button, Menu, Alert, StatusBar, ...
-└── TUIKitExample/        Example app (executable target)
+└── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIKitTests/          181 tests across 27 test suites
+└── TUIkitTests/          181 tests across 27 test suites
 ```
 
 ## Requirements

@@ -77,7 +77,7 @@ jobs:
         run: |
           swift package --allow-writing-to-directory docs-output \
             generate-documentation \
-            --target TUIKit \
+            --target TUIkit \
             --output-path docs-output \
             --transform-for-static-hosting
 
@@ -117,7 +117,7 @@ jobs:
             <meta http-equiv="refresh" content="0; url=/documentation/tuikit" />
           </head>
           <body>
-            <a href="/documentation/tuikit">Redirecting to TUIKit Documentation...</a>
+            <a href="/documentation/tuikit">Redirecting to TUIkit Documentation...</a>
           </body>
           </html>
           HTMLEOF

@@ -14,7 +14,7 @@ let swiftLintPlugin: [Target.PluginUsage] = enableSwiftLint
     : []
 
 let package = Package(
-    name: "TUIKit",
+    name: "TUIkit",
     // Minimum deployment targets for Apple platforms
     // Linux is automatically supported (no platform specification needed)
     platforms: [
@@ -22,12 +22,12 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "TUIKit",
-            targets: ["TUIKit"]
+            name: "TUIkit",
+            targets: ["TUIkit"]
         ),
         .executable(
-            name: "TUIKitExample",
-            targets: ["TUIKitExample"]
+            name: "TUIkitExample",
+            targets: ["TUIkitExample"]
         ),
     ],
     dependencies: [
@@ -36,17 +36,17 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "TUIKit",
+            name: "TUIkit",
             plugins: swiftLintPlugin
         ),
         .executableTarget(
-            name: "TUIKitExample",
-            dependencies: ["TUIKit"],
+            name: "TUIkitExample",
+            dependencies: ["TUIkit"],
             plugins: swiftLintPlugin
         ),
         .testTarget(
-            name: "TUIKitTests",
-            dependencies: ["TUIKit"]
+            name: "TUIkitTests",
+            dependencies: ["TUIkit"]
         ),
     ]
 )
