@@ -14,9 +14,6 @@ import Foundation
     ///
     /// Useful when running on Apple platforms with standard app conventions.
     public final class UserDefaultsStorage: StorageBackend, @unchecked Sendable {
-        /// The shared instance using standard UserDefaults.
-        public static let shared = UserDefaultsStorage()
-
         /// The underlying UserDefaults.
         private let defaults: UserDefaults
 
@@ -66,9 +63,6 @@ import Foundation
     /// Uses a JSON file at `~/.local/share/[appName]/UserDefaults.json` to store data,
     /// following the XDG Base Directory Specification.
     public final class UserDefaultsStorage: StorageBackend, @unchecked Sendable {
-        /// The shared instance (standard defaults equivalent).
-        public static let shared = UserDefaultsStorage()
-
         /// The underlying file storage.
         private let storage: JSONFileStorage
 
