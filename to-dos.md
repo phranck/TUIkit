@@ -22,7 +22,7 @@
 
 ### Code Quality (aus Projektanalyse)
 
-- [ ] **B.4** AppRunner God Class — Split in InputHandler, RenderLoop, SignalManager (Medium)
+- [x] **B.4** AppRunner God Class — Split in SignalManager, InputHandler, RenderLoop, StatusBarState (PR #12) ✅
 - [ ] **C.4** Preference Keys ggf. unused — `TabBadgeKey`, `AnchorPreferenceKey` prüfen/entfernen (Low)
 - [ ] **E.1** Public types missing doc comments — `///` für ~7 Modifier-Properties (Medium)
 - [ ] **E.2** Complex logic without inline comments — KeyEvent, FrameBuffer, ViewRenderer (Medium)
@@ -31,6 +31,8 @@
 - [ ] **H.8** Test coverage gaps — Views/Modifiers untested (High)
 
 ### Documentation
+- [ ] **DocC Article: App Lifecycle** — Ausführliche Beschreibung des gesamten App-Lifecycles: `@main` → `App.main()` → `AppRunner.init` (Dependency Wiring) → `run()` (Terminal-Setup, Signal-Handler, Main Loop) → `cleanup()`. Inkl. Diagramm, wann welche Subsysteme erstellt werden, wie `SignalManager`, `InputHandler`, `RenderLoop` zusammenspielen.
+- [ ] **DocC Article: Render Cycle** — Detaillierte Beschreibung des Render-Cycles: Trigger (SIGWINCH, AppState, User Input) → `RenderLoop.render()` → Key-Handler/Focus-Clear → Lifecycle-Tracking (beginRenderPass) → Environment-Assembly → Scene-Rendering → Lifecycle-End (onDisappear) → StatusBar-Rendering. Erklären warum `onAppear` synchron im Traversal feuert, warum kein Double-Buffer nötig ist.
 - [ ] Expand DocC articles: add more guides and tutorials
 - [ ] Improve inline Swift doc comments for better auto-generated API docs
 - [ ] Create interactive code examples in documentation
