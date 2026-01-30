@@ -308,15 +308,11 @@ public final class AppearanceManager: @unchecked Sendable {
     public func setAppearance(_ appearance: Appearance) {
         if let index = availableAppearances.firstIndex(where: { $0.id == appearance.id }) {
             currentIndex = index
-        } else {
-            currentIndex = 0
         }
-        
-        // Apply the appearance directly (even if not in availableAppearances)
-        var environment = EnvironmentStorage.shared.environment
-        environment.appearance = appearance
-        EnvironmentStorage.shared.environment = environment
-        AppState.shared.setNeedsRender()
+        // If appearance is not in availableAppearances, currentIndex stays unchanged.
+        // Only apply appearances that are in the available list to keep
+        // currentAppearance and environment in sync.
+        applyCurrentAppearance()
     }
     
     /// Applies the current appearance to the environment and triggers a re-render.

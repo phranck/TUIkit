@@ -46,10 +46,6 @@ extension DimmedModifier: Renderable {
     private func applyDim(to text: String) -> String {
         guard !text.isEmpty else { return text }
 
-        // ANSI dim code
-        let dimCode = "\u{1B}[2m"
-        let resetCode = "\u{1B}[0m"
-
         // If the line is empty (just spaces), keep it as is
         if text.stripped.trimmingCharacters(in: .whitespaces).isEmpty {
             return text
@@ -58,7 +54,7 @@ extension DimmedModifier: Renderable {
         // Wrap the entire line in dim codes
         // Note: This adds dim at the start and reset at the end
         // Any existing styles will still work, but will be dimmed
-        return dimCode + text + resetCode
+        return ANSIRenderer.dim + text + ANSIRenderer.reset
     }
 }
 

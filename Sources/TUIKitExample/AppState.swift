@@ -11,13 +11,13 @@ import TUIKit
 
 /// The available demo pages in the example app.
 enum DemoPage: Int, CaseIterable {
-    case menu = 0
-    case textStyles = 1
-    case colors = 2
-    case containers = 3
-    case overlays = 4
-    case layout = 5
-    case buttons = 6
+    case menu
+    case textStyles
+    case colors
+    case containers
+    case overlays
+    case layout
+    case buttons
 }
 
 // MARK: - App State

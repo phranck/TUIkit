@@ -448,9 +448,8 @@ internal final class AppRunner<A: App> {
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
-        AppState.shared.observe { [weak self] in
+        AppState.shared.observe {
             needsRerender = true
-            _ = self  // Silence warning
         }
 
         isRunning = true
@@ -595,19 +594,19 @@ internal final class AppRunner<A: App> {
 
         // Default handling (only if no handler consumed the event)
         switch event.key {
-        case .character(let char) where char == "q" || char == "Q":
+        case .character(let character) where character == "q" || character == "Q":
             // 'q' is the only way to quit (respects quitBehavior setting)
             if statusBar.isQuitAllowed {
                 isRunning = false
             }
             
-        case .character(let char) where char == "t" || char == "T":
+        case .character(let character) where character == "t" || character == "T":
             // 't' cycles theme (if theme item is enabled)
             if statusBar.showThemeItem {
                 themeManager.cycleTheme()
             }
             
-        case .character(let char) where char == "a" || char == "A":
+        case .character(let character) where character == "a" || character == "A":
             // 'a' cycles appearance
             appearanceManager.cycleAppearance()
             
