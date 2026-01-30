@@ -41,7 +41,7 @@ struct AppearanceTests {
     @Test("Appearance can be created with ID and borderStyle")
     func appearanceCreation() {
         let appearance = Appearance(id: .line, borderStyle: .line)
-        #expect(appearance.id == .line)
+        #expect(appearance.rawId == .line)
         #expect(appearance.borderStyle == .line)
     }
     
@@ -66,7 +66,7 @@ struct AppearanceTests {
     
     @Test("Default appearance is rounded")
     func defaultAppearance() {
-        #expect(Appearance.default.id == .rounded)
+        #expect(Appearance.default.rawId == .rounded)
         #expect(Appearance.default.borderStyle == .rounded)
     }
     
@@ -83,29 +83,29 @@ struct AppearanceTests {
     func registryContainsAll() {
         let all = AppearanceRegistry.all
         #expect(all.count == 5)
-        #expect(all.contains { $0.id == .line })
-        #expect(all.contains { $0.id == .rounded })
-        #expect(all.contains { $0.id == .doubleLine })
-        #expect(all.contains { $0.id == .heavy })
-        #expect(all.contains { $0.id == .block })
+        #expect(all.contains { $0.rawId == .line })
+        #expect(all.contains { $0.rawId == .rounded })
+        #expect(all.contains { $0.rawId == .doubleLine })
+        #expect(all.contains { $0.rawId == .heavy })
+        #expect(all.contains { $0.rawId == .block })
     }
     
     @Test("AppearanceRegistry cycling order is correct")
     func registryCyclingOrder() {
         let all = AppearanceRegistry.all
         // Order: line → rounded → doubleLine → heavy → block
-        #expect(all[0].id == .line)
-        #expect(all[1].id == .rounded)
-        #expect(all[2].id == .doubleLine)
-        #expect(all[3].id == .heavy)
-        #expect(all[4].id == .block)
+        #expect(all[0].rawId == .line)
+        #expect(all[1].rawId == .rounded)
+        #expect(all[2].rawId == .doubleLine)
+        #expect(all[3].rawId == .heavy)
+        #expect(all[4].rawId == .block)
     }
     
     @Test("AppearanceRegistry can find appearance by ID")
     func registryFindById() {
         let found = AppearanceRegistry.appearance(withId: .heavy)
         #expect(found != nil)
-        #expect(found?.id == .heavy)
+        #expect(found?.rawId == .heavy)
         #expect(found?.borderStyle == .heavy)
     }
     
@@ -115,44 +115,52 @@ struct AppearanceTests {
         let found = AppearanceRegistry.appearance(withId: customId)
         #expect(found == nil)
     }
+
+    // MARK: - Cyclable Conformance
+    
+    @Test("Appearance conforms to Cyclable with string id")
+    func cyclableConformance() {
+        let appearance = Appearance.rounded
+        let cyclable: any Cyclable = appearance
+        #expect(cyclable.id == "rounded")
+        #expect(cyclable.name == "Rounded")
+    }
 }
 
-// MARK: - Appearance Manager Tests
+// MARK: - Appearance Manager Tests (ThemeManager)
 
 @Suite("Appearance Manager Tests")
 struct AppearanceManagerTests {
-    
-    @Test("AppearanceManager can be instantiated")
+
+    /// Creates a ThemeManager for appearances (test helper).
+    private func makeAppearanceManager(items: [Appearance] = AppearanceRegistry.all) -> ThemeManager {
+        ThemeManager(items: items, applyToEnvironment: { _ in })
+    }
+
+    @Test("ThemeManager for appearances can be instantiated")
     func managerCreation() {
-        let manager = AppearanceManager()
-        #expect(manager.availableAppearances.count == 5)
+        let manager = makeAppearanceManager()
+        #expect(manager.items.count == 5)
     }
     
-    @Test("AppearanceManager starts with first appearance (line)")
+    @Test("ThemeManager for appearances starts with first appearance (line)")
     func managerStartsWithLine() {
-        let manager = AppearanceManager()
-        // Default starts at index 0 which is .line
-        #expect(manager.currentAppearance.id == .line)
+        let manager = makeAppearanceManager()
+        #expect(manager.currentAppearance?.rawId == .line)
     }
     
-    @Test("AppearanceManager currentAppearanceName returns capitalized name")
+    @Test("ThemeManager for appearances currentName returns capitalized name")
     func managerCurrentName() {
-        let manager = AppearanceManager()
-        #expect(manager.currentAppearanceName == "Line")
+        let manager = makeAppearanceManager()
+        #expect(manager.currentName == "Line")
     }
     
-    @Test("AppearanceManager can be created with custom appearances")
+    @Test("ThemeManager for appearances can be created with custom items")
     func managerCustomAppearances() {
-        let custom = [Appearance.rounded, Appearance.heavy]
-        let manager = AppearanceManager(appearances: custom)
-        #expect(manager.availableAppearances.count == 2)
-        #expect(manager.currentAppearance.id == .rounded)
-    }
-    
-    @Test("AppearanceManager with empty array uses defaults")
-    func managerEmptyArray() {
-        let manager = AppearanceManager(appearances: [])
-        #expect(manager.availableAppearances.count == 5)
+        let custom: [Appearance] = [.rounded, .heavy]
+        let manager = makeAppearanceManager(items: custom)
+        #expect(manager.items.count == 2)
+        #expect(manager.currentAppearance?.rawId == .rounded)
     }
 }
 
@@ -164,28 +172,31 @@ struct AppearanceEnvironmentTests {
     @Test("Appearance can be accessed via environment")
     func environmentAccess() {
         let env = EnvironmentValues()
-        #expect(env.appearance.id == .rounded) // Default
+        #expect(env.appearance.rawId == .rounded) // Default
     }
     
     @Test("Appearance can be set via environment")
     func environmentSet() {
         var env = EnvironmentValues()
         env.appearance = .heavy
-        #expect(env.appearance.id == .heavy)
+        #expect(env.appearance.rawId == .heavy)
     }
     
     @Test("AppearanceManager can be accessed via environment")
     func managerEnvironmentAccess() {
         let env = EnvironmentValues()
         let manager = env.appearanceManager
-        #expect(manager.availableAppearances.count == 5)
+        #expect(manager.items.count == 5)
     }
     
     @Test("Custom AppearanceManager can be set via environment")
     func managerEnvironmentSet() {
         var env = EnvironmentValues()
-        let customManager = AppearanceManager(appearances: [.line, .block])
+        let customManager = ThemeManager(
+            items: [Appearance.line, Appearance.block] as [Appearance],
+            applyToEnvironment: { _ in }
+        )
         env.appearanceManager = customManager
-        #expect(env.appearanceManager.availableAppearances.count == 2)
+        #expect(env.appearanceManager.items.count == 2)
     }
 }
