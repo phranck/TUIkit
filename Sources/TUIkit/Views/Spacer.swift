@@ -87,3 +87,22 @@ public struct Divider: View {
         fatalError("Divider is a primitive view")
     }
 }
+
+// MARK: - Spacer Rendering
+
+extension Spacer: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Standalone spacer (outside a stack): render as empty lines
+        let count = minLength ?? 1
+        return FrameBuffer(emptyWithHeight: count)
+    }
+}
+
+// MARK: - Divider Rendering
+
+extension Divider: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let line = String(repeating: character, count: context.availableWidth)
+        return FrameBuffer(text: line)
+    }
+}

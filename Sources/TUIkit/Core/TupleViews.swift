@@ -28,3 +28,17 @@ public struct TupleView<each V: View>: View {
         fatalError("TupleView renders its children directly")
     }
 }
+
+// MARK: - TupleView Rendering + ChildInfoProvider
+
+extension TupleView: Renderable, ChildInfoProvider {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
+    }
+
+    func childInfos(context: RenderContext) -> [ChildInfo] {
+        var infos: [ChildInfo] = []
+        repeat infos.append(makeChildInfo(for: each children, context: context))
+        return infos
+    }
+}
