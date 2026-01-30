@@ -285,8 +285,8 @@ extension Button: Renderable {
             }
         }
 
-        // Add focus indicator if focused
-        if isFocused && !isDisabled {
+        // Add focus indicator if focused (but not for primary/bold buttons)
+        if isFocused && !isDisabled && !currentStyle.isBold {
             buffer = addFocusIndicator(to: buffer)
         }
 
