@@ -36,5 +36,5 @@ public func renderOnce<Content: View>(@ViewBuilder content: () -> Content) -> In
     let view = content()
     let renderer = ViewRenderer()
     renderer.render(view)
-    return 0 // TODO: Return actual line count
+    return 0 // Line count not tracked by ViewRenderer
 }

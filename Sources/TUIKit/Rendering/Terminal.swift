@@ -162,11 +162,10 @@ public final class Terminal: @unchecked Sendable {
     public func fillBackground(_ color: Color) {
         let size = getSize()
         let bgCode = ANSIRenderer.backgroundCode(for: color)
-        let reset = ANSIRenderer.reset
         
         // Move to top-left and fill each line
         var output = ANSIRenderer.moveCursor(toRow: 1, column: 1)
-        let emptyLine = bgCode + String(repeating: " ", count: size.width) + reset
+        let emptyLine = bgCode + String(repeating: " ", count: size.width) + ANSIRenderer.reset
         
         for _ in 0..<size.height {
             output += emptyLine
@@ -220,11 +219,11 @@ public final class Terminal: @unchecked Sendable {
     ///
     /// - Returns: The read character or nil on timeout/error.
     public func readChar() -> Character? {
-        var char: UInt8 = 0
-        let bytesRead = read(STDIN_FILENO, &char, 1)
+        var byte: UInt8 = 0
+        let bytesRead = read(STDIN_FILENO, &byte, 1)
 
         if bytesRead == 1 {
-            return Character(UnicodeScalar(char))
+            return Character(UnicodeScalar(byte))
         }
         return nil
     }
