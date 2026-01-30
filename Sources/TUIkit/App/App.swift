@@ -82,7 +82,7 @@ internal final class AppRunner<A: App> {
             items: PaletteRegistry.all,
             applyToEnvironment: { item in
                 if let palette = item as? any Palette {
-                    EnvironmentStorage.shared.environment.palette = palette
+                    EnvironmentStorage.active.environment.palette = palette
                 }
             }
         )
@@ -90,7 +90,7 @@ internal final class AppRunner<A: App> {
             items: AppearanceRegistry.all,
             applyToEnvironment: { item in
                 if let appearance = item as? Appearance {
-                    EnvironmentStorage.shared.environment.appearance = appearance
+                    EnvironmentStorage.active.environment.appearance = appearance
                 }
             }
         )
@@ -128,7 +128,7 @@ internal final class AppRunner<A: App> {
         terminal.enableRawMode()
 
         // Set up environment with all managed subsystems
-        EnvironmentStorage.shared.environment = renderer.buildEnvironment()
+        EnvironmentStorage.active.environment = renderer.buildEnvironment()
 
         // Register for state changes
         AppState.active.observe { [signals] in
@@ -169,7 +169,7 @@ internal final class AppRunner<A: App> {
         terminal.showCursor()
         terminal.exitAlternateScreen()
         AppState.active.clearObservers()
-        EnvironmentStorage.shared.reset()
+        EnvironmentStorage.active.reset()
         focusManager.clear()
         tuiContext.reset()
     }
