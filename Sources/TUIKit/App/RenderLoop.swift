@@ -50,8 +50,9 @@ internal struct RenderLoop<A: App> {
     /// 4. Ends lifecycle tracking (triggers `onDisappear` for removed views)
     /// 5. Renders the status bar at the bottom
     func render() {
-        // Clear event handlers before re-rendering
+        // Clear per-frame state before re-rendering
         tuiContext.keyEventDispatcher.clearHandlers()
+        tuiContext.preferences.beginRenderPass()
         focusManager.clear()
 
         // Begin lifecycle tracking for this render pass
