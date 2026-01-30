@@ -20,18 +20,18 @@ struct PaletteRegistryTests {
 
     @Test("Registry cycling order starts with green")
     func registryCyclingOrder() {
-        #expect(PaletteRegistry.all[0].id == "green-phosphor")
+        #expect(PaletteRegistry.all[0].id == "green")
         #expect(PaletteRegistry.all[1].id == "generated-gen. green")
-        #expect(PaletteRegistry.all[2].id == "amber-phosphor")
-        #expect(PaletteRegistry.all[3].id == "white-phosphor")
-        #expect(PaletteRegistry.all[4].id == "red-phosphor")
+        #expect(PaletteRegistry.all[2].id == "amber")
+        #expect(PaletteRegistry.all[3].id == "white")
+        #expect(PaletteRegistry.all[4].id == "red")
         #expect(PaletteRegistry.all[5].id == "ncurses")
         #expect(PaletteRegistry.all[6].id == "generated-violet")
     }
 
     @Test("Registry finds palette by ID")
     func findById() {
-        let palette = PaletteRegistry.palette(withId: "amber-phosphor")
+        let palette = PaletteRegistry.palette(withId: "amber")
         #expect(palette != nil)
         #expect(palette?.name == "Amber")
     }
@@ -46,7 +46,7 @@ struct PaletteRegistryTests {
     func findByName() {
         let palette = PaletteRegistry.palette(withName: "Red")
         #expect(palette != nil)
-        #expect(palette?.id == "red-phosphor")
+        #expect(palette?.id == "red")
     }
 
     @Test("Registry returns nil for unknown name")

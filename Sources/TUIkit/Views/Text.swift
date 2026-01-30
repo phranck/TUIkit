@@ -172,3 +172,11 @@ public struct TextStyle: Sendable {
     /// Creates a default TextStyle with no formatting.
     public init() {}
 }
+
+// MARK: - Text Rendering
+
+extension Text: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer(text: ANSIRenderer.render(content, with: style))
+    }
+}

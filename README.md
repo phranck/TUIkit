@@ -71,7 +71,7 @@ struct ContentView: View {
 
 - **Text styling** — bold, italic, underline, strikethrough, dim, blink, inverted
 - **Full color support** — ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
-- **Theming** — 8 predefined themes (Phosphor variants, ncurses, Dark/Light)
+- **Theming** — 7 predefined palettes (Green, Amber, White, Red, NCurses, Generated)
 - **Border styles** — rounded, line, double, thick, ASCII, and more
 
 ### Advanced
@@ -110,7 +110,7 @@ Then add it to your target:
 
 ## Theming
 
-TUIkit includes 8 predefined themes inspired by classic terminals:
+TUIkit includes predefined palettes inspired by classic terminals:
 
 ```swift
 @main
@@ -119,20 +119,18 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
         }
-        .environment(\.theme, GreenPhosphorTheme())  // Classic green terminal
+        .palette(GreenPalette())  // Classic green terminal
     }
 }
 ```
 
-Available themes:
-- `DefaultTheme` — Standard ANSI colors
-- `GreenPhosphorTheme` — Classic green CRT
-- `AmberPhosphorTheme` — Amber monochrome
-- `WhitePhosphorTheme` — White on black
-- `RedPhosphorTheme` — Red terminal
-- `NCursesTheme` — ncurses-inspired colors
-- `DarkTheme` — Modern dark theme
-- `LightTheme` — Light background
+Available palettes:
+- `GreenPalette` — Classic green CRT (default)
+- `AmberPalette` — Amber monochrome
+- `WhitePalette` — White on black
+- `RedPalette` — Red terminal
+- `NCursesPalette` — ncurses-inspired colors
+- `GeneratedPalette` — Algorithmic palette from a single hue
 
 ## Architecture
 
