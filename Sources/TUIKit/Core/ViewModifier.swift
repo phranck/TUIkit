@@ -37,6 +37,12 @@ public protocol ViewModifier {
 ///
 /// This is the return type of modifier methods like `.frame()` and `.padding()`.
 /// It is created automatically — users don't instantiate this directly.
+///
+/// `ModifiedView` is a **primitive view**: it declares `body: Never`
+/// and conforms to ``Renderable``. The rendering system calls
+/// ``Renderable/renderToBuffer(context:)`` which first renders the
+/// wrapped `content`, then applies the modifier's transformation.
+/// The `body` property is never called.
 public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The original view.
     public let content: Content
@@ -44,6 +50,7 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The modifier to apply.
     public let modifier: Modifier
 
+    /// Never called — rendering is handled by ``Renderable`` conformance.
     public var body: Never {
         fatalError("ModifiedView renders via Renderable")
     }
