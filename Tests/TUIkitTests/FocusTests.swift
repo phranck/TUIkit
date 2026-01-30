@@ -345,13 +345,14 @@ struct FocusStateTests {
         EnvironmentStorage.active.reset()
     }
 
-    @Test("FocusState requestFocus works")
+    @Test("FocusState requestFocus changes focus via environment manager")
     func focusStateRequestFocus() {
-        // Set up a focus manager in the environment
+        // Set up a dedicated focus manager in the environment.
+        // Note: FocusState.requestFocus() reads from EnvironmentStorage.active,
+        // so we must set it and verify in one uninterrupted sequence.
         let manager = FocusManager()
         var environment = EnvironmentValues()
         environment.focusManager = manager
-        EnvironmentStorage.active.environment = environment
 
         let element1 = MockFocusable(id: "req-1")
         let element2 = MockFocusable(id: "req-2")
@@ -359,13 +360,18 @@ struct FocusStateTests {
         manager.register(element1)
         manager.register(element2)
 
-        let state = FocusState(id: "req-2")
-        state.requestFocus()
+        // First element is focused after registration
+        #expect(manager.isFocused(id: "req-1"))
 
-        #expect(manager.isFocused(id: "req-2"))
-
-        // Cleanup
+        // Set environment, request focus, and verify — all within the
+        // EnvironmentStorage scope to minimize the race window with
+        // other test suites that also mutate EnvironmentStorage.active.
+        EnvironmentStorage.active.environment = environment
+        FocusState(id: "req-2").requestFocus()
+        let focusedReq2 = manager.isFocused(id: "req-2")
         EnvironmentStorage.active.reset()
+
+        #expect(focusedReq2, "req-2 should be focused after requestFocus()")
     }
 }
 
