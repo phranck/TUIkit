@@ -35,7 +35,8 @@ public enum BorderRenderer {
         innerWidth: Int,
         color: Color
     ) -> String {
-        let line = String(style.topLeft)
+        let line =
+            String(style.topLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.topRight)
         return ANSIRenderer.colorize(line, foreground: color)
@@ -86,7 +87,8 @@ public enum BorderRenderer {
         innerWidth: Int,
         color: Color
     ) -> String {
-        let line = String(style.bottomLeft)
+        let line =
+            String(style.bottomLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.bottomRight)
         return ANSIRenderer.colorize(line, foreground: color)
@@ -106,7 +108,8 @@ public enum BorderRenderer {
         innerWidth: Int,
         color: Color
     ) -> String {
-        let line = String(style.leftT)
+        let line =
+            String(style.leftT)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.rightT)
         return ANSIRenderer.colorize(line, foreground: color)

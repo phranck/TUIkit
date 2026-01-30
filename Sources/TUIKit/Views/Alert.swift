@@ -89,7 +89,8 @@ public struct Alert<Actions: View>: View {
 extension Alert: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let hasActions = !(actions is EmptyView)
-        let effectiveConfig = hasActions
+        let effectiveConfig =
+            hasActions
             ? config
             : ContainerConfig(
                 borderStyle: config.borderStyle,
