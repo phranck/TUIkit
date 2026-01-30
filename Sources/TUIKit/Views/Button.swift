@@ -301,13 +301,13 @@ extension Button: Renderable {
         var result: [String] = []
 
         // Border characters (optionally colored)
-        let vertical = colorizeBorder(String(style.vertical), with: color)
+        let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: color)
 
         // Top border
         let topLine = String(style.topLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.topRight)
-        result.append(colorizeBorder(topLine, with: color))
+        result.append(ANSIRenderer.colorize(topLine, foreground: color))
 
         // Content lines with side borders
         for line in buffer.lines {
@@ -320,16 +320,9 @@ extension Button: Renderable {
         let bottomLine = String(style.bottomLeft)
             + String(repeating: style.horizontal, count: innerWidth)
             + String(style.bottomRight)
-        result.append(colorizeBorder(bottomLine, with: color))
+        result.append(ANSIRenderer.colorize(bottomLine, foreground: color))
 
         return FrameBuffer(lines: result)
-    }
-
-    /// Colorizes border characters.
-    private func colorizeBorder(_ string: String, with color: Color) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color
-        return ANSIRenderer.render(string, with: style)
     }
 
     /// Adds a focus indicator (▸) to the left of the button.
