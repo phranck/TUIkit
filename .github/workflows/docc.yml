@@ -56,6 +56,20 @@ jobs:
           }
           EOF
 
+      - name: Add root redirect to documentation
+        run: |
+          cat > docs-output/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta http-equiv="refresh" content="0; url=/documentation/tuikit" />
+          </head>
+          <body>
+            <a href="/documentation/tuikit">Redirecting to TUIKit Documentation...</a>
+          </body>
+          </html>
+          HTMLEOF
+
       - name: Add CNAME for custom domain
         run: echo "tuikit.layered.work" > docs-output/CNAME
 
