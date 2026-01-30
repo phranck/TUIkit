@@ -157,7 +157,7 @@ public final class Terminal: @unchecked Sendable {
         string.utf8CString.withUnsafeBufferPointer { buffer in
             // buffer includes null terminator — exclude it
             let count = buffer.count - 1
-            guard count > 0 else { return }
+            guard count >= 1 else { return }
             buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
                 var written = 0
                 while written < count {
