@@ -322,7 +322,7 @@ struct FocusManagerTests {
 
 // MARK: - Focus State Tests
 
-@Suite("Focus State Tests")
+@Suite("Focus State Tests", .serialized)
 struct FocusStateTests {
 
     @Test("FocusState can be created with ID")
