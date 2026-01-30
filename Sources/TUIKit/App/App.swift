@@ -405,8 +405,19 @@ extension EnvironmentValues {
 // MARK: - Signal Handler Flag
 
 /// Flag set by the SIGWINCH signal handler to request a re-render.
-/// Must be an atomic type safe for signal context.
+///
+/// Marked `nonisolated(unsafe)` because it is written from a signal handler
+/// and read from the main loop. A single-word Bool write/read is practically
+/// atomic on arm64/x86_64. Using `Atomic<Bool>` from the `Synchronization`
+/// module would be cleaner but requires macOS 15+.
 private nonisolated(unsafe) var needsRerender = false
+
+/// Flag set by the SIGINT signal handler to request a graceful shutdown.
+///
+/// The actual cleanup (disabling raw mode, restoring cursor, exiting
+/// alternate screen) happens in the main loop — signal handlers must
+/// not call non-async-signal-safe functions like `write()` or `fflush()`.
+private nonisolated(unsafe) var needsShutdown = false
 
 // MARK: - App Runner
 
@@ -416,8 +427,8 @@ internal final class AppRunner<A: App> {
     let terminal: Terminal
     let statusBar: StatusBarState
     let focusManager: FocusManager
-    let themeManager: ThemeManager
-    let appearanceManager: AppearanceManager
+    let paletteManager: ThemeManager
+    let appearanceManager: ThemeManager
     private var isRunning = false
 
     init(app: A) {
@@ -425,8 +436,22 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
-        self.themeManager = ThemeManager()
-        self.appearanceManager = AppearanceManager()
+        self.paletteManager = ThemeManager(
+            items: PaletteRegistry.all,
+            applyToEnvironment: { item in
+                if let palette = item as? any Palette {
+                    EnvironmentStorage.shared.environment.palette = palette
+                }
+            }
+        )
+        self.appearanceManager = ThemeManager(
+            items: AppearanceRegistry.all,
+            applyToEnvironment: { item in
+                if let appearance = item as? Appearance {
+                    EnvironmentStorage.shared.environment.appearance = appearance
+                }
+            }
+        )
 
         // Configure status bar style
         self.statusBar.style = .bordered
@@ -443,14 +468,13 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
+        environment.paletteManager = paletteManager
         environment.appearanceManager = appearanceManager
         EnvironmentStorage.shared.environment = environment
 
         // Register for state changes
-        AppState.shared.observe { [weak self] in
+        AppState.shared.observe {
             needsRerender = true
-            _ = self  // Silence warning
         }
 
         isRunning = true
@@ -460,6 +484,12 @@ internal final class AppRunner<A: App> {
 
         // Main loop
         while isRunning {
+            // Check for graceful shutdown request (from SIGINT handler)
+            if needsShutdown {
+                isRunning = false
+                break
+            }
+
             // Check if terminal was resized or state changed
             if needsRerender || AppState.shared.needsRender {
                 needsRerender = false
@@ -493,10 +523,14 @@ internal final class AppRunner<A: App> {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
-        environment.theme = themeManager.currentTheme  // Apply current theme
+        environment.paletteManager = paletteManager
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
         environment.appearanceManager = appearanceManager
-        environment.appearance = appearanceManager.currentAppearance  // Apply current appearance
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
 
         let context = RenderContext(
             terminal: terminal,
@@ -544,14 +578,18 @@ internal final class AppRunner<A: App> {
             labelColor: labelColor
         )
 
-        // Create render context with current environment for theme colors
+        // Create render context with current environment for palette colors
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
         environment.focusManager = focusManager
-        environment.themeManager = themeManager
-        environment.theme = themeManager.currentTheme
+        environment.paletteManager = paletteManager
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
         environment.appearanceManager = appearanceManager
-        environment.appearance = appearanceManager.currentAppearance
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
 
         let context = RenderContext(
             terminal: terminal,
@@ -562,8 +600,8 @@ internal final class AppRunner<A: App> {
 
         let buffer = renderToBuffer(statusBarView, context: context)
         
-        // Get background color from theme
-        let bgColor = themeManager.currentTheme.background
+        // Get background color from palette
+        let bgColor = paletteManager.currentPalette?.background ?? .black
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
         let terminalWidth = terminal.width
@@ -595,21 +633,21 @@ internal final class AppRunner<A: App> {
 
         // Default handling (only if no handler consumed the event)
         switch event.key {
-        case .character(let char) where char == "q" || char == "Q":
+        case .character(let character) where character == "q" || character == "Q":
             // 'q' is the only way to quit (respects quitBehavior setting)
             if statusBar.isQuitAllowed {
                 isRunning = false
             }
             
-        case .character(let char) where char == "t" || char == "T":
-            // 't' cycles theme (if theme item is enabled)
+        case .character(let character) where character == "t" || character == "T":
+            // 't' cycles palette (if theme item is enabled)
             if statusBar.showThemeItem {
-                themeManager.cycleTheme()
+                paletteManager.cycleNext()
             }
             
-        case .character(let char) where char == "a" || char == "A":
+        case .character(let character) where character == "a" || character == "A":
             // 'a' cycles appearance
-            appearanceManager.cycleAppearance()
+            appearanceManager.cycleNext()
             
         default:
             break
@@ -630,12 +668,11 @@ internal final class AppRunner<A: App> {
     }
 
     private func setupSignalHandlers() {
-        // Catch SIGINT (Ctrl+C)
+        // Catch SIGINT (Ctrl+C) — set a flag and let the main loop
+        // handle cleanup. Signal handlers must only use async-signal-safe
+        // operations; writing ANSI escapes or calling fflush() is NOT safe.
         signal(SIGINT) { _ in
-            Terminal.shared.disableRawMode()
-            Terminal.shared.showCursor()
-            Terminal.shared.exitAlternateScreen()
-            exit(0)
+            needsShutdown = true
         }
 
         // Catch SIGWINCH (terminal size change) — sets a flag
@@ -660,8 +697,8 @@ extension WindowGroup: SceneRenderable {
         let terminalWidth = terminal.width
         let terminalHeight = context.availableHeight
         
-        // Get background color from theme
-        let bgColor = context.environment.theme.background
+        // Get background color from palette
+        let bgColor = context.environment.palette.background
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
         

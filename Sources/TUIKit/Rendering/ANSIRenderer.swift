@@ -19,6 +19,27 @@ public enum ANSIRenderer {
     /// Reset code that clears all formatting.
     public static let reset = "\(csi)0m"
 
+    /// Dim/faint text style code.
+    public static let dim = "\(csi)2m"
+
+    /// Regex pattern that matches any ANSI escape sequence.
+    public static let ansiPattern = "\u{1B}\\[[0-9;]*[a-zA-Z]"
+
+    // MARK: - SGR Style Codes
+
+    /// Named constants for ANSI SGR (Select Graphic Rendition) attribute codes.
+    ///
+    /// These replace bare string literals like `"1"`, `"7"` in `buildStyleCodes()`.
+    private enum StyleCode {
+        static let bold = "1"
+        static let dim = "2"
+        static let italic = "3"
+        static let underline = "4"
+        static let blink = "5"
+        static let inverse = "7"
+        static let strikethrough = "9"
+    }
+
     // MARK: - Style Rendering
 
     /// Renders text with the specified style.
@@ -47,25 +68,25 @@ public enum ANSIRenderer {
 
         // Text attributes
         if style.isBold {
-            codes.append("1")
+            codes.append(StyleCode.bold)
         }
         if style.isDim {
-            codes.append("2")
+            codes.append(StyleCode.dim)
         }
         if style.isItalic {
-            codes.append("3")
+            codes.append(StyleCode.italic)
         }
         if style.isUnderlined {
-            codes.append("4")
+            codes.append(StyleCode.underline)
         }
         if style.isBlink {
-            codes.append("5")
+            codes.append(StyleCode.blink)
         }
         if style.isInverted {
-            codes.append("7")
+            codes.append(StyleCode.inverse)
         }
         if style.isStrikethrough {
-            codes.append("9")
+            codes.append(StyleCode.strikethrough)
         }
 
         // Foreground color
@@ -126,6 +147,52 @@ public enum ANSIRenderer {
     public static func backgroundCode(for color: Color) -> String {
         let codes = backgroundCodes(for: color)
         return "\(csi)\(codes.joined(separator: ";"))m"
+    }
+
+    // MARK: - Convenience Colorize
+
+    /// Applies foreground color to a string using `TextStyle` + `render()`.
+    ///
+    /// This is the centralized replacement for the many per-file
+    /// `colorize` / `colorizeBorder` / `colorizeWithForeground` helpers.
+    ///
+    /// - Parameters:
+    ///   - string: The text to colorize.
+    ///   - foreground: Optional foreground color.
+    ///   - background: Optional background color.
+    ///   - bold: Whether to apply bold.
+    /// - Returns: The ANSI-formatted string.
+    public static func colorize(
+        _ string: String,
+        foreground: Color? = nil,
+        background: Color? = nil,
+        bold: Bool = false
+    ) -> String {
+        var style = TextStyle()
+        style.foregroundColor = foreground
+        style.backgroundColor = background
+        style.isBold = bold
+        return render(string, with: style)
+    }
+
+    /// Wraps a string in a background color that persists across ANSI resets.
+    ///
+    /// Every occurrence of the reset code inside `string` is replaced with
+    /// `reset + bgCode`, so the background "survives" foreground-color resets.
+    /// This is necessary for container backgrounds where inner content contains
+    /// its own ANSI reset sequences.
+    ///
+    /// - Parameters:
+    ///   - string: The text to wrap.
+    ///   - color: The background color.
+    /// - Returns: The string with persistent background applied.
+    public static func applyPersistentBackground(_ string: String, color: Color) -> String {
+        let bgCode = backgroundCode(for: color)
+        let stringWithPersistentBg = string.replacingOccurrences(
+            of: reset,
+            with: reset + bgCode
+        )
+        return bgCode + stringWithPersistentBg
     }
 
     // MARK: - Cursor Control

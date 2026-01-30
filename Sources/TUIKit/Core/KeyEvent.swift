@@ -72,6 +72,43 @@ public enum Key: Hashable, Sendable {
     }
 }
 
+// MARK: - ASCII Byte Constants
+
+/// Named constants for ASCII byte values used in terminal input parsing.
+///
+/// Replaces raw hex literals (e.g. `0x1B`, `0x0D`) with readable names,
+/// making the key parsing logic self-documenting.
+private enum ASCIIByte {
+    // Control characters
+    static let backspace: UInt8 = 0x08
+    static let tab: UInt8 = 0x09
+    static let lineFeed: UInt8 = 0x0A
+    static let carriageReturn: UInt8 = 0x0D
+    static let escape: UInt8 = 0x1B
+    static let delete: UInt8 = 0x7F
+
+    // Ctrl+key range (Ctrl+A = 0x01 … Ctrl+Z = 0x1A)
+    static let ctrlRangeStart: UInt8 = 0x01
+    static let ctrlRangeEnd: UInt8 = 0x1A
+    static let ctrlToLowerOffset: UInt8 = 0x60
+
+    // Printable ASCII range
+    static let printableStart: UInt8 = 0x20
+    static let printableEnd: UInt8 = 0x7E
+
+    // CSI introducer
+    static let openBracket: UInt8 = 0x5B  // '['
+
+    // Arrow / navigation keys (CSI final byte)
+    static let arrowUp: UInt8 = 0x41      // 'A'
+    static let arrowDown: UInt8 = 0x42    // 'B'
+    static let arrowRight: UInt8 = 0x43   // 'C'
+    static let arrowLeft: UInt8 = 0x44    // 'D'
+    static let home: UInt8 = 0x48         // 'H'
+    static let end: UInt8 = 0x46          // 'F'
+    static let tilde: UInt8 = 0x7E        // '~' (extended key terminator)
+}
+
 // MARK: - Key Parsing
 
 extension KeyEvent {
@@ -93,7 +130,7 @@ extension KeyEvent {
         }
 
         // Escape sequence
-        if bytes[0] == 0x1B {
+        if bytes[0] == ASCIIByte.escape {
             return parseEscapeSequence(bytes)
         }
 
@@ -109,18 +146,18 @@ extension KeyEvent {
     /// Parses a single byte into a key event.
     private static func parseSingleByte(_ byte: UInt8) -> KeyEvent? {
         switch byte {
-        case 0x1B:  // Escape
+        case ASCIIByte.escape:
             return KeyEvent(key: .escape)
-        case 0x0D, 0x0A:  // Enter (CR or LF)
+        case ASCIIByte.carriageReturn, ASCIIByte.lineFeed:
             return KeyEvent(key: .enter)
-        case 0x09:  // Tab
+        case ASCIIByte.tab:
             return KeyEvent(key: .tab)
-        case 0x7F, 0x08:  // Backspace (DEL or BS)
+        case ASCIIByte.delete, ASCIIByte.backspace:
             return KeyEvent(key: .backspace)
-        case 0x01...0x1A:  // Ctrl+A through Ctrl+Z
-            let char = Character(UnicodeScalar(byte + 0x60))
+        case ASCIIByte.ctrlRangeStart...ASCIIByte.ctrlRangeEnd:
+            let char = Character(UnicodeScalar(byte + ASCIIByte.ctrlToLowerOffset))
             return KeyEvent(key: .character(char), ctrl: true)
-        case 0x20...0x7E:  // Printable ASCII
+        case ASCIIByte.printableStart...ASCIIByte.printableEnd:
             let char = Character(UnicodeScalar(byte))
             return KeyEvent(character: char)
         default:
@@ -136,7 +173,7 @@ extension KeyEvent {
         }
 
         // CSI sequences: ESC [
-        if bytes[1] == 0x5B {  // '['
+        if bytes[1] == ASCIIByte.openBracket {
             return parseCSISequence(Array(bytes.dropFirst(2)))
         }
 
@@ -156,19 +193,19 @@ extension KeyEvent {
 
         // Arrow keys: A=up, B=down, C=right, D=left
         switch params.last {
-        case 0x41:  // 'A'
+        case ASCIIByte.arrowUp:
             return KeyEvent(key: .up)
-        case 0x42:  // 'B'
+        case ASCIIByte.arrowDown:
             return KeyEvent(key: .down)
-        case 0x43:  // 'C'
+        case ASCIIByte.arrowRight:
             return KeyEvent(key: .right)
-        case 0x44:  // 'D'
+        case ASCIIByte.arrowLeft:
             return KeyEvent(key: .left)
-        case 0x48:  // 'H' - Home
+        case ASCIIByte.home:
             return KeyEvent(key: .home)
-        case 0x46:  // 'F' - End
+        case ASCIIByte.end:
             return KeyEvent(key: .end)
-        case 0x7E:  // '~' - Extended keys
+        case ASCIIByte.tilde:
             return parseExtendedKey(params)
         default:
             return nil
