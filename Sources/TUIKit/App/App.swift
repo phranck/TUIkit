@@ -464,13 +464,8 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with status bar, focus manager, theme manager, and appearance manager
-        var environment = EnvironmentValues()
-        environment.statusBar = statusBar
-        environment.focusManager = focusManager
-        environment.paletteManager = paletteManager
-        environment.appearanceManager = appearanceManager
-        EnvironmentStorage.shared.environment = environment
+        // Set up environment with all managed subsystems
+        EnvironmentStorage.shared.environment = buildEnvironment()
 
         // Register for state changes
         AppState.shared.observe {
@@ -520,17 +515,7 @@ internal final class AppRunner<A: App> {
         let contentHeight = terminal.height - statusBarHeight
 
         // Create render context with environment
-        var environment = EnvironmentValues()
-        environment.statusBar = statusBar
-        environment.focusManager = focusManager
-        environment.paletteManager = paletteManager
-        if let palette = paletteManager.currentPalette {
-            environment.palette = palette
-        }
-        environment.appearanceManager = appearanceManager
-        if let appearance = appearanceManager.currentAppearance {
-            environment.appearance = appearance
-        }
+        let environment = buildEnvironment()
 
         let context = RenderContext(
             terminal: terminal,
@@ -553,6 +538,25 @@ internal final class AppRunner<A: App> {
         if statusBar.hasItems {
             renderStatusBar(atRow: terminal.height - statusBarHeight + 1)
         }
+    }
+
+    /// Builds a complete `EnvironmentValues` with all managed subsystems.
+    ///
+    /// Centralizes the environment setup that was previously duplicated
+    /// in `run()`, `render()`, and `renderStatusBar()`.
+    private func buildEnvironment() -> EnvironmentValues {
+        var environment = EnvironmentValues()
+        environment.statusBar = statusBar
+        environment.focusManager = focusManager
+        environment.paletteManager = paletteManager
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
+        environment.appearanceManager = appearanceManager
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
+        return environment
     }
 
     private func renderScene<S: Scene>(_ scene: S, context: RenderContext) {
@@ -579,17 +583,7 @@ internal final class AppRunner<A: App> {
         )
 
         // Create render context with current environment for palette colors
-        var environment = EnvironmentValues()
-        environment.statusBar = statusBar
-        environment.focusManager = focusManager
-        environment.paletteManager = paletteManager
-        if let palette = paletteManager.currentPalette {
-            environment.palette = palette
-        }
-        environment.appearanceManager = appearanceManager
-        if let appearance = appearanceManager.currentAppearance {
-            environment.appearance = appearance
-        }
+        let environment = buildEnvironment()
 
         let context = RenderContext(
             terminal: terminal,
