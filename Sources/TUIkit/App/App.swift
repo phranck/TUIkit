@@ -113,9 +113,6 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Set up environment with all managed subsystems
-        EnvironmentStorage.active.environment = renderer.buildEnvironment()
-
         // Register for state changes
         AppState.active.observe { [signals] in
             signals.requestRerender()
@@ -155,7 +152,6 @@ internal final class AppRunner<A: App> {
         terminal.showCursor()
         terminal.exitAlternateScreen()
         AppState.active.clearObservers()
-        EnvironmentStorage.active.reset()
         focusManager.clear()
         tuiContext.reset()
     }
