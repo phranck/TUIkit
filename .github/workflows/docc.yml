@@ -1,57 +1,48 @@
-name: Build and Deploy DocC Documentation
+name: Build and Deploy DocC
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  build-and-deploy-docs:
-    runs-on: macos-latest
+  build:
+    runs-on: macos-15
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check Swift version
-        run: swift --version
-
-      - name: Build documentation
+      - name: Build DocC documentation
         run: |
-          xcrun docc convert TUIKit.docc \
-            --output-path ./docs
+          swift package --allow-writing-to-directory docs-output \
+            generate-documentation \
+            --target TUIKit \
+            --output-path docs-output \
+            --transform-for-static-hosting
 
-      - name: Commit and push documentation
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add docs/
-          git commit -m "docs: Generate DocC documentation" || echo "No changes to commit"
-          git push
+      - name: Add CNAME for custom domain
+        run: echo "tuikit.layered.work" > docs-output/CNAME
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-output
 
   deploy:
-    needs: build-and-deploy-docs
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './docs'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
