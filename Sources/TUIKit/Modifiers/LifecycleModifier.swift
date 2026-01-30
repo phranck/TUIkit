@@ -15,6 +15,7 @@ import Foundation
 /// to track which views have already triggered their onAppear action.
 public final class LifecycleTracker: @unchecked Sendable {
     /// Shared instance for the running application.
+    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
     public static let shared = LifecycleTracker()
 
     /// Lock protecting all mutable state.
@@ -29,7 +30,8 @@ public final class LifecycleTracker: @unchecked Sendable {
     /// Tokens seen during the current render pass.
     private var currentRenderTokens: Set<String> = []
 
-    private init() {}
+    /// Creates a new lifecycle tracker.
+    public init() {}
 
     /// Marks the start of a new render pass.
     internal func beginRenderPass() {
@@ -112,7 +114,7 @@ public struct OnAppearModifier<Content: View>: View {
 extension OnAppearModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Record appearance and execute action if first time
-        _ = LifecycleTracker.shared.recordAppear(token: token, action: action)
+        _ = context.tuiContext.lifecycle.recordAppear(token: token, action: action)
 
         // Render content
         return TUIKit.renderToBuffer(content, context: context)
@@ -123,13 +125,15 @@ extension OnAppearModifier: Renderable {
 
 /// Storage for onDisappear callbacks.
 public final class DisappearCallbackStorage: @unchecked Sendable {
+    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
     public static let shared = DisappearCallbackStorage()
 
     /// Lock protecting the callbacks dictionary.
     private let lock = NSLock()
     private var callbacks: [String: () -> Void] = [:]
 
-    private init() {}
+    /// Creates a new disappear callback storage.
+    public init() {}
 
     internal func register(token: String, action: @escaping () -> Void) {
         lock.lock()
@@ -175,10 +179,10 @@ public struct OnDisappearModifier<Content: View>: View {
 extension OnDisappearModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register the disappear callback
-        DisappearCallbackStorage.shared.register(token: token, action: action)
+        context.tuiContext.lifecycle.registerDisappear(token: token, action: action)
 
         // Mark as visible in current render
-        _ = LifecycleTracker.shared.recordAppear(token: token, action: {})
+        _ = context.tuiContext.lifecycle.recordAppear(token: token, action: {})
 
         // Render content
         return TUIKit.renderToBuffer(content, context: context)
@@ -210,13 +214,15 @@ public struct TaskModifier<Content: View>: View {
 
 /// Storage for running tasks.
 public final class TaskStorage: @unchecked Sendable {
+    @available(*, deprecated, message: "Use TUIContext.lifecycle instead")
     public static let shared = TaskStorage()
 
     /// Lock protecting the tasks dictionary.
     private let lock = NSLock()
     private var tasks: [String: Task<Void, Never>] = [:]
 
-    private init() {}
+    /// Creates a new task storage.
+    public init() {}
 
     internal func startTask(token: String, priority: TaskPriority, operation: @escaping @Sendable () async -> Void) {
         lock.lock()
@@ -249,40 +255,25 @@ public final class TaskStorage: @unchecked Sendable {
 
 extension TaskModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Start task on first appearance
-        let isFirstAppear = !LifecycleTracker.shared.hasAppeared(token: token)
+        let lifecycle = context.tuiContext.lifecycle
 
-        _ = LifecycleTracker.shared.recordAppear(token: token) {
+        // Start task on first appearance
+        let isFirstAppear = !lifecycle.hasAppeared(token: token)
+
+        _ = lifecycle.recordAppear(token: token) {
             // Only start task on first appear
         }
 
         if isFirstAppear {
-            TaskStorage.shared.startTask(token: token, priority: priority, operation: task)
+            lifecycle.startTask(token: token, priority: priority, operation: task)
         }
 
         // Register disappear callback to cancel task
-        DisappearCallbackStorage.shared.register(token: token) {
-            TaskStorage.shared.cancelTask(token: token)
+        lifecycle.registerDisappear(token: token) { [lifecycle] in
+            lifecycle.cancelTask(token: token)
         }
 
         // Render content
         return TUIKit.renderToBuffer(content, context: context)
-    }
-}
-
-// MARK: - Token Generator
-
-/// Generates unique tokens for lifecycle tracking.
-final class TokenGenerator: @unchecked Sendable {
-    static let shared = TokenGenerator()
-
-    private var counter: UInt64 = 0
-    private let lock = NSLock()
-
-    func next() -> String {
-        lock.lock()
-        defer { lock.unlock() }
-        counter += 1
-        return "lifecycle-\(counter)"
     }
 }
