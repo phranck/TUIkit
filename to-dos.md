@@ -22,7 +22,7 @@
 
 ### Code Quality (aus Projektanalyse)
 
-- [ ] **B.4** AppRunner God Class — Split in InputHandler, RenderLoop, SignalManager (Medium)
+- [x] **B.4** AppRunner God Class — Split in SignalManager, InputHandler, RenderLoop, StatusBarState (PR #12) ✅
 - [ ] **C.4** Preference Keys ggf. unused — `TabBadgeKey`, `AnchorPreferenceKey` prüfen/entfernen (Low)
 - [ ] **E.1** Public types missing doc comments — `///` für ~7 Modifier-Properties (Medium)
 - [ ] **E.2** Complex logic without inline comments — KeyEvent, FrameBuffer, ViewRenderer (Medium)
