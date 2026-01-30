@@ -149,6 +149,52 @@ public enum ANSIRenderer {
         return "\(csi)\(codes.joined(separator: ";"))m"
     }
 
+    // MARK: - Convenience Colorize
+
+    /// Applies foreground color to a string using `TextStyle` + `render()`.
+    ///
+    /// This is the centralized replacement for the many per-file
+    /// `colorize` / `colorizeBorder` / `colorizeWithForeground` helpers.
+    ///
+    /// - Parameters:
+    ///   - string: The text to colorize.
+    ///   - foreground: Optional foreground color.
+    ///   - background: Optional background color.
+    ///   - bold: Whether to apply bold.
+    /// - Returns: The ANSI-formatted string.
+    public static func colorize(
+        _ string: String,
+        foreground: Color? = nil,
+        background: Color? = nil,
+        bold: Bool = false
+    ) -> String {
+        var style = TextStyle()
+        style.foregroundColor = foreground
+        style.backgroundColor = background
+        style.isBold = bold
+        return render(string, with: style)
+    }
+
+    /// Wraps a string in a background color that persists across ANSI resets.
+    ///
+    /// Every occurrence of the reset code inside `string` is replaced with
+    /// `reset + bgCode`, so the background "survives" foreground-color resets.
+    /// This is necessary for container backgrounds where inner content contains
+    /// its own ANSI reset sequences.
+    ///
+    /// - Parameters:
+    ///   - string: The text to wrap.
+    ///   - color: The background color.
+    /// - Returns: The string with persistent background applied.
+    public static func applyPersistentBackground(_ string: String, color: Color) -> String {
+        let bgCode = backgroundCode(for: color)
+        let stringWithPersistentBg = string.replacingOccurrences(
+            of: reset,
+            with: reset + bgCode
+        )
+        return bgCode + stringWithPersistentBg
+    }
+
     // MARK: - Cursor Control
 
     /// Moves the cursor to the specified position.

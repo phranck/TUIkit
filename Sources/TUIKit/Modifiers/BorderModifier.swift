@@ -53,6 +53,8 @@ extension BorderedView: Renderable {
     
     /// Renders with standard box-drawing characters.
     private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle) -> FrameBuffer {
+        let borderForeground = color ?? Color.theme.border
+
         // Build the top border line
         let topLine = buildBorderLine(
             left: style.topLeft,
@@ -73,20 +75,20 @@ extension BorderedView: Renderable {
         var lines: [String] = []
 
         // Top border
-        lines.append(colorize(topLine))
+        lines.append(ANSIRenderer.colorize(topLine, foreground: borderForeground))
 
         // Content lines with side borders
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let borderedLine = colorize(String(style.vertical))
+            let borderedLine = ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
                 + paddedLine
                 + ANSIRenderer.reset
-                + colorize(String(style.vertical))
+                + ANSIRenderer.colorize(String(style.vertical), foreground: borderForeground)
             lines.append(borderedLine)
         }
 
         // Bottom border
-        lines.append(colorize(bottomLine))
+        lines.append(ANSIRenderer.colorize(bottomLine, foreground: borderForeground))
 
         return FrameBuffer(lines: lines)
     }
@@ -104,38 +106,24 @@ extension BorderedView: Renderable {
         
         // For block style, use container background color for borders
         let containerBg = Color.theme.containerBackground
-        let sideBorder = colorizeWithForeground("█", foreground: containerBg)
+        let sideBorder = ANSIRenderer.colorize("█", foreground: containerBg)
         
         // Top border: ▄▄▄ with FG = container BG
         let topLine = String(repeating: "▄", count: innerWidth + 2)
-        lines.append(colorizeWithForeground(topLine, foreground: containerBg))
+        lines.append(ANSIRenderer.colorize(topLine, foreground: containerBg))
         
         // Content lines with █ side borders and container background
         for line in buffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let styledContent = applyBackground(paddedLine, background: containerBg)
+            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: containerBg)
             lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
         }
         
         // Bottom border: ▀▀▀ with FG = container BG
         let bottomLine = String(repeating: "▀", count: innerWidth + 2)
-        lines.append(colorizeWithForeground(bottomLine, foreground: containerBg))
+        lines.append(ANSIRenderer.colorize(bottomLine, foreground: containerBg))
         
         return FrameBuffer(lines: lines)
-    }
-    
-    /// Colorizes with only foreground color.
-    private func colorizeWithForeground(_ string: String, foreground: Color) -> String {
-        var textStyle = TextStyle()
-        textStyle.foregroundColor = foreground
-        return ANSIRenderer.render(string, with: textStyle)
-    }
-    
-    /// Applies a background color to content, re-applying after any resets.
-    private func applyBackground(_ string: String, background: Color) -> String {
-        let bgCode = ANSIRenderer.backgroundCode(for: background)
-        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
-        return bgCode + stringWithPersistentBg
     }
 
     /// Builds a horizontal border line.
@@ -146,13 +134,6 @@ extension BorderedView: Renderable {
         width: Int
     ) -> String {
         String(left) + String(repeating: fill, count: width) + String(right)
-    }
-
-    /// Applies color to a string, using theme border color as default.
-    private func colorize(_ string: String) -> String {
-        var textStyle = TextStyle()
-        textStyle.foregroundColor = color ?? Color.theme.border
-        return ANSIRenderer.render(string, with: textStyle)
     }
 }
 
