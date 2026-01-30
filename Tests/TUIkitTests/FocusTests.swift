@@ -345,7 +345,7 @@ struct FocusStateTests {
         let manager = FocusManager()
         var environment = EnvironmentValues()
         environment.focusManager = manager
-        EnvironmentStorage.shared.environment = environment
+        EnvironmentStorage.active.environment = environment
 
         let state = FocusState(id: "state-test")
         let element = MockFocusable(id: "state-test")
@@ -356,7 +356,7 @@ struct FocusStateTests {
         #expect(state.isFocused)
 
         // Cleanup
-        EnvironmentStorage.shared.reset()
+        EnvironmentStorage.active.reset()
     }
 
     @Test("FocusState requestFocus works")
@@ -365,7 +365,7 @@ struct FocusStateTests {
         let manager = FocusManager()
         var environment = EnvironmentValues()
         environment.focusManager = manager
-        EnvironmentStorage.shared.environment = environment
+        EnvironmentStorage.active.environment = environment
 
         let element1 = MockFocusable(id: "req-1")
         let element2 = MockFocusable(id: "req-2")
@@ -379,7 +379,7 @@ struct FocusStateTests {
         #expect(manager.isFocused(id: "req-2"))
 
         // Cleanup
-        EnvironmentStorage.shared.reset()
+        EnvironmentStorage.active.reset()
     }
 }
 

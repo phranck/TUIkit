@@ -85,9 +85,17 @@ public struct EnvironmentValues: @unchecked Sendable {
 ///
 /// This allows views to access environment values without explicit passing.
 /// The environment is set by the rendering system before rendering each view.
+///
+/// `AppRunner` creates and manages the active instance. Property wrappers
+/// like ``Environment`` and view modifiers like ``EnvironmentModifier``
+/// access it through ``active``.
 public final class EnvironmentStorage: @unchecked Sendable {
-    /// The shared environment storage.
-    public static let shared = EnvironmentStorage()
+    /// The active environment storage for the current application.
+    ///
+    /// Set by `AppRunner` during initialization. The ``Environment``
+    /// property wrapper, ``FocusState``, and ``EnvironmentModifier``
+    /// all read and write through this property.
+    public nonisolated(unsafe) static var active = EnvironmentStorage()
 
     /// Lock protecting all mutable state.
     private let lock = NSLock()
@@ -98,7 +106,8 @@ public final class EnvironmentStorage: @unchecked Sendable {
     /// Stack of environments for nested rendering.
     private var stack: [EnvironmentValues] = []
 
-    private init() {}
+    /// Creates a new environment storage instance.
+    public init() {}
 
     /// The current environment values.
     public var environment: EnvironmentValues {
@@ -189,7 +198,7 @@ public struct Environment<Value>: @unchecked Sendable {
 
     /// The current value from the environment.
     public var wrappedValue: Value {
-        EnvironmentStorage.shared.environment[keyPath: keyPath]
+        EnvironmentStorage.active.environment[keyPath: keyPath]
     }
 }
 
@@ -225,7 +234,7 @@ extension EnvironmentModifier: Renderable {
         let modifiedContext = context.withEnvironment(modifiedEnvironment)
 
         // Render content with modified environment
-        return EnvironmentStorage.shared.withEnvironment(modifiedEnvironment) {
+        return EnvironmentStorage.active.withEnvironment(modifiedEnvironment) {
             TUIkit.renderToBuffer(content, context: modifiedContext)
         }
     }
