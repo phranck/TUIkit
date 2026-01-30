@@ -221,7 +221,7 @@ private struct AppearanceManagerKey: EnvironmentKey {
         items: AppearanceRegistry.all,
         applyToEnvironment: { item in
             if let appearance = item as? Appearance {
-                EnvironmentStorage.shared.environment.appearance = appearance
+                EnvironmentStorage.active.environment.appearance = appearance
             }
         }
     )
