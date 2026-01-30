@@ -254,7 +254,7 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
         }
         nonmutating set {
             storage.setValue(newValue, forKey: key)
-            AppState.shared.setNeedsRender()
+            AppState.active.setNeedsRender()
         }
     }
 
@@ -368,7 +368,7 @@ public struct SceneStorage<Value: Codable>: @unchecked Sendable {
         }
         nonmutating set {
             Self.sceneStorage.setValue(newValue, forKey: key)
-            AppState.shared.setNeedsRender()
+            AppState.active.setNeedsRender()
         }
     }
 
