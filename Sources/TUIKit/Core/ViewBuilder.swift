@@ -1,4 +1,3 @@
-// swiftlint:disable function_parameter_count
 //
 //  ViewBuilder.swift
 //  TUIKit
@@ -22,7 +21,7 @@
 ///
 /// The builder supports:
 /// - Single views
-/// - Multiple views (up to 10)
+/// - Multiple views (unlimited, via Parameter Packs)
 /// - Conditionals (`if`, `if-else`)
 /// - Optional views (`if let`)
 /// - Arrays of views (`for-in`)
@@ -36,114 +35,16 @@ public struct ViewBuilder {
         content
     }
 
-    // MARK: - Multiple Views (Tuple Views)
+    // MARK: - Multiple Views (Parameter Pack)
 
-    /// Builds two views into a TupleView.
-    public static func buildBlock<C0: View, C1: View>(
-        _ c0: C0,
-        _ c1: C1
-    ) -> TupleView2<C0, C1> {
-        TupleView2(c0, c1)
-    }
-
-    /// Builds three views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2
-    ) -> TupleView3<C0, C1, C2> {
-        TupleView3(c0, c1, c2)
-    }
-
-    /// Builds four views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3
-    ) -> TupleView4<C0, C1, C2, C3> {
-        TupleView4(c0, c1, c2, c3)
-    }
-
-    /// Builds five views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4
-    ) -> TupleView5<C0, C1, C2, C3, C4> {
-        TupleView5(c0, c1, c2, c3, c4)
-    }
-
-    /// Builds six views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4,
-        _ c5: C5
-    ) -> TupleView6<C0, C1, C2, C3, C4, C5> {
-        TupleView6(c0, c1, c2, c3, c4, c5)
-    }
-
-    /// Builds seven views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4,
-        _ c5: C5,
-        _ c6: C6
-    ) -> TupleView7<C0, C1, C2, C3, C4, C5, C6> {
-        TupleView7(c0, c1, c2, c3, c4, c5, c6)
-    }
-
-    /// Builds eight views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4,
-        _ c5: C5,
-        _ c6: C6,
-        _ c7: C7
-    ) -> TupleView8<C0, C1, C2, C3, C4, C5, C6, C7> {
-        TupleView8(c0, c1, c2, c3, c4, c5, c6, c7)
-    }
-
-    /// Builds nine views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View, C8: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4,
-        _ c5: C5,
-        _ c6: C6,
-        _ c7: C7,
-        _ c8: C8
-    ) -> TupleView9<C0, C1, C2, C3, C4, C5, C6, C7, C8> {
-        TupleView9(c0, c1, c2, c3, c4, c5, c6, c7, c8)
-    }
-
-    /// Builds ten views into a TupleView.
-    public static func buildBlock<C0: View, C1: View, C2: View, C3: View, C4: View, C5: View, C6: View, C7: View, C8: View, C9: View>(
-        _ c0: C0,
-        _ c1: C1,
-        _ c2: C2,
-        _ c3: C3,
-        _ c4: C4,
-        _ c5: C5,
-        _ c6: C6,
-        _ c7: C7,
-        _ c8: C8,
-        _ c9: C9
-    ) -> TupleView10<C0, C1, C2, C3, C4, C5, C6, C7, C8, C9> {
-        TupleView10(c0, c1, c2, c3, c4, c5, c6, c7, c8, c9)
+    /// Builds multiple views into a TupleView using Swift Parameter Packs.
+    ///
+    /// This single overload replaces the previous 9 arity-specific `buildBlock`
+    /// overloads (`TupleView2` through `TupleView10`), removing the 10-child limit.
+    public static func buildBlock<each C: View>(
+        _ content: repeat each C
+    ) -> TupleView<repeat each C> {
+        TupleView(repeat each content)
     }
 
     // MARK: - Conditionals
@@ -191,4 +92,3 @@ public struct ViewBuilder {
         expression
     }
 }
-// swiftlint:enable function_parameter_count
