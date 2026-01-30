@@ -120,7 +120,8 @@ extension VStack: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
-        // Count spacers and measure fixed children
+        // Spacer distribution: divide remaining vertical space equally
+        // among all spacers after subtracting fixed children and inter-item spacing.
         let spacerCount = infos.filter(\.isSpacer).count
         let fixedHeight = infos.compactMap(\.buffer).reduce(0) { $0 + $1.height }
         let totalSpacing = max(0, infos.count - 1) * spacing
@@ -128,7 +129,7 @@ extension VStack: Renderable {
         let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
         let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
 
-        // Calculate max width for alignment
+        // Max width across all children determines alignment reference
         let maxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
 
         var result = FrameBuffer()
@@ -138,7 +139,6 @@ extension VStack: Renderable {
                 let height = max(info.spacerMinLength ?? 0, spacerHeight)
                 result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
             } else if let buffer = info.buffer {
-                // Apply horizontal alignment
                 let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
                 result.appendVertically(alignedBuffer, spacing: spacingToApply)
             }
@@ -181,7 +181,8 @@ extension HStack: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
-        // Count spacers and measure fixed children
+        // Spacer distribution: divide remaining horizontal space equally
+        // among all spacers after subtracting fixed children and inter-item spacing.
         let spacerCount = infos.filter(\.isSpacer).count
         let fixedWidth = infos.compactMap(\.buffer).reduce(0) { $0 + $1.width }
         let totalSpacing = max(0, infos.count - 1) * spacing
