@@ -8,9 +8,9 @@
 import Foundation
 
 #if canImport(Glibc)
-    @preconcurrency import Glibc
+    import Glibc
 #elseif canImport(Musl)
-    @preconcurrency import Musl
+    import Musl
 #elseif canImport(Darwin)
     import Darwin
 #endif
@@ -146,18 +146,34 @@ public final class Terminal: @unchecked Sendable {
 
     /// Writes a string to the terminal.
     ///
+    /// Uses the POSIX `write` syscall to bypass `stdout` entirely.
+    /// On Linux (Glibc), `stdout` is a shared mutable global that
+    /// Swift 6 strict concurrency rejects. Writing directly to
+    /// `STDOUT_FILENO` avoids the issue without `@preconcurrency`
+    /// or `nonisolated(unsafe)` workarounds.
+    ///
     /// - Parameter string: The string to write.
     public func write(_ string: String) {
-        print(string, terminator: "")
-        fflush(stdout)
+        string.utf8CString.withUnsafeBufferPointer { buffer in
+            // buffer includes null terminator — exclude it
+            let count = buffer.count - 1
+            guard count > 0 else { return }
+            buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
+                var written = 0
+                while written < count {
+                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
+                    if result <= 0 { break }
+                    written += result
+                }
+            }
+        }
     }
 
     /// Writes a string and moves to a new line.
     ///
     /// - Parameter string: The string to write.
     public func writeLine(_ string: String = "") {
-        print(string)
-        fflush(stdout)
+        write(string + "\n")
     }
 
     /// Clears the screen and moves cursor to position (1,1).
