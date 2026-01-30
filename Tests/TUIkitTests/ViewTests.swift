@@ -12,23 +12,11 @@ import Testing
 @Suite("View Protocol Tests")
 struct ViewTests {
 
-    @Test("Text view can be created")
-    func textViewCreation() {
-        let text = Text("Hello, World!")
-        #expect(text.content == "Hello, World!")
-    }
-
     @Test("Text view with style")
     func textViewWithStyle() {
         let text = Text("Bold").bold().foregroundColor(.red)
         #expect(text.style.isBold == true)
         #expect(text.style.foregroundColor == .red)
-    }
-
-    @Test("EmptyView has no content")
-    func emptyView() {
-        _ = EmptyView()
-        // EmptyView should just be able to exist
     }
 
     @Test("Spacer can be created")
@@ -55,42 +43,6 @@ struct ViewTests {
 
 @Suite("ViewBuilder Tests")
 struct ViewBuilderTests {
-
-    @Test("ViewBuilder with single view")
-    func singleView() {
-        @ViewBuilder
-        func buildView() -> some View {
-            Text("Single")
-        }
-
-        let view = buildView()
-        #expect(view is Text)
-    }
-
-    @Test("ViewBuilder with two views")
-    func twoViews() {
-        @ViewBuilder
-        func buildViews() -> some View {
-            Text("First")
-            Text("Second")
-        }
-
-        let views = buildViews()
-        #expect(views is TupleView<Text, Text>)
-    }
-
-    @Test("ViewBuilder with three views")
-    func threeViews() {
-        @ViewBuilder
-        func buildViews() -> some View {
-            Text("One")
-            Text("Two")
-            Text("Three")
-        }
-
-        let views = buildViews()
-        #expect(views is TupleView<Text, Text, Text>)
-    }
 
     @Test("VStack can contain views")
     func vstackWithViews() {

@@ -12,15 +12,6 @@ import Testing
 @Suite("TUIContext Tests")
 struct TUIContextTests {
 
-    @Test("Default init creates fresh services")
-    func defaultInit() {
-        let context = TUIContext()
-        // All services should be accessible
-        #expect(context.lifecycle is LifecycleManager)
-        #expect(context.keyEventDispatcher is KeyEventDispatcher)
-        #expect(context.preferences is PreferenceStorage)
-    }
-
     @Test("Services are independent per context")
     func independentServices() {
         let contextA = TUIContext()

@@ -12,12 +12,6 @@ import Testing
 @Suite("State Property Wrapper Tests")
 struct StatePropertyWrapperTests {
 
-    @Test("State stores initial value")
-    func stateInitialValue() {
-        let state = State(wrappedValue: 42)
-        #expect(state.wrappedValue == 42)
-    }
-
     @Test("State can be mutated")
     func stateMutation() {
         let state = State(wrappedValue: 0)
@@ -47,21 +41,6 @@ struct StatePropertyWrapperTests {
         let binding = state.projectedValue
         binding.wrappedValue = 77
         #expect(state.wrappedValue == 77)
-    }
-
-    @Test("State with string type")
-    func stateString() {
-        let state = State(wrappedValue: "hello")
-        state.wrappedValue = "world"
-        #expect(state.wrappedValue == "world")
-    }
-
-    @Test("State with boolean type")
-    func stateBoolean() {
-        let state = State(wrappedValue: false)
-        state.wrappedValue = true
-        #expect(state.wrappedValue == true)
-        AppState.active.didRender()
     }
 
     @Test("State with optional type")

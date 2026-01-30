@@ -57,53 +57,64 @@ struct ANSIRendererStyleTests {
         #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Dim text wraps with dim code")
+    @Test("Dim text wraps with ESC[2m dim code")
     func dimText() {
         var style = TextStyle()
         style.isDim = true
         let result = ANSIRenderer.render("Dim", with: style)
-        #expect(result.contains("2"))
+        #expect(result.contains("\u{1B}[2m"))
         #expect(result.contains("Dim"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Italic text wraps with italic code")
+    @Test("Italic text wraps with ESC[3m italic code")
     func italicText() {
         var style = TextStyle()
         style.isItalic = true
         let result = ANSIRenderer.render("Italic", with: style)
-        #expect(result.contains("3"))
+        #expect(result.contains("\u{1B}[3m"))
+        #expect(result.contains("Italic"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Underlined text wraps with underline code")
+    @Test("Underlined text wraps with ESC[4m underline code")
     func underlinedText() {
         var style = TextStyle()
         style.isUnderlined = true
         let result = ANSIRenderer.render("Underline", with: style)
-        #expect(result.contains("4"))
+        #expect(result.contains("\u{1B}[4m"))
+        #expect(result.contains("Underline"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Blink text wraps with blink code")
+    @Test("Blink text wraps with ESC[5m blink code")
     func blinkText() {
         var style = TextStyle()
         style.isBlink = true
         let result = ANSIRenderer.render("Blink", with: style)
-        #expect(result.contains("5"))
+        #expect(result.contains("\u{1B}[5m"))
+        #expect(result.contains("Blink"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Inverted text wraps with inverse code")
+    @Test("Inverted text wraps with ESC[7m inverse code")
     func invertedText() {
         var style = TextStyle()
         style.isInverted = true
         let result = ANSIRenderer.render("Inv", with: style)
-        #expect(result.contains("7"))
+        #expect(result.contains("\u{1B}[7m"))
+        #expect(result.contains("Inv"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
-    @Test("Strikethrough text wraps with strikethrough code")
+    @Test("Strikethrough text wraps with ESC[9m strikethrough code")
     func strikethroughText() {
         var style = TextStyle()
         style.isStrikethrough = true
         let result = ANSIRenderer.render("Strike", with: style)
-        #expect(result.contains("9"))
+        #expect(result.contains("\u{1B}[9m"))
+        #expect(result.contains("Strike"))
+        #expect(result.hasSuffix(ANSIRenderer.reset))
     }
 
     @Test("Combined styles produce semicolon-separated codes")
