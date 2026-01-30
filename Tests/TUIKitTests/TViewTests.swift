@@ -76,7 +76,7 @@ struct ViewBuilderTests {
         }
 
         let views = buildViews()
-        #expect(views is TupleView2<Text, Text>)
+        #expect(views is TupleView<Text, Text>)
     }
 
     @Test("ViewBuilder with three views")
@@ -89,7 +89,7 @@ struct ViewBuilderTests {
         }
 
         let views = buildViews()
-        #expect(views is TupleView3<Text, Text, Text>)
+        #expect(views is TupleView<Text, Text, Text>)
     }
 
     @Test("VStack can contain views")
