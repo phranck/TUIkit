@@ -195,10 +195,12 @@ extension HStack: Renderable {
             if info.isSpacer {
                 let width = max(info.spacerMinLength ?? 0, spacerWidth)
                 let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
-                let spacerBuffer = FrameBuffer(lines: Array(
-                    repeating: String(repeating: " ", count: width),
-                    count: maxHeight
-                ))
+                let spacerBuffer = FrameBuffer(
+                    lines: Array(
+                        repeating: String(repeating: " ", count: width),
+                        count: maxHeight
+                    )
+                )
                 result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
             } else if let buffer = info.buffer {
                 result.appendHorizontally(buffer, spacing: spacingToApply)
@@ -233,7 +235,7 @@ extension TupleView2: Renderable, ChildInfoProvider {
     func childInfos(context: RenderContext) -> [ChildInfo] {
         [
             makeChildInfo(for: value.0, context: context),
-            makeChildInfo(for: value.1, context: context)
+            makeChildInfo(for: value.1, context: context),
         ]
     }
 }
@@ -247,7 +249,7 @@ extension TupleView3: Renderable, ChildInfoProvider {
         [
             makeChildInfo(for: value.0, context: context),
             makeChildInfo(for: value.1, context: context),
-            makeChildInfo(for: value.2, context: context)
+            makeChildInfo(for: value.2, context: context),
         ]
     }
 }
@@ -262,7 +264,7 @@ extension TupleView4: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.0, context: context),
             makeChildInfo(for: value.1, context: context),
             makeChildInfo(for: value.2, context: context),
-            makeChildInfo(for: value.3, context: context)
+            makeChildInfo(for: value.3, context: context),
         ]
     }
 }
@@ -278,7 +280,7 @@ extension TupleView5: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.1, context: context),
             makeChildInfo(for: value.2, context: context),
             makeChildInfo(for: value.3, context: context),
-            makeChildInfo(for: value.4, context: context)
+            makeChildInfo(for: value.4, context: context),
         ]
     }
 }
@@ -295,7 +297,7 @@ extension TupleView6: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.2, context: context),
             makeChildInfo(for: value.3, context: context),
             makeChildInfo(for: value.4, context: context),
-            makeChildInfo(for: value.5, context: context)
+            makeChildInfo(for: value.5, context: context),
         ]
     }
 }
@@ -313,7 +315,7 @@ extension TupleView7: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.3, context: context),
             makeChildInfo(for: value.4, context: context),
             makeChildInfo(for: value.5, context: context),
-            makeChildInfo(for: value.6, context: context)
+            makeChildInfo(for: value.6, context: context),
         ]
     }
 }
@@ -332,7 +334,7 @@ extension TupleView8: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.4, context: context),
             makeChildInfo(for: value.5, context: context),
             makeChildInfo(for: value.6, context: context),
-            makeChildInfo(for: value.7, context: context)
+            makeChildInfo(for: value.7, context: context),
         ]
     }
 }
@@ -352,7 +354,7 @@ extension TupleView9: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.5, context: context),
             makeChildInfo(for: value.6, context: context),
             makeChildInfo(for: value.7, context: context),
-            makeChildInfo(for: value.8, context: context)
+            makeChildInfo(for: value.8, context: context),
         ]
     }
 }
@@ -373,7 +375,7 @@ extension TupleView10: Renderable, ChildInfoProvider {
             makeChildInfo(for: value.6, context: context),
             makeChildInfo(for: value.7, context: context),
             makeChildInfo(for: value.8, context: context),
-            makeChildInfo(for: value.9, context: context)
+            makeChildInfo(for: value.9, context: context),
         ]
     }
 }

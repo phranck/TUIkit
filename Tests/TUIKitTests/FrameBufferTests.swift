@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 @Suite("FrameBuffer Tests")
@@ -66,7 +67,7 @@ struct FrameBufferTests {
     func ansiStrippedWidth() {
         let styled = "\u{1B}[1mBold\u{1B}[0m"
         let buffer = FrameBuffer(text: styled)
-        #expect(buffer.width == 4) // "Bold" is 4 chars
+        #expect(buffer.width == 4)  // "Bold" is 4 chars
     }
 
     @Test("Horizontal append with ANSI codes pads correctly")

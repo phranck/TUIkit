@@ -189,7 +189,8 @@ public struct Color: Sendable, Equatable {
             return .rgb(gray, gray, gray)
         }
 
-        let chromaFactor = normalizedLightness < 0.5
+        let chromaFactor =
+            normalizedLightness < 0.5
             ? normalizedLightness * (1 + normalizedSaturation)
             : normalizedLightness + normalizedSaturation - normalizedLightness * normalizedSaturation
         let luminanceFactor = 2 * normalizedLightness - chromaFactor

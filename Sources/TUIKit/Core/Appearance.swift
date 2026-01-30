@@ -166,7 +166,7 @@ public struct AppearanceRegistry {
         .rounded,
         .doubleLine,
         .heavy,
-        .block
+        .block,
     ]
 
     /// Finds an appearance by ID.

@@ -8,9 +8,9 @@
 import Foundation
 
 #if os(Linux)
-import Glibc
+    import Glibc
 #else
-import Darwin
+    import Darwin
 #endif
 
 /// Represents the terminal and controls input and output.
@@ -58,9 +58,9 @@ public final class Terminal: @unchecked Sendable {
         var windowSize = winsize()
 
         #if os(Linux)
-        let result = ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &windowSize)
+            let result = ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &windowSize)
         #else
-        let result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &windowSize)
+            let result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &windowSize)
         #endif
 
         if result == 0 && windowSize.ws_col > 0 && windowSize.ws_row > 0 {

@@ -159,14 +159,16 @@ public struct Button: View {
 
         // Default focused style: use theme accent color, bold
         // Note: Theme colors are resolved at render time via Color.theme
-        self.focusedStyle = focusedStyle ?? ButtonStyle(
-            foregroundColor: nil,  // Will use theme.accent at render time
-            backgroundColor: style.backgroundColor,
-            borderStyle: style.borderStyle,
-            borderColor: nil,  // Will use theme.borderFocused at render time
-            isBold: true,
-            horizontalPadding: style.horizontalPadding
-        )
+        self.focusedStyle =
+            focusedStyle
+            ?? ButtonStyle(
+                foregroundColor: nil,  // Will use theme.accent at render time
+                backgroundColor: style.backgroundColor,
+                borderStyle: style.borderStyle,
+                borderColor: nil,  // Will use theme.borderFocused at render time
+                isBold: true,
+                horizontalPadding: style.horizontalPadding
+            )
     }
 
     public var body: Never {
@@ -302,9 +304,14 @@ extension Button: Renderable {
 
         result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: color))
         for line in buffer.lines {
-            result.append(BorderRenderer.standardContentLine(
-                content: line, innerWidth: innerWidth, style: style, color: color
-            ))
+            result.append(
+                BorderRenderer.standardContentLine(
+                    content: line,
+                    innerWidth: innerWidth,
+                    style: style,
+                    color: color
+                )
+            )
         }
         result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: color))
 
@@ -319,12 +326,15 @@ extension Button: Renderable {
 
         // Add indicator on the middle line (or first line if single line)
         let middleIndex = buffer.height / 2
-        let indicator = ANSIRenderer.render("▸ ", with: {
-            var style = TextStyle()
-            style.foregroundColor = Color.theme.accent
-            style.isBold = true
-            return style
-        }())
+        let indicator = ANSIRenderer.render(
+            "▸ ",
+            with: {
+                var style = TextStyle()
+                style.foregroundColor = Color.theme.accent
+                style.isBold = true
+                return style
+            }()
+        )
 
         // Prepend indicator to the middle line, pad other lines
         for index in 0..<lines.count {

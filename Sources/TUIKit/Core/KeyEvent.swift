@@ -100,13 +100,13 @@ private enum ASCIIByte {
     static let openBracket: UInt8 = 0x5B  // '['
 
     // Arrow / navigation keys (CSI final byte)
-    static let arrowUp: UInt8 = 0x41      // 'A'
-    static let arrowDown: UInt8 = 0x42    // 'B'
-    static let arrowRight: UInt8 = 0x43   // 'C'
-    static let arrowLeft: UInt8 = 0x44    // 'D'
-    static let home: UInt8 = 0x48         // 'H'
-    static let end: UInt8 = 0x46          // 'F'
-    static let tilde: UInt8 = 0x7E        // '~' (extended key terminator)
+    static let arrowUp: UInt8 = 0x41  // 'A'
+    static let arrowDown: UInt8 = 0x42  // 'B'
+    static let arrowRight: UInt8 = 0x43  // 'C'
+    static let arrowLeft: UInt8 = 0x44  // 'D'
+    static let home: UInt8 = 0x48  // 'H'
+    static let end: UInt8 = 0x46  // 'F'
+    static let tilde: UInt8 = 0x7E  // '~' (extended key terminator)
 }
 
 // MARK: - Key Parsing
@@ -136,7 +136,8 @@ extension KeyEvent {
 
         // UTF-8 character
         if let string = String(bytes: bytes, encoding: .utf8),
-           let char = string.first {
+            let char = string.first
+        {
             return KeyEvent(character: char)
         }
 
@@ -217,7 +218,8 @@ extension KeyEvent {
         // Parse the number before '~'
         let numberBytes = params.dropLast()
         guard let string = String(bytes: numberBytes, encoding: .ascii),
-              let number = Int(string) else {
+            let number = Int(string)
+        else {
             return nil
         }
 

@@ -39,22 +39,22 @@ struct ButtonsPage: View {
 
             DemoSection("Disabled Button") {
                 HStack(spacing: 2) {
-                    Button("Enabled") { }
-                    Button("Disabled") { }.disabled()
+                    Button("Enabled") {}
+                    Button("Disabled") {}.disabled()
                 }
             }
 
             DemoSection("Plain Style (No Border)") {
                 HStack(spacing: 2) {
-                    Button("Link 1", style: .plain) { }
-                    Button("Link 2", style: .plain) { }
+                    Button("Link 1", style: .plain) {}
+                    Button("Link 2", style: .plain) {}
                 }
             }
 
             DemoSection("ButtonRow (Horizontal Group)") {
                 ButtonRow(spacing: 3) {
-                    Button("Cancel") { }
-                    Button("Save", style: .primary) { }
+                    Button("Cancel") {}
+                    Button("Save", style: .primary) {}
                 }
             }
 
