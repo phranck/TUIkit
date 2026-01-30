@@ -178,11 +178,28 @@ internal final class AppRunner<A: App> {
 
 // MARK: - Scene Rendering Protocol
 
-/// Internal protocol for renderable scenes.
+/// Bridge from the `Scene` hierarchy to the `View` rendering system.
+///
+/// `SceneRenderable` sits outside the `View`/`Renderable` dual system.
+/// It connects the `App.body` (which produces a `Scene`) to the view
+/// tree rendering via ``renderToBuffer(_:context:)``.
+///
+/// `RenderLoop` calls `renderScene(context:)` on the scene returned
+/// by `App.body`. The scene (typically ``WindowGroup``) then invokes
+/// the free function `renderToBuffer` on its content view, entering
+/// the standard `Renderable`-or-`body` dispatch.
 internal protocol SceneRenderable {
+    /// Renders the scene's content to the terminal.
+    ///
+    /// - Parameter context: The rendering context with layout constraints.
     func renderScene(context: RenderContext)
 }
 
+/// Renders the window group's content view to the terminal.
+///
+/// This is the bridge from `Scene` to `View` rendering:
+/// calls ``renderToBuffer(_:context:)`` on `content`, writes the
+/// resulting ``FrameBuffer`` line-by-line with persistent background.
 extension WindowGroup: SceneRenderable {
     func renderScene(context: RenderContext) {
         let buffer = renderToBuffer(content, context: context)
