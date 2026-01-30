@@ -1,9 +1,11 @@
 //
-//  View+Preference.swift
+//  View+Preferences.swift
 //  TUIKit
 //
-//  The .preference() and .onPreferenceChange() view extensions.
+//  Preference system view modifiers: preference, onPreferenceChange, navigationTitle.
 //
+
+// MARK: - Preference
 
 extension View {
     /// Sets a preference value for this view.
@@ -48,5 +50,26 @@ extension View {
         perform action: @escaping (K.Value) -> Void
     ) -> some View where K.Value: Equatable {
         OnPreferenceChangeModifier<Self, K>(content: self, action: action)
+    }
+}
+
+// MARK: - Navigation Title
+
+extension View {
+    /// Sets the navigation title for this view.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// VStack {
+    ///     Text("Content")
+    /// }
+    /// .navigationTitle("Home")
+    /// ```
+    ///
+    /// - Parameter title: The navigation title.
+    /// - Returns: A view with the navigation title preference set.
+    public func navigationTitle(_ title: String) -> some View {
+        preference(key: NavigationTitleKey.self, value: title)
     }
 }
