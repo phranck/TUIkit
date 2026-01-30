@@ -188,17 +188,19 @@ struct ButtonTests {
         #expect(buffer.height == 1)
     }
 
-    @Test("Focused button has focus indicator")
-    func focusedButtonHasIndicator() {
+    @Test("Focused button is rendered bold without arrow indicator")
+    func focusedButtonIsBold() {
         let context = createTestContext()
         defer { cleanupEnvironment() }
 
         let button = Button("Focus Me", focusID: "focused-button") {}
         let buffer = renderToBuffer(button, context: context)
 
-        // First button is auto-focused, should have indicator
+        // First button is auto-focused and should be bold (no ▸ indicator)
         let allContent = buffer.lines.joined()
-        #expect(allContent.contains("▸"))
+        let boldCode = "\u{1b}[" // ANSI escape — bold style is applied via SGR
+        #expect(allContent.contains(boldCode), "Focused button should contain ANSI styling")
+        #expect(!allContent.contains("▸"), "Focused bold button should not have ▸ indicator")
     }
 
     @Test("Button default focused style uses theme colors")
