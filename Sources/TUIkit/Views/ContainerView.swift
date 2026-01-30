@@ -279,7 +279,8 @@ extension ContainerView: Renderable {
         let appearance = context.environment.appearance
         let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
-        let borderColor = style.borderColor ?? Color.theme.border
+        let palette = context.environment.palette
+        let borderColor = style.borderColor ?? palette.border
 
         // Render body content
         let paddedContent = content.padding(padding)
@@ -332,6 +333,7 @@ extension ContainerView: Renderable {
         borderColor: Color,
         context: RenderContext
     ) -> FrameBuffer {
+        let palette = context.environment.palette
         var lines: [String] = []
 
         // Top border (with title if present)
@@ -342,7 +344,7 @@ extension ContainerView: Renderable {
                     innerWidth: innerWidth,
                     color: borderColor,
                     title: titleText,
-                    titleColor: titleColor ?? Color.theme.accent
+                    titleColor: titleColor ?? palette.accent
                 )
             )
         } else {
@@ -429,13 +431,14 @@ extension ContainerView: Renderable {
         borderColor: Color,
         context: RenderContext
     ) -> FrameBuffer {
+        let palette = context.environment.palette
         var lines: [String] = []
 
-        // Get theme colors for block appearance
+        // Get palette colors for block appearance
         // Header/Footer = darker background
         // Body = lighter background (containerBackground)
-        let headerFooterBg = Color.theme.containerHeaderBackground
-        let bodyBg = Color.theme.containerBackground
+        let headerFooterBg = palette.containerHeaderBackground
+        let bodyBg = palette.containerBackground
 
         let hasHeader = title != nil
         let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
@@ -450,7 +453,7 @@ extension ContainerView: Renderable {
 
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
-            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
+            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? palette.accent, bold: true)
             lines.append(
                 BorderRenderer.blockContentLine(
                     content: titleStyled,

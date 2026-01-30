@@ -158,7 +158,7 @@ public struct Button: View {
         self.isDisabled = isDisabled
 
         // Default focused style: use theme accent color, bold
-        // Note: Theme colors are resolved at render time via Color.theme
+        // Note: Palette colors are resolved at render time via context.environment.palette
         self.focusedStyle =
             focusedStyle
             ?? ButtonStyle(
@@ -230,11 +230,12 @@ extension Button: Renderable {
 
         // Apply text styling
         var textStyle = TextStyle()
+        let palette = context.environment.palette
         if isDisabled {
-            textStyle.foregroundColor = Color.theme.disabled
+            textStyle.foregroundColor = palette.disabled
         } else {
-            // Use theme accent if no explicit color is set
-            textStyle.foregroundColor = currentStyle.foregroundColor ?? Color.theme.accent
+            // Use palette accent if no explicit color is set
+            textStyle.foregroundColor = currentStyle.foregroundColor ?? palette.accent
         }
         textStyle.backgroundColor = currentStyle.backgroundColor
         textStyle.isBold = currentStyle.isBold && !isDisabled
@@ -257,9 +258,9 @@ extension Button: Renderable {
             if borderStyle != .none {
                 let borderColor: Color
                 if isDisabled {
-                    borderColor = Color.theme.disabled
+                    borderColor = palette.disabled
                 } else {
-                    borderColor = currentStyle.borderColor ?? Color.theme.border
+                    borderColor = currentStyle.borderColor ?? palette.border
                 }
                 buffer = applyBorder(
                     to: buffer,
@@ -274,9 +275,9 @@ extension Button: Renderable {
                 let effectiveBorderStyle = context.environment.appearance.borderStyle
                 let borderColor: Color
                 if isDisabled {
-                    borderColor = Color.theme.disabled
+                    borderColor = palette.disabled
                 } else {
-                    borderColor = currentStyle.borderColor ?? Color.theme.border
+                    borderColor = currentStyle.borderColor ?? palette.border
                 }
                 buffer = applyBorder(
                     to: buffer,
@@ -289,7 +290,7 @@ extension Button: Renderable {
 
         // Add focus indicator if focused (but not for primary/bold buttons)
         if isFocused && !isDisabled && !currentStyle.isBold {
-            buffer = addFocusIndicator(to: buffer)
+            buffer = addFocusIndicator(to: buffer, palette: palette)
         }
 
         return buffer
@@ -319,7 +320,7 @@ extension Button: Renderable {
     }
 
     /// Adds a focus indicator (▸) to the left of the button.
-    private func addFocusIndicator(to buffer: FrameBuffer) -> FrameBuffer {
+    private func addFocusIndicator(to buffer: FrameBuffer, palette: any Palette) -> FrameBuffer {
         guard buffer.height > 0 else { return buffer }
 
         var lines = buffer.lines
@@ -330,7 +331,7 @@ extension Button: Renderable {
             "▸ ",
             with: {
                 var style = TextStyle()
-                style.foregroundColor = Color.theme.accent
+                style.foregroundColor = palette.accent
                 style.isBold = true
                 return style
             }()
