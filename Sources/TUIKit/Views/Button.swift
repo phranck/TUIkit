@@ -406,22 +406,27 @@ public struct ButtonRow: View {
 /// Result builder for creating button rows.
 @resultBuilder
 public struct ButtonRowBuilder {
+    /// Combines multiple buttons into a single array.
     public static func buildBlock(_ buttons: Button...) -> [Button] {
         buttons
     }
 
+    /// Combines an array of button arrays (from `for` loops).
     public static func buildArray(_ components: [[Button]]) -> [Button] {
         components.flatMap { $0 }
     }
 
+    /// Handles optional button arrays (from `if` without `else`).
     public static func buildOptional(_ component: [Button]?) -> [Button] {
         component ?? []
     }
 
+    /// Handles the first branch of an `if`/`else`.
     public static func buildEither(first component: [Button]) -> [Button] {
         component
     }
 
+    /// Handles the second branch of an `if`/`else`.
     public static func buildEither(second component: [Button]) -> [Button] {
         component
     }
