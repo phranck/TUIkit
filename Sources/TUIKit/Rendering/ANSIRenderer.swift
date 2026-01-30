@@ -25,6 +25,21 @@ public enum ANSIRenderer {
     /// Regex pattern that matches any ANSI escape sequence.
     public static let ansiPattern = "\u{1B}\\[[0-9;]*[a-zA-Z]"
 
+    // MARK: - SGR Style Codes
+
+    /// Named constants for ANSI SGR (Select Graphic Rendition) attribute codes.
+    ///
+    /// These replace bare string literals like `"1"`, `"7"` in `buildStyleCodes()`.
+    private enum StyleCode {
+        static let bold = "1"
+        static let dim = "2"
+        static let italic = "3"
+        static let underline = "4"
+        static let blink = "5"
+        static let inverse = "7"
+        static let strikethrough = "9"
+    }
+
     // MARK: - Style Rendering
 
     /// Renders text with the specified style.
@@ -53,25 +68,25 @@ public enum ANSIRenderer {
 
         // Text attributes
         if style.isBold {
-            codes.append("1")
+            codes.append(StyleCode.bold)
         }
         if style.isDim {
-            codes.append("2")
+            codes.append(StyleCode.dim)
         }
         if style.isItalic {
-            codes.append("3")
+            codes.append(StyleCode.italic)
         }
         if style.isUnderlined {
-            codes.append("4")
+            codes.append(StyleCode.underline)
         }
         if style.isBlink {
-            codes.append("5")
+            codes.append(StyleCode.blink)
         }
         if style.isInverted {
-            codes.append("7")
+            codes.append(StyleCode.inverse)
         }
         if style.isStrikethrough {
-            codes.append("9")
+            codes.append(StyleCode.strikethrough)
         }
 
         // Foreground color
