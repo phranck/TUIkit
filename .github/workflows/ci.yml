@@ -30,6 +30,21 @@ jobs:
       - name: Run SwiftLint
         run: swiftlint
 
+  linux-build:
+    name: Linux Build & Test
+    runs-on: ubuntu-latest
+    container:
+      image: swift:6.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build
+
+      - name: Test
+        run: swift test
+
   build-docs:
     name: Build DocC
     needs: lint
