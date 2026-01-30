@@ -92,9 +92,6 @@ internal struct RenderLoop<A: App> {
             tuiContext: tuiContext
         )
 
-        // Update global environment storage
-        EnvironmentStorage.active.environment = environment
-
         // Render main content (background fill happens in renderScene)
         let scene = app.body
         renderScene(scene, context: context)
