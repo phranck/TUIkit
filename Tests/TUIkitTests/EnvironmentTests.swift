@@ -80,12 +80,13 @@ struct EnvironmentValuesTests {
 
 // MARK: - EnvironmentStorage Tests
 
-@Suite("EnvironmentStorage Tests")
+@Suite("EnvironmentStorage Tests", .serialized)
 struct EnvironmentStorageTests {
 
     @Test("push and pop restore previous environment")
     func pushPop() {
         let storage = EnvironmentStorage.shared
+        storage.reset()
         let original = storage.environment
 
         var modified = EnvironmentValues()
@@ -100,6 +101,7 @@ struct EnvironmentStorageTests {
     @Test("Nested push/pop restores correctly")
     func nestedPushPop() {
         let storage = EnvironmentStorage.shared
+        storage.reset()
 
         var first = EnvironmentValues()
         first[TestStringKey.self] = "first"
@@ -119,6 +121,7 @@ struct EnvironmentStorageTests {
     @Test("Pop on empty stack is safe")
     func popEmptyStack() {
         let storage = EnvironmentStorage.shared
+        storage.reset()
         // Should not crash
         storage.pop()
     }
@@ -126,7 +129,7 @@ struct EnvironmentStorageTests {
     @Test("withEnvironment scopes environment correctly")
     func withEnvironment() {
         let storage = EnvironmentStorage.shared
-        let original = storage.environment[TestStringKey.self]
+        storage.reset()
 
         var scoped = EnvironmentValues()
         scoped[TestStringKey.self] = "scoped"
@@ -135,7 +138,7 @@ struct EnvironmentStorageTests {
             storage.environment[TestStringKey.self]
         }
         #expect(result == "scoped")
-        #expect(storage.environment[TestStringKey.self] == original) // restored
+        #expect(storage.environment[TestStringKey.self] == "default")
     }
 
     @Test("reset clears all state")
