@@ -30,7 +30,7 @@ extension BorderedView: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Resolve border style - use explicit or fall back to appearance default
         let effectiveStyle = style ?? context.environment.appearance.borderStyle
-        let isBlockAppearance = context.environment.appearance.id == .block
+        let isBlockAppearance = context.environment.appearance.rawId == .block
         
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context

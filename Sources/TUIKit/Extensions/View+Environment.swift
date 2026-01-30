@@ -47,21 +47,21 @@ extension View {
     }
 }
 
-// MARK: - Theme
+// MARK: - Palette
 
 extension View {
-    /// Sets the theme for this view and its descendants.
+    /// Sets the color palette for this view and its descendants.
     ///
     /// # Example
     ///
     /// ```swift
     /// ContentView()
-    ///     .theme(GreenPhosphorTheme())
+    ///     .palette(GreenPhosphorPalette())
     /// ```
     ///
-    /// - Parameter theme: The theme to apply.
-    /// - Returns: A view with the theme applied.
-    public func theme(_ theme: Theme) -> some View {
-        environment(\.theme, theme)
+    /// - Parameter palette: The palette to apply.
+    /// - Returns: A view with the palette applied.
+    public func palette(_ palette: any Palette) -> some View {
+        environment(\.palette, palette)
     }
 }

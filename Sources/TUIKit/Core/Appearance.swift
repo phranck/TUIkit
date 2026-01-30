@@ -49,9 +49,12 @@ import Foundation
 /// @Environment(\.appearance) var appearance
 /// let style = appearance.borderStyle
 /// ```
-public struct Appearance: Sendable, Equatable {
-    /// Unique identifier for the appearance.
-    public let id: ID
+public struct Appearance: Cyclable, Equatable {
+    /// Unique identifier for the appearance (conforms to ``Cyclable``).
+    public var id: String { rawId.rawValue }
+
+    /// The type-safe identifier.
+    public let rawId: ID
     
     /// The border style used for all controls.
     public let borderStyle: BorderStyle
@@ -62,13 +65,18 @@ public struct Appearance: Sendable, Equatable {
     ///   - id: The unique identifier.
     ///   - borderStyle: The border style to use for controls.
     public init(id: ID, borderStyle: BorderStyle) {
-        self.id = id
+        self.rawId = id
         self.borderStyle = borderStyle
     }
     
-    /// Human-readable name derived from ID.
+    /// Human-readable name derived from ID (conforms to ``Cyclable``).
     public var name: String {
-        id.rawValue.capitalized
+        rawId.rawValue.capitalized
+    }
+
+    /// Equatable conformance based on the type-safe ID.
+    public static func == (lhs: Appearance, rhs: Appearance) -> Bool {
+        lhs.rawId == rhs.rawId && lhs.borderStyle == rhs.borderStyle
     }
 }
 
@@ -166,7 +174,7 @@ public struct AppearanceRegistry {
     /// - Parameter id: The appearance ID to find.
     /// - Returns: The appearance, or nil if not found.
     public static func appearance(withId id: Appearance.ID) -> Appearance? {
-        all.first { $0.id == id }
+        all.first { $0.rawId == id }
     }
 }
 
@@ -201,109 +209,18 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Appearance Manager
-
-/// Manages appearance cycling for the application.
-///
-/// `AppearanceManager` provides methods to cycle through available appearances
-/// and set specific ones. It works with the environment system to update
-/// the current appearance and trigger re-renders.
-///
-/// # Usage
-///
-/// Access via environment:
-///
-/// ```swift
-/// @Environment(\.appearanceManager) var appearanceManager
-///
-/// // Cycle to the next appearance
-/// appearanceManager.cycleAppearance()
-///
-/// // Set a specific appearance
-/// appearanceManager.setAppearance(.ascii)
-///
-/// // Get the current appearance
-/// let appearance = appearanceManager.currentAppearance
-/// ```
-public final class AppearanceManager: @unchecked Sendable {
-    /// The current appearance index.
-    private var currentIndex: Int = 0
-    
-    /// All available appearances.
-    public let availableAppearances: [Appearance]
-    
-    /// Creates a new appearance manager with the default appearances.
-    public init() {
-        self.availableAppearances = AppearanceRegistry.all
-    }
-    
-    /// Creates a new appearance manager with custom appearances.
-    ///
-    /// - Parameter appearances: The appearances to cycle through.
-    public init(appearances: [Appearance]) {
-        self.availableAppearances = appearances.isEmpty ? AppearanceRegistry.all : appearances
-    }
-    
-    /// The current appearance.
-    public var currentAppearance: Appearance {
-        availableAppearances[currentIndex]
-    }
-    
-    /// The name of the current appearance.
-    public var currentAppearanceName: String {
-        currentAppearance.name
-    }
-    
-    /// Cycles to the next appearance.
-    ///
-    /// Updates the environment and triggers a re-render.
-    public func cycleAppearance() {
-        currentIndex = (currentIndex + 1) % availableAppearances.count
-        applyCurrentAppearance()
-    }
-    
-    /// Cycles to the previous appearance.
-    ///
-    /// Updates the environment and triggers a re-render.
-    public func cyclePreviousAppearance() {
-        currentIndex = (currentIndex - 1 + availableAppearances.count) % availableAppearances.count
-        applyCurrentAppearance()
-    }
-    
-    /// Sets a specific appearance.
-    ///
-    /// - Parameter appearance: The appearance to set.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// appearanceManager.setAppearance(.ascii)
-    /// appearanceManager.setAppearance(.rounded)
-    /// ```
-    public func setAppearance(_ appearance: Appearance) {
-        if let index = availableAppearances.firstIndex(where: { $0.id == appearance.id }) {
-            currentIndex = index
-        }
-        // If appearance is not in availableAppearances, currentIndex stays unchanged.
-        // Only apply appearances that are in the available list to keep
-        // currentAppearance and environment in sync.
-        applyCurrentAppearance()
-    }
-    
-    /// Applies the current appearance to the environment and triggers a re-render.
-    private func applyCurrentAppearance() {
-        var environment = EnvironmentStorage.shared.environment
-        environment.appearance = currentAppearance
-        EnvironmentStorage.shared.environment = environment
-        AppState.shared.setNeedsRender()
-    }
-}
-
 // MARK: - AppearanceManager Environment Key
 
 /// Environment key for the appearance manager.
 private struct AppearanceManagerKey: EnvironmentKey {
-    static let defaultValue: AppearanceManager = AppearanceManager()
+    static let defaultValue: ThemeManager = ThemeManager(
+        items: AppearanceRegistry.all,
+        applyToEnvironment: { item in
+            if let appearance = item as? Appearance {
+                EnvironmentStorage.shared.environment.appearance = appearance
+            }
+        }
+    )
 }
 
 extension EnvironmentValues {
@@ -312,10 +229,10 @@ extension EnvironmentValues {
     /// ```swift
     /// @Environment(\.appearanceManager) var appearanceManager
     ///
-    /// appearanceManager.cycleAppearance()
-    /// appearanceManager.setAppearance(.ascii)
+    /// appearanceManager.cycleNext()
+    /// appearanceManager.setCurrent(Appearance.rounded)
     /// ```
-    public var appearanceManager: AppearanceManager {
+    public var appearanceManager: ThemeManager {
         get { self[AppearanceManagerKey.self] }
         set { self[AppearanceManagerKey.self] = newValue }
     }
