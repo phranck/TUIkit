@@ -74,7 +74,7 @@ struct ContentView: View {
             StatusBarItem(shortcut: Shortcut.escape, label: "back") {
                 ExampleAppState.shared.currentPage = .menu
             },
-            StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll")
+            StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
         ]
     }
 }
