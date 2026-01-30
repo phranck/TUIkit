@@ -28,6 +28,8 @@ public struct BorderedView<Content: View>: View {
 
 extension BorderedView: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let palette = context.environment.palette
+
         // Resolve border style - use explicit or fall back to appearance default
         let effectiveStyle = style ?? context.environment.appearance.borderStyle
         let isBlockAppearance = context.environment.appearance.rawId == .block
@@ -45,15 +47,15 @@ extension BorderedView: Renderable {
         let innerWidth = max(contentWidth, 1)
 
         if isBlockAppearance {
-            return renderBlockStyle(buffer: buffer, innerWidth: innerWidth)
+            return renderBlockStyle(buffer: buffer, innerWidth: innerWidth, palette: palette)
         } else {
-            return renderStandardStyle(buffer: buffer, innerWidth: innerWidth, style: effectiveStyle)
+            return renderStandardStyle(buffer: buffer, innerWidth: innerWidth, style: effectiveStyle, palette: palette)
         }
     }
 
     /// Renders with standard box-drawing characters.
-    private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle) -> FrameBuffer {
-        let borderColor = color ?? Color.theme.border
+    private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle, palette: any Palette) -> FrameBuffer {
+        let borderColor = color ?? palette.border
         var lines: [String] = []
 
         lines.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderColor))
@@ -73,8 +75,8 @@ extension BorderedView: Renderable {
     }
 
     /// Renders with half-block characters for block appearance.
-    private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int) -> FrameBuffer {
-        let containerBg = Color.theme.containerBackground
+    private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int, palette: any Palette) -> FrameBuffer {
+        let containerBg = palette.containerBackground
         var lines: [String] = []
 
         lines.append(BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: containerBg))
