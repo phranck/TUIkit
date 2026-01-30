@@ -31,6 +31,8 @@
 - [ ] **H.8** Test coverage gaps — Views/Modifiers untested (High)
 
 ### Documentation
+- [ ] **DocC Article: App Lifecycle** — Ausführliche Beschreibung des gesamten App-Lifecycles: `@main` → `App.main()` → `AppRunner.init` (Dependency Wiring) → `run()` (Terminal-Setup, Signal-Handler, Main Loop) → `cleanup()`. Inkl. Diagramm, wann welche Subsysteme erstellt werden, wie `SignalManager`, `InputHandler`, `RenderLoop` zusammenspielen.
+- [ ] **DocC Article: Render Cycle** — Detaillierte Beschreibung des Render-Cycles: Trigger (SIGWINCH, AppState, User Input) → `RenderLoop.render()` → Key-Handler/Focus-Clear → Lifecycle-Tracking (beginRenderPass) → Environment-Assembly → Scene-Rendering → Lifecycle-End (onDisappear) → StatusBar-Rendering. Erklären warum `onAppear` synchron im Traversal feuert, warum kein Double-Buffer nötig ist.
 - [ ] Expand DocC articles: add more guides and tutorials
 - [ ] Improve inline Swift doc comments for better auto-generated API docs
 - [ ] Create interactive code examples in documentation
