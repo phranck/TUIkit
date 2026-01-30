@@ -3,6 +3,7 @@ name: Build and Deploy DocC
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
