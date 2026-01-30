@@ -189,10 +189,15 @@ extension KeyEvent {
     }
 
     /// Parses a CSI (Control Sequence Introducer) sequence.
+    ///
+    /// CSI format: `ESC [ <params> <final-byte>`.
+    /// The final byte identifies the key (e.g. `A` = up arrow).
+    /// Numeric parameters before the final byte encode extended keys
+    /// like Page Up/Down (`ESC [ 5 ~`).
     private static func parseCSISequence(_ params: [UInt8]) -> KeyEvent? {
         guard !params.isEmpty else { return nil }
 
-        // Arrow keys: A=up, B=down, C=right, D=left
+        // The last byte is the CSI function identifier
         switch params.last {
         case ASCIIByte.arrowUp:
             return KeyEvent(key: .up)
@@ -213,9 +218,12 @@ extension KeyEvent {
         }
     }
 
-    /// Parses extended key sequences (ESC [ n ~).
+    /// Parses extended key sequences (`ESC [ n ~`).
+    ///
+    /// These are VT-style sequences where `n` is a numeric key identifier:
+    /// 1=Home, 2=Insert, 3=Delete, 4=End, 5=PageUp, 6=PageDown.
     private static func parseExtendedKey(_ params: [UInt8]) -> KeyEvent? {
-        // Parse the number before '~'
+        // Extract the numeric identifier before the '~' terminator
         let numberBytes = params.dropLast()
         guard let string = String(bytes: numberBytes, encoding: .ascii),
             let number = Int(string)
@@ -224,20 +232,13 @@ extension KeyEvent {
         }
 
         switch number {
-        case 1:
-            return KeyEvent(key: .home)
-        case 2:
-            return nil  // Insert - not commonly used
-        case 3:
-            return KeyEvent(key: .delete)
-        case 4:
-            return KeyEvent(key: .end)
-        case 5:
-            return KeyEvent(key: .pageUp)
-        case 6:
-            return KeyEvent(key: .pageDown)
-        default:
-            return nil
+        case 1: return KeyEvent(key: .home)
+        case 2: return nil  // Insert — not commonly used in TUI apps
+        case 3: return KeyEvent(key: .delete)
+        case 4: return KeyEvent(key: .end)
+        case 5: return KeyEvent(key: .pageUp)
+        case 6: return KeyEvent(key: .pageDown)
+        default: return nil
         }
     }
 }

@@ -169,27 +169,28 @@ public struct FrameBuffer {
     ///   - column: The column position (0-based).
     /// - Returns: The composited line.
     private func insertOverlay(base: String, overlay: String, atColumn column: Int) -> String {
-        // For ANSI-safe insertion, we work with visible characters
+        // Strip ANSI codes from the base to get accurate column positions.
+        // Without stripping, escape sequences would shift character offsets.
+        // The overlay keeps its ANSI codes intact so its styling is preserved.
         let baseChars = Array(base.stripped)
         let overlayStripped = overlay.stripped
 
-        // Build result: characters before overlay position + overlay + characters after
+        // Build: [base prefix] + [overlay with ANSI] + [base suffix]
         var result = ""
 
-        // Add characters before the overlay position
+        // Base characters before the overlay insertion point
         if column > 0 {
             let prefixEnd = min(column, baseChars.count)
             result += String(baseChars[0..<prefixEnd])
-            // Pad if needed
             if prefixEnd < column {
                 result += String(repeating: " ", count: column - prefixEnd)
             }
         }
 
-        // Add the overlay (with its ANSI codes intact)
+        // Overlay with its ANSI styling intact
         result += overlay
 
-        // Add characters after the overlay
+        // Remaining base characters after the overlay region
         let afterOverlayColumn = column + overlayStripped.count
         if afterOverlayColumn < baseChars.count {
             result += String(baseChars[afterOverlayColumn...])
