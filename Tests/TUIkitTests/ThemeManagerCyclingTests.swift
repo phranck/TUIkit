@@ -100,12 +100,12 @@ struct ThemeManagerCyclingTests {
     @Test("ThemeManager with palette items returns currentPalette")
     func paletteManagerReturnsPalette() {
         let palettes: [any Cyclable] = [
-            GreenPhosphorPalette(),
-            AmberPhosphorPalette(),
+            GreenPalette(),
+            AmberPalette(),
         ]
         let manager = ThemeManager(items: palettes, applyToEnvironment: { _ in })
         #expect(manager.currentPalette != nil)
-        #expect(manager.currentPalette?.id == "green-phosphor")
+        #expect(manager.currentPalette?.id == "green")
     }
 
     @Test("applyToEnvironment closure is called on cycle")
