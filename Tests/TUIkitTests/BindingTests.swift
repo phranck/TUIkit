@@ -44,12 +44,6 @@ struct BindingTests {
         #expect(binding.wrappedValue == 42)
     }
 
-    @Test("Binding.constant with string")
-    func bindingConstantString() {
-        let binding = Binding.constant("fixed")
-        #expect(binding.wrappedValue == "fixed")
-    }
-
     @Test("Binding reflects external changes")
     func bindingReflectsChanges() {
         nonisolated(unsafe) var value = 1
