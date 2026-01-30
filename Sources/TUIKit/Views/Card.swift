@@ -45,10 +45,10 @@
 public struct Card<Content: View, Footer: View>: View {
     /// The card title (optional).
     public let title: String?
-    
+
     /// The content of the card.
     public let content: Content
-    
+
     /// The footer content (optional).
     public let footer: Footer?
 

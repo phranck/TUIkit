@@ -45,7 +45,7 @@ struct ContainersPage: View {
                     }
                 }
             }
-            
+
             HStack(spacing: 2) {
                 // ContainerView with Header and Footer (best for block appearance)
                 DemoSection("ContainerView (Header + Footer)") {
@@ -57,7 +57,7 @@ struct ContainersPage: View {
                         Text("Footer: Press Enter to confirm").foregroundColor(.theme.foreground)
                     }
                 }
-                
+
                 // Alignment examples - uses different text lengths to show alignment
                 DemoSection("Content Alignment") {
                     HStack(spacing: 1) {
@@ -99,7 +99,7 @@ struct ContainersPage: View {
                     }
                 }
             }
-            
+
             DemoSection("Appearance & BorderStyle") {
                 Text("BorderStyle is determined by Appearance. Press 'a' to cycle.").foregroundColor(.theme.foregroundSecondary)
             }

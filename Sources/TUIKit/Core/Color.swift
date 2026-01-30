@@ -38,77 +38,77 @@ public struct Color: Sendable, Equatable {
     // MARK: - Standard ANSI Colors
 
     /// Black (ANSI 30/40)
-    public static let black = Color(value: .standard(.black))
+    public static let black = Self(value: .standard(.black))
 
     /// Red (ANSI 31/41)
-    public static let red = Color(value: .standard(.red))
+    public static let red = Self(value: .standard(.red))
 
     /// Green (ANSI 32/42)
-    public static let green = Color(value: .standard(.green))
+    public static let green = Self(value: .standard(.green))
 
     /// Yellow (ANSI 33/43)
-    public static let yellow = Color(value: .standard(.yellow))
+    public static let yellow = Self(value: .standard(.yellow))
 
     /// Blue (ANSI 34/44)
-    public static let blue = Color(value: .standard(.blue))
+    public static let blue = Self(value: .standard(.blue))
 
     /// Magenta (ANSI 35/45)
-    public static let magenta = Color(value: .standard(.magenta))
+    public static let magenta = Self(value: .standard(.magenta))
 
     /// Cyan (ANSI 36/46)
-    public static let cyan = Color(value: .standard(.cyan))
+    public static let cyan = Self(value: .standard(.cyan))
 
     /// White (ANSI 37/47)
-    public static let white = Color(value: .standard(.white))
+    public static let white = Self(value: .standard(.white))
 
     /// Default color (terminal default)
-    public static let `default` = Color(value: .standard(.`default`))
+    public static let `default` = Self(value: .standard(.`default`))
 
     // MARK: - Bright ANSI Colors
 
     /// Bright black (gray)
-    public static let brightBlack = Color(value: .bright(.black))
+    public static let brightBlack = Self(value: .bright(.black))
 
     /// Bright red
-    public static let brightRed = Color(value: .bright(.red))
+    public static let brightRed = Self(value: .bright(.red))
 
     /// Bright green
-    public static let brightGreen = Color(value: .bright(.green))
+    public static let brightGreen = Self(value: .bright(.green))
 
     /// Bright yellow
-    public static let brightYellow = Color(value: .bright(.yellow))
+    public static let brightYellow = Self(value: .bright(.yellow))
 
     /// Bright blue
-    public static let brightBlue = Color(value: .bright(.blue))
+    public static let brightBlue = Self(value: .bright(.blue))
 
     /// Bright magenta
-    public static let brightMagenta = Color(value: .bright(.magenta))
+    public static let brightMagenta = Self(value: .bright(.magenta))
 
     /// Bright cyan
-    public static let brightCyan = Color(value: .bright(.cyan))
+    public static let brightCyan = Self(value: .bright(.cyan))
 
     /// Bright white
-    public static let brightWhite = Color(value: .bright(.white))
+    public static let brightWhite = Self(value: .bright(.white))
 
     // MARK: - Semantic Colors
 
     /// Primary color (default: blue)
-    public static let primary = Color.blue
+    public static let primary = Self.blue
 
     /// Secondary color (default: gray)
-    public static let secondary = Color.brightBlack
+    public static let secondary = Self.brightBlack
 
     /// Accent color (default: cyan)
-    public static let accent = Color.cyan
+    public static let accent = Self.cyan
 
     /// Warning color
-    public static let warning = Color.yellow
+    public static let warning = Self.yellow
 
     /// Error color
-    public static let error = Color.red
+    public static let error = Self.red
 
     /// Success color
-    public static let success = Color.green
+    public static let success = Self.green
 
     // MARK: - Custom Colors
 
@@ -116,8 +116,8 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter index: The palette index (0-255).
     /// - Returns: The corresponding color.
-    public static func palette(_ index: UInt8) -> Color {
-        Color(value: .palette256(index))
+    public static func palette(_ index: UInt8) -> Self {
+        Self(value: .palette256(index))
     }
 
     /// Creates a True Color RGB color.
@@ -127,15 +127,15 @@ public struct Color: Sendable, Equatable {
     ///   - green: The green component (0-255).
     ///   - blue: The blue component (0-255).
     /// - Returns: The RGB color.
-    public static func rgb(_ red: UInt8, _ green: UInt8, _ blue: UInt8) -> Color {
-        Color(value: .rgb(red: red, green: green, blue: blue))
+    public static func rgb(_ red: UInt8, _ green: UInt8, _ blue: UInt8) -> Self {
+        Self(value: .rgb(red: red, green: green, blue: blue))
     }
 
     /// Creates a color from a hex value.
     ///
     /// - Parameter hex: The hex value (e.g., 0xFF5500).
     /// - Returns: The corresponding RGB color.
-    public static func hex(_ hex: UInt32) -> Color {
+    public static func hex(_ hex: UInt32) -> Self {
         let red = UInt8((hex >> 16) & 0xFF)
         let green = UInt8((hex >> 8) & 0xFF)
         let blue = UInt8(hex & 0xFF)
@@ -148,7 +148,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter hex: The hex string (e.g., "#FF5500", "F50", "#abc").
     /// - Returns: The corresponding RGB color, or nil if invalid.
-    public static func hex(_ hex: String) -> Color? {
+    public static func hex(_ hex: String) -> Self? {
         var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Remove # prefix if present
@@ -178,7 +178,7 @@ public struct Color: Sendable, Equatable {
     ///   - saturation: The saturation component (0-100).
     ///   - lightness: The lightness component (0-100).
     /// - Returns: The corresponding RGB color.
-    public static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Color {
+    public static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Self {
         let normalizedHue = hue / 360.0
         let normalizedSaturation = saturation / 100.0
         let normalizedLightness = lightness / 100.0
@@ -198,15 +198,15 @@ public struct Color: Sendable, Equatable {
             var adjustedHue = hueComponent
             if adjustedHue < 0 { adjustedHue += 1 }
             if adjustedHue > 1 { adjustedHue -= 1 }
-            if adjustedHue < 1/6 { return luminance + (chroma - luminance) * 6 * adjustedHue }
-            if adjustedHue < 1/2 { return chroma }
-            if adjustedHue < 2/3 { return luminance + (chroma - luminance) * (2/3 - adjustedHue) * 6 }
+            if adjustedHue < 1 / 6 { return luminance + (chroma - luminance) * 6 * adjustedHue }
+            if adjustedHue < 1 / 2 { return chroma }
+            if adjustedHue < 2 / 3 { return luminance + (chroma - luminance) * (2 / 3 - adjustedHue) * 6 }
             return luminance
         }
 
-        let red = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue + 1/3) * 255)
+        let red = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue + 1 / 3) * 255)
         let green = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue) * 255)
-        let blue = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue - 1/3) * 255)
+        let blue = UInt8(hueToRGB(luminanceFactor, chromaFactor, normalizedHue - 1 / 3) * 255)
 
         return .rgb(red, green, blue)
     }
@@ -215,7 +215,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter amount: The amount to lighten (0-1, default 0.2).
     /// - Returns: A lighter color.
-    public func lighter(by amount: Double = 0.2) -> Color {
+    public func lighter(by amount: Double = 0.2) -> Self {
         adjusted(by: amount)
     }
 
@@ -223,7 +223,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter amount: The amount to darken (0-1, default 0.2).
     /// - Returns: A darker color.
-    public func darker(by amount: Double = 0.2) -> Color {
+    public func darker(by amount: Double = 0.2) -> Self {
         adjusted(by: -amount)
     }
 
@@ -233,7 +233,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter amount: The adjustment amount (-1 to 1).
     /// - Returns: The adjusted color, or self if not an RGB color.
-    private func adjusted(by amount: Double) -> Color {
+    private func adjusted(by amount: Double) -> Self {
         guard case .rgb(let red, let green, let blue) = value else {
             return self
         }
@@ -253,7 +253,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter opacity: The opacity (0-1).
     /// - Returns: A color simulating the given opacity.
-    public func opacity(_ opacity: Double) -> Color {
+    public func opacity(_ opacity: Double) -> Self {
         guard case .rgb(let red, let green, let blue) = value else {
             return self
         }

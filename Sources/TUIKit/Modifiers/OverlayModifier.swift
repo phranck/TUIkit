@@ -73,5 +73,3 @@ extension OverlayModifier: Renderable {
         return baseBuffer.composited(with: overlayBuffer, at: (x: horizontalOffset, y: verticalOffset))
     }
 }
-
-
