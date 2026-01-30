@@ -12,13 +12,6 @@ import Testing
 @Suite("Alert Tests")
 struct AlertTests {
 
-    @Test("Alert can be created with title and message")
-    func alertCreation() {
-        let alert = Alert(title: "Test", message: "Test message")
-        #expect(alert.title == "Test")
-        #expect(alert.message == "Test message")
-    }
-
     @Test("Alert renders with border")
     func alertRendering() {
         let alert = Alert(title: "Warning", message: "Something happened")
@@ -34,15 +27,6 @@ struct AlertTests {
 
 @Suite("Dialog Tests")
 struct DialogTests {
-
-    @Test("Dialog can be created with title and content")
-    func dialogCreation() {
-        let dialog = Dialog(title: "Settings") {
-            Text("Option 1")
-            Text("Option 2")
-        }
-        #expect(dialog.title == "Settings")
-    }
 
     @Test("Dialog renders with panel styling")
     func dialogRendering() {

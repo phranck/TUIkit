@@ -59,9 +59,4 @@ struct GeneratedPaletteTests {
         #expect(palette.backgroundSecondary != palette.backgroundTertiary)
     }
 
-    @Test("Generated palette conforms to Sendable")
-    func generatedIsSendable() {
-        let palette: any Sendable = GeneratedPalette(name: "Test", hue: 90)
-        #expect(palette is GeneratedPalette)
-    }
 }

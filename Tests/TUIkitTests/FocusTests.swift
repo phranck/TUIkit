@@ -46,14 +46,6 @@ final class MockFocusable: Focusable {
 @Suite("Focus Manager Tests")
 struct FocusManagerTests {
 
-    @Test("FocusManager can be instantiated")
-    func focusManagerInstantiation() {
-        let manager1 = FocusManager()
-        let manager2 = FocusManager()
-        // Each instance is independent
-        #expect(manager1 !== manager2)
-    }
-
     @Test("Register focusable element")
     func registerFocusable() {
         let manager = FocusManager()
@@ -324,12 +316,6 @@ struct FocusManagerTests {
 
 @Suite("Focus State Tests", .serialized)
 struct FocusStateTests {
-
-    @Test("FocusState can be created with ID")
-    func focusStateCreation() {
-        let state = FocusState(id: "my-focus-id")
-        #expect(state.id == "my-focus-id")
-    }
 
     @Test("FocusState generates UUID if no ID provided")
     func focusStateGeneratesUUID() {

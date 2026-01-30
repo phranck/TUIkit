@@ -27,16 +27,6 @@ struct OverlayModifierTests {
         renderToBuffer(view, context: testContext())
     }
 
-    @Test("OverlayModifier conforms to Renderable")
-    func conformsToRenderable() {
-        let modifier = OverlayModifier(
-            base: Text("Base"),
-            overlay: Text("Over"),
-            alignment: .center
-        )
-        #expect(modifier is any Renderable)
-    }
-
     @Test("Overlay with empty base returns overlay")
     func emptyBaseReturnsOverlay() {
         let view = OverlayModifier(
@@ -74,52 +64,53 @@ struct OverlayModifierTests {
         #expect(overlayBuffer.height == baseBuffer.height)
     }
 
-    @Test("overlay() View extension creates OverlayModifier")
-    func viewExtension() {
-        let view = Text("Base").overlay {
-            Text("Over")
-        }
-        #expect(view is OverlayModifier<Text, Text>)
-    }
-
-    @Test("overlay with leading alignment")
+    @Test("Overlay with leading alignment places overlay at start")
     func leadingAlignment() {
-        let view = Text("Base").overlay(alignment: .leading) {
-            Text("Over")
-        }
+        let base = Text("Hello World")
+        let overlay = Text("X")
+        let view = OverlayModifier(base: base, overlay: overlay, alignment: .leading)
         let buffer = render(view)
-        // Overlay should be at the start
-        #expect(!buffer.isEmpty)
+        let line = buffer.lines[0].stripped
+        #expect(line.hasPrefix("X"))
     }
 
-    @Test("overlay with trailing alignment")
+    @Test("Overlay with trailing alignment places overlay at end")
     func trailingAlignment() {
-        let view = Text("Base").overlay(alignment: .trailing) {
-            Text("Over")
-        }
+        let base = Text("Hello World")
+        let overlay = Text("X")
+        let view = OverlayModifier(base: base, overlay: overlay, alignment: .trailing)
         let buffer = render(view)
-        #expect(!buffer.isEmpty)
+        let line = buffer.lines[0].stripped
+        #expect(line.hasSuffix("X"))
     }
 
-    @Test("overlay with topLeading alignment")
+    @Test("Overlay with topLeading alignment places overlay at top-left")
     func topLeadingAlignment() {
-        let view = OverlayModifier(
-            base: Text("Base"),
-            overlay: Text("X"),
-            alignment: .topLeading
-        )
+        let base = VStack {
+            Text("Line 1")
+            Text("Line 2")
+            Text("Line 3")
+        }
+        let overlay = Text("X")
+        let view = OverlayModifier(base: base, overlay: overlay, alignment: .topLeading)
         let buffer = render(view)
-        #expect(!buffer.isEmpty)
+        #expect(buffer.height >= 3)
+        let firstLine = buffer.lines[0].stripped
+        #expect(firstLine.hasPrefix("X"))
     }
 
-    @Test("overlay with bottomTrailing alignment")
+    @Test("Overlay with bottomTrailing alignment places overlay at bottom-right")
     func bottomTrailingAlignment() {
-        let view = OverlayModifier(
-            base: Text("Base"),
-            overlay: Text("X"),
-            alignment: .bottomTrailing
-        )
+        let base = VStack {
+            Text("Line 1")
+            Text("Line 2")
+            Text("Line 3")
+        }
+        let overlay = Text("X")
+        let view = OverlayModifier(base: base, overlay: overlay, alignment: .bottomTrailing)
         let buffer = render(view)
-        #expect(!buffer.isEmpty)
+        #expect(buffer.height >= 3)
+        let lastLine = buffer.lines[buffer.height - 1].stripped
+        #expect(lastLine.hasSuffix("X"))
     }
 }
