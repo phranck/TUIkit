@@ -22,8 +22,12 @@ public enum ANSIRenderer {
     /// Dim/faint text style code.
     public static let dim = "\(csi)2m"
 
-    /// Regex pattern that matches any ANSI escape sequence.
-    public static let ansiPattern = "\u{1B}\\[[0-9;]*[a-zA-Z]"
+    /// Precompiled regex that matches any ANSI escape sequence.
+    ///
+    /// Used by `String.stripped` and `String.strippedLength` to remove
+    /// formatting codes for visible-width calculations. Compiling once
+    /// avoids per-call overhead in the hot rendering path.
+    public static nonisolated(unsafe) let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
 
     // MARK: - SGR Style Codes
 

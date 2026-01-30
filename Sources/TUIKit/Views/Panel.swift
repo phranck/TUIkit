@@ -122,7 +122,7 @@ extension Panel where Footer == EmptyView {
             borderColor: borderColor,
             titleColor: titleColor,
             padding: padding,
-            showFooterSeparator: true
+            showFooterSeparator: false
         )
     }
 }
