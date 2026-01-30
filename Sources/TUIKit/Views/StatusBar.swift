@@ -262,12 +262,17 @@ public enum Shortcut {
 /// StatusBarItem(shortcut: "s", label: "save", order: .default)
 /// ```
 public struct StatusBarItemOrder: Comparable, Sendable {
+    /// The numeric sort value (lower values appear first).
     public let value: Int
 
+    /// Creates a status bar item order with the given sort value.
+    ///
+    /// - Parameter value: The numeric sort value.
     public init(_ value: Int) {
         self.value = value
     }
 
+    /// Compares two orders by their numeric value.
     public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.value < rhs.value
     }
@@ -333,6 +338,12 @@ extension StatusBarItemProtocol {
     /// Default order for user-defined items.
     public var order: StatusBarItemOrder { .default }
 
+    /// Whether this item's trigger key matches the given key event.
+    ///
+    /// Returns `false` if the item has no trigger key (informational only).
+    ///
+    /// - Parameter event: The key event to match against.
+    /// - Returns: `true` if the event matches this item's trigger key.
     public func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
@@ -358,10 +369,19 @@ extension StatusBarItemProtocol {
 /// }
 /// ```
 public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
+    /// The unique identifier for this item.
     public let id: String
+
+    /// The shortcut key(s) displayed to the user (e.g. `"q"`, `"↑↓"`).
     public let shortcut: String
+
+    /// The descriptive label shown next to the shortcut (e.g. `"quit"`, `"nav"`).
     public let label: String
+
+    /// The key that triggers this item's action, or `nil` for informational items.
     public let triggerKey: Key?
+
+    /// The sort order controlling horizontal position in the status bar.
     public let order: StatusBarItemOrder
 
     /// The action to perform when the shortcut is triggered.
@@ -571,26 +591,32 @@ public enum SystemStatusBarItem {
 /// Result builder for creating status bar items.
 @resultBuilder
 public struct StatusBarItemBuilder {
+    /// Combines multiple item arrays into a single flat array.
     public static func buildBlock(_ components: [any StatusBarItemProtocol]...) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
+    /// Combines an array of item arrays (from `for` loops).
     public static func buildArray(_ components: [[any StatusBarItemProtocol]]) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
+    /// Handles optional item arrays (from `if` without `else`).
     public static func buildOptional(_ component: [any StatusBarItemProtocol]?) -> [any StatusBarItemProtocol] {
         component ?? []
     }
 
+    /// Handles the first branch of an `if`/`else`.
     public static func buildEither(first component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
+    /// Handles the second branch of an `if`/`else`.
     public static func buildEither(second component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
+    /// Wraps a single item into an array.
     public static func buildExpression(_ expression: any StatusBarItemProtocol) -> [any StatusBarItemProtocol] {
         [expression]
     }
