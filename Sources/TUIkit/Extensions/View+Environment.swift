@@ -56,7 +56,7 @@ extension View {
     ///
     /// ```swift
     /// ContentView()
-    ///     .palette(GreenPhosphorPalette())
+    ///     .palette(GreenPalette())
     /// ```
     ///
     /// - Parameter palette: The palette to apply.

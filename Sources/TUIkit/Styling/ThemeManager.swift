@@ -54,7 +54,7 @@ public protocol Cyclable: Sendable {
 /// @Environment(\.paletteManager) var paletteManager
 ///
 /// paletteManager.cycleNext()
-/// paletteManager.setCurrent(AmberPhosphorPalette())
+/// paletteManager.setCurrent(AmberPalette())
 /// let name = paletteManager.currentName
 /// ```
 ///
