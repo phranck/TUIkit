@@ -17,6 +17,9 @@ public final class LifecycleTracker: @unchecked Sendable {
     /// Shared instance for the running application.
     public static let shared = LifecycleTracker()
 
+    /// Lock protecting all mutable state.
+    private let lock = NSLock()
+
     /// Set of tokens that have appeared.
     private var appearedTokens: Set<String> = []
 
@@ -30,21 +33,25 @@ public final class LifecycleTracker: @unchecked Sendable {
 
     /// Marks the start of a new render pass.
     internal func beginRenderPass() {
+        lock.lock()
+        defer { lock.unlock() }
         currentRenderTokens.removeAll()
     }
 
     /// Marks the end of a render pass and triggers onDisappear for views that are no longer visible.
     internal func endRenderPass(onDisappear: [String: () -> Void]) {
-        // Find tokens that were visible but are no longer rendered
+        lock.lock()
         let disappearedTokens = visibleTokens.subtracting(currentRenderTokens)
-
         for token in disappearedTokens {
-            onDisappear[token]?()
             appearedTokens.remove(token)
         }
-
-        // Update visible tokens for next pass
         visibleTokens = currentRenderTokens
+        lock.unlock()
+
+        // Execute callbacks outside the lock to avoid deadlocks
+        for token in disappearedTokens {
+            onDisappear[token]?()
+        }
     }
 
     /// Records that a view with the given token appeared.
@@ -54,23 +61,30 @@ public final class LifecycleTracker: @unchecked Sendable {
     ///   - action: The onAppear action to execute.
     /// - Returns: True if this is the first appearance (action should run).
     internal func recordAppear(token: String, action: () -> Void) -> Bool {
+        lock.lock()
         currentRenderTokens.insert(token)
 
         if !appearedTokens.contains(token) {
             appearedTokens.insert(token)
+            lock.unlock()
             action()
             return true
         }
+        lock.unlock()
         return false
     }
 
     /// Checks if a view has appeared before.
     internal func hasAppeared(token: String) -> Bool {
-        appearedTokens.contains(token)
+        lock.lock()
+        defer { lock.unlock() }
+        return appearedTokens.contains(token)
     }
 
     /// Resets all tracking state.
     internal func reset() {
+        lock.lock()
+        defer { lock.unlock() }
         appearedTokens.removeAll()
         visibleTokens.removeAll()
         currentRenderTokens.removeAll()
@@ -111,23 +125,33 @@ extension OnAppearModifier: Renderable {
 public final class DisappearCallbackStorage: @unchecked Sendable {
     public static let shared = DisappearCallbackStorage()
 
+    /// Lock protecting the callbacks dictionary.
+    private let lock = NSLock()
     private var callbacks: [String: () -> Void] = [:]
 
     private init() {}
 
     internal func register(token: String, action: @escaping () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
         callbacks[token] = action
     }
 
     internal func unregister(token: String) {
+        lock.lock()
+        defer { lock.unlock() }
         callbacks.removeValue(forKey: token)
     }
 
     internal var allCallbacks: [String: () -> Void] {
-        callbacks
+        lock.lock()
+        defer { lock.unlock() }
+        return callbacks
     }
 
     internal func reset() {
+        lock.lock()
+        defer { lock.unlock() }
         callbacks.removeAll()
     }
 }
@@ -188,11 +212,14 @@ public struct TaskModifier<Content: View>: View {
 public final class TaskStorage: @unchecked Sendable {
     public static let shared = TaskStorage()
 
+    /// Lock protecting the tasks dictionary.
+    private let lock = NSLock()
     private var tasks: [String: Task<Void, Never>] = [:]
 
     private init() {}
 
     internal func startTask(token: String, priority: TaskPriority, operation: @escaping @Sendable () async -> Void) {
+        lock.lock()
         // Cancel existing task if any
         tasks[token]?.cancel()
 
@@ -200,18 +227,23 @@ public final class TaskStorage: @unchecked Sendable {
         tasks[token] = Task(priority: priority) {
             await operation()
         }
+        lock.unlock()
     }
 
     internal func cancelTask(token: String) {
+        lock.lock()
         tasks[token]?.cancel()
         tasks.removeValue(forKey: token)
+        lock.unlock()
     }
 
     internal func reset() {
+        lock.lock()
         for task in tasks.values {
             task.cancel()
         }
         tasks.removeAll()
+        lock.unlock()
     }
 }
 
