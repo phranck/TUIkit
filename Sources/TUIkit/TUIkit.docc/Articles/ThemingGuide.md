@@ -1,36 +1,36 @@
 # Theming Guide
 
-Customize the visual appearance of your TUIkit application with themes.
+Customize the visual appearance of your TUIkit application with palettes.
 
 ## Overview
 
-TUIkit includes a full theming system with five built-in themes inspired by classic CRT terminals. Themes define semantic colors for backgrounds, foregrounds, accents, and UI elements.
+TUIkit includes a full theming system with five built-in palettes inspired by classic CRT terminals, plus a ``GeneratedPalette`` that derives an entire color scheme from a single hue. Palettes define semantic colors for backgrounds, foregrounds, accents, and UI elements.
 
-## Built-in Themes
+## Built-in Palettes
 
-| Theme | Struct | Inspiration |
-|-------|--------|-------------|
-| Green Phosphor | ``GreenPhosphorTheme`` | IBM 5151, Apple II |
-| Amber Phosphor | ``AmberPhosphorTheme`` | IBM 3278, Wyse 50 |
-| White Phosphor | ``WhitePhosphorTheme`` | DEC VT100, VT220 |
-| Red Phosphor | ``RedPhosphorTheme`` | Military terminals |
-| ncurses | ``NCursesTheme`` | Classic ncurses apps |
+| Palette | Struct | Inspiration |
+|---------|--------|-------------|
+| Green | ``GreenPalette`` | IBM 5151, Apple II |
+| Amber | ``AmberPalette`` | IBM 3278, Wyse 50 |
+| White | ``WhitePalette`` | DEC VT100, VT220 |
+| Red | ``RedPalette`` | Military terminals |
+| ncurses | ``NCursesPalette`` | Classic ncurses apps |
 
-## Using Themes
+## Using Palettes
 
-### Via ThemeManager
+### Via PaletteManager
 
-Access the ``ThemeManager`` through the environment to cycle or set themes:
+Access the palette manager through the environment to cycle or set palettes:
 
 ```swift
 struct MyView: View {
-    @Environment(\.themeManager) var themeManager
+    @Environment(\.paletteManager) var paletteManager
 
     var body: some View {
         VStack {
-            Text("Current: \(themeManager.currentThemeName)")
-            Button("Next Theme") {
-                themeManager.cycleTheme()
+            Text("Current: \(paletteManager.currentName)")
+            Button("Next Palette") {
+                paletteManager.cycleNext()
             }
         }
     }
@@ -39,37 +39,37 @@ struct MyView: View {
 
 ### Via Environment
 
-Set a theme for a view and all its descendants:
+Set a palette for a view and all its descendants:
 
 ```swift
 ContentView()
-    .theme(AmberPhosphorTheme())
+    .palette(AmberPalette())
 ```
 
-### Theme Colors in Views
+### Palette Colors in Views
 
-Use ``Color/theme`` to access the current theme's colors:
+Use ``Color/palette`` to access the current palette's colors:
 
 ```swift
 Text("Styled text")
-    .foregroundColor(.theme.foreground)
-    .backgroundColor(.theme.backgroundSecondary)
+    .foregroundColor(.palette.foreground)
+    .backgroundColor(.palette.backgroundSecondary)
 ```
 
-Or read the theme directly from the environment:
+Or read the palette directly from the environment:
 
 ```swift
-@Environment(\.theme) var theme
+@Environment(\.palette) var palette
 
-Text("Hello").foregroundColor(theme.accent)
+Text("Hello").foregroundColor(palette.accent)
 ```
 
-## Creating Custom Themes
+## Creating Custom Palettes
 
-Implement the ``Theme`` protocol:
+Implement the ``Palette`` protocol:
 
 ```swift
-struct MyCustomTheme: Theme {
+struct MyCustomPalette: Palette {
     let id = "custom"
     let name = "Custom"
 
@@ -78,13 +78,13 @@ struct MyCustomTheme: Theme {
     let accent = Color.hex(0x00D4FF)
 
     // ... implement remaining required properties
-    // Many have default implementations via Theme extension
+    // Many have default implementations via Palette extension
 }
 ```
 
-## Theme Color Properties
+## Palette Color Properties
 
-The ``Theme`` protocol defines these semantic color categories:
+The ``Palette`` protocol defines these semantic color categories:
 
 - **Backgrounds**: `background`, `backgroundSecondary`, `backgroundTertiary`
 - **Foregrounds**: `foreground`, `foregroundSecondary`, `foregroundTertiary`
@@ -94,4 +94,4 @@ The ``Theme`` protocol defines these semantic color categories:
 - **Status Bar**: `statusBarBackground`, `statusBarForeground`, `statusBarHighlight`
 - **Containers**: `containerBackground`, `containerHeaderBackground`, `buttonBackground`
 
-Many of these have default implementations that derive from the primary colors, so a minimal theme only needs to define a handful of values.
+Many of these have default implementations that derive from the primary colors, so a minimal palette only needs to define a handful of values.

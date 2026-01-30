@@ -817,7 +817,7 @@ struct StatusBarItemBuilderTests {
 
 // MARK: - StatusBarItems Modifier Tests
 
-@Suite("StatusBarItems Modifier Tests")
+@Suite("StatusBarItems Modifier Tests", .serialized)
 struct StatusBarItemsModifierTests {
 
     @Test("statusBarItems modifier sets items in environment")
