@@ -10,13 +10,32 @@
 
 /// Manages the full rendering pipeline for each frame.
 ///
-/// Responsibilities:
-/// - Assembling the ``EnvironmentValues`` from all subsystems
-/// - Rendering the main scene content
+/// `RenderLoop` is owned by ``AppRunner`` and called once per frame.
+/// It orchestrates the complete render pass from `App.body` to
+/// terminal output.
+///
+/// ## Pipeline steps (per frame)
+///
+/// ```
+/// render()
+///   1. Clear per-frame state (key handlers, preferences, focus)
+///   2. Begin lifecycle tracking
+///   3. Build EnvironmentValues from all subsystems
+///   4. Create RenderContext with layout constraints
+///   5. Resolve App.body → Scene (WindowGroup)
+///   6. Call SceneRenderable.renderScene() → view tree traversal
+///      └── renderToBuffer() dispatches each view (Renderable or body)
+///      └── FrameBuffer lines written to terminal with background fill
+///   7. End lifecycle tracking (fires onDisappear for removed views)
+///   8. Render status bar separately (own context, never dimmed)
+/// ```
+///
+/// ## Responsibilities
+///
+/// - Assembling ``EnvironmentValues`` from all subsystems
+/// - Rendering the main scene content via ``SceneRenderable``
 /// - Rendering the status bar separately (never dimmed)
 /// - Coordinating lifecycle tracking (appear/disappear)
-///
-/// `RenderLoop` is owned by ``AppRunner`` and called once per frame.
 internal struct RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
     let app: A
