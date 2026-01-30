@@ -131,7 +131,7 @@ internal final class AppRunner<A: App> {
         EnvironmentStorage.shared.environment = renderer.buildEnvironment()
 
         // Register for state changes
-        AppState.shared.observe { [signals] in
+        AppState.active.observe { [signals] in
             signals.requestRerender()
         }
 
@@ -149,8 +149,8 @@ internal final class AppRunner<A: App> {
             }
 
             // Check if terminal was resized or state changed
-            if signals.consumeRerenderFlag() || AppState.shared.needsRender {
-                AppState.shared.didRender()
+            if signals.consumeRerenderFlag() || AppState.active.needsRender {
+                AppState.active.didRender()
                 renderer.render()
             }
 
@@ -168,7 +168,7 @@ internal final class AppRunner<A: App> {
         terminal.disableRawMode()
         terminal.showCursor()
         terminal.exitAlternateScreen()
-        AppState.shared.clearObservers()
+        AppState.active.clearObservers()
         EnvironmentStorage.shared.reset()
         focusManager.clear()
         tuiContext.reset()

@@ -39,13 +39,13 @@ final class ExampleAppState: @unchecked Sendable {
     /// The current page being displayed.
     var currentPage: DemoPage = .menu {
         didSet {
-            AppState.shared.setNeedsRender()
+            AppState.active.setNeedsRender()
         }
     }
 
     /// The selected menu index.
     var menuSelection: Int = 0 {
-        didSet { AppState.shared.setNeedsRender() }
+        didSet { AppState.active.setNeedsRender() }
     }
 
     /// Binding for menu selection.
