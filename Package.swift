@@ -8,7 +8,7 @@ let package = Package(
     // Minimum deployment targets for Apple platforms
     // Linux is automatically supported (no platform specification needed)
     platforms: [
-        .macOS(.v13)
+        .macOS(.v14)
     ],
     products: [
         .library(

@@ -139,36 +139,27 @@ internal func renderContainer<Content: View, Footer: View>(
     footer: Footer?,
     context: RenderContext
 ) -> FrameBuffer {
-    let containerStyle = ContainerStyle(from: config)
+    let hasFooter = footer != nil
+    let style = ContainerStyle(
+        showHeaderSeparator: true,
+        showFooterSeparator: hasFooter && config.showFooterSeparator,
+        borderStyle: config.borderStyle,
+        borderColor: config.borderColor
+    )
 
-    if let footerView = footer {
-        let container = ContainerView(
-            title: title,
-            titleColor: config.titleColor,
-            style: containerStyle,
-            padding: config.padding
-        ) {
-            content
-        } footer: {
+    let container = ContainerView(
+        title: title,
+        titleColor: config.titleColor,
+        style: style,
+        padding: config.padding
+    ) {
+        content
+    } footer: {
+        if let footerView = footer {
             footerView
         }
-        return container.renderToBuffer(context: context)
-    } else {
-        let container = ContainerView(
-            title: title,
-            titleColor: config.titleColor,
-            style: ContainerStyle(
-                showHeaderSeparator: true,
-                showFooterSeparator: false,
-                borderStyle: config.borderStyle,
-                borderColor: config.borderColor
-            ),
-            padding: config.padding
-        ) {
-            content
-        }
-        return container.renderToBuffer(context: context)
     }
+    return container.renderToBuffer(context: context)
 }
 
 // MARK: - Container View
