@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 @Suite("Color Tests")
@@ -15,7 +16,7 @@ struct ColorTests {
     func standardColors() {
         let colors: [Color] = [
             .black, .red, .green, .yellow,
-            .blue, .magenta, .cyan, .white
+            .blue, .magenta, .cyan, .white,
         ]
 
         #expect(colors.count == 8)
@@ -25,7 +26,7 @@ struct ColorTests {
     func brightColors() {
         let colors: [Color] = [
             .brightBlack, .brightRed, .brightGreen, .brightYellow,
-            .brightBlue, .brightMagenta, .brightCyan, .brightWhite
+            .brightBlue, .brightMagenta, .brightCyan, .brightWhite,
         ]
 
         #expect(colors.count == 8)

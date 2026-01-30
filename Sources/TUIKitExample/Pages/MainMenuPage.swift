@@ -33,7 +33,7 @@ struct MainMenuPage: View {
                         MenuItem(label: "Container Views", shortcut: "3"),
                         MenuItem(label: "Overlays & Modals", shortcut: "4"),
                         MenuItem(label: "Layout System", shortcut: "5"),
-                        MenuItem(label: "Buttons & Focus", shortcut: "6")
+                        MenuItem(label: "Buttons & Focus", shortcut: "6"),
                     ],
                     selection: state.menuSelectionBinding,
                     onSelect: { index in
@@ -78,6 +78,6 @@ struct MainMenuPage: View {
                 .foregroundColor(.theme.foregroundSecondary)
         }
         .padding(EdgeInsets(horizontal: 2, vertical: 1))
-        .border(color: .theme.border) // Uses appearance default borderStyle
+        .border(color: .theme.border)  // Uses appearance default borderStyle
     }
 }

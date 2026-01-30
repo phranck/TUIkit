@@ -566,7 +566,8 @@ internal final class AppRunner<A: App> {
     /// Renders the status bar at the specified row.
     private func renderStatusBar(atRow row: Int) {
         // Use theme colors for status bar (if not explicitly overridden)
-        let highlightColor = statusBar.highlightColor == .cyan
+        let highlightColor =
+            statusBar.highlightColor == .cyan
             ? Color.theme.statusBarHighlight
             : statusBar.highlightColor
         let labelColor = statusBar.labelColor ?? Color.theme.statusBarForeground

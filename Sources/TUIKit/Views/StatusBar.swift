@@ -329,11 +329,11 @@ public protocol StatusBarItemProtocol: Sendable {
 }
 
 // Default implementations
-public extension StatusBarItemProtocol {
+extension StatusBarItemProtocol {
     /// Default order for user-defined items.
-    var order: StatusBarItemOrder { .default }
+    public var order: StatusBarItemOrder { .default }
 
-    func matches(_ event: KeyEvent) -> Bool {
+    public func matches(_ event: KeyEvent) -> Bool {
         guard let trigger = triggerKey else { return false }
         return event.key == trigger
     }
@@ -460,7 +460,8 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
         // For character keys, do case-sensitive matching
         // "n" only matches 'n', "N" only matches 'N' (Shift+n)
         if case .character(let triggerChar) = trigger,
-           case .character(let eventChar) = event.key {
+            case .character(let eventChar) = event.key
+        {
             return triggerChar == eventChar
         }
 
@@ -528,31 +529,37 @@ public enum SystemStatusBarItem {
         var result: [StatusBarItem] = []
 
         // Quit is always present
-        result.append(StatusBarItem(
-            shortcut: "q",
-            label: "quit",
-            order: .quit,
-            action: onQuit
-        ))
+        result.append(
+            StatusBarItem(
+                shortcut: "q",
+                label: "quit",
+                order: .quit,
+                action: onQuit
+            )
+        )
 
         // Appearance is present if action is provided
         if let onAppearance {
-            result.append(StatusBarItem(
-                shortcut: "a",
-                label: "appearance",
-                order: .appearance,
-                action: onAppearance
-            ))
+            result.append(
+                StatusBarItem(
+                    shortcut: "a",
+                    label: "appearance",
+                    order: .appearance,
+                    action: onAppearance
+                )
+            )
         }
 
         // Theme is present if action is provided
         if let onTheme {
-            result.append(StatusBarItem(
-                shortcut: "t",
-                label: "theme",
-                order: .theme,
-                action: onTheme
-            ))
+            result.append(
+                StatusBarItem(
+                    shortcut: "t",
+                    label: "theme",
+                    order: .theme,
+                    action: onTheme
+                )
+            )
         }
 
         return result
@@ -762,20 +769,26 @@ extension StatusBar: Renderable {
 
         // Build item strings
         let itemStrings = combinedItems.map { item -> String in
-            let shortcutStyled = ANSIRenderer.render(item.shortcut, with: {
-                var style = TextStyle()
-                style.foregroundColor = highlightColor
-                style.isBold = true
-                return style
-            }())
+            let shortcutStyled = ANSIRenderer.render(
+                item.shortcut,
+                with: {
+                    var style = TextStyle()
+                    style.foregroundColor = highlightColor
+                    style.isBold = true
+                    return style
+                }()
+            )
 
             let labelStyled: String
             if let color = labelColor {
-                labelStyled = ANSIRenderer.render(" " + item.label, with: {
-                    var style = TextStyle()
-                    style.foregroundColor = color
-                    return style
-                }())
+                labelStyled = ANSIRenderer.render(
+                    " " + item.label,
+                    with: {
+                        var style = TextStyle()
+                        style.foregroundColor = color
+                        return style
+                    }()
+                )
             } else {
                 labelStyled = " " + item.label
             }
@@ -912,7 +925,7 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [
             BorderRenderer.standardTopBorder(style: border, innerWidth: innerWidth, color: borderColor),
             BorderRenderer.standardContentLine(content: content, innerWidth: innerWidth, style: border, color: borderColor),
-            BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor)
+            BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor),
         ])
     }
 
@@ -923,7 +936,7 @@ extension StatusBar: Renderable {
         return FrameBuffer(lines: [
             BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: statusBarBg),
             BorderRenderer.blockContentLine(content: content, innerWidth: innerWidth, sectionColor: statusBarBg),
-            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg)
+            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg),
         ])
     }
 }

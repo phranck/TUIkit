@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 @Suite("View Protocol Tests")
