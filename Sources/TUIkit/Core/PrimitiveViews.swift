@@ -71,3 +71,77 @@ public struct ViewArray<Element: View>: View {
         fatalError("ViewArray renders its children directly")
     }
 }
+
+// MARK: - AnyView
+
+/// A type-erased view for conditional returns.
+///
+/// Use `AnyView` when you need to return different view types
+/// from a conditional expression.
+///
+/// ```swift
+/// func content(showDetail: Bool) -> AnyView {
+///     if showDetail {
+///         return AnyView(DetailView())
+///     } else {
+///         return AnyView(SummaryView())
+///     }
+/// }
+/// ```
+public struct AnyView: View {
+    private let _render: (RenderContext) -> FrameBuffer
+
+    /// Creates an AnyView wrapping the given view.
+    ///
+    /// - Parameter view: The view to type-erase.
+    public init<V: View>(_ view: V) {
+        self._render = { context in
+            TUIkit.renderToBuffer(view, context: context)
+        }
+    }
+
+    public var body: Never {
+        fatalError("AnyView renders via Renderable")
+    }
+}
+
+// MARK: - AnyView Rendering
+
+extension AnyView: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        _render(context)
+    }
+}
+
+// MARK: - EmptyView Rendering
+
+extension EmptyView: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer()
+    }
+}
+
+// MARK: - ConditionalView Rendering
+
+extension ConditionalView: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        switch self {
+        case .trueContent(let content):
+            return TUIkit.renderToBuffer(content, context: context)
+        case .falseContent(let content):
+            return TUIkit.renderToBuffer(content, context: context)
+        }
+    }
+}
+
+// MARK: - ViewArray Rendering
+
+extension ViewArray: Renderable, ChildInfoProvider {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
+    }
+
+    func childInfos(context: RenderContext) -> [ChildInfo] {
+        elements.map { makeChildInfo(for: $0, context: context) }
+    }
+}

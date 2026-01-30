@@ -419,27 +419,3 @@ extension Menu: Renderable {
 
 // MARK: - AnyView Helper
 
-/// A type-erased view for conditional returns.
-///
-/// This is a temporary solution until we have proper `@ViewBuilder`
-/// support for complex conditionals.
-public struct AnyView: View {
-    private let _render: (RenderContext) -> FrameBuffer
-
-    /// Creates an AnyView wrapping the given view.
-    public init<V: View>(_ view: V) {
-        self._render = { context in
-            TUIkit.renderToBuffer(view, context: context)
-        }
-    }
-
-    public var body: Never {
-        fatalError("AnyView renders via Renderable")
-    }
-}
-
-extension AnyView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        _render(context)
-    }
-}

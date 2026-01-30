@@ -9,21 +9,21 @@ import Testing
 
 @testable import TUIkit
 
-// MARK: - Green Phosphor Palette Tests
+// MARK: - Green Palette Tests
 
-@Suite("Green Phosphor Palette Tests")
-struct GreenPhosphorPaletteTests {
+@Suite("Green Palette Tests")
+struct GreenPaletteTests {
 
     @Test("Green palette has correct identity")
     func greenIdentity() {
-        let palette = GreenPhosphorPalette()
-        #expect(palette.id == "green-phosphor")
+        let palette = GreenPalette()
+        #expect(palette.id == "green")
         #expect(palette.name == "Green")
     }
 
     @Test("Green palette has distinct background hierarchy")
     func greenBackgrounds() {
-        let palette = GreenPhosphorPalette()
+        let palette = GreenPalette()
         #expect(palette.background != palette.backgroundSecondary)
         #expect(palette.backgroundSecondary != palette.backgroundTertiary)
         #expect(palette.background != palette.backgroundTertiary)
@@ -31,68 +31,68 @@ struct GreenPhosphorPaletteTests {
 
     @Test("Green palette has distinct foreground hierarchy")
     func greenForegrounds() {
-        let palette = GreenPhosphorPalette()
+        let palette = GreenPalette()
         #expect(palette.foreground != palette.foregroundSecondary)
         #expect(palette.foregroundSecondary != palette.foregroundTertiary)
     }
 
     @Test("Green palette has distinct accent colors")
     func greenAccents() {
-        let palette = GreenPhosphorPalette()
+        let palette = GreenPalette()
         #expect(palette.accent != palette.accentSecondary)
     }
 
     @Test("Green palette has all semantic colors")
     func greenSemanticColors() {
-        let palette = GreenPhosphorPalette()
+        let palette = GreenPalette()
         #expect(palette.success != palette.error)
         #expect(palette.warning != palette.info)
     }
 }
 
-// MARK: - Amber Phosphor Palette Tests
+// MARK: - Amber Palette Tests
 
-@Suite("Amber Phosphor Palette Tests")
-struct AmberPhosphorPaletteTests {
+@Suite("Amber Palette Tests")
+struct AmberPaletteTests {
 
     @Test("Amber palette has correct identity")
     func amberIdentity() {
-        let palette = AmberPhosphorPalette()
-        #expect(palette.id == "amber-phosphor")
+        let palette = AmberPalette()
+        #expect(palette.id == "amber")
         #expect(palette.name == "Amber")
     }
 
     @Test("Amber palette colors differ from green palette")
     func amberDiffersFromGreen() {
-        let amber = AmberPhosphorPalette()
-        let green = GreenPhosphorPalette()
+        let amber = AmberPalette()
+        let green = GreenPalette()
         #expect(amber.foreground != green.foreground)
         #expect(amber.accent != green.accent)
     }
 }
 
-// MARK: - White Phosphor Palette Tests
+// MARK: - White Palette Tests
 
-@Suite("White Phosphor Palette Tests")
-struct WhitePhosphorPaletteTests {
+@Suite("White Palette Tests")
+struct WhitePaletteTests {
 
     @Test("White palette has correct identity")
     func whiteIdentity() {
-        let palette = WhitePhosphorPalette()
-        #expect(palette.id == "white-phosphor")
+        let palette = WhitePalette()
+        #expect(palette.id == "white")
         #expect(palette.name == "White")
     }
 }
 
-// MARK: - Red Phosphor Palette Tests
+// MARK: - Red Palette Tests
 
-@Suite("Red Phosphor Palette Tests")
-struct RedPhosphorPaletteTests {
+@Suite("Red Palette Tests")
+struct RedPaletteTests {
 
     @Test("Red palette has correct identity")
     func redIdentity() {
-        let palette = RedPhosphorPalette()
-        #expect(palette.id == "red-phosphor")
+        let palette = RedPalette()
+        #expect(palette.id == "red")
         #expect(palette.name == "Red")
     }
 }
