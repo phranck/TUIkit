@@ -217,14 +217,7 @@ extension EnvironmentValues {
 
 /// Environment key for the appearance manager.
 private struct AppearanceManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(
-        items: AppearanceRegistry.all,
-        applyToEnvironment: { item in
-            if let appearance = item as? Appearance {
-                EnvironmentStorage.active.environment.appearance = appearance
-            }
-        }
-    )
+    static let defaultValue = ThemeManager(items: AppearanceRegistry.all)
 }
 
 extension EnvironmentValues {
