@@ -30,7 +30,7 @@ public final class ViewRenderer {
     /// Creates a new ViewRenderer.
     ///
     /// - Parameter terminal: The target terminal.
-    public init(terminal: Terminal = .shared) {
+    public init(terminal: Terminal = Terminal()) {
         self.terminal = terminal
     }
 
