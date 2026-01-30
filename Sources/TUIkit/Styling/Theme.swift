@@ -310,14 +310,7 @@ public struct PaletteRegistry {
 
 /// Environment key for the palette manager.
 private struct PaletteManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(
-        items: PaletteRegistry.all,
-        applyToEnvironment: { item in
-            if let palette = item as? any Palette {
-                EnvironmentStorage.active.environment.palette = palette
-            }
-        }
-    )
+    static let defaultValue = ThemeManager(items: PaletteRegistry.all)
 }
 
 extension EnvironmentValues {
