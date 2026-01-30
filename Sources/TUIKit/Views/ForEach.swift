@@ -11,6 +11,17 @@
 /// element. The collection elements must be `Identifiable` or an
 /// explicit ID key path must be provided.
 ///
+/// ## Rendering
+///
+/// `ForEach` has **no standalone rendering capability**. It declares
+/// `body: Never` but does *not* conform to ``Renderable``. On its own,
+/// it would produce an empty ``FrameBuffer``.
+///
+/// In practice, `ForEach` is always used inside a `@ViewBuilder` block
+/// (e.g. within `VStack` or `HStack`). The builder's `buildArray`
+/// method flattens it into a ``ViewArray``, which *is* `Renderable`.
+/// This is the same pattern SwiftUI uses.
+///
 /// # Example with Identifiable
 ///
 /// ```swift
@@ -65,8 +76,10 @@ public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: View>
         self.content = content
     }
 
+    /// Never called — `ForEach` is flattened into a ``ViewArray`` by
+    /// `@ViewBuilder.buildArray` before rendering occurs.
     public var body: Never {
-        fatalError("ForEach renders its children directly")
+        fatalError("ForEach has no standalone rendering; use inside a @ViewBuilder block")
     }
 }
 

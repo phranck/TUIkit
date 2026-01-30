@@ -179,6 +179,12 @@ public struct Environment<Value>: @unchecked Sendable {
 // MARK: - Environment Modifier
 
 /// A modifier that injects a value into the environment for child views.
+///
+/// `EnvironmentModifier` conforms to both `View` and ``Renderable``.
+/// Because ``renderToBuffer(_:context:)`` checks `Renderable` first,
+/// the `body` property below is **never called during rendering**.
+/// It exists only to satisfy the `View` protocol requirement.
+/// All actual work happens in `renderToBuffer(context:)`.
 public struct EnvironmentModifier<Content: View, V>: View {
     /// The content view.
     let content: Content
@@ -189,6 +195,7 @@ public struct EnvironmentModifier<Content: View, V>: View {
     /// The value to inject.
     let value: V
 
+    /// Not used during rendering — ``Renderable`` conformance takes priority.
     public var body: some View {
         content
     }
