@@ -176,7 +176,7 @@ extension Menu: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register key handlers if this is an interactive menu
         if let binding = selectionBinding {
-            registerKeyHandlers(binding: binding)
+            registerKeyHandlers(binding: binding, context: context)
         }
 
         var lines: [String] = []
@@ -264,12 +264,12 @@ extension Menu: Renderable {
     }
 
     /// Registers key handlers for menu navigation.
-    private func registerKeyHandlers(binding: Binding<Int>) {
+    private func registerKeyHandlers(binding: Binding<Int>, context: RenderContext) {
         let itemCount = items.count
         let menuItems = items
         let selectCallback = onSelect
 
-        KeyEventDispatcher.shared.addHandler { event in
+        context.tuiContext.keyEventDispatcher.addHandler { event in
             switch event.key {
             case .up:
                 // Move selection up
