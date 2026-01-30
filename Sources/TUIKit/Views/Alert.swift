@@ -89,20 +89,9 @@ public struct Alert<Actions: View>: View {
 extension Alert: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let hasActions = !(actions is EmptyView)
-        let effectiveConfig =
-            hasActions
-            ? config
-            : ContainerConfig(
-                borderStyle: config.borderStyle,
-                borderColor: config.borderColor,
-                titleColor: config.titleColor,
-                padding: config.padding,
-                showFooterSeparator: false
-            )
-
         return renderContainer(
             title: title,
-            config: effectiveConfig,
+            config: config,
             content: Text(message),
             footer: hasActions ? actions : nil,
             context: context
