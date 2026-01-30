@@ -58,9 +58,14 @@ extension BorderedView: Renderable {
 
         lines.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderColor))
         for line in buffer.lines {
-            lines.append(BorderRenderer.standardContentLine(
-                content: line, innerWidth: innerWidth, style: style, color: borderColor
-            ))
+            lines.append(
+                BorderRenderer.standardContentLine(
+                    content: line,
+                    innerWidth: innerWidth,
+                    style: style,
+                    color: borderColor
+                )
+            )
         }
         lines.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderColor))
 

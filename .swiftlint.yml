@@ -17,6 +17,10 @@ disabled_rules:
   - nesting
   # BorderStyle.none follows SwiftUI convention (e.g. Font.Weight.none)
   - discouraged_none_name
+  # swift-format adds trailing commas (multiElementCollectionTrailingCommas: true)
+  - trailing_comma
+  # swift-format places opening braces on new lines for wrapped signatures
+  - opening_brace
 
 opt_in_rules:
   - closure_end_indentation

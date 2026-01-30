@@ -6,6 +6,7 @@
 //
 
 import Testing
+
 @testable import TUIKit
 
 @Suite("Alert Tests")
@@ -82,7 +83,7 @@ struct MenuTests {
             title: "Test Menu",
             items: [
                 MenuItem(label: "Option 1", shortcut: "1"),
-                MenuItem(label: "Option 2", shortcut: "2")
+                MenuItem(label: "Option 2", shortcut: "2"),
             ],
             selectedIndex: 0
         )
@@ -97,7 +98,7 @@ struct MenuTests {
             title: "My Menu",
             items: [
                 MenuItem(label: "First"),
-                MenuItem(label: "Second")
+                MenuItem(label: "Second"),
             ]
         )
         let context = RenderContext(availableWidth: 80, availableHeight: 24)

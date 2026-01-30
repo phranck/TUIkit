@@ -30,8 +30,8 @@ struct OverlaysPage: View {
                         titleColor: .theme.accent
                     ) {
                         VStack(spacing: 1) {
-                            Button("OK", style: .primary) { }
-                            Button("Cancel") { }
+                            Button("OK", style: .primary) {}
+                            Button("Cancel") {}
                         }
                     }
                     .frame(width: 55)

@@ -35,10 +35,10 @@ public protocol Focusable: AnyObject {
 }
 
 // Default implementations
-public extension Focusable {
-    var canBeFocused: Bool { true }
-    func onFocusReceived() {}
-    func onFocusLost() {}
+extension Focusable {
+    public var canBeFocused: Bool { true }
+    public func onFocusReceived() {}
+    public func onFocusLost() {}
 }
 
 // MARK: - Focus Manager
@@ -128,7 +128,8 @@ public final class FocusManager: @unchecked Sendable {
 
         // Notify previous focused element
         if let currentID = focusedID,
-           let current = focusables.first(where: { $0.focusID == currentID }) {
+            let current = focusables.first(where: { $0.focusID == currentID })
+        {
             current.onFocusLost()
         }
 
@@ -171,7 +172,8 @@ public final class FocusManager: @unchecked Sendable {
         guard !availableFocusables.isEmpty else { return }
 
         if let currentID = focusedID,
-           let currentIndex = availableFocusables.firstIndex(where: { $0.focusID == currentID }) {
+            let currentIndex = availableFocusables.firstIndex(where: { $0.focusID == currentID })
+        {
             let targetIndex: Int
             switch direction {
             case .forward:
