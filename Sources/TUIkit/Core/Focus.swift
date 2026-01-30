@@ -287,13 +287,13 @@ public class FocusState {
     ///
     /// Reads from the current environment's focus manager.
     public var isFocused: Bool {
-        EnvironmentStorage.shared.environment.focusManager.isFocused(id: id)
+        EnvironmentStorage.active.environment.focusManager.isFocused(id: id)
     }
 
     /// Requests focus for this element.
     ///
     /// Uses the current environment's focus manager.
     public func requestFocus() {
-        EnvironmentStorage.shared.environment.focusManager.focus(id: id)
+        EnvironmentStorage.active.environment.focusManager.focus(id: id)
     }
 }

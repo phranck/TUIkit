@@ -16,7 +16,7 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
     let focusManager = FocusManager()
     var environment = EnvironmentValues()
     environment.focusManager = focusManager
-    EnvironmentStorage.shared.environment = environment
+    EnvironmentStorage.active.environment = environment
 
     return RenderContext(
         availableWidth: width,
@@ -27,7 +27,7 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
 
 /// Cleans up the environment after a test.
 private func cleanupEnvironment() {
-    EnvironmentStorage.shared.reset()
+    EnvironmentStorage.active.reset()
 }
 
 // MARK: - Button Style Tests
