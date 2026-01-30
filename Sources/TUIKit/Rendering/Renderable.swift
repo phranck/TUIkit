@@ -20,8 +20,9 @@ public protocol Renderable {
 
 /// The context for rendering a view.
 ///
-/// Contains layout constraints, terminal information, and environment values
-/// that views need to determine their size and content.
+/// Contains layout constraints, terminal information, environment values,
+/// and the central ``TUIContext`` that views need to determine their size,
+/// content, and access framework services.
 public struct RenderContext {
     /// The target terminal.
     public let terminal: Terminal
@@ -35,6 +36,12 @@ public struct RenderContext {
     /// The environment values for this render pass.
     public var environment: EnvironmentValues
 
+    /// The central dependency container for framework services.
+    ///
+    /// Provides access to lifecycle tracking, key event dispatch,
+    /// and preference storage without relying on singletons.
+    public let tuiContext: TUIContext
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
@@ -42,16 +49,19 @@ public struct RenderContext {
     ///   - availableWidth: The available width (defaults to terminal width).
     ///   - availableHeight: The available height (defaults to terminal height).
     ///   - environment: The environment values (defaults to empty).
+    ///   - tuiContext: The TUI context (defaults to a fresh instance).
     public init(
         terminal: Terminal = .shared,
         availableWidth: Int? = nil,
         availableHeight: Int? = nil,
-        environment: EnvironmentValues = EnvironmentValues()
+        environment: EnvironmentValues = EnvironmentValues(),
+        tuiContext: TUIContext = TUIContext()
     ) {
         self.terminal = terminal
         self.availableWidth = availableWidth ?? terminal.width
         self.availableHeight = availableHeight ?? terminal.height
         self.environment = environment
+        self.tuiContext = tuiContext
     }
 
     /// Creates a new context with the same terminal and size but different environment.
@@ -63,7 +73,8 @@ public struct RenderContext {
             terminal: terminal,
             availableWidth: availableWidth,
             availableHeight: availableHeight,
-            environment: environment
+            environment: environment,
+            tuiContext: tuiContext
         )
     }
 }

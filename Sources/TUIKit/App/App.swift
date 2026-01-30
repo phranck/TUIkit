@@ -427,6 +427,7 @@ internal final class AppRunner<A: App> {
     let focusManager: FocusManager
     let paletteManager: ThemeManager
     let appearanceManager: ThemeManager
+    let tuiContext: TUIContext
     private var isRunning = false
 
     init(app: A) {
@@ -434,6 +435,7 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal.shared
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
+        self.tuiContext = TUIContext()
         self.paletteManager = ThemeManager(
             items: PaletteRegistry.all,
             applyToEnvironment: { item in
@@ -502,11 +504,11 @@ internal final class AppRunner<A: App> {
 
     private func render() {
         // Clear event handlers before re-rendering
-        KeyEventDispatcher.shared.clearHandlers()
+        tuiContext.keyEventDispatcher.clearHandlers()
         focusManager.clear()
 
         // Begin lifecycle tracking for this render pass
-        LifecycleTracker.shared.beginRenderPass()
+        tuiContext.lifecycle.beginRenderPass()
 
         // Calculate available height (reserve space for status bar)
         let statusBarHeight = statusBar.height
@@ -519,7 +521,8 @@ internal final class AppRunner<A: App> {
             terminal: terminal,
             availableWidth: terminal.width,
             availableHeight: contentHeight,
-            environment: environment
+            environment: environment,
+            tuiContext: tuiContext
         )
 
         // Update global environment storage
@@ -530,7 +533,7 @@ internal final class AppRunner<A: App> {
         renderScene(scene, context: context)
 
         // End lifecycle tracking - triggers onDisappear for removed views
-        LifecycleTracker.shared.endRenderPass(onDisappear: DisappearCallbackStorage.shared.allCallbacks)
+        tuiContext.lifecycle.endRenderPass()
 
         // Render status bar separately (never dimmed)
         if statusBar.hasItems {
@@ -588,7 +591,8 @@ internal final class AppRunner<A: App> {
             terminal: terminal,
             availableWidth: terminal.width,
             availableHeight: statusBarView.height,
-            environment: environment
+            environment: environment,
+            tuiContext: tuiContext
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)
@@ -620,7 +624,7 @@ internal final class AppRunner<A: App> {
         }
 
         // Then, let registered handlers try to handle the event
-        if KeyEventDispatcher.shared.dispatch(event) {
+        if tuiContext.keyEventDispatcher.dispatch(event) {
             return
         }
 
@@ -652,12 +656,9 @@ internal final class AppRunner<A: App> {
         terminal.showCursor()
         terminal.exitAlternateScreen()
         AppState.shared.clearObservers()
-        KeyEventDispatcher.shared.clearHandlers()
         EnvironmentStorage.shared.reset()
         focusManager.clear()
-        LifecycleTracker.shared.reset()
-        DisappearCallbackStorage.shared.reset()
-        TaskStorage.shared.reset()
+        tuiContext.reset()
     }
 
     private func setupSignalHandlers() {
