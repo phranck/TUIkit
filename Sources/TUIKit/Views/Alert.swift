@@ -256,41 +256,21 @@ extension Alert {
 extension Alert where Actions == EmptyView {
     /// Creates a warning-style alert without actions.
     public static func warning(title: String = "Warning", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title,
-            message: message,
-            borderColor: .yellow,
-            titleColor: .yellow
-        )
+        Alert.warning(title: title, message: message) { EmptyView() }
     }
 
     /// Creates an error-style alert without actions.
     public static func error(title: String = "Error", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title,
-            message: message,
-            borderColor: .red,
-            titleColor: .red
-        )
+        Alert.error(title: title, message: message) { EmptyView() }
     }
 
     /// Creates an info-style alert without actions.
     public static func info(title: String = "Info", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title,
-            message: message,
-            borderColor: .cyan,
-            titleColor: .cyan
-        )
+        Alert.info(title: title, message: message) { EmptyView() }
     }
 
     /// Creates a success-style alert without actions.
     public static func success(title: String = "Success", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title,
-            message: message,
-            borderColor: .green,
-            titleColor: .green
-        )
+        Alert.success(title: title, message: message) { EmptyView() }
     }
 }

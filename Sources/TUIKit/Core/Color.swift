@@ -216,15 +216,7 @@ public struct Color: Sendable, Equatable {
     /// - Parameter amount: The amount to lighten (0-1, default 0.2).
     /// - Returns: A lighter color.
     public func lighter(by amount: Double = 0.2) -> Color {
-        guard case .rgb(let red, let green, let blue) = value else {
-            return self
-        }
-
-        let newRed = UInt8(min(255, Double(red) + 255 * amount))
-        let newGreen = UInt8(min(255, Double(green) + 255 * amount))
-        let newBlue = UInt8(min(255, Double(blue) + 255 * amount))
-
-        return .rgb(newRed, newGreen, newBlue)
+        adjusted(by: amount)
     }
 
     /// Returns a darker version of this color.
@@ -232,13 +224,24 @@ public struct Color: Sendable, Equatable {
     /// - Parameter amount: The amount to darken (0-1, default 0.2).
     /// - Returns: A darker color.
     public func darker(by amount: Double = 0.2) -> Color {
+        adjusted(by: -amount)
+    }
+
+    /// Adjusts brightness by a signed amount.
+    ///
+    /// Positive values lighten, negative values darken.
+    ///
+    /// - Parameter amount: The adjustment amount (-1 to 1).
+    /// - Returns: The adjusted color, or self if not an RGB color.
+    private func adjusted(by amount: Double) -> Color {
         guard case .rgb(let red, let green, let blue) = value else {
             return self
         }
 
-        let newRed = UInt8(max(0, Double(red) - 255 * amount))
-        let newGreen = UInt8(max(0, Double(green) - 255 * amount))
-        let newBlue = UInt8(max(0, Double(blue) - 255 * amount))
+        let shift = 255 * amount
+        let newRed = UInt8(min(255, max(0, Double(red) + shift)))
+        let newGreen = UInt8(min(255, max(0, Double(green) + shift)))
+        let newBlue = UInt8(min(255, max(0, Double(blue) + shift)))
 
         return .rgb(newRed, newGreen, newBlue)
     }

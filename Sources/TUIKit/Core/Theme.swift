@@ -640,12 +640,16 @@ public struct GeneratedTheme: Theme, Sendable {
 
     /// Predefined hue values for common generated themes.
     public enum Hue {
+        /// Green hue (120°).
+        public static let green: Double = 120
         /// Violet hue (270°).
         public static let violet: Double = 270
     }
 
     // MARK: - Presets
 
+    /// A green generated theme — for direct comparison with GreenPhosphorTheme.
+    public static let green = GeneratedTheme(name: "Gen. Green", hue: Hue.green)
     /// A violet generated theme.
     public static let violet = GeneratedTheme(name: "Violet", hue: Hue.violet)
 }
@@ -656,9 +660,10 @@ public struct GeneratedTheme: Theme, Sendable {
 public struct ThemeRegistry {
     /// All available themes in cycling order.
     ///
-    /// Order: Green → Amber → White → Red → NCurses → Violet (generated)
+    /// Order: Green → Gen. Green → Amber → White → Red → NCurses → Violet (generated)
     public static let all: [Theme] = [
         GreenPhosphorTheme(),
+        GeneratedTheme.green,
         AmberPhosphorTheme(),
         WhitePhosphorTheme(),
         RedPhosphorTheme(),

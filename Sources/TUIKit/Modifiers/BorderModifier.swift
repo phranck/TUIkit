@@ -34,7 +34,7 @@ extension BorderedView: Renderable {
         
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context
-        contentContext.availableWidth = max(1, context.availableWidth - 2)
+        contentContext.availableWidth = max(1, context.availableWidth - BorderRenderer.borderWidthOverhead)
 
         // Render content with reduced width
         let buffer = TUIKit.renderToBuffer(content, context: contentContext)
