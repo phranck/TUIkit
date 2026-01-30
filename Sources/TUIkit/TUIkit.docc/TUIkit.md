@@ -94,15 +94,15 @@ struct MyApp: App {
 ### Theming
 
 - <doc:ThemingGuide>
-- ``Theme``
+- ``Palette``
 - ``ThemeManager``
-- ``ThemeRegistry``
-- ``ThemeColors``
-- ``GreenPhosphorTheme``
-- ``AmberPhosphorTheme``
-- ``WhitePhosphorTheme``
-- ``RedPhosphorTheme``
-- ``NCursesTheme``
+- ``PaletteRegistry``
+- ``PaletteColors``
+- ``GreenPalette``
+- ``AmberPalette``
+- ``WhitePalette``
+- ``RedPalette``
+- ``NCursesPalette``
 
 ### Colors
 
