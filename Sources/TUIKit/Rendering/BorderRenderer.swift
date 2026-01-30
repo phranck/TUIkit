@@ -16,6 +16,9 @@
 /// - **Block**: half-block characters (▄ █ ▀) for smooth visual edges
 public enum BorderRenderer {
 
+    /// The total width consumed by left + right border characters (1 + 1 = 2).
+    public static let borderWidthOverhead = 2
+
     // MARK: - Standard Style (Box-Drawing Characters)
 
     /// Renders a plain top border line.
@@ -155,7 +158,7 @@ public enum BorderRenderer {
         innerWidth: Int,
         color: Color
     ) -> String {
-        let line = String(repeating: "▄", count: innerWidth + 2)
+        let line = String(repeating: BorderStyle.block.horizontal, count: innerWidth + 2)
         return ANSIRenderer.colorize(line, foreground: color)
     }
 
@@ -171,7 +174,7 @@ public enum BorderRenderer {
         innerWidth: Int,
         color: Color
     ) -> String {
-        let line = String(repeating: "▀", count: innerWidth + 2)
+        let line = String(repeating: BorderStyle.blockBottomHorizontal, count: innerWidth + 2)
         return ANSIRenderer.colorize(line, foreground: color)
     }
 
@@ -191,7 +194,7 @@ public enum BorderRenderer {
         sectionColor: Color
     ) -> String {
         let paddedLine = content.padToVisibleWidth(innerWidth)
-        let sideBorder = ANSIRenderer.colorize("█", foreground: sectionColor)
+        let sideBorder = ANSIRenderer.colorize(String(BorderStyle.block.vertical), foreground: sectionColor)
         let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: sectionColor)
         return sideBorder + styledContent + ANSIRenderer.reset + sideBorder
     }
@@ -203,13 +206,13 @@ public enum BorderRenderer {
     ///
     /// - Parameters:
     ///   - innerWidth: The content width (separator width = innerWidth + 2).
-    ///   - character: The separator character (`"▀"` for header→body, `"▄"` for body→footer).
+    ///   - character: The separator character (`.blockBottomHorizontal` for header→body, `.blockFooterSeparator` for body→footer).
     ///   - foregroundColor: The FG color (the section being transitioned from or to).
     ///   - backgroundColor: The BG color (the adjacent section).
     /// - Returns: The separator line.
     public static func blockSeparator(
         innerWidth: Int,
-        character: Character = "▀",
+        character: Character = BorderStyle.blockBottomHorizontal,
         foregroundColor: Color,
         backgroundColor: Color
     ) -> String {
