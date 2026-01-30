@@ -1,4 +1,4 @@
-# TUIKit - Comprehensive Project Analysis
+# TUIkit - Comprehensive Project Analysis
 
 **Date:** 2026-01-30
 **Scope:** Full codebase review (66 Swift files)
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-TUIKit is a well-architected declarative Swift framework for building terminal UIs. The SwiftUI-inspired API design is clean, consistent, and idiomatic. Documentation is above average for a personal project. However, the codebase suffers from **significant code duplication** across Views and Modifiers, an **overreliance on singletons** that hinders testability, and several **thread-safety issues** with `@unchecked Sendable` types. The most impactful improvements would be extracting shared rendering logic into utilities, replacing singletons with dependency injection, and expanding test coverage for Views and Modifiers.
+TUIkit is a well-architected declarative Swift framework for building terminal UIs. The SwiftUI-inspired API design is clean, consistent, and idiomatic. Documentation is above average for a personal project. However, the codebase suffers from **significant code duplication** across Views and Modifiers, an **overreliance on singletons** that hinders testability, and several **thread-safety issues** with `@unchecked Sendable` types. The most impactful improvements would be extracting shared rendering logic into utilities, replacing singletons with dependency injection, and expanding test coverage for Views and Modifiers.
 
 ---
 
@@ -319,7 +319,7 @@ Marked as "Fixed Frame Modifier (Legacy)". `FlexibleFrameView` is the active imp
 
 ---
 
-### C.5 TODO Placeholder — `TUIKit.swift` (Low)
+### C.5 TODO Placeholder — `TUIkit.swift` (Low)
 
 ```swift
 return 0 // TODO: Return actual line count
@@ -818,14 +818,14 @@ The same bug exists in `AppearanceManager.setAppearance()`.
 | C.2 | `FrameModifier` legacy code | Dead Code | Medium | FrameModifier.swift |
 | C.3 | Panel `body` dead code | Dead Code | Medium | Panel.swift |
 | C.4 | Common Preference Keys likely unused | Dead Code | Low | Preferences.swift |
-| C.5 | TODO placeholder return 0 | Dead Code | Low | TUIKit.swift |
+| C.5 | TODO placeholder return 0 | Dead Code | Low | TUIkit.swift |
 | C.6 | Menu pointless ternary `4 : 4` | Dead Code | Low | Menu.swift |
 | C.7 | Menu identical if/else branches | Dead Code | Low | Menu.swift |
 | C.8 | `_ = self` anti-pattern | Dead Code | Low | App.swift |
 | E.1 | Public types missing doc comments | Documentation | Medium | Multiple |
 | E.2 | Complex logic without inline comments | Documentation | Medium | KeyEvent, FrameBuffer, ViewRenderer |
 | E.3 | Missing contributor documentation | Documentation | Medium | Project root |
-| E.4 | Example app missing demonstrations | Documentation | Low | TUIKitExample |
+| E.4 | Example app missing demonstrations | Documentation | Low | TUIkitExample |
 | F.1 | 60+ magic hex values in KeyEvent | Constants | High | KeyEvent.swift |
 | F.2 | ANSI style codes as magic strings | Constants | Medium | ANSIRenderer.swift |
 | F.3 | Block characters scattered | Constants | Medium | Multiple |
