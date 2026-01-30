@@ -403,19 +403,6 @@ extension ViewArray: Renderable, ChildInfoProvider {
     }
 }
 
-// MARK: - Optional Rendering
-
-extension Optional: Renderable where Wrapped: View {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        switch self {
-        case .some(let view):
-            return TUIKit.renderToBuffer(view, context: context)
-        case .none:
-            return FrameBuffer()
-        }
-    }
-}
-
 // MARK: - Child Info Resolution
 
 /// Resolves child infos from a view's content.

@@ -2,34 +2,30 @@
 //  Theme.swift
 //  TUIKit
 //
-//  Theming system with full 16M color support and predefined terminal themes.
+//  Palette system with full 16M color support and predefined terminal palettes.
 //
 
 import Foundation
 
-// MARK: - Theme Protocol
+// MARK: - Palette Protocol
 
-/// A theme defines the color palette for a TUIKit application.
+/// A palette defines the color scheme for a TUIKit application.
 ///
-/// Themes provide semantic colors that views use for consistent styling.
-/// TUIKit includes several predefined themes inspired by classic terminals.
+/// Palettes provide semantic colors that views use for consistent styling.
+/// TUIKit includes several predefined palettes inspired by classic terminals.
+///
+/// Conforms to ``Cyclable`` so it can be managed by a ``ThemeManager``.
 ///
 /// # Usage
 ///
 /// ```swift
-/// // Set the app theme
-/// ThemeManager.shared.current = .amber
+/// // Set the app palette
+/// paletteManager.setCurrent(AmberPhosphorPalette())
 ///
-/// // Use theme colors in views
-/// Text("Hello").foregroundColor(.theme.primary)
+/// // Use palette colors in views
+/// Text("Hello").foregroundColor(.palette.foreground)
 /// ```
-public protocol Theme: Sendable {
-    /// The theme's unique identifier.
-    var id: String { get }
-
-    /// The theme's display name.
-    var name: String { get }
-
+public protocol Palette: Cyclable {
     // MARK: - Background Colors
 
     /// The primary background color.
@@ -117,9 +113,9 @@ public protocol Theme: Sendable {
     var buttonBackground: Color { get }
 }
 
-// MARK: - Default Theme Implementation
+// MARK: - Default Palette Implementation
 
-extension Theme {
+extension Palette {
     // Default implementations using the primary colors
 
     public var backgroundSecondary: Color { background }
@@ -140,68 +136,75 @@ extension Theme {
     public var buttonBackground: Color { backgroundSecondary }
 }
 
-// MARK: - Theme Environment Key
+// MARK: - Palette Environment Key
 
-/// Environment key for the current theme.
-private struct ThemeKey: EnvironmentKey {
-    static let defaultValue: Theme = GreenPhosphorTheme()
+/// Environment key for the current palette.
+private struct PaletteKey: EnvironmentKey {
+    static let defaultValue: any Palette = GreenPhosphorPalette()
 }
 
 extension EnvironmentValues {
-    /// The current theme.
+    /// The current palette.
     ///
-    /// Set a theme at the app level and it propagates to all child views:
+    /// Set a palette at the app level and it propagates to all child views:
     ///
     /// ```swift
     /// WindowGroup {
     ///     ContentView()
     /// }
-    /// .environment(\.theme, GreenPhosphorTheme())
+    /// .environment(\.palette, GreenPhosphorPalette())
     /// ```
     ///
-    /// Access the theme in views:
+    /// Access the palette in views:
     ///
     /// ```swift
     /// struct MyView: View {
-    ///     @Environment(\.theme) var theme
+    ///     @Environment(\.palette) var palette
     ///
     ///     var body: some View {
     ///         Text("Hello")
-    ///             .foregroundColor(theme.foreground)
+    ///             .foregroundColor(palette.foreground)
     ///     }
     /// }
     /// ```
-    public var theme: Theme {
-        get { self[ThemeKey.self] }
-        set { self[ThemeKey.self] = newValue }
+    public var palette: any Palette {
+        get { self[PaletteKey.self] }
+        set { self[PaletteKey.self] = newValue }
     }
 }
 
-// MARK: - Color Theme Extension
+// MARK: - Color Palette Extension
 
 extension Color {
-    /// Access theme colors from the current environment.
+    /// Access palette colors from the current environment.
     ///
     /// These colors read from `EnvironmentStorage.shared` during rendering.
     ///
     /// # Example
     ///
     /// ```swift
-    /// Text("Hello").foregroundColor(.theme.foreground)
+    /// Text("Hello").foregroundColor(.palette.foreground)
     /// ```
-    public static var theme: ThemeColors.Type {
-        ThemeColors.self
+    public static var palette: PaletteColors.Type {
+        PaletteColors.self
+    }
+
+    /// Legacy accessor kept for source compatibility.
+    ///
+    /// Prefer `.palette` for new code.
+    public static var theme: PaletteColors.Type {
+        PaletteColors.self
     }
 }
 
-/// Namespace for theme-aware colors.
+/// Namespace for palette-aware colors.
 ///
-/// These properties read the current theme from the environment storage
+/// These properties read the current palette from the environment storage
 /// that is set during rendering.
-public enum ThemeColors {
-    /// Gets the current theme from environment storage.
-    private static var current: Theme {
-        EnvironmentStorage.shared.environment.theme
+public enum PaletteColors {
+    /// Gets the current palette from environment storage.
+    private static var current: any Palette {
+        EnvironmentStorage.shared.environment.palette
     }
 
     /// Primary background color.
@@ -274,32 +277,13 @@ public enum ThemeColors {
     public static var containerHeaderBackground: Color { current.containerHeaderBackground }
 }
 
-// MARK: - Theme Modifier
+// MARK: - Predefined Palettes
 
-extension View {
-    /// Sets the theme for this view and its descendants.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// ContentView()
-    ///     .theme(GreenPhosphorTheme())
-    /// ```
-    ///
-    /// - Parameter theme: The theme to apply.
-    /// - Returns: A view with the theme applied.
-    public func theme(_ theme: Theme) -> some View {
-        environment(\.theme, theme)
-    }
-}
-
-// MARK: - Predefined Themes
-
-/// Classic green phosphor terminal theme (P1 phosphor).
+/// Classic green phosphor terminal palette (P1 phosphor).
 ///
 /// Inspired by early CRT monitors like the IBM 5151 and Apple II.
 /// Uses a dark background with subtle green tint.
-public struct GreenPhosphorTheme: Theme {
+public struct GreenPhosphorPalette: Palette {
     public let id = "green-phosphor"
     public let name = "Green"
 
@@ -342,11 +326,11 @@ public struct GreenPhosphorTheme: Theme {
     public init() {}
 }
 
-/// Classic amber phosphor terminal theme (P3 phosphor).
+/// Classic amber phosphor terminal palette (P3 phosphor).
 ///
 /// Inspired by terminals like the IBM 3278 and Wyse 50.
 /// Uses a dark background with subtle amber/orange tint.
-public struct AmberPhosphorTheme: Theme {
+public struct AmberPhosphorPalette: Palette {
     public let id = "amber-phosphor"
     public let name = "Amber"
 
@@ -389,11 +373,11 @@ public struct AmberPhosphorTheme: Theme {
     public init() {}
 }
 
-/// Classic white phosphor terminal theme (P4 phosphor).
+/// Classic white phosphor terminal palette (P4 phosphor).
 ///
 /// Inspired by terminals like the DEC VT100 and VT220.
 /// Uses a dark background with subtle cool/blue tint.
-public struct WhitePhosphorTheme: Theme {
+public struct WhitePhosphorPalette: Palette {
     public let id = "white-phosphor"
     public let name = "White"
 
@@ -436,11 +420,11 @@ public struct WhitePhosphorTheme: Theme {
     public init() {}
 }
 
-/// Red phosphor terminal theme.
+/// Red phosphor terminal palette.
 ///
 /// Less common but used in some military and specialized applications.
 /// Night-vision friendly with reduced eye strain in dark environments.
-public struct RedPhosphorTheme: Theme {
+public struct RedPhosphorPalette: Palette {
     public let id = "red-phosphor"
     public let name = "Red"
 
@@ -483,11 +467,11 @@ public struct RedPhosphorTheme: Theme {
     public init() {}
 }
 
-/// Classic ncurses-style theme.
+/// Classic ncurses-style palette.
 ///
 /// Traditional terminal colors as used in ncurses applications
 /// like htop, mc (Midnight Commander), and vim.
-public struct NCursesTheme: Theme {
+public struct NCursesPalette: Palette {
     public let id = "ncurses"
     public let name = "ncurses"
 
@@ -520,192 +504,254 @@ public struct NCursesTheme: Theme {
     public init() {}
 }
 
-// MARK: - Theme Registry
+// MARK: - Generated Palette
 
-/// Registry of available themes.
-public struct ThemeRegistry {
-    /// All available themes in cycling order.
+/// A palette that generates its entire color scheme from a single base hue.
+///
+/// All colors are derived algorithmically using HSL transformations.
+/// This allows creating new palettes with a single line of code.
+///
+/// # How it works
+///
+/// Given a base hue (0-360), the palette generates:
+/// - **Backgrounds**: very low lightness, subtle saturation tinted toward the hue
+/// - **Foregrounds**: high lightness with full saturation at the base hue
+/// - **Accents**: slightly lighter/shifted versions of the foreground
+/// - **Semantic colors**: hue-shifted variants (success = +120, warning = +60, error = +180, info = -60)
+/// - **UI elements**: mid-range lightness/saturation for borders, selection, status bar
+///
+/// # Example
+///
+/// ```swift
+/// // Create a violet palette
+/// let violet = GeneratedPalette(name: "Violet", hue: 270)
+///
+/// // Create a teal palette
+/// let teal = GeneratedPalette(name: "Teal", hue: 180)
+/// ```
+public struct GeneratedPalette: Palette, Sendable {
+    public let id: String
+    public let name: String
+
+    // Background hierarchy
+    public let background: Color
+    public let backgroundSecondary: Color
+    public let backgroundTertiary: Color
+
+    // Foreground hierarchy
+    public let foreground: Color
+    public let foregroundSecondary: Color
+    public let foregroundTertiary: Color
+
+    // Accents
+    public let accent: Color
+    public let accentSecondary: Color
+
+    // Semantic
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let info: Color
+
+    // UI elements
+    public let border: Color
+    public let borderFocused: Color
+    public let selection: Color
+    public let selectionBackground: Color
+
+    // Status bar
+    public let statusBarBackground: Color
+    public let statusBarForeground: Color
+    public let statusBarHighlight: Color
+
+    // Container (block appearance)
+    public let containerBackground: Color
+    public let containerHeaderBackground: Color
+    public let buttonBackground: Color
+
+    /// Creates a generated palette from a single base hue.
     ///
-    /// Order: Green → Amber → White → Red → NCurses
-    public static let all: [Theme] = [
-        GreenPhosphorTheme(),
-        AmberPhosphorTheme(),
-        WhitePhosphorTheme(),
-        RedPhosphorTheme(),
-        NCursesTheme()
+    /// - Parameters:
+    ///   - name: The display name for the palette.
+    ///   - hue: The base hue (0-360). Examples: red=0, green=120, blue=240, violet=270.
+    ///   - saturation: The base saturation (0-100, default: 100). Lower values produce more muted palettes.
+    public init(name: String, hue: Double, saturation: Double = 100) {
+        self.id = "generated-\(name.lowercased())"
+        self.name = name
+
+        let baseSaturation = min(100, max(0, saturation))
+
+        // --- Backgrounds: very dark, subtly tinted ---
+        // App background — near black with a hint of the hue
+        self.background = Color.hsl(hue, baseSaturation * 0.30, 3)
+        // Container body — slightly brighter
+        self.backgroundSecondary = Color.hsl(hue, baseSaturation * 0.40, 10)
+        // Header/footer — between app and body
+        self.backgroundTertiary = Color.hsl(hue, baseSaturation * 0.35, 7)
+
+        // --- Foregrounds: bright, saturated text ---
+        self.foreground = Color.hsl(hue, baseSaturation * 0.80, 70)
+        self.foregroundSecondary = Color.hsl(hue, baseSaturation * 0.70, 55)
+        self.foregroundTertiary = Color.hsl(hue, baseSaturation * 0.60, 40)
+
+        // --- Accents: lighter/brighter variant ---
+        self.accent = Color.hsl(hue, baseSaturation * 0.85, 78)
+        self.accentSecondary = Color.hsl(hue, baseSaturation * 0.75, 50)
+
+        // --- Semantic: hue-shifted from base ---
+        // success = base + 120° (toward green family)
+        let successHue = GeneratedPalette.wrapHue(hue + 120)
+        self.success = Color.hsl(successHue, baseSaturation * 0.70, 65)
+
+        // warning = base + 60° (toward yellow family)
+        let warningHue = GeneratedPalette.wrapHue(hue + 60)
+        self.warning = Color.hsl(warningHue, baseSaturation * 0.80, 70)
+
+        // error = base + 180° (complementary)
+        let errorHue = GeneratedPalette.wrapHue(hue + 180)
+        self.error = Color.hsl(errorHue, baseSaturation * 0.85, 65)
+
+        // info = base − 60° (analogous cool side)
+        let infoHue = GeneratedPalette.wrapHue(hue - 60)
+        self.info = Color.hsl(infoHue, baseSaturation * 0.70, 70)
+
+        // --- UI elements ---
+        self.border = Color.hsl(hue, baseSaturation * 0.40, 25)
+        self.borderFocused = Color.hsl(hue, baseSaturation * 0.80, 70)
+        self.selection = Color.hsl(hue, baseSaturation * 0.85, 78)
+        self.selectionBackground = Color.hsl(hue, baseSaturation * 0.50, 18)
+
+        // --- Status bar ---
+        self.statusBarBackground = Color.hsl(hue, baseSaturation * 0.35, 8)
+        self.statusBarForeground = Color.hsl(hue, baseSaturation * 0.75, 65)
+        self.statusBarHighlight = Color.hsl(hue, baseSaturation * 0.85, 78)
+
+        // --- Container (block appearance) ---
+        self.containerBackground = Color.hsl(hue, baseSaturation * 0.40, 10)
+        self.containerHeaderBackground = Color.hsl(hue, baseSaturation * 0.35, 7)
+        self.buttonBackground = Color.hsl(hue, baseSaturation * 0.45, 15)
+    }
+
+    /// Wraps a hue value to the 0-360 range.
+    private static func wrapHue(_ hue: Double) -> Double {
+        var wrapped = hue.truncatingRemainder(dividingBy: 360)
+        if wrapped < 0 { wrapped += 360 }
+        return wrapped
+    }
+
+    // MARK: - Preset Hues
+
+    /// Predefined hue values for common generated palettes.
+    public enum Hue {
+        /// Green hue (120°).
+        public static let green: Double = 120
+        /// Violet hue (270°).
+        public static let violet: Double = 270
+    }
+
+    // MARK: - Presets
+
+    /// A green generated palette — for direct comparison with GreenPhosphorPalette.
+    public static let green = GeneratedPalette(name: "Gen. Green", hue: Hue.green)
+    /// A violet generated palette.
+    public static let violet = GeneratedPalette(name: "Violet", hue: Hue.violet)
+}
+
+// MARK: - Palette Registry
+
+/// Registry of available palettes.
+public struct PaletteRegistry {
+    /// All available palettes in cycling order.
+    ///
+    /// Order: Green → Gen. Green → Amber → White → Red → NCurses → Violet (generated)
+    public static let all: [any Palette] = [
+        GreenPhosphorPalette(),
+        GeneratedPalette.green,
+        AmberPhosphorPalette(),
+        WhitePhosphorPalette(),
+        RedPhosphorPalette(),
+        NCursesPalette(),
+        GeneratedPalette.violet
     ]
 
-    /// Finds a theme by ID.
-    public static func theme(withId id: String) -> Theme? {
+    /// Finds a palette by ID.
+    public static func palette(withId id: String) -> (any Palette)? {
         all.first { $0.id == id }
     }
 
-    /// Finds a theme by name.
-    public static func theme(withName name: String) -> Theme? {
+    /// Finds a palette by name.
+    public static func palette(withName name: String) -> (any Palette)? {
         all.first { $0.name == name }
     }
 }
 
-// MARK: - Convenience Theme Accessors
+// MARK: - Convenience Palette Accessors
 
-extension Theme where Self == GreenPhosphorTheme {
-    /// The default theme (green phosphor).
-    public static var `default`: GreenPhosphorTheme { GreenPhosphorTheme() }
-    /// Green phosphor terminal theme.
-    public static var green: GreenPhosphorTheme { GreenPhosphorTheme() }
-    /// Green phosphor terminal theme (alias).
-    public static var greenPhosphor: GreenPhosphorTheme { GreenPhosphorTheme() }
+extension Palette where Self == GreenPhosphorPalette {
+    /// The default palette (green phosphor).
+    public static var `default`: GreenPhosphorPalette { GreenPhosphorPalette() }
+    /// Green phosphor terminal palette.
+    public static var green: GreenPhosphorPalette { GreenPhosphorPalette() }
+    /// Green phosphor terminal palette (alias).
+    public static var greenPhosphor: GreenPhosphorPalette { GreenPhosphorPalette() }
 }
 
-extension Theme where Self == AmberPhosphorTheme {
-    /// Amber phosphor terminal theme.
-    public static var amber: AmberPhosphorTheme { AmberPhosphorTheme() }
-    /// Amber phosphor terminal theme (alias).
-    public static var amberPhosphor: AmberPhosphorTheme { AmberPhosphorTheme() }
+extension Palette where Self == AmberPhosphorPalette {
+    /// Amber phosphor terminal palette.
+    public static var amber: AmberPhosphorPalette { AmberPhosphorPalette() }
+    /// Amber phosphor terminal palette (alias).
+    public static var amberPhosphor: AmberPhosphorPalette { AmberPhosphorPalette() }
 }
 
-extension Theme where Self == WhitePhosphorTheme {
-    /// White phosphor terminal theme.
-    public static var white: WhitePhosphorTheme { WhitePhosphorTheme() }
-    /// White phosphor terminal theme (alias).
-    public static var whitePhosphor: WhitePhosphorTheme { WhitePhosphorTheme() }
+extension Palette where Self == WhitePhosphorPalette {
+    /// White phosphor terminal palette.
+    public static var white: WhitePhosphorPalette { WhitePhosphorPalette() }
+    /// White phosphor terminal palette (alias).
+    public static var whitePhosphor: WhitePhosphorPalette { WhitePhosphorPalette() }
 }
 
-extension Theme where Self == RedPhosphorTheme {
-    /// Red phosphor terminal theme.
-    public static var red: RedPhosphorTheme { RedPhosphorTheme() }
-    /// Red phosphor terminal theme (alias).
-    public static var redPhosphor: RedPhosphorTheme { RedPhosphorTheme() }
+extension Palette where Self == RedPhosphorPalette {
+    /// Red phosphor terminal palette.
+    public static var red: RedPhosphorPalette { RedPhosphorPalette() }
+    /// Red phosphor terminal palette (alias).
+    public static var redPhosphor: RedPhosphorPalette { RedPhosphorPalette() }
 }
 
-extension Theme where Self == NCursesTheme {
-    /// Classic ncurses theme.
-    public static var ncurses: NCursesTheme { NCursesTheme() }
+extension Palette where Self == NCursesPalette {
+    /// Classic ncurses palette.
+    public static var ncurses: NCursesPalette { NCursesPalette() }
 }
 
-// MARK: - Theme Manager
+extension Palette where Self == GeneratedPalette {
+    /// Violet generated palette (hue 270°).
+    public static var violet: GeneratedPalette { GeneratedPalette.violet }
+}
 
-/// Manages theme cycling for the application.
-///
-/// The `ThemeManager` provides methods to cycle through available themes
-/// and set specific themes. It works with the environment system to update
-/// the current theme and trigger re-renders.
-///
-/// # Usage
-///
-/// Access via environment:
-///
-/// ```swift
-/// @Environment(\.themeManager) var themeManager
-///
-/// // Cycle to the next theme
-/// themeManager.cycleTheme()
-///
-/// // Set a specific theme
-/// themeManager.setTheme(.amber)
-/// themeManager.setTheme(.greenPhosphor)
-///
-/// // Get the current theme
-/// let theme = themeManager.currentTheme
-/// ```
-public final class ThemeManager: @unchecked Sendable {
-    /// The current theme index.
-    private var currentIndex: Int = 0
-    
-    /// All available themes.
-    public let availableThemes: [Theme]
-    
-    /// Creates a new theme manager with the default themes.
-    public init() {
-        self.availableThemes = ThemeRegistry.all
-    }
-    
-    /// Creates a new theme manager with custom themes.
-    ///
-    /// - Parameter themes: The themes to cycle through.
-    public init(themes: [Theme]) {
-        self.availableThemes = themes.isEmpty ? ThemeRegistry.all : themes
-    }
-    
-    /// The current theme.
-    public var currentTheme: Theme {
-        availableThemes[currentIndex]
-    }
-    
-    /// The name of the current theme.
-    public var currentThemeName: String {
-        currentTheme.name
-    }
-    
-    /// Cycles to the next theme.
-    ///
-    /// Updates the environment and triggers a re-render.
-    public func cycleTheme() {
-        currentIndex = (currentIndex + 1) % availableThemes.count
-        applyCurrentTheme()
-    }
-    
-    /// Cycles to the previous theme.
-    ///
-    /// Updates the environment and triggers a re-render.
-    public func cyclePreviousTheme() {
-        currentIndex = (currentIndex - 1 + availableThemes.count) % availableThemes.count
-        applyCurrentTheme()
-    }
-    
-    /// Sets a specific theme.
-    ///
-    /// - Parameter theme: The theme to set.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// themeManager.setTheme(.amber)
-    /// themeManager.setTheme(.greenPhosphor)
-    /// themeManager.setTheme(.dark)
-    /// ```
-    public func setTheme(_ theme: Theme) {
-        if let index = availableThemes.firstIndex(where: { $0.id == theme.id }) {
-            currentIndex = index
-        } else {
-            // Theme not in list, add temporarily at current position
-            currentIndex = 0
+// MARK: - PaletteManager Environment Key
+
+/// Environment key for the palette manager.
+private struct PaletteManagerKey: EnvironmentKey {
+    static let defaultValue: ThemeManager = ThemeManager(
+        items: PaletteRegistry.all,
+        applyToEnvironment: { item in
+            if let palette = item as? any Palette {
+                EnvironmentStorage.shared.environment.palette = palette
+            }
         }
-        
-        // Apply the theme directly (even if not in availableThemes)
-        var environment = EnvironmentStorage.shared.environment
-        environment.theme = theme
-        EnvironmentStorage.shared.environment = environment
-        AppState.shared.setNeedsRender()
-    }
-    
-    /// Applies the current theme to the environment and triggers a re-render.
-    private func applyCurrentTheme() {
-        var environment = EnvironmentStorage.shared.environment
-        environment.theme = currentTheme
-        EnvironmentStorage.shared.environment = environment
-        AppState.shared.setNeedsRender()
-    }
-}
-
-// MARK: - ThemeManager Environment Key
-
-/// Environment key for the theme manager.
-private struct ThemeManagerKey: EnvironmentKey {
-    static let defaultValue: ThemeManager = ThemeManager()
+    )
 }
 
 extension EnvironmentValues {
-    /// The theme manager for cycling and setting themes.
+    /// The palette manager for cycling and setting palettes.
     ///
     /// ```swift
-    /// @Environment(\.themeManager) var themeManager
+    /// @Environment(\.paletteManager) var paletteManager
     ///
-    /// themeManager.cycleTheme()
-    /// themeManager.setTheme(.amber)
+    /// paletteManager.cycleNext()
+    /// paletteManager.setCurrent(AmberPhosphorPalette())
     /// ```
-    public var themeManager: ThemeManager {
-        get { self[ThemeManagerKey.self] }
-        set { self[ThemeManagerKey.self] = newValue }
+    public var paletteManager: ThemeManager {
+        get { self[PaletteManagerKey.self] }
+        set { self[PaletteManagerKey.self] = newValue }
     }
 }
