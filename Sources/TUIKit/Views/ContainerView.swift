@@ -224,36 +224,36 @@ extension ContainerView: Renderable {
         // Top border (with title if present)
         let topLine: String
         if let titleText = title {
-            let titleStyled = colorize(" \(titleText) ", with: titleColor ?? Color.theme.accent, bold: true)
-            let leftPart = colorize(
+            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
+            let leftPart = ANSIRenderer.colorize(
                 String(borderStyle.topLeft) + String(borderStyle.horizontal),
-                with: borderColor
+                foreground: borderColor
             )
             let rightPartLength = max(0, innerWidth - 1 - titleText.count - 2)
-            let rightPart = colorize(
+            let rightPart = ANSIRenderer.colorize(
                 String(repeating: borderStyle.horizontal, count: rightPartLength) + String(borderStyle.topRight),
-                with: borderColor
+                foreground: borderColor
             )
             topLine = leftPart + titleStyled + rightPart
         } else {
-            topLine = colorize(
+            topLine = ANSIRenderer.colorize(
                 String(borderStyle.topLeft)
                     + String(repeating: borderStyle.horizontal, count: innerWidth)
                     + String(borderStyle.topRight),
-                with: borderColor
+                foreground: borderColor
             )
         }
         lines.append(topLine)
         
         // Vertical border characters
-        let leftBorder = colorize(String(borderStyle.vertical), with: borderColor)
-        let rightBorder = colorize(String(borderStyle.vertical), with: borderColor)
+        let leftBorder = ANSIRenderer.colorize(String(borderStyle.vertical), foreground: borderColor)
+        let rightBorder = ANSIRenderer.colorize(String(borderStyle.vertical), foreground: borderColor)
         
         // Body lines with theme background
         let bodyBg = context.environment.theme.containerBackground
         for line in bodyBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let styledContent = applyBackground(paddedLine, background: bodyBg)
+            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
             lines.append(leftBorder + styledContent + ANSIRenderer.reset + rightBorder)
         }
         
@@ -261,11 +261,11 @@ extension ContainerView: Renderable {
         if let footerBuf = footerBuffer, !footerBuf.isEmpty {
             // Footer separator
             if style.showFooterSeparator {
-                let separatorLine = colorize(
+                let separatorLine = ANSIRenderer.colorize(
                     String(borderStyle.leftT)
                         + String(repeating: borderStyle.horizontal, count: innerWidth)
                         + String(borderStyle.rightT),
-                    with: borderColor
+                    foreground: borderColor
                 )
                 lines.append(separatorLine)
             }
@@ -278,11 +278,11 @@ extension ContainerView: Renderable {
         }
         
         // Bottom border
-        let bottomLine = colorize(
+        let bottomLine = ANSIRenderer.colorize(
             String(borderStyle.bottomLeft)
                 + String(repeating: borderStyle.horizontal, count: innerWidth)
                 + String(borderStyle.bottomRight),
-            with: borderColor
+            foreground: borderColor
         )
         lines.append(bottomLine)
         
@@ -327,25 +327,25 @@ extension ContainerView: Renderable {
         // ▄▄▄: FG = header/body BG, BG = transparent (App BG shows through)
         let topLine = String(repeating: "▄", count: innerWidth + 2)
         if hasHeader {
-            lines.append(colorize(topLine, with: headerFooterBg))
+            lines.append(ANSIRenderer.colorize(topLine, foreground: headerFooterBg))
         } else {
-            lines.append(colorize(topLine, with: bodyBg))
+            lines.append(ANSIRenderer.colorize(topLine, foreground: bodyBg))
         }
         
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
             // █ TITLE █: FG = header BG for █, content has header BG
-            let titleStyled = colorize(" \(titleText) ", with: titleColor ?? Color.theme.accent, bold: true)
+            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? Color.theme.accent, bold: true)
             let paddedTitle = titleStyled.padToVisibleWidth(innerWidth)
-            let sideBorder = colorize("█", with: headerFooterBg)
-            let styledContent = applyBackground(paddedTitle, background: headerFooterBg)
+            let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
+            let styledContent = ANSIRenderer.applyPersistentBackground(paddedTitle, color: headerFooterBg)
             lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
             
             // Header/Body separator: ▀▀▀
             // FG = header BG, BG = body BG (creates smooth transition)
             if style.showHeaderSeparator {
                 let sepLine = String(repeating: "▀", count: innerWidth + 2)
-                lines.append(colorize(sepLine, with: headerFooterBg, backgroundColor: bodyBg))
+                lines.append(ANSIRenderer.colorize(sepLine, foreground: headerFooterBg, background: bodyBg))
             }
         }
         
@@ -353,8 +353,8 @@ extension ContainerView: Renderable {
         // █ Content █: FG = body BG for █, content has body BG
         for line in bodyBuffer.lines {
             let paddedLine = line.padToVisibleWidth(innerWidth)
-            let sideBorder = colorize("█", with: bodyBg)
-            let styledContent = applyBackground(paddedLine, background: bodyBg)
+            let sideBorder = ANSIRenderer.colorize("█", foreground: bodyBg)
+            let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bodyBg)
             lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
         }
         
@@ -364,14 +364,14 @@ extension ContainerView: Renderable {
             // FG = footer BG, BG = body BG (creates smooth transition)
             if style.showFooterSeparator {
                 let sepLine = String(repeating: "▄", count: innerWidth + 2)
-                lines.append(colorize(sepLine, with: headerFooterBg, backgroundColor: bodyBg))
+                lines.append(ANSIRenderer.colorize(sepLine, foreground: headerFooterBg, background: bodyBg))
             }
             
             // █ Footer █: FG = footer BG for █, content has footer BG
             for line in footerBuf.lines {
                 let paddedLine = line.padToVisibleWidth(innerWidth)
-                let sideBorder = colorize("█", with: headerFooterBg)
-                let styledContent = applyBackground(paddedLine, background: headerFooterBg)
+                let sideBorder = ANSIRenderer.colorize("█", foreground: headerFooterBg)
+                let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: headerFooterBg)
                 lines.append(sideBorder + styledContent + ANSIRenderer.reset + sideBorder)
             }
         }
@@ -380,36 +380,11 @@ extension ContainerView: Renderable {
         // ▀▀▀: FG = footer/body BG, BG = transparent (App BG shows through)
         let bottomLine = String(repeating: "▀", count: innerWidth + 2)
         if hasFooter {
-            lines.append(colorize(bottomLine, with: headerFooterBg))
+            lines.append(ANSIRenderer.colorize(bottomLine, foreground: headerFooterBg))
         } else {
-            lines.append(colorize(bottomLine, with: bodyBg))
+            lines.append(ANSIRenderer.colorize(bottomLine, foreground: bodyBg))
         }
         
         return FrameBuffer(lines: lines)
-    }
-    
-    // MARK: - Helper Methods
-    
-    /// Colorizes a string with foreground color and optional background.
-    private func colorize(
-        _ string: String,
-        with color: Color,
-        bold: Bool = false,
-        backgroundColor: Color? = nil
-    ) -> String {
-        var style = TextStyle()
-        style.foregroundColor = color
-        style.backgroundColor = backgroundColor
-        style.isBold = bold
-        return ANSIRenderer.render(string, with: style)
-    }
-    
-    /// Applies background color to a string, re-applying after any resets.
-    private func applyBackground(_ string: String, background: Color) -> String {
-        // ANSIRenderer.backgroundCode already returns a complete ANSI sequence
-        let bgCode = ANSIRenderer.backgroundCode(for: background)
-        // Replace any reset codes with reset + background to maintain the background
-        let stringWithPersistentBg = string.replacingOccurrences(of: ANSIRenderer.reset, with: ANSIRenderer.reset + bgCode)
-        return bgCode + stringWithPersistentBg
     }
 }
