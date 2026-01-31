@@ -9,25 +9,25 @@
 ///
 /// `ANSIRenderer` translates `TextStyle` and `Color` into the corresponding
 /// ANSI escape sequences that are understood by most terminals.
-public enum ANSIRenderer {
+enum ANSIRenderer {
     /// The escape character for ANSI sequences.
-    public static let escape = "\u{1B}"
+    static let escape = "\u{1B}"
 
     /// The Control Sequence Introducer (CSI).
-    public static let csi = "\(escape)["
+    static let csi = "\(escape)["
 
     /// Reset code that clears all formatting.
-    public static let reset = "\(csi)0m"
+    static let reset = "\(csi)0m"
 
     /// Dim/faint text style code.
-    public static let dim = "\(csi)2m"
+    static let dim = "\(csi)2m"
 
     /// Precompiled regex that matches any ANSI escape sequence.
     ///
     /// Used by `String.stripped` and `String.strippedLength` to remove
     /// formatting codes for visible-width calculations. Compiling once
     /// avoids per-call overhead in the hot rendering path.
-    public static nonisolated(unsafe) let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
+    static nonisolated(unsafe) let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
 
     // MARK: - SGR Style Codes
 
@@ -52,7 +52,7 @@ public enum ANSIRenderer {
     ///   - text: The text to render.
     ///   - style: The TextStyle to apply.
     /// - Returns: The formatted string with ANSI codes.
-    public static func render(_ text: String, with style: TextStyle) -> String {
+    static func render(_ text: String, with style: TextStyle) -> String {
         let codes = buildStyleCodes(style)
 
         if codes.isEmpty {
@@ -152,7 +152,7 @@ public enum ANSIRenderer {
     ///
     /// - Parameter color: The background color.
     /// - Returns: The ANSI escape sequence.
-    public static func backgroundCode(for color: Color) -> String {
+    static func backgroundCode(for color: Color) -> String {
         let codes = backgroundCodes(for: color)
         return "\(csi)\(codes.joined(separator: ";"))m"
     }
@@ -170,7 +170,7 @@ public enum ANSIRenderer {
     ///   - background: Optional background color.
     ///   - bold: Whether to apply bold.
     /// - Returns: The ANSI-formatted string.
-    public static func colorize(
+    static func colorize(
         _ string: String,
         foreground: Color? = nil,
         background: Color? = nil,
@@ -194,7 +194,7 @@ public enum ANSIRenderer {
     ///   - string: The text to wrap.
     ///   - color: The background color.
     /// - Returns: The string with persistent background applied.
-    public static func applyPersistentBackground(_ string: String, color: Color) -> String {
+    static func applyPersistentBackground(_ string: String, color: Color) -> String {
         let bgCode = backgroundCode(for: color)
         let stringWithPersistentBg = string.replacingOccurrences(
             of: reset,
@@ -211,7 +211,7 @@ public enum ANSIRenderer {
     ///   - row: The row (1-based).
     ///   - column: The column (1-based).
     /// - Returns: The ANSI escape sequence.
-    public static func moveCursor(toRow row: Int, column: Int) -> String {
+    static func moveCursor(toRow row: Int, column: Int) -> String {
         "\(csi)\(row);\(column)H"
     }
 
@@ -219,7 +219,7 @@ public enum ANSIRenderer {
     ///
     /// - Parameter lines: Number of lines.
     /// - Returns: The ANSI escape sequence.
-    public static func cursorUp(_ lines: Int = 1) -> String {
+    static func cursorUp(_ lines: Int = 1) -> String {
         "\(csi)\(lines)A"
     }
 
@@ -227,7 +227,7 @@ public enum ANSIRenderer {
     ///
     /// - Parameter lines: Number of lines.
     /// - Returns: The ANSI escape sequence.
-    public static func cursorDown(_ lines: Int = 1) -> String {
+    static func cursorDown(_ lines: Int = 1) -> String {
         "\(csi)\(lines)B"
     }
 
@@ -235,7 +235,7 @@ public enum ANSIRenderer {
     ///
     /// - Parameter columns: Number of columns.
     /// - Returns: The ANSI escape sequence.
-    public static func cursorForward(_ columns: Int = 1) -> String {
+    static func cursorForward(_ columns: Int = 1) -> String {
         "\(csi)\(columns)C"
     }
 
@@ -243,47 +243,47 @@ public enum ANSIRenderer {
     ///
     /// - Parameter columns: Number of columns.
     /// - Returns: The ANSI escape sequence.
-    public static func cursorBack(_ columns: Int = 1) -> String {
+    static func cursorBack(_ columns: Int = 1) -> String {
         "\(csi)\(columns)D"
     }
 
     /// Hides the cursor.
-    public static let hideCursor = "\(csi)?25l"
+    static let hideCursor = "\(csi)?25l"
 
     /// Shows the cursor.
-    public static let showCursor = "\(csi)?25h"
+    static let showCursor = "\(csi)?25h"
 
     /// Saves the current cursor position.
-    public static let saveCursor = "\(csi)s"
+    static let saveCursor = "\(csi)s"
 
     /// Restores the saved cursor position.
-    public static let restoreCursor = "\(csi)u"
+    static let restoreCursor = "\(csi)u"
 
     // MARK: - Screen Control
 
     /// Clears the entire screen.
-    public static let clearScreen = "\(csi)2J"
+    static let clearScreen = "\(csi)2J"
 
     /// Clears from cursor to end of screen.
-    public static let clearToEnd = "\(csi)0J"
+    static let clearToEnd = "\(csi)0J"
 
     /// Clears from cursor to beginning of screen.
-    public static let clearToBeginning = "\(csi)1J"
+    static let clearToBeginning = "\(csi)1J"
 
     /// Clears the current line.
-    public static let clearLine = "\(csi)2K"
+    static let clearLine = "\(csi)2K"
 
     /// Clears from cursor to end of line.
-    public static let clearLineToEnd = "\(csi)0K"
+    static let clearLineToEnd = "\(csi)0K"
 
     /// Clears from cursor to beginning of line.
-    public static let clearLineToBeginning = "\(csi)1K"
+    static let clearLineToBeginning = "\(csi)1K"
 
     // MARK: - Alternate Screen Buffer
 
     /// Enters the alternate screen buffer.
-    public static let enterAlternateScreen = "\(csi)?1049h"
+    static let enterAlternateScreen = "\(csi)?1049h"
 
     /// Exits the alternate screen buffer.
-    public static let exitAlternateScreen = "\(csi)?1049l"
+    static let exitAlternateScreen = "\(csi)?1049l"
 }

@@ -171,11 +171,11 @@ extension EnvironmentValues {
 // MARK: - Palette Registry
 
 /// Registry of available palettes.
-public struct PaletteRegistry {
+struct PaletteRegistry {
     /// All available palettes in cycling order.
     ///
     /// Order: Green → Gen. Green → Amber → White → Red → NCurses → Violet (generated)
-    public static let all: [any Palette] = [
+    static let all: [any Palette] = [
         GreenPalette(),
         GeneratedPalette.green,
         AmberPalette(),
@@ -186,12 +186,12 @@ public struct PaletteRegistry {
     ]
 
     /// Finds a palette by ID.
-    public static func palette(withId id: String) -> (any Palette)? {
+    static func palette(withId id: String) -> (any Palette)? {
         all.first { $0.id == id }
     }
 
     /// Finds a palette by name.
-    public static func palette(withName name: String) -> (any Palette)? {
+    static func palette(withName name: String) -> (any Palette)? {
         all.first { $0.name == name }
     }
 }

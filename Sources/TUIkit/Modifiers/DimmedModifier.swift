@@ -21,7 +21,7 @@ public struct DimmedModifier<Content: View>: View {
 // MARK: - Renderable
 
 extension DimmedModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let contentBuffer = TUIkit.renderToBuffer(content, context: context)
 
         guard !contentBuffer.isEmpty else {
