@@ -2,7 +2,7 @@
 //  PredefinedPaletteTests.swift
 //  TUIkit
 //
-//  Tests for all predefined palette structs: Green, Amber, White, Red, NCurses.
+//  Tests for all predefined palette structs: Green, Amber, Red, Violet, Blue, White, NCurses.
 //
 
 import Testing
@@ -94,6 +94,64 @@ struct RedPaletteTests {
         let palette = RedPalette()
         #expect(palette.id == "red")
         #expect(palette.name == "Red")
+    }
+}
+
+// MARK: - Violet Palette Tests
+
+@Suite("Violet Palette Tests")
+struct VioletPaletteTests {
+
+    @Test("Violet palette has correct identity")
+    func violetIdentity() {
+        let palette = VioletPalette()
+        #expect(palette.id == "violet")
+        #expect(palette.name == "Violet")
+    }
+
+    @Test("Violet palette has distinct background hierarchy")
+    func violetBackgrounds() {
+        let palette = VioletPalette()
+        #expect(palette.background != palette.backgroundSecondary)
+        #expect(palette.backgroundSecondary != palette.backgroundTertiary)
+        #expect(palette.background != palette.backgroundTertiary)
+    }
+
+    @Test("Violet palette colors differ from green palette")
+    func violetDiffersFromGreen() {
+        let violet = VioletPalette()
+        let green = GreenPalette()
+        #expect(violet.foreground != green.foreground)
+        #expect(violet.accent != green.accent)
+    }
+}
+
+// MARK: - Blue Palette Tests
+
+@Suite("Blue Palette Tests")
+struct BluePaletteTests {
+
+    @Test("Blue palette has correct identity")
+    func blueIdentity() {
+        let palette = BluePalette()
+        #expect(palette.id == "blue")
+        #expect(palette.name == "Blue")
+    }
+
+    @Test("Blue palette has distinct background hierarchy")
+    func blueBackgrounds() {
+        let palette = BluePalette()
+        #expect(palette.background != palette.backgroundSecondary)
+        #expect(palette.backgroundSecondary != palette.backgroundTertiary)
+        #expect(palette.background != palette.backgroundTertiary)
+    }
+
+    @Test("Blue palette colors differ from violet palette")
+    func blueDiffersFromViolet() {
+        let blue = BluePalette()
+        let violet = VioletPalette()
+        #expect(blue.foreground != violet.foreground)
+        #expect(blue.accent != violet.accent)
     }
 }
 
