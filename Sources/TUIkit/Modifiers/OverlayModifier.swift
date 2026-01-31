@@ -28,7 +28,7 @@ public struct OverlayModifier<Base: View, Overlay: View>: View {
 // MARK: - Renderable
 
 extension OverlayModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Render both contents
         let baseBuffer = TUIkit.renderToBuffer(base, context: context)
         let overlayBuffer = TUIkit.renderToBuffer(overlay, context: context)

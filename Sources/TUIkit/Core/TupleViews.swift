@@ -13,14 +13,17 @@
 ///
 /// `TupleView` is created automatically by `ViewBuilder` when multiple
 /// views appear in a `@ViewBuilder` closure.
+///
+/// - Important: This is framework infrastructure. Created automatically by
+///   `@ViewBuilder`. Do not instantiate directly.
 public struct TupleView<each V: View>: View {
     /// The packed child views.
-    public let children: (repeat each V)
+    let children: (repeat each V)
 
     /// Creates a tuple view from a parameter pack of child views.
     ///
     /// - Parameter children: The child views.
-    public init(_ children: repeat each V) {
+    init(_ children: repeat each V) {
         self.children = (repeat each children)
     }
 
@@ -32,7 +35,7 @@ public struct TupleView<each V: View>: View {
 // MARK: - TupleView Rendering + ChildInfoProvider
 
 extension TupleView: Renderable, ChildInfoProvider {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
 

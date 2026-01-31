@@ -10,7 +10,7 @@ import Foundation
 // MARK: - OnAppear Modifier
 
 /// A modifier that executes an action when a view first appears.
-public struct OnAppearModifier<Content: View>: View {
+struct OnAppearModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -20,13 +20,13 @@ public struct OnAppearModifier<Content: View>: View {
     /// The action to execute on first appearance.
     let action: () -> Void
 
-    public var body: Never {
+    var body: Never {
         fatalError("OnAppearModifier renders via Renderable")
     }
 }
 
 extension OnAppearModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Record appearance and execute action if first time
         _ = context.tuiContext.lifecycle.recordAppear(token: token, action: action)
 
@@ -38,7 +38,7 @@ extension OnAppearModifier: Renderable {
 // MARK: - OnDisappear Modifier
 
 /// A modifier that executes an action when a view disappears.
-public struct OnDisappearModifier<Content: View>: View {
+struct OnDisappearModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -48,13 +48,13 @@ public struct OnDisappearModifier<Content: View>: View {
     /// The action to execute when the view disappears.
     let action: () -> Void
 
-    public var body: Never {
+    var body: Never {
         fatalError("OnDisappearModifier renders via Renderable")
     }
 }
 
 extension OnDisappearModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register the disappear callback
         context.tuiContext.lifecycle.registerDisappear(token: token, action: action)
 
@@ -71,7 +71,7 @@ extension OnDisappearModifier: Renderable {
 /// A modifier that starts an async task when a view appears.
 ///
 /// The task is cancelled when the view disappears.
-public struct TaskModifier<Content: View>: View {
+struct TaskModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -84,13 +84,13 @@ public struct TaskModifier<Content: View>: View {
     /// Task priority.
     let priority: TaskPriority
 
-    public var body: Never {
+    var body: Never {
         fatalError("TaskModifier renders via Renderable")
     }
 }
 
 extension TaskModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let lifecycle = context.tuiContext.lifecycle
 
         // Start task on first appearance

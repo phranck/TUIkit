@@ -85,14 +85,17 @@ public struct Edge: OptionSet, Sendable {
 }
 
 /// A modifier that adds padding around a view.
+///
+/// - Important: This is framework infrastructure. Use `.padding()` on any
+///   ``View`` instead of instantiating this type directly.
 public struct PaddingModifier: ViewModifier {
     /// The padding insets.
-    public let insets: EdgeInsets
+    let insets: EdgeInsets
 
     /// Creates a padding modifier.
     ///
     /// - Parameter insets: The padding insets.
-    public init(insets: EdgeInsets) {
+    init(insets: EdgeInsets) {
         self.insets = insets
     }
 

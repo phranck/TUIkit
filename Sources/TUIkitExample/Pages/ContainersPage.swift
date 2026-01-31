@@ -47,9 +47,9 @@ struct ContainersPage: View {
             }
 
             HStack(spacing: 2) {
-                // ContainerView with Header and Footer (best for block appearance)
-                DemoSection("ContainerView (Header + Footer)") {
-                    ContainerView(title: "Settings", titleColor: .palette.accent) {
+                // Panel with Header and Footer (best for block appearance)
+                DemoSection("Panel (Header + Footer)") {
+                    Panel("Settings", titleColor: .palette.accent) {
                         Text("Primary text (foreground)").foregroundColor(.palette.foreground)
                         Text("Secondary text (foregroundSecondary)").foregroundColor(.palette.foregroundSecondary)
                         Text("Tertiary text (foregroundTertiary)").foregroundColor(.palette.foregroundTertiary)

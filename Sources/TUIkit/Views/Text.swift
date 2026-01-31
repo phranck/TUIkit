@@ -23,10 +23,10 @@
 /// ```
 public struct Text: View {
     /// The text to display.
-    public let content: String
+    let content: String
 
     /// The style of the text (color, formatting, etc.).
-    public var style: TextStyle
+    var style: TextStyle
 
     /// Creates a text view with the specified string.
     ///
@@ -175,7 +175,7 @@ public struct TextStyle: Sendable {
     /// Resolves any semantic colors in this style against the given palette.
     ///
     /// Non-semantic colors are left unchanged. Call this before passing
-    /// the style to ``ANSIRenderer``.
+    /// the style to `ANSIRenderer`.
     ///
     /// - Parameter palette: The palette to resolve semantic colors against.
     /// - Returns: A copy with all colors resolved to concrete values.
@@ -190,7 +190,7 @@ public struct TextStyle: Sendable {
 // MARK: - Text Rendering
 
 extension Text: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let resolvedStyle = style.resolved(with: context.environment.palette)
         return FrameBuffer(text: ANSIRenderer.render(content, with: resolvedStyle))
     }

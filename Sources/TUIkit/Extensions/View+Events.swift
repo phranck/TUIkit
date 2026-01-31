@@ -55,7 +55,7 @@ extension View {
     ///   - keys: The keys to listen for.
     ///   - handler: The handler to call on key press. Returns true if handled.
     /// - Returns: A view that handles specific key presses.
-    public func onKeyPress(keys: Set<Key>, handler: @escaping (KeyEvent) -> Bool) -> KeyPressModifier<Self> {
+    public func onKeyPress(keys: Set<Key>, handler: @escaping (KeyEvent) -> Bool) -> some View {
         KeyPressModifier(content: self, keys: keys, handler: handler)
     }
 
@@ -76,7 +76,7 @@ extension View {
     ///   - key: The key to listen for.
     ///   - action: The action to perform.
     /// - Returns: A view that handles the specific key press.
-    public func onKeyPress(_ key: Key, action: @escaping () -> Void) -> KeyPressModifier<Self> {
+    public func onKeyPress(_ key: Key, action: @escaping () -> Void) -> some View {
         KeyPressModifier(
             content: self,
             keys: [key],

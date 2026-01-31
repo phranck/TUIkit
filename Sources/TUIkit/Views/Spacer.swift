@@ -32,7 +32,7 @@
 /// ```
 public struct Spacer: View {
     /// The minimum length of the spacer (in characters/lines).
-    public let minLength: Int?
+    let minLength: Int?
 
     /// Creates a spacer with optional minimum length.
     ///
@@ -69,7 +69,7 @@ public struct Spacer: View {
 /// ```
 public struct Divider: View {
     /// The character used for the line.
-    public var character: Character
+    var character: Character
 
     /// Creates a divider with the default character (─).
     public init() {
@@ -91,7 +91,7 @@ public struct Divider: View {
 // MARK: - Spacer Rendering
 
 extension Spacer: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Standalone spacer (outside a stack): render as empty lines
         let count = minLength ?? 1
         return FrameBuffer(emptyWithHeight: count)
@@ -101,7 +101,7 @@ extension Spacer: Renderable {
 // MARK: - Divider Rendering
 
 extension Divider: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let line = String(repeating: character, count: context.availableWidth)
         return FrameBuffer(text: line)
     }
