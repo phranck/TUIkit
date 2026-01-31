@@ -9,24 +9,20 @@
 /// Inspired by vintage vacuum fluorescent displays (VFDs) found in
 /// audio equipment, cash registers, and instrument panels. Uses the
 /// characteristic bright cyan-blue glow on a near-black background.
-public struct BluePalette: Palette {
+public struct BluePalette: BlockPalette {
     public let id = "blue"
     public let name = "Blue"
 
-    // Background hierarchy
-    public let background = Color.hex(0x060708)  // App background (darkest)
-    public let containerBodyBackground = Color.hex(0x0E1825)  // Container content background
-    public let containerCapBackground = Color.hex(0x0A121C)  // Container header/footer background
+    // Background
+    public let background = Color.hex(0x060708)
 
     // Blue text hierarchy
     public let foreground = Color.hex(0x00AAFF)  // Bright VFD blue - primary text
     public let foregroundSecondary = Color.hex(0x0088CC)  // Medium blue - secondary text
     public let foregroundTertiary = Color.hex(0x006699)  // Dim blue - tertiary/muted text
-    public let foregroundPlaceholder = Color.hex(0x004D73)  // Faint blue - placeholder text
 
-    // Accent colors
+    // Accent
     public let accent = Color.hex(0x33BBFF)  // Lighter blue for highlights
-    public let accentSecondary = Color.hex(0x0099DD)  // Darker accent
 
     // Semantic colors (stay in blue family)
     public let success = Color.hex(0x33CCFF)  // Cyan-blue
@@ -38,17 +34,16 @@ public struct BluePalette: Palette {
     public let border = Color.hex(0x2D4A5A)  // Subtle blue border
 
     // Additional backgrounds
-    public let statusBarBackground = Color.hex(0x0F1822)  // Dark blue for status bar
-    public let appHeaderBackground = Color.hex(0x0A121C)  // Same as cap
-    public let overlayBackground = Color.hex(0x060708)  // Dimming overlay
-    public var buttonBackground: Color { Color.hex(0x14304A) }  // Lighter blue for buttons
+    public let statusBarBackground = Color.hex(0x0F1822)
+    public let appHeaderBackground = Color.hex(0x0A121C)
+    public let overlayBackground = Color.hex(0x060708)
 
     public init() {}
 }
 
 // MARK: - Convenience Accessors
 
-extension Palette where Self == BluePalette {
+extension BlockPalette where Self == BluePalette {
     /// Blue VFD terminal palette.
     public static var blue: BluePalette { BluePalette() }
 }

@@ -76,7 +76,7 @@ extension BorderedView: Renderable {
 
     /// Renders with half-block characters for block appearance.
     private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int, palette: any Palette) -> FrameBuffer {
-        let containerBg = palette.containerBodyBackground
+        let containerBg = palette.blockSurfaceBackground
         var lines: [String] = []
 
         lines.append(BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: containerBg))
