@@ -26,8 +26,8 @@ struct OverlaysPage: View {
                         title: "Alert",
                         message: "This alert overlays dimmed content!",
                         // borderStyle uses appearance default
-                        borderColor: .theme.border,
-                        titleColor: .theme.accent
+                        borderColor: .palette.border,
+                        titleColor: .palette.accent
                     ) {
                         VStack(spacing: 1) {
                             Button("OK", style: .primary) {}
@@ -54,7 +54,7 @@ struct OverlaysPage: View {
                 Text("The content behind is dimmed automatically")
                 Text("Note: The status bar is NOT dimmed!")
                     .bold()
-                    .foregroundColor(.theme.accent)
+                    .foregroundColor(.palette.accent)
             }
 
             Spacer()
