@@ -21,7 +21,7 @@ struct ThemeManagerCyclingTests {
     /// Creates a ThemeManager with the given number of TestItems.
     private func makeManager(count: Int = 3) -> ThemeManager {
         let items = (0..<count).map { TestItem(id: "item-\($0)") }
-        return ThemeManager(items: items, applyToEnvironment: { _ in })
+        return ThemeManager(items: items)
     }
 
     @Test("ThemeManager starts at first item")
@@ -103,20 +103,9 @@ struct ThemeManagerCyclingTests {
             GreenPalette(),
             AmberPalette(),
         ]
-        let manager = ThemeManager(items: palettes, applyToEnvironment: { _ in })
+        let manager = ThemeManager(items: palettes)
         #expect(manager.currentPalette != nil)
         #expect(manager.currentPalette?.id == "green")
     }
 
-    @Test("applyToEnvironment closure is called on cycle")
-    func applyCalledOnCycle() {
-        nonisolated(unsafe) var appliedIds: [String] = []
-        let items: [any Cyclable] = [TestItem(id: "a"), TestItem(id: "b")]
-        let manager = ThemeManager(items: items) { item in
-            appliedIds.append(item.id)
-        }
-        manager.cycleNext()
-        manager.cycleNext()
-        #expect(appliedIds == ["b", "a"])
-    }
 }
