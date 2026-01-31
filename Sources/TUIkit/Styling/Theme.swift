@@ -174,15 +174,15 @@ extension EnvironmentValues {
 struct PaletteRegistry {
     /// All available palettes in cycling order.
     ///
-    /// Order: Green → Gen. Green → Amber → White → Red → NCurses → Violet (generated)
+    /// Order: Green → Amber → Red → Violet → Blue → White → NCurses
     static let all: [any Palette] = [
         GreenPalette(),
-        GeneratedPalette.green,
         AmberPalette(),
-        WhitePalette(),
         RedPalette(),
+        VioletPalette(),
+        BluePalette(),
+        WhitePalette(),
         NCursesPalette(),
-        GeneratedPalette.violet,
     ]
 
     /// Finds a palette by ID.
