@@ -41,7 +41,7 @@ Text("Hello")
 
 - **``State``** — Mutable per-view state that triggers re-renders
 - **``Binding``** — Two-way connection to a value owned elsewhere
-- **``Environment``** — Values propagated down the view tree
+- **``EnvironmentValues``** — Values propagated down the view tree
 - **``AppStorage``** — Persistent key-value storage via `UserDefaults`
 
 ### 5. Rendering Layer

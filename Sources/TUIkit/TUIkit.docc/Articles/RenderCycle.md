@@ -8,11 +8,11 @@ Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame s
 
 ## What Triggers a Frame
 
-Three things cause ``RenderLoop`` to produce a new frame:
+Three things cause `RenderLoop` to produce a new frame:
 
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
-| Terminal resize | `SIGWINCH` signal | ``SignalManager`` sets a boolean flag |
+| Terminal resize | `SIGWINCH` signal | `SignalManager` sets a boolean flag |
 | State mutation | `@State` property change | ``AppState`` notifies its observer, which sets the rerender flag |
 | Programmatic | `AppState.active.setNeedsRender()` | Same observer path as above |
 

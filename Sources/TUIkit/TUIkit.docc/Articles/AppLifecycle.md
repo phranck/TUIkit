@@ -75,13 +75,13 @@ Three things cause a new frame to be rendered:
 
 - **SIGWINCH** — the terminal was resized
 - **``AppState``** — a `@State` property was mutated
-- **``SignalManager``** — `requestRerender()` was called (used by the state observer)
+- **`SignalManager`** — `requestRerender()` was called (used by the state observer)
 
 All triggers set boolean flags that the main loop checks. The actual rendering always happens on the main thread.
 
 ## Signal Handling
 
-``SignalManager`` installs two POSIX signal handlers:
+`SignalManager` installs two POSIX signal handlers:
 
 | Signal | Trigger | Effect |
 |--------|---------|--------|
@@ -92,7 +92,7 @@ Signal handlers only set `nonisolated(unsafe)` boolean flags — no allocations,
 
 ## Key Event Dispatch
 
-When the terminal delivers a key event, the ``InputHandler`` dispatches it through three layers:
+When the terminal delivers a key event, the `InputHandler` dispatches it through three layers:
 
 ### Layer 1: Status Bar Items
 
