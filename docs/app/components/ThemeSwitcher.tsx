@@ -1,0 +1,49 @@
+"use client";
+
+import { useTheme, themes, type Theme } from "./ThemeProvider";
+
+/** Color dot for each theme used in the switcher. */
+const themeColors: Record<Theme, string> = {
+  green: "#33ff33",
+  amber: "#ffbf00",
+  white: "#e4e4e7",
+  red: "#ff3333",
+};
+
+/** Theme labels for accessibility. */
+const themeLabels: Record<Theme, string> = {
+  green: "Green",
+  amber: "Amber",
+  white: "White",
+  red: "Red",
+};
+
+/** Compact theme switcher with colored dots and active indicator. */
+export default function ThemeSwitcher() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {themes.map((themeOption) => (
+        <button
+          key={themeOption}
+          onClick={() => setTheme(themeOption)}
+          aria-label={`Switch to ${themeLabels[themeOption]} theme`}
+          className="group relative flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110"
+        >
+          <span
+            className="block h-3 w-3 rounded-full transition-all"
+            style={{
+              backgroundColor: themeColors[themeOption],
+              boxShadow:
+                theme === themeOption
+                  ? `0 0 6px ${themeColors[themeOption]}, 0 0 14px ${themeColors[themeOption]}60`
+                  : "none",
+              opacity: theme === themeOption ? 1 : 0.4,
+            }}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
