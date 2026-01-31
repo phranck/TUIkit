@@ -86,7 +86,7 @@
 ///
 /// ## Rendering
 ///
-/// `Box` is a **composite view** — it does not conform to ``Renderable``.
+/// `Box` is a **composite view** — it does not conform to `Renderable`.
 /// Instead, it uses `body` to delegate to `content.border(...)`, which
 /// produces a `BorderedView` that *is* `Renderable`. This is intentional:
 /// `Box` is purely compositional sugar and carries no rendering logic.

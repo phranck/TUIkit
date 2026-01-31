@@ -27,7 +27,7 @@ public struct BorderedView<Content: View>: View {
 // MARK: - Renderable
 
 extension BorderedView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
 
         // Resolve border style - use explicit or fall back to appearance default

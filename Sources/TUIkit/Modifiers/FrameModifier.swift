@@ -41,7 +41,7 @@ public struct FlexibleFrameView<Content: View>: View {
 }
 
 extension FlexibleFrameView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Calculate the target width based on constraints
         let targetWidth: Int
         if let maximumWidth = maxWidth {

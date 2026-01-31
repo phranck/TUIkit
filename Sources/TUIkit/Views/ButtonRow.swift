@@ -72,7 +72,7 @@ public struct ButtonRowBuilder {
 // MARK: - ButtonRow Rendering
 
 extension ButtonRow: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         guard !buttons.isEmpty else {
             return FrameBuffer(lines: [])
         }

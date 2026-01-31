@@ -161,11 +161,11 @@ extension Appearance {
 // MARK: - Appearance Registry
 
 /// Registry of available appearances for cycling.
-public struct AppearanceRegistry {
+struct AppearanceRegistry {
     /// All available appearances in cycling order.
     ///
     /// Order: line → rounded → doubleLine → heavy → block
-    public static let all: [Appearance] = [
+    static let all: [Appearance] = [
         .line,
         .rounded,
         .doubleLine,
@@ -177,7 +177,7 @@ public struct AppearanceRegistry {
     ///
     /// - Parameter id: The appearance ID to find.
     /// - Returns: The appearance, or nil if not found.
-    public static func appearance(withId id: Appearance.ID) -> Appearance? {
+    static func appearance(withId id: Appearance.ID) -> Appearance? {
         all.first { $0.rawId == id }
     }
 }

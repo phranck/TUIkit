@@ -6,9 +6,12 @@
 //
 
 /// A modifier that fills the background of a view with a color.
+///
+/// - Important: This is framework infrastructure. Use `.background()` on any
+///   ``View`` instead of instantiating this type directly.
 public struct BackgroundModifier: ViewModifier {
     /// The background color.
-    public let color: Color
+    let color: Color
 
     public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }

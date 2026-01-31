@@ -22,21 +22,21 @@
 ///     titleColor: .cyan
 /// )
 /// ```
-public struct ContainerConfig: Sendable {
+struct ContainerConfig: Sendable {
     /// The border style (nil uses appearance default).
-    public var borderStyle: BorderStyle?
+    var borderStyle: BorderStyle?
 
     /// The border color (nil uses theme default).
-    public var borderColor: Color?
+    var borderColor: Color?
 
     /// The title color (nil uses theme accent).
-    public var titleColor: Color?
+    var titleColor: Color?
 
     /// The inner padding for the body content.
-    public var padding: EdgeInsets
+    var padding: EdgeInsets
 
     /// Whether to show a separator line between body and footer.
-    public var showFooterSeparator: Bool
+    var showFooterSeparator: Bool
 
     /// Creates a container configuration.
     ///
@@ -46,7 +46,7 @@ public struct ContainerConfig: Sendable {
     ///   - titleColor: The title color (default: theme accent).
     ///   - padding: The inner padding (default: horizontal 1, vertical 0).
     ///   - showFooterSeparator: Show separator before footer (default: true).
-    public init(
+    init(
         borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil,
@@ -61,7 +61,7 @@ public struct ContainerConfig: Sendable {
     }
 
     /// Default configuration.
-    public static let `default` = Self()
+    static let `default` = Self()
 }
 
 // MARK: - Container Style
@@ -69,21 +69,21 @@ public struct ContainerConfig: Sendable {
 /// Configuration options for container appearance.
 ///
 /// Controls separators, backgrounds, and other visual aspects of containers.
-public struct ContainerStyle: Sendable {
+struct ContainerStyle: Sendable {
     /// Whether to show a separator line between header and body.
     ///
     /// Note: Only applies to `Appearance.block`. For other appearances,
     /// the title is rendered in the top border.
-    public var showHeaderSeparator: Bool
+    var showHeaderSeparator: Bool
 
     /// Whether to show a separator line between body and footer.
-    public var showFooterSeparator: Bool
+    var showFooterSeparator: Bool
 
     /// The border style (nil uses appearance default).
-    public var borderStyle: BorderStyle?
+    var borderStyle: BorderStyle?
 
     /// The border color (nil uses theme default).
-    public var borderColor: Color?
+    var borderColor: Color?
 
     /// Creates a container style with the specified options.
     ///
@@ -92,7 +92,7 @@ public struct ContainerStyle: Sendable {
     ///   - showFooterSeparator: Show separator before footer (default: true).
     ///   - borderStyle: The border style (default: appearance default).
     ///   - borderColor: The border color (default: theme border).
-    public init(
+    init(
         showHeaderSeparator: Bool = true,
         showFooterSeparator: Bool = true,
         borderStyle: BorderStyle? = nil,
@@ -107,7 +107,7 @@ public struct ContainerStyle: Sendable {
     /// Creates a `ContainerStyle` from a ``ContainerConfig``.
     ///
     /// - Parameter config: The container configuration to use.
-    public init(from config: ContainerConfig) {
+    init(from config: ContainerConfig) {
         self.showHeaderSeparator = true
         self.showFooterSeparator = config.showFooterSeparator
         self.borderStyle = config.borderStyle
@@ -115,7 +115,7 @@ public struct ContainerStyle: Sendable {
     }
 
     /// Default container style.
-    public static let `default` = Self()
+    static let `default` = Self()
 }
 
 // MARK: - Render Helper
@@ -196,24 +196,24 @@ internal func renderContainer<Content: View, Footer: View>(
 ///     }
 /// }
 /// ```
-public struct ContainerView<Content: View, Footer: View>: View {
+struct ContainerView<Content: View, Footer: View>: View {
     /// The container title (rendered in border or header section).
-    public let title: String?
+    let title: String?
 
     /// The title color.
-    public let titleColor: Color?
+    let titleColor: Color?
 
     /// The main content.
-    public let content: Content
+    let content: Content
 
     /// The footer content (typically buttons).
-    public let footer: Footer?
+    let footer: Footer?
 
     /// The container style configuration.
-    public let style: ContainerStyle
+    let style: ContainerStyle
 
     /// The inner padding for the body.
-    public let padding: EdgeInsets
+    let padding: EdgeInsets
 
     /// Creates a container with all options.
     ///
@@ -224,7 +224,7 @@ public struct ContainerView<Content: View, Footer: View>: View {
     ///   - padding: Inner padding for body content.
     ///   - content: The main content.
     ///   - footer: The footer content (optional).
-    public init(
+    init(
         title: String? = nil,
         titleColor: Color? = nil,
         style: ContainerStyle = .default,
@@ -240,7 +240,7 @@ public struct ContainerView<Content: View, Footer: View>: View {
         self.footer = footer()
     }
 
-    public var body: Never {
+    var body: Never {
         fatalError("ContainerView renders via Renderable")
     }
 }
@@ -256,7 +256,7 @@ extension ContainerView where Footer == EmptyView {
     ///   - style: The container style configuration.
     ///   - padding: Inner padding for body content.
     ///   - content: The main content.
-    public init(
+    init(
         title: String? = nil,
         titleColor: Color? = nil,
         style: ContainerStyle = .default,
@@ -275,7 +275,7 @@ extension ContainerView where Footer == EmptyView {
 // MARK: - Rendering
 
 extension ContainerView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let appearance = context.environment.appearance
         let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
