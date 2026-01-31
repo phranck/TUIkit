@@ -57,7 +57,7 @@
 /// }
 ///
 /// // Card with title, footer, and background
-/// Card(title: "User Info", backgroundColor: .palette.containerBackground) {
+/// Card(title: "User Info", backgroundColor: .palette.containerBodyBackground) {
 ///     Text("Name: John")
 ///     Text("Email: john@example.com")
 /// } footer: {

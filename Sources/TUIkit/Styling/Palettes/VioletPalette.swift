@@ -18,8 +18,8 @@ public struct VioletPalette: Palette {
 
     // Background hierarchy
     public let background: Color
-    public let backgroundSecondary: Color
-    public let backgroundTertiary: Color
+    public let containerBodyBackground: Color
+    public let containerCapBackground: Color
 
     // Violet text hierarchy
     public let foreground: Color
@@ -42,23 +42,23 @@ public struct VioletPalette: Palette {
     public let selection: Color
     public let selectionBackground: Color
 
-    // Status bar
+    // Additional backgrounds
     public let statusBarBackground: Color
+    public let appHeaderBackground: Color
+    public let overlayBackground: Color
+    public let buttonBackground: Color
+
+    // Status bar
     public let statusBarForeground: Color
     public let statusBarHighlight: Color
-
-    // Container colors for block appearance
-    public let containerBackground: Color
-    public let containerHeaderBackground: Color
-    public let buttonBackground: Color
 
     public init() {
         let hue = Self.baseHue
 
         // Backgrounds: very dark, subtly tinted
         self.background = Color.hsl(hue, 30, 3)
-        self.backgroundSecondary = Color.hsl(hue, 40, 10)
-        self.backgroundTertiary = Color.hsl(hue, 35, 7)
+        self.containerBodyBackground = Color.hsl(hue, 40, 10)
+        self.containerCapBackground = Color.hsl(hue, 35, 7)
 
         // Foregrounds: bright, saturated text
         self.foreground = Color.hsl(hue, 80, 70)
@@ -81,15 +81,15 @@ public struct VioletPalette: Palette {
         self.selection = Color.hsl(hue, 85, 78)
         self.selectionBackground = Color.hsl(hue, 50, 18)
 
-        // Status bar
+        // Additional backgrounds
         self.statusBarBackground = Color.hsl(hue, 35, 8)
+        self.appHeaderBackground = Color.hsl(hue, 35, 7)  // Same as cap
+        self.overlayBackground = Color.hsl(hue, 30, 3)  // Same as background
+        self.buttonBackground = Color.hsl(hue, 45, 15)
+
+        // Status bar
         self.statusBarForeground = Color.hsl(hue, 75, 65)
         self.statusBarHighlight = Color.hsl(hue, 85, 78)
-
-        // Container (block appearance)
-        self.containerBackground = Color.hsl(hue, 40, 10)
-        self.containerHeaderBackground = Color.hsl(hue, 35, 7)
-        self.buttonBackground = Color.hsl(hue, 45, 15)
     }
 
     /// Wraps a hue value to the 0–360 range.

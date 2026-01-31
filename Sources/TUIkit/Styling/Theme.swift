@@ -29,14 +29,26 @@ import Foundation
 public protocol Palette: Cyclable {
     // MARK: - Background Colors
 
-    /// The primary background color.
+    /// The app background color (darkest).
     var background: Color { get }
 
-    /// Secondary background for cards, panels, etc.
-    var backgroundSecondary: Color { get }
+    /// Container body/content background.
+    var containerBodyBackground: Color { get }
 
-    /// Tertiary background for nested elements.
-    var backgroundTertiary: Color { get }
+    /// Container header/footer background (the "cap" of a container).
+    var containerCapBackground: Color { get }
+
+    /// Button background (slightly lighter than containerCapBackground).
+    var buttonBackground: Color { get }
+
+    /// Status bar background.
+    var statusBarBackground: Color { get }
+
+    /// App header background (for future use).
+    var appHeaderBackground: Color { get }
+
+    /// Dimming overlay background for alerts and dialogs.
+    var overlayBackground: Color { get }
 
     // MARK: - Foreground Colors
 
@@ -93,25 +105,11 @@ public protocol Palette: Cyclable {
 
     // MARK: - Status Bar Colors
 
-    /// Status bar background.
-    var statusBarBackground: Color { get }
-
     /// Status bar text color.
     var statusBarForeground: Color { get }
 
     /// Status bar shortcut highlight color.
     var statusBarHighlight: Color { get }
-
-    // MARK: - Container Colors (for block appearance)
-
-    /// Container body background (used in block appearance).
-    var containerBackground: Color { get }
-
-    /// Container header/footer background (darker than body, used in block appearance).
-    var containerHeaderBackground: Color { get }
-
-    /// Button background in block appearance (lighter than container body).
-    var buttonBackground: Color { get }
 }
 
 // MARK: - Default Palette Implementation
@@ -119,22 +117,22 @@ public protocol Palette: Cyclable {
 extension Palette {
     // Default implementations using the primary colors
 
-    public var backgroundSecondary: Color { background }
-    public var backgroundTertiary: Color { background }
+    public var containerBodyBackground: Color { background }
+    public var containerCapBackground: Color { background }
+    public var buttonBackground: Color { containerCapBackground }
+    public var statusBarBackground: Color { background }
+    public var appHeaderBackground: Color { containerCapBackground }
+    public var overlayBackground: Color { background }
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
     public var accentSecondary: Color { accent }
     public var borderFocused: Color { accent }
     public var separator: Color { border }
     public var selection: Color { accent }
-    public var selectionBackground: Color { backgroundSecondary }
+    public var selectionBackground: Color { containerBodyBackground }
     public var disabled: Color { foregroundTertiary }
-    public var statusBarBackground: Color { backgroundSecondary }
     public var statusBarForeground: Color { foreground }
     public var statusBarHighlight: Color { accent }
-    public var containerBackground: Color { backgroundSecondary }
-    public var containerHeaderBackground: Color { backgroundTertiary }
-    public var buttonBackground: Color { backgroundSecondary }
 }
 
 // MARK: - Palette Environment Key

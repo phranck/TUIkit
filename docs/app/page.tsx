@@ -156,7 +156,7 @@ export default function Home() {
 
       {/* Architecture highlights */}
       <section className="mx-auto max-w-6xl px-6 pb-28">
-        <div className="rounded-2xl border border-border bg-card/50 p-8 backdrop-blur-sm md:p-12">
+        <div className="rounded-2xl border border-border bg-container-body/50 p-8 backdrop-blur-sm md:p-12">
           <h2 className="mb-8 text-center text-4xl font-bold text-foreground">
             Built right
           </h2>
@@ -252,7 +252,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
+      <footer className="border-t border-border bg-container-body/30 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-0.5 px-6 py-8 text-center">
           <span className="text-base text-muted">
             Made with ❤️ in Bregenz
