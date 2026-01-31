@@ -14,8 +14,8 @@ struct PaletteRegistryTests {
 
     @Test("Registry contains all predefined palettes")
     func registryCount() {
-        // Green, Amber, Red, Violet, Blue, White, NCurses = 7
-        #expect(PaletteRegistry.all.count == 7)
+        // Green, Amber, Red, Violet, Blue, White = 6
+        #expect(PaletteRegistry.all.count == 6)
     }
 
     @Test("Registry cycling order follows color spectrum")
@@ -26,7 +26,6 @@ struct PaletteRegistryTests {
         #expect(PaletteRegistry.all[3].id == "violet")
         #expect(PaletteRegistry.all[4].id == "blue")
         #expect(PaletteRegistry.all[5].id == "white")
-        #expect(PaletteRegistry.all[6].id == "ncurses")
     }
 
     @Test("Registry finds palette by ID")

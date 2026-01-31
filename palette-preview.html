@@ -272,7 +272,7 @@
 <body>
 
 <h1>TUIKit Color Palettes</h1>
-<p class="subtitle">5 new palettes designed for terminal UI aesthetics &mdash; plus existing palettes for reference</p>
+<p class="subtitle">5 proposed palettes with Palette (13) + BlockPalette (3) properties &mdash; plus existing palettes for reference</p>
 
 <!-- Hue distribution visualization -->
 <div class="hue-wheel">
@@ -313,23 +313,21 @@ const newPalettes = [
     desc: "Inspired by LCARS (Star Trek) terminal displays, teal control panels, and bridge consoles.",
     colors: {
       background:               "#060A0A",
-      containerBodyBackground:  "#0E2526",
-      containerCapBackground:   "#0A1B1C",
       foreground:               "#00DDC0",
       foregroundSecondary:      "#00AA94",
       foregroundTertiary:       "#007A6B",
-      foregroundPlaceholder:    "#00574C",
       accent:                   "#33FFE0",
-      accentSecondary:          "#00BB9E",
       success:                  "#33FFAA",
       warning:                  "#CCFF66",
       error:                    "#FF6633",
       info:                     "#66FFEE",
       border:                   "#2D5A55",
       statusBarBackground:      "#0D1E1D",
-      buttonBackground:         "#144542",
       appHeaderBackground:      "#0A1B1C",
       overlayBackground:        "#060A0A",
+      surfaceBackground:        "#0E2526",
+      surfaceHeaderBackground:  "#0A1B1C",
+      elevatedBackground:       "#144542",
     }
   },
   {
@@ -337,23 +335,21 @@ const newPalettes = [
     desc: "Synthwave neon glow \u2014 inspired by 80s arcade cabinets, retrowave, and cyberpunk HUDs.",
     colors: {
       background:               "#0A060A",
-      containerBodyBackground:  "#251428",
-      containerCapBackground:   "#1C0E1E",
       foreground:               "#FF44CC",
       foregroundSecondary:      "#CC33A3",
       foregroundTertiary:       "#8F2472",
-      foregroundPlaceholder:    "#661952",
       accent:                   "#FF77DD",
-      accentSecondary:          "#DD33AA",
       success:                  "#FF88DD",
       warning:                  "#FFAA77",
       error:                    "#FF6633",
       info:                     "#FF99EE",
       border:                   "#5A2D50",
       statusBarBackground:      "#180D19",
-      buttonBackground:         "#3A1D3A",
       appHeaderBackground:      "#1C0E1E",
       overlayBackground:        "#0A060A",
+      surfaceBackground:        "#251428",
+      surfaceHeaderBackground:  "#1C0E1E",
+      elevatedBackground:       "#3A1D3A",
     }
   },
   {
@@ -361,23 +357,21 @@ const newPalettes = [
     desc: "Warm brass instrument panels, steampunk gauges, and luxury cockpit displays.",
     colors: {
       background:               "#0A0906",
-      containerBodyBackground:  "#261F0E",
-      containerCapBackground:   "#1C170A",
       foreground:               "#DDAA22",
       foregroundSecondary:      "#BB8E1A",
       foregroundTertiary:       "#8A6814",
-      foregroundPlaceholder:    "#634B0E",
       accent:                   "#FFCC44",
-      accentSecondary:          "#CC9922",
       success:                  "#DDCC44",
       warning:                  "#FFE066",
       error:                    "#FF6633",
       info:                     "#EEBB55",
       border:                   "#5A4D2D",
       statusBarBackground:      "#191508",
-      buttonBackground:         "#3A3018",
       appHeaderBackground:      "#1C170A",
       overlayBackground:        "#0A0906",
+      surfaceBackground:        "#261F0E",
+      surfaceHeaderBackground:  "#1C170A",
+      elevatedBackground:       "#3A3018",
     }
   },
   {
@@ -385,23 +379,21 @@ const newPalettes = [
     desc: "Warm sunset terminals \u2014 inspired by sodium-vapor streetlights and desert radar stations.",
     colors: {
       background:               "#0A0706",
-      containerBodyBackground:  "#281710",
-      containerCapBackground:   "#1E100C",
       foreground:               "#FF7744",
       foregroundSecondary:      "#CC5E36",
       foregroundTertiary:       "#8F4226",
-      foregroundPlaceholder:    "#66301B",
       accent:                   "#FF9966",
-      accentSecondary:          "#DD6633",
       success:                  "#FFAA77",
       warning:                  "#FFCC66",
       error:                    "#FF4433",
       info:                     "#FFBB88",
       border:                   "#5A3A2D",
       statusBarBackground:      "#190F0A",
-      buttonBackground:         "#3A2418",
       appHeaderBackground:      "#1E100C",
       overlayBackground:        "#0A0706",
+      surfaceBackground:        "#281710",
+      surfaceHeaderBackground:  "#1E100C",
+      elevatedBackground:       "#3A2418",
     }
   },
   {
@@ -409,23 +401,21 @@ const newPalettes = [
     desc: "Arctic cryogenic readouts \u2014 inspired by ice-blue instrument clusters and polar research stations.",
     colors: {
       background:               "#060809",
-      containerBodyBackground:  "#0E1D28",
-      containerCapBackground:   "#0A151E",
       foreground:               "#88DDFF",
       foregroundSecondary:      "#66AACC",
       foregroundTertiary:       "#4A7A99",
-      foregroundPlaceholder:    "#35586E",
       accent:                   "#AAEEFF",
-      accentSecondary:          "#66BBDD",
       success:                  "#88EEBB",
       warning:                  "#CCDDAA",
       error:                    "#FF6633",
       info:                     "#BBEEFF",
       border:                   "#2D4A5A",
       statusBarBackground:      "#0D1720",
-      buttonBackground:         "#142D3E",
       appHeaderBackground:      "#0A151E",
       overlayBackground:        "#060809",
+      surfaceBackground:        "#0E1D28",
+      surfaceHeaderBackground:  "#0A151E",
+      elevatedBackground:       "#142D3E",
     }
   },
 ];
@@ -435,85 +425,87 @@ const existingPalettes = [
     name: "Green",
     desc: "P1 phosphor",
     fg: "#33FF33",
-    colors: ["#060A07","#0E271C","#0A1B13",
-             "#33FF33","#27C227","#1F8F1F","#165A16",
-             "#66FF66","#00CC00",
+    colors: ["#060A07",
+             "#33FF33","#27C227","#1F8F1F",
+             "#66FF66",
              "#33FF33","#CCFF33","#FF6633","#33FFCC",
              "#2D5A2D",
-             "#0F2215","#145523","#0A1B13","#060A07"]
+             "#0F2215","#0A1B13","#060A07"]
   },
   {
     name: "Amber",
     desc: "P3 phosphor",
     fg: "#FFAA00",
-    colors: ["#0A0706","#251710","#1E110E",
-             "#FFAA00","#CC8800","#8F6600","#664D00",
-             "#FFCC33","#CC9900",
+    colors: ["#0A0706",
+             "#FFAA00","#CC8800","#8F6600",
+             "#FFCC33",
              "#FFCC00","#FFE066","#FF6633","#FFD966",
              "#5A4A2D",
-             "#191613","#3A2A1D","#1E110E","#0A0706"]
+             "#191613","#1E110E","#0A0706"]
   },
   {
     name: "Red",
     desc: "Military",
     fg: "#FF4444",
-    colors: ["#0A0606","#281112","#1E0F10",
-             "#FF4444","#CC3333","#8F2222","#661616",
-             "#FF6666","#CC4444",
+    colors: ["#0A0606",
+             "#FF4444","#CC3333","#8F2222",
+             "#FF6666",
              "#FF8080","#FFAA66","#FFFFFF","#FF9999",
              "#5A2D2D",
-             "#191313","#3A1F22","#1E0F10","#0A0606"]
+             "#191313","#1E0F10","#0A0606"]
   },
   {
     name: "Violet",
     desc: "Sci-fi",
     fg: "#B275EF",
-    colors: ["#070509","#190F23","#110B18",
-             "#B275EF","#8C3BDC","#6528A3","#47236B",
-             "#C697F6","#7F1FDF",
+    colors: ["#070509",
+             "#B275EF","#8C3BDC","#6528A3",
+             "#C697F6",
              "#E4A567","#EF75B2","#A5F159","#7CB2E8",
              "#3F2659",
-             "#140D1B","#261537","#110B18","#070509"]
+             "#140D1B","#110B18","#070509"]
   },
   {
     name: "Blue",
     desc: "VFD",
     fg: "#00AAFF",
-    colors: ["#060708","#0E1825","#0A121C",
-             "#00AAFF","#0088CC","#006699","#004D73",
-             "#33BBFF","#0099DD",
+    colors: ["#060708",
+             "#00AAFF","#0088CC","#006699",
+             "#33BBFF",
              "#33CCFF","#66CCFF","#FF6633","#99DDFF",
              "#2D4A5A",
-             "#0F1822","#14304A","#0A121C","#060708"]
+             "#0F1822","#0A121C","#060708"]
   },
   {
     name: "White",
     desc: "P4 phosphor",
     fg: "#E8E8E8",
-    colors: ["#06070A","#111A2A","#0D131D",
-             "#E8E8E8","#B0B0B0","#787878","#505050",
-             "#FFFFFF","#C0C0C0",
+    colors: ["#06070A",
+             "#E8E8E8","#B0B0B0","#787878",
+             "#FFFFFF",
              "#C0FFC0","#FFE0A0","#FFA0A0","#A0D0FF",
              "#484848",
-             "#131619","#1D2535","#0D131D","#06070A"]
+             "#131619","#0D131D","#06070A"]
   },
 ];
 
 const colorLabels = [
-  "background","containerBodyBackground","containerCapBackground",
-  "foreground","foregroundSecondary","foregroundTertiary","foregroundPlaceholder",
-  "accent","accentSecondary",
+  "background",
+  "foreground","foregroundSecondary","foregroundTertiary",
+  "accent",
   "success","warning","error","info",
   "border",
-  "statusBarBackground","buttonBackground","appHeaderBackground","overlayBackground"
+  "statusBarBackground","appHeaderBackground","overlayBackground",
+  "surfaceBackground","surfaceHeaderBackground","elevatedBackground"
 ];
 
 const swatchGroups = [
-  { title: "Backgrounds", keys: ["background","containerBodyBackground","containerCapBackground","buttonBackground","statusBarBackground","appHeaderBackground","overlayBackground"] },
-  { title: "Foregrounds", keys: ["foreground","foregroundSecondary","foregroundTertiary","foregroundPlaceholder"] },
-  { title: "Accents", keys: ["accent","accentSecondary"] },
-  { title: "Semantic", keys: ["success","warning","error","info"] },
-  { title: "UI Elements", keys: ["border"] },
+  { title: "Palette — Backgrounds", keys: ["background","statusBarBackground","appHeaderBackground","overlayBackground"] },
+  { title: "Palette — Foregrounds", keys: ["foreground","foregroundSecondary","foregroundTertiary"] },
+  { title: "Palette — Accent", keys: ["accent"] },
+  { title: "Palette — Semantic", keys: ["success","warning","error","info"] },
+  { title: "Palette — UI Elements", keys: ["border"] },
+  { title: "BlockPalette — Surfaces", keys: ["surfaceBackground","surfaceHeaderBackground","elevatedBackground"] },
 ];
 
 function camelToLabel(key) {

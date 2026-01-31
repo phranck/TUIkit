@@ -9,27 +9,23 @@
 /// Inspired by retro computing aesthetics and sci-fi terminal displays.
 /// All colors are generated algorithmically from a single base hue (270°)
 /// using HSL transformations.
-public struct VioletPalette: Palette {
+public struct VioletPalette: BlockPalette {
     public let id = "violet"
     public let name = "Violet"
 
     /// The base hue used to generate all palette colors.
     private static let baseHue: Double = 270
 
-    // Background hierarchy
+    // Background
     public let background: Color
-    public let containerBodyBackground: Color
-    public let containerCapBackground: Color
 
     // Violet text hierarchy
     public let foreground: Color
     public let foregroundSecondary: Color
     public let foregroundTertiary: Color
-    public let foregroundPlaceholder: Color
 
-    // Accent colors
+    // Accent
     public let accent: Color
-    public let accentSecondary: Color
 
     // Semantic colors
     public let success: Color
@@ -44,25 +40,20 @@ public struct VioletPalette: Palette {
     public let statusBarBackground: Color
     public let appHeaderBackground: Color
     public let overlayBackground: Color
-    public let buttonBackground: Color
 
     public init() {
         let hue = Self.baseHue
 
-        // Backgrounds: very dark, subtly tinted
+        // Background: very dark, subtly tinted
         self.background = Color.hsl(hue, 30, 3)
-        self.containerBodyBackground = Color.hsl(hue, 40, 10)
-        self.containerCapBackground = Color.hsl(hue, 35, 7)
 
         // Foregrounds: bright, saturated text
         self.foreground = Color.hsl(hue, 80, 70)
         self.foregroundSecondary = Color.hsl(hue, 70, 55)
         self.foregroundTertiary = Color.hsl(hue, 60, 40)
-        self.foregroundPlaceholder = Color.hsl(hue, 50, 28)
 
-        // Accents: lighter/brighter variant
+        // Accent: lighter/brighter variant
         self.accent = Color.hsl(hue, 85, 78)
-        self.accentSecondary = Color.hsl(hue, 75, 50)
 
         // Semantic: hue-shifted from base
         self.success = Color.hsl(Self.wrapHue(hue + 120), 70, 65)
@@ -75,9 +66,8 @@ public struct VioletPalette: Palette {
 
         // Additional backgrounds
         self.statusBarBackground = Color.hsl(hue, 35, 8)
-        self.appHeaderBackground = Color.hsl(hue, 35, 7)  // Same as cap
-        self.overlayBackground = Color.hsl(hue, 30, 3)  // Same as background
-        self.buttonBackground = Color.hsl(hue, 45, 15)
+        self.appHeaderBackground = Color.hsl(hue, 35, 7)
+        self.overlayBackground = Color.hsl(hue, 30, 3)
     }
 
     /// Wraps a hue value to the 0–360 range.
@@ -90,7 +80,7 @@ public struct VioletPalette: Palette {
 
 // MARK: - Convenience Accessors
 
-extension Palette where Self == VioletPalette {
+extension BlockPalette where Self == VioletPalette {
     /// Violet terminal palette.
     public static var violet: VioletPalette { VioletPalette() }
 }
