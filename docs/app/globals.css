@@ -9,7 +9,7 @@
   font-display: swap;
 }
 
-/* Themes: Green → Amber → Red → Blue → White */
+/* Themes: Green → Amber → Red → Violet → Blue → White */
 
 /* Theme: Green (default) */
 :root,
@@ -61,6 +61,23 @@
   --border: #5a2d2d;
   --card: #281112;
   --card-hover: #1e0f10;
+}
+
+/* Theme: Violet */
+[data-theme="violet"] {
+  --background: #08060a;
+  --foreground: #bb77ff;
+  --accent: #cc99ff;
+  --accent-secondary: #9944dd;
+  --accent-glow: 204, 153, 255;
+  --accent-glow-secondary: 153, 68, 221;
+  --accent-glow-tertiary: 119, 68, 170;
+  --headline-color: #bb77ff;
+  --headline-glow: 187, 119, 255;
+  --muted: #7744aa;
+  --border: #4a2d5a;
+  --card: #1a1028;
+  --card-hover: #120c1e;
 }
 
 /* Theme: Blue (VFD) */

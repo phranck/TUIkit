@@ -10,7 +10,7 @@ import {
 } from "react";
 
 /** Available phosphor themes matching TUIkit's built-in palettes. */
-export const themes = ["green", "amber", "red", "blue", "white"] as const;
+export const themes = ["green", "amber", "red", "violet", "blue", "white"] as const;
 export type Theme = (typeof themes)[number];
 
 interface ThemeContextValue {
