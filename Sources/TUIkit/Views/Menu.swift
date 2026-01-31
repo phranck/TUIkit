@@ -236,7 +236,7 @@ extension Menu: Renderable {
                 style.isBold = true
                 style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                 // Use a dimmed version of the accent color for background
-                style.backgroundColor = palette.selectionBackground
+                style.backgroundColor = palette.containerBodyBackground
             } else {
                 // Use palette foreground color if no custom itemColor is set
                 style.foregroundColor = itemColor?.resolve(with: palette) ?? palette.foreground
