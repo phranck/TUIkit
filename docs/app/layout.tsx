@@ -36,13 +36,13 @@ export default function RootLayout({
     (function() {
       try {
         var stored = localStorage.getItem('tuikit-theme');
-        if (stored && ['green','amber','white','red'].includes(stored)) {
+        if (stored && ['green','amber','red','violet','blue','white'].includes(stored)) {
           document.documentElement.setAttribute('data-theme', stored);
         } else {
-          document.documentElement.setAttribute('data-theme', 'amber');
+          document.documentElement.setAttribute('data-theme', 'green');
         }
       } catch(e) {
-        document.documentElement.setAttribute('data-theme', 'amber');
+        document.documentElement.setAttribute('data-theme', 'green');
       }
     })();
   `;
