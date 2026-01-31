@@ -32,7 +32,7 @@
 /// You can override both style and color:
 ///
 /// ```swift
-/// Box(.heavy, color: .theme.accent) {
+/// Box(.heavy, color: .palette.accent) {
 ///     Text("Heavy bold border in accent color")
 /// }
 /// ```

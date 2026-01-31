@@ -13,6 +13,7 @@ public struct BackgroundModifier: ViewModifier {
     public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
+        let resolvedColor = color.resolve(with: context.environment.palette)
         let width = buffer.width
         var lines: [String] = []
 
@@ -20,13 +21,9 @@ public struct BackgroundModifier: ViewModifier {
             // Pad the line to full width so background covers everything
             let paddedLine = line.padToVisibleWidth(width)
 
-            // Apply background color to the entire line
-            var style = TextStyle()
-            style.backgroundColor = color
-
             // We need to handle existing ANSI codes in the line
             // For simplicity, we wrap the whole line with background
-            let colored = applyBackground(to: paddedLine, color: color)
+            let colored = applyBackground(to: paddedLine, color: resolvedColor)
             lines.append(colored)
         }
 
