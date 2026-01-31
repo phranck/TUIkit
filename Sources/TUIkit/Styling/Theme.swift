@@ -156,17 +156,11 @@ extension EnvironmentValues {
      /// .environment(\.palette, GreenPalette())
     /// ```
     ///
-    /// Access the palette in views:
+    /// Access the palette in `renderToBuffer(context:)`:
     ///
     /// ```swift
-    /// struct MyView: View {
-    ///     @Environment(\.palette) var palette
-    ///
-    ///     var body: some View {
-    ///         Text("Hello")
-    ///             .foregroundColor(palette.foreground)
-    ///     }
-    /// }
+    /// let palette = context.environment.palette
+    /// let fg = palette.foreground
     /// ```
     public var palette: any Palette {
         get { self[PaletteKey.self] }
@@ -213,10 +207,9 @@ extension EnvironmentValues {
     /// The palette manager for cycling and setting palettes.
     ///
     /// ```swift
-    /// @Environment(\.paletteManager) var paletteManager
-    ///
+    /// let paletteManager = context.environment.paletteManager
     /// paletteManager.cycleNext()
-     /// paletteManager.setCurrent(AmberPalette())
+    /// paletteManager.setCurrent(AmberPalette())
     /// ```
     public var paletteManager: ThemeManager {
         get { self[PaletteManagerKey.self] }

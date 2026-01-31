@@ -33,21 +33,12 @@ import Foundation
 /// To set status bar items, use the environment:
 ///
 /// ```swift
-/// struct MyView: View {
-///     @Environment(\.statusBar) var statusBar
-///
-///     var body: some View {
-///         VStack {
-///             Text("Hello")
-///         }
-///         .onAppear {
-///             statusBar.setItems([
-///                 StatusBarItem(shortcut: "s", label: "save"),
-///                 StatusBarItem(shortcut: "↑↓", label: "nav"),
-///             ])
-///         }
-///     }
-/// }
+/// // In renderToBuffer(context:):
+/// let statusBar = context.environment.statusBar
+/// statusBar.setItems([
+///     StatusBarItem(shortcut: "s", label: "save"),
+///     StatusBarItem(shortcut: "↑↓", label: "nav"),
+/// ])
 /// ```
 public struct StatusBar: View {
     /// User items (left container).
