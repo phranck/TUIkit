@@ -9,24 +9,20 @@
 ///
 /// Inspired by terminals like the IBM 3278 and Wyse 50.
 /// Uses a dark background with subtle amber/orange tint.
-public struct AmberPalette: Palette {
+public struct AmberPalette: BlockPalette {
     public let id = "amber"
     public let name = "Amber"
 
-    // Background hierarchy
-    public let background = Color.hex(0x0A0706)  // App background (darkest)
-    public let containerBodyBackground = Color.hex(0x251710)  // Container content background
-    public let containerCapBackground = Color.hex(0x1E110E)  // Container header/footer background
+    // Background
+    public let background = Color.hex(0x0A0706)
 
     // Amber text hierarchy (matching Spotnik)
     public let foreground = Color.hex(0xFFAA00)  // Bright amber - primary text
     public let foregroundSecondary = Color.hex(0xCC8800)  // Medium amber - secondary text
     public let foregroundTertiary = Color.hex(0x8F6600)  // Dim amber - tertiary/muted text
-    public let foregroundPlaceholder = Color.hex(0x664D00)  // Faint amber - placeholder text
 
-    // Accent colors
+    // Accent
     public let accent = Color.hex(0xFFCC33)  // Lighter amber for highlights
-    public let accentSecondary = Color.hex(0xCC9900)  // Darker accent
 
     // Semantic colors (stay in amber family)
     public let success = Color.hex(0xFFCC00)
@@ -39,16 +35,15 @@ public struct AmberPalette: Palette {
 
     // Additional backgrounds
     public let statusBarBackground = Color.hex(0x191613)
-    public let appHeaderBackground = Color.hex(0x1E110E)  // Same as cap
-    public let overlayBackground = Color.hex(0x0A0706)  // Dimming overlay
-    public var buttonBackground: Color { Color.hex(0x3A2A1D) }  // Lighter amber for buttons
+    public let appHeaderBackground = Color.hex(0x1E110E)
+    public let overlayBackground = Color.hex(0x0A0706)
 
     public init() {}
 }
 
 // MARK: - Convenience Accessors
 
-extension Palette where Self == AmberPalette {
+extension BlockPalette where Self == AmberPalette {
     /// Amber terminal palette.
     public static var amber: AmberPalette { AmberPalette() }
 }

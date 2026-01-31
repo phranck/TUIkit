@@ -9,24 +9,20 @@
 ///
 /// Less common but used in some military and specialized applications.
 /// Night-vision friendly with reduced eye strain in dark environments.
-public struct RedPalette: Palette {
+public struct RedPalette: BlockPalette {
     public let id = "red"
     public let name = "Red"
 
-    // Background hierarchy
-    public let background = Color.hex(0x0A0606)  // App background (darkest)
-    public let containerBodyBackground = Color.hex(0x281112)  // Container content background
-    public let containerCapBackground = Color.hex(0x1E0F10)  // Container header/footer background
+    // Background
+    public let background = Color.hex(0x0A0606)
 
     // Red text hierarchy
     public let foreground = Color.hex(0xFF4444)  // Bright red - primary text
     public let foregroundSecondary = Color.hex(0xCC3333)  // Medium red - secondary text
     public let foregroundTertiary = Color.hex(0x8F2222)  // Dim red - tertiary/muted text
-    public let foregroundPlaceholder = Color.hex(0x661616)  // Faint red - placeholder text
 
-    // Accent colors
+    // Accent
     public let accent = Color.hex(0xFF6666)  // Lighter red for highlights
-    public let accentSecondary = Color.hex(0xCC4444)  // Darker accent
 
     // Semantic colors (stay in red family)
     public let success = Color.hex(0xFF8080)  // Light red (success in red theme)
@@ -39,16 +35,15 @@ public struct RedPalette: Palette {
 
     // Additional backgrounds
     public let statusBarBackground = Color.hex(0x191313)
-    public let appHeaderBackground = Color.hex(0x1E0F10)  // Same as cap
-    public let overlayBackground = Color.hex(0x0A0606)  // Dimming overlay
-    public var buttonBackground: Color { Color.hex(0x3A1F22) }  // Lighter red for buttons
+    public let appHeaderBackground = Color.hex(0x1E0F10)
+    public let overlayBackground = Color.hex(0x0A0606)
 
     public init() {}
 }
 
 // MARK: - Convenience Accessors
 
-extension Palette where Self == RedPalette {
+extension BlockPalette where Self == RedPalette {
     /// Red terminal palette.
     public static var red: RedPalette { RedPalette() }
 }

@@ -114,12 +114,14 @@ struct MyApp: App {
 ### Theming
 
 - ``Palette``
+- ``BlockPalette``
 - ``ThemeManager``
 - ``GreenPalette``
 - ``AmberPalette``
 - ``WhitePalette``
 - ``RedPalette``
-- ``NCursesPalette``
+- ``BluePalette``
+- ``VioletPalette``
 - ``GeneratedPalette``
 
 ### Colors
