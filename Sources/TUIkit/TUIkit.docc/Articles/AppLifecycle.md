@@ -35,21 +35,7 @@ The `@main` attribute tells Swift to call the static `main()` method provided by
 
 The `AppRunner` creates and wires all subsystems in its initializer. Order matters because later subsystems reference earlier ones:
 
-```
-AppRunner.init(app:)
-  │
-  ├── Terminal()                   Raw terminal I/O
-  ├── StatusBarState()             Status bar item management
-  ├── FocusManager()               Keyboard focus tracking
-  ├── TUIContext()                  Dependency container
-  │     ├── LifecycleManager         appear/disappear tracking
-  │     ├── KeyEventDispatcher       view-registered key handlers
-  │     └── PreferenceStorage        preference collection
-  ├── ThemeManager(palettes)       Color palette cycling
-  ├── ThemeManager(appearances)    Border style cycling
-  ├── InputHandler(...)            3-layer key event dispatch
-  └── RenderLoop(...)              8-step render pipeline
-```
+@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance, then AppRunner wires Terminal, StatusBarState, FocusManager, TUIContext (with LifecycleManager, KeyEventDispatcher, PreferenceStorage), two ThemeManagers, InputHandler, and RenderLoop.")
 
 The `AppRunner` is the sole owner of all subsystems. No singletons are involved — dependencies flow through constructor injection and ``RenderContext``.
 
@@ -81,23 +67,7 @@ The original terminal settings are saved and restored during cleanup.
 
 The main loop is synchronous and runs until shutdown:
 
-```
-┌──────────────────────────────────────┐
-│  1. Check shutdown signal (SIGINT)   │
-│  ↓                                   │
-│  2. Check re-render triggers         │
-│     • SIGWINCH (terminal resize)     │
-│     • AppState.needsRender           │
-│  ↓                                   │
-│  3. Render frame (8-step pipeline)   │
-│  ↓                                   │
-│  4. Read key event (100ms timeout)   │
-│  ↓                                   │
-│  5. Dispatch key event (3 layers)    │
-│  ↓                                   │
-│  Loop                                │
-└──────────────────────────────────────┘
-```
+@Image(source: "lifecycle-main-loop.png", alt: "Flowchart of the main loop: run() performs terminal setup, renders first frame, then loops checking SIGINT for shutdown, SIGWINCH or AppState for re-render, reads key events, and dispatches through 3 layers. On SIGINT, cleanup() restores the terminal and exits.")
 
 ### Re-render Triggers
 
@@ -201,25 +171,4 @@ The ``Terminal`` class also has a `deinit` safety net that disables raw mode if 
 
 ## Subsystem Dependency Graph
 
-```
-AppRunner
-  │
-  ├── SignalManager ← main loop (shutdown/rerender flags)
-  │
-  ├── Terminal ← RenderLoop (write), InputHandler (read)
-  │
-  ├── StatusBarState ← InputHandler (Layer 1), RenderLoop (environment + rendering)
-  │
-  ├── FocusManager ← RenderLoop (environment, cleared each frame)
-  │
-  ├── TUIContext
-  │     ├── LifecycleManager ← RenderLoop (begin/end pass), lifecycle modifiers
-  │     ├── KeyEventDispatcher ← InputHandler (Layer 2), onKeyPress modifiers
-  │     └── PreferenceStorage ← RenderLoop (begin pass), preference modifiers
-  │
-  ├── ThemeManager (palette) ← InputHandler (Layer 3), RenderLoop (environment)
-  ├── ThemeManager (appearance) ← InputHandler (Layer 3), RenderLoop (environment)
-  │
-  ├── InputHandler ← main loop (key events)
-  └── RenderLoop ← main loop (render triggers)
-```
+@Image(source: "lifecycle-dependency-graph.png", alt: "Dependency graph showing AppRunner owning all subsystems. RenderLoop writes to Terminal, injects environment values from StatusBarState, FocusManager, and both ThemeManagers, and calls begin/end pass on LifecycleManager and PreferenceStorage. InputHandler dispatches through Layer 1 (StatusBarState), Layer 2 (KeyEventDispatcher), and Layer 3 (ThemeManagers). SignalManager communicates via flags to AppRunner.")
