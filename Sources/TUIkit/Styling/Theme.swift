@@ -61,6 +61,9 @@ public protocol Palette: Cyclable {
     /// Tertiary text color (even less prominent).
     var foregroundTertiary: Color { get }
 
+    /// Placeholder text color (weakest foreground, e.g. for empty input fields).
+    var foregroundPlaceholder: Color { get }
+
     // MARK: - Accent Colors
 
     /// Primary accent color for interactive elements.
@@ -115,7 +118,7 @@ public protocol Palette: Cyclable {
 // MARK: - Default Palette Implementation
 
 extension Palette {
-    // Default implementations using the primary colors
+    // MARK: - Background Defaults
 
     public var containerBodyBackground: Color { background }
     public var containerCapBackground: Color { background }
@@ -123,14 +126,27 @@ extension Palette {
     public var statusBarBackground: Color { background }
     public var appHeaderBackground: Color { containerCapBackground }
     public var overlayBackground: Color { background }
+
+    // MARK: - Foreground Defaults
+
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
+    public var foregroundPlaceholder: Color { foregroundTertiary }
+
+    // MARK: - Accent Defaults
+
     public var accentSecondary: Color { accent }
+
+    // MARK: - UI Element Defaults (derived from essentials)
+
     public var borderFocused: Color { accent }
     public var separator: Color { border }
     public var selection: Color { accent }
     public var selectionBackground: Color { containerBodyBackground }
     public var disabled: Color { foregroundTertiary }
+
+    // MARK: - Status Bar Defaults
+
     public var statusBarForeground: Color { foreground }
     public var statusBarHighlight: Color { accent }
 }
