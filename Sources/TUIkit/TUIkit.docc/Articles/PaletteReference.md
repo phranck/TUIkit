@@ -30,10 +30,9 @@ Every palette must define colors for these 6 categories:
 | **Foreground** | `foreground`, `foregroundSecondary`, `foregroundTertiary` | Primary, secondary, and tertiary text |
 | **Accent** | `accent`, `accentSecondary` | Interactive elements, highlights |
 | **Semantic** | `success`, `warning`, `error`, `info` | Status indicators |
-| **UI Elements** | `border`, `borderFocused`, `separator`, `selection`, `selectionBackground`, `disabled` | Borders, dividers, selection states |
-| **Status Bar** | `statusBarForeground`, `statusBarHighlight` | Status bar text and highlights |
+| **UI Elements** | `border` | Borders |
 
-Only 8 tokens are required — the remaining 16 have sensible defaults derived from the required ones. See <doc:ThemingGuide> for details on creating custom palettes.
+Only 10 tokens are required — the remaining 8 have sensible defaults derived from the required ones. See <doc:ThemingGuide> for details on creating custom palettes.
 
 ## Green (Default)
 
@@ -68,12 +67,7 @@ Inspired by P1 phosphor CRT monitors (IBM 5151, Apple II). This is the default p
 | Token | Hex | RGB |
 |-------|-----|-----|
 | `border` | `#2D5A2D` | (45, 90, 45) |
-| `borderFocused` | `#33FF33` | (51, 255, 51) |
-| `selection` | `#66FF66` | (102, 255, 102) |
-| `selectionBackground` | `#1A4D1A` | (26, 77, 26) |
 | `statusBarBackground` | `#0F2215` | (15, 34, 21) |
-| `statusBarForeground` | `#2FDD2F` | (47, 221, 47) |
-| `statusBarHighlight` | `#66FF66` | (102, 255, 102) |
 | `buttonBackground` | `#145523` | (20, 85, 35) |
 
 ## Amber
@@ -109,12 +103,7 @@ Inspired by P3 phosphor CRT monitors (IBM 3278, Wyse 50). Warm amber tones remin
 | Token | Hex | RGB |
 |-------|-----|-----|
 | `border` | `#5A4A2D` | (90, 74, 45) |
-| `borderFocused` | `#FFAA00` | (255, 170, 0) |
-| `selection` | `#FFCC33` | (255, 204, 51) |
-| `selectionBackground` | `#4D3A1F` | (77, 58, 31) |
 | `statusBarBackground` | `#191613` | (25, 22, 19) |
-| `statusBarForeground` | `#FFAA00` | (255, 170, 0) |
-| `statusBarHighlight` | `#FFCC33` | (255, 204, 51) |
 | `buttonBackground` | `#3A2A1D` | (58, 42, 29) |
 
 ## White
@@ -150,12 +139,7 @@ Inspired by P4 phosphor CRT monitors (DEC VT100, VT220). Clean monochrome with c
 | Token | Hex | RGB |
 |-------|-----|-----|
 | `border` | `#484848` | (72, 72, 72) |
-| `borderFocused` | `#E8E8E8` | (232, 232, 232) |
-| `selection` | `#FFFFFF` | (255, 255, 255) |
-| `selectionBackground` | `#3A3A3A` | (58, 58, 58) |
 | `statusBarBackground` | `#131619` | (19, 22, 25) |
-| `statusBarForeground` | `#DCDCDC` | (220, 220, 220) |
-| `statusBarHighlight` | `#FFFFFF` | (255, 255, 255) |
 | `buttonBackground` | `#1D2535` | (29, 37, 53) |
 
 ## Red
@@ -191,12 +175,7 @@ Inspired by military and night-vision-friendly displays. Preserves scotopic (nig
 | Token | Hex | RGB |
 |-------|-----|-----|
 | `border` | `#5A2D2D` | (90, 45, 45) |
-| `borderFocused` | `#FF4444` | (255, 68, 68) |
-| `selection` | `#FF6666` | (255, 102, 102) |
-| `selectionBackground` | `#4D1F1F` | (77, 31, 31) |
 | `statusBarBackground` | `#191313` | (25, 19, 19) |
-| `statusBarForeground` | `#F23B3B` | (242, 59, 59) |
-| `statusBarHighlight` | `#FF6666` | (255, 102, 102) |
 | `buttonBackground` | `#3A1F22` | (58, 31, 34) |
 
 ## ncurses
@@ -232,13 +211,7 @@ Classic ncurses terminal colors (htop, Midnight Commander, vim). The only palett
 | Token | ANSI Color | Code |
 |-------|-----------|------|
 | `border` | White | 37/47 |
-| `borderFocused` | Bright Cyan | 96/106 |
-| `selection` | Bright Cyan | 96/106 |
-| `selectionBackground` | Blue | 34/44 |
-| `disabled` | Bright Black | 90/100 |
 | `statusBarBackground` | Blue | 34/44 |
-| `statusBarForeground` | White | 37/47 |
-| `statusBarHighlight` | Yellow | 33/43 |
 | `buttonBackground` | Bright Blue | 94/104 |
 
 > Tip: Use the ncurses palette when targeting terminals with limited color support (SSH sessions, older terminal emulators, or 16-color environments).
@@ -279,12 +252,7 @@ An algorithmically generated palette based on HSL color theory with a base hue o
 | `error` | hsl(90, 85%, 65%) | Lime green (270+180=90°) |
 | `info` | hsl(210, 70%, 70%) | Sky blue (270−60=210°) |
 | `border` | hsl(270, 40%, 25%) | Dark purple border |
-| `borderFocused` | hsl(270, 80%, 70%) | Bright violet |
-| `selection` | hsl(270, 85%, 78%) | Lavender |
-| `selectionBackground` | hsl(270, 50%, 18%) | Dark violet |
 | `statusBarBackground` | hsl(270, 35%, 8%) | Very dark violet |
-| `statusBarForeground` | hsl(270, 75%, 65%) | Medium-bright violet |
-| `statusBarHighlight` | hsl(270, 85%, 78%) | Bright lavender |
 | `buttonBackground` | hsl(270, 45%, 15%) | Dark purple |
 
 ## Palette Cycling Order
