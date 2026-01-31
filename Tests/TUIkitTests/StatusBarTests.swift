@@ -841,7 +841,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-
         _ = renderToBuffer(view, context: context)
 
         // Check that user items were set
@@ -875,7 +874,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-
         _ = renderToBuffer(view, context: context)
 
         // Context items should be active
@@ -906,7 +904,6 @@ struct StatusBarItemsModifierTests {
             availableHeight: 24,
             environment: environment
         )
-
 
         let buffer = renderToBuffer(view, context: context)
 
@@ -940,7 +937,6 @@ struct StatusBarItemsModifierTests {
             availableHeight: 24,
             environment: environment
         )
-
 
         _ = renderToBuffer(outerView, context: context)
 

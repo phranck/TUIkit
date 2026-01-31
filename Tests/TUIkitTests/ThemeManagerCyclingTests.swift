@@ -73,7 +73,7 @@ struct ThemeManagerCyclingTests {
     @Test("setCurrent with unknown ID keeps current")
     func setCurrentUnknownId() {
         let manager = makeManager()
-        manager.cycleNext() // now at item-1
+        manager.cycleNext()  // now at item-1
         let unknown = TestItem(id: "unknown")
         manager.setCurrent(unknown)
         #expect(manager.current.id == "item-1")
@@ -107,5 +107,4 @@ struct ThemeManagerCyclingTests {
         #expect(manager.currentPalette != nil)
         #expect(manager.currentPalette?.id == "green")
     }
-
 }
