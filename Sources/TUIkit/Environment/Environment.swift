@@ -3,7 +3,6 @@
 //  TUIkit
 //
 //  Environment system for passing values down the view hierarchy.
-//  Similar to SwiftUI's @Environment property wrapper.
 //
 
 import Foundation
@@ -76,32 +75,6 @@ public struct EnvironmentValues: @unchecked Sendable {
         var copy = self
         copy[keyPath: keyPath] = value
         return copy
-    }
-}
-
-// MARK: - Environment Property Wrapper
-
-/// A property wrapper that reads a value from the environment.
-///
-/// - Important: Deprecated. Use `context.environment` in ``Renderable/renderToBuffer(context:)``
-///   instead. The `@Environment` wrapper relied on a global singleton that has been removed.
-///   Environment values now flow exclusively through ``RenderContext``.
-@available(*, deprecated, message: "Use context.environment in renderToBuffer(context:) instead")
-@propertyWrapper
-public struct Environment<Value>: @unchecked Sendable {
-    /// The key path to the environment value.
-    private let keyPath: KeyPath<EnvironmentValues, Value>
-
-    /// Creates an environment property wrapper.
-    ///
-    /// - Parameter keyPath: The key path to the environment value.
-    public init(_ keyPath: KeyPath<EnvironmentValues, Value>) {
-        self.keyPath = keyPath
-    }
-
-    /// Returns the default value for the key — the backing singleton has been removed.
-    public var wrappedValue: Value {
-        EnvironmentValues()[keyPath: keyPath]
     }
 }
 
