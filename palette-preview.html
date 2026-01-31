@@ -26,6 +26,28 @@
     margin: 0 auto;
   }
 
+  @media (max-width: 768px) {
+    body { padding: 24px 16px 60px; font-size: 16px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 24px; margin: 40px 0 20px; }
+    .subtitle { font-size: 17px; margin-bottom: 36px; }
+    .palette-header { padding: 18px 20px 14px; }
+    .palette-name { font-size: 22px; }
+    .palette-body { padding: 18px 20px; }
+    .terminal-preview { font-size: 11px; padding: 12px 10px; overflow-x: auto; }
+    .status-bar-preview { font-size: 11px; flex-wrap: wrap; gap: 8px; }
+    .hue-wheel { flex-direction: column; gap: 12px; padding: 16px; }
+    .hue-legend { justify-content: center; }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 16px 12px 40px; }
+    h1 { font-size: 26px; }
+    .swatch-row { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+    .swatch-color { height: 32px; }
+    .existing-grid { grid-template-columns: 1fr; }
+  }
+
   h1 {
     font-size: 44px;
     font-weight: 700;
@@ -52,7 +74,7 @@
 
   .palette-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(720px, 1fr));
+    grid-template-columns: 1fr;
     gap: 32px;
   }
 
@@ -100,8 +122,8 @@
   }
 
   .swatch-row {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 10px;
   }
 
@@ -113,7 +135,7 @@
   }
 
   .swatch-color {
-    width: 64px;
+    width: 100%;
     height: 40px;
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.06);
@@ -125,7 +147,6 @@
     color: #555;
     text-align: center;
     line-height: 1.2;
-    max-width: 72px;
     word-break: break-all;
   }
 
@@ -145,6 +166,7 @@
     line-height: 1.7;
     margin-top: 20px;
     border: 1px solid rgba(255,255,255,0.04);
+    overflow-x: auto;
   }
 
   .terminal-line {
@@ -178,7 +200,7 @@
   /* Existing palette section - more compact */
   .existing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
     gap: 20px;
   }
 
@@ -197,13 +219,13 @@
   }
 
   .existing-swatches {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
     gap: 6px;
   }
 
   .existing-swatch {
-    width: 48px;
+    width: 100%;
     height: 30px;
     border-radius: 5px;
     border: 1px solid rgba(255,255,255,0.06);
