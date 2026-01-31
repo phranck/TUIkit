@@ -141,11 +141,11 @@ public struct GeneratedPalette: Palette, Sendable {
     // MARK: - Preset Hues
 
     /// Predefined hue values for common generated palettes.
-    public enum Hue {
+    enum Hue {
         /// Green hue (120°).
-        public static let green: Double = 120
+        static let green: Double = 120
         /// Violet hue (270°).
-        public static let violet: Double = 270
+        static let violet: Double = 270
     }
 
     // MARK: - Presets
