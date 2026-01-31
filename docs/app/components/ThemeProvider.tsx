@@ -4,12 +4,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
 
 /** Available phosphor themes matching TUIkit's built-in palettes. */
-export const themes = ["green", "amber", "white", "red"] as const;
+export const themes = ["green", "amber", "red", "blue", "white"] as const;
 export type Theme = (typeof themes)[number];
 
 interface ThemeContextValue {
@@ -18,7 +19,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "amber",
+  theme: "green",
   setTheme: () => {},
 });
 
@@ -33,12 +34,18 @@ function getInitialTheme(): Theme {
     const attr = document.documentElement.getAttribute("data-theme") as Theme | null;
     if (attr && themes.includes(attr)) return attr;
   }
-  return "amber";
+  return "green";
 }
 
 /** Provides theme state and applies it to the document root via data-theme attribute. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+
+  /** Sync React state with the theme the blocking script already applied to the DOM. */
+  useEffect(() => {
+    const actual = getInitialTheme();
+    setThemeState(actual);
+  }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);

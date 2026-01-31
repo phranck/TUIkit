@@ -2,20 +2,22 @@
 
 import { useTheme, themes, type Theme } from "./ThemeProvider";
 
-/** Color dot for each theme used in the switcher. */
+/** Color dot for each theme, matching Swift palette foreground colors. */
 const themeColors: Record<Theme, string> = {
   green: "#33ff33",
-  amber: "#ffbf00",
-  white: "#e4e4e7",
-  red: "#ff3333",
+  amber: "#ffaa00",
+  red: "#ff4444",
+  blue: "#00aaff",
+  white: "#e8e8e8",
 };
 
 /** Theme labels for accessibility. */
 const themeLabels: Record<Theme, string> = {
   green: "Green",
   amber: "Amber",
-  white: "White",
   red: "Red",
+  blue: "Blue",
+  white: "White",
 };
 
 /** Compact theme switcher with colored dots and active indicator. */
