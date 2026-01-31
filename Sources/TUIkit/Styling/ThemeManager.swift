@@ -43,8 +43,8 @@ public protocol Cyclable: Sendable {
 /// set a specific item by reference, and apply the current selection.
 ///
 /// TUIkit uses two instances:
-/// - A ``PaletteManager`` for color palettes
-/// - An ``AppearanceManager`` for border-style appearances
+/// - A `PaletteManager` for color palettes
+/// - An `AppearanceManager` for border-style appearances
 ///
 /// # Usage
 ///
@@ -59,7 +59,7 @@ public protocol Cyclable: Sendable {
 /// # Render Integration
 ///
 /// On every change the manager triggers a re-render through
-/// `AppState.active.setNeedsRender()`. The ``RenderLoop`` picks up the
+/// `AppState.active.setNeedsRender()`. The `RenderLoop` picks up the
 /// current item via ``currentPalette`` / ``currentAppearance`` when
 /// building the environment for the next frame.
 public final class ThemeManager: @unchecked Sendable {
