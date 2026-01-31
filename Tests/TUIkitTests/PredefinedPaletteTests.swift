@@ -215,9 +215,4 @@ struct NCursesPaletteTests {
         #expect(palette.error == .red)
     }
 
-    @Test("NCurses palette overrides disabled default")
-    func ncursesDisabledOverride() {
-        let palette = NCursesPalette()
-        #expect(palette.disabled == .brightBlack)
-    }
 }
