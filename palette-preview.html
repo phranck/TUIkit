@@ -173,6 +173,19 @@
     white-space: pre;
   }
 
+  .terminal-line-bordered {
+    display: flex;
+    white-space: pre;
+  }
+
+  .terminal-line-bordered .tl-border {
+    flex-shrink: 0;
+  }
+
+  .terminal-line-bordered .tl-content {
+    flex: 1;
+  }
+
   .terminal-cursor {
     display: inline-block;
     width: 9px;
@@ -561,29 +574,34 @@ function createSwatch(color, label) {
   </div>`;
 }
 
+function termBordered(borderColor, content) {
+  return `<div class="terminal-line-bordered"><span class="tl-border" style="color:${borderColor}">│</span><span class="tl-content">${content}</span><span class="tl-border" style="color:${borderColor}">│</span></div>`;
+}
+
 function createTerminalPreview(palette) {
   const c = palette.colors;
+  const b = c.border;
   return `<div class="terminal-preview" style="background:${c.background}">
-    <div class="terminal-line"><span style="color:${c.border}">╭──────────────────────────────────────╮</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span> <span style="color:${c.containerCapBackground};background:${c.containerCapBackground}">▓▓</span> <span style="color:${c.accent}">TUIkit Demo</span><span style="color:${c.foregroundTertiary}"> ─ Dashboard</span>         <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">├──────────────────────────────────────┤</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>                                      <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>  <span style="color:${c.foreground}">Welcome to TUIkit!</span>                <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>  <span style="color:${c.foregroundSecondary}">Select an option below:</span>           <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>                                      <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>  <span style="background:${c.selectionBackground};color:${c.selection}"> ▸ Components </span>                    <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>    <span style="color:${c.foregroundSecondary}">Colors</span>                          <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>    <span style="color:${c.foregroundSecondary}">Layout</span>                          <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>    <span style="color:${c.foregroundTertiary}">Settings</span>                        <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>                                      <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>  <span style="background:${c.buttonBackground};color:${c.accent};padding:0 6px;border-radius:2px">[ OK ]</span>  <span style="background:${c.buttonBackground};color:${c.foregroundSecondary};padding:0 6px;border-radius:2px">[ Cancel ]</span>            <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">│</span>                                      <span style="color:${c.border}">│</span></div>
-    <div class="terminal-line"><span style="color:${c.border}">╰──────────────────────────────────────╯</span></div>
+    <div class="terminal-line"><span style="color:${b}">╭──────────────────────────────────────╮</span></div>
+    ${termBordered(b, ` <span style="color:${c.containerCapBackground};background:${c.containerCapBackground}">▓▓</span> <span style="color:${c.accent}">TUIkit Demo</span><span style="color:${c.foregroundTertiary}"> ─ Dashboard</span>`)}
+    <div class="terminal-line"><span style="color:${b}">├──────────────────────────────────────┤</span></div>
+    ${termBordered(b, ``)}
+    ${termBordered(b, `  <span style="color:${c.foreground}">Welcome to TUIkit!</span>`)}
+    ${termBordered(b, `  <span style="color:${c.foregroundSecondary}">Select an option below:</span>`)}
+    ${termBordered(b, ``)}
+    ${termBordered(b, `  <span style="background:${c.selectionBackground};color:${c.selection}"> ▸ Components </span>`)}
+    ${termBordered(b, `    <span style="color:${c.foregroundSecondary}">Colors</span>`)}
+    ${termBordered(b, `    <span style="color:${c.foregroundSecondary}">Layout</span>`)}
+    ${termBordered(b, `    <span style="color:${c.foregroundTertiary}">Settings</span>`)}
+    ${termBordered(b, ``)}
+    ${termBordered(b, `  <span style="background:${c.buttonBackground};color:${c.accent};padding:0 6px;border-radius:2px">[ OK ]</span>  <span style="background:${c.buttonBackground};color:${c.foregroundSecondary};padding:0 6px;border-radius:2px">[ Cancel ]</span>`)}
+    ${termBordered(b, ``)}
+    <div class="terminal-line"><span style="color:${b}">╰──────────────────────────────────────╯</span></div>
   </div>
   <div class="status-bar-preview" style="background:${c.statusBarBackground}">
     <span style="color:${c.statusBarForeground}">↑↓ Navigate</span>
     <span style="color:${c.statusBarHighlight}">⏎ Select</span>
-    <span style="color:${c.statusBarForeground}">⎋ Quit  │  Theme: ${palette.name}  │  Green</span>
+    <span style="color:${c.statusBarForeground}">⎋ Quit  │  Theme: ${palette.name}</span>
   </div>`;
 }
 
