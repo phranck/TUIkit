@@ -15,8 +15,8 @@ public struct BluePalette: Palette {
 
     // Background hierarchy
     public let background = Color.hex(0x060708)  // App background (darkest)
-    public let backgroundSecondary = Color.hex(0x0E1825)  // Container body background (brighter)
-    public let backgroundTertiary = Color.hex(0x0A121C)  // Header/footer background
+    public let containerBodyBackground = Color.hex(0x0E1825)  // Container content background
+    public let containerCapBackground = Color.hex(0x0A121C)  // Container header/footer background
 
     // Blue text hierarchy
     public let foreground = Color.hex(0x00AAFF)  // Bright VFD blue - primary text
@@ -39,15 +39,15 @@ public struct BluePalette: Palette {
     public let selection = Color.hex(0x33BBFF)  // Bright blue for selection text
     public let selectionBackground = Color.hex(0x1A3A4D)  // Dark blue for selection bar bg
 
-    // Status bar
+    // Additional backgrounds
     public let statusBarBackground = Color.hex(0x0F1822)  // Dark blue for status bar
+    public let appHeaderBackground = Color.hex(0x0A121C)  // Same as cap
+    public let overlayBackground = Color.hex(0x060708)  // Dimming overlay
+    public var buttonBackground: Color { Color.hex(0x14304A) }  // Lighter blue for buttons
+
+    // Status bar
     public let statusBarForeground = Color.hex(0x0099EE)  // Slightly dimmer than primary foreground
     public let statusBarHighlight = Color.hex(0x33BBFF)
-
-    // Container colors for block appearance
-    public var containerBackground: Color { backgroundSecondary }  // Body
-    public var containerHeaderBackground: Color { backgroundTertiary }  // Header/footer
-    public var buttonBackground: Color { Color.hex(0x14304A) }  // Lighter blue for buttons
 
     public init() {}
 }

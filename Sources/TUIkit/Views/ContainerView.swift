@@ -358,7 +358,7 @@ extension ContainerView: Renderable {
         }
 
         // Body lines with theme background
-        let bodyBg = context.environment.palette.containerBackground
+        let bodyBg = context.environment.palette.containerBodyBackground
         for line in bodyBuffer.lines {
             lines.append(
                 BorderRenderer.standardContentLine(
@@ -436,9 +436,9 @@ extension ContainerView: Renderable {
 
         // Get palette colors for block appearance
         // Header/Footer = darker background
-        // Body = lighter background (containerBackground)
-        let headerFooterBg = palette.containerHeaderBackground
-        let bodyBg = palette.containerBackground
+        // Body = lighter background (containerBodyBackground)
+        let headerFooterBg = palette.containerCapBackground
+        let bodyBg = palette.containerBodyBackground
 
         let hasHeader = title != nil
         let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)

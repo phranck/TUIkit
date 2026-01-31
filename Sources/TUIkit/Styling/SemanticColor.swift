@@ -20,8 +20,12 @@
 enum SemanticColor: String, Sendable, Equatable {
     // Background
     case background
-    case backgroundSecondary
-    case backgroundTertiary
+    case containerBodyBackground
+    case containerCapBackground
+    case buttonBackground
+    case statusBarBackground
+    case appHeaderBackground
+    case overlayBackground
 
     // Foreground
     case foreground
@@ -47,14 +51,8 @@ enum SemanticColor: String, Sendable, Equatable {
     case disabled
 
     // Status Bar
-    case statusBarBackground
     case statusBarForeground
     case statusBarHighlight
-
-    // Container
-    case containerBackground
-    case containerHeaderBackground
-    case buttonBackground
 
     /// Resolves this token to a concrete color using the given palette.
     ///
@@ -63,8 +61,12 @@ enum SemanticColor: String, Sendable, Equatable {
     func resolve(with palette: any Palette) -> Color {
         switch self {
         case .background: palette.background
-        case .backgroundSecondary: palette.backgroundSecondary
-        case .backgroundTertiary: palette.backgroundTertiary
+        case .containerBodyBackground: palette.containerBodyBackground
+        case .containerCapBackground: palette.containerCapBackground
+        case .buttonBackground: palette.buttonBackground
+        case .statusBarBackground: palette.statusBarBackground
+        case .appHeaderBackground: palette.appHeaderBackground
+        case .overlayBackground: palette.overlayBackground
         case .foreground: palette.foreground
         case .foregroundSecondary: palette.foregroundSecondary
         case .foregroundTertiary: palette.foregroundTertiary
@@ -80,12 +82,8 @@ enum SemanticColor: String, Sendable, Equatable {
         case .selection: palette.selection
         case .selectionBackground: palette.selectionBackground
         case .disabled: palette.disabled
-        case .statusBarBackground: palette.statusBarBackground
         case .statusBarForeground: palette.statusBarForeground
         case .statusBarHighlight: palette.statusBarHighlight
-        case .containerBackground: palette.containerBackground
-        case .containerHeaderBackground: palette.containerHeaderBackground
-        case .buttonBackground: palette.buttonBackground
         }
     }
 }
