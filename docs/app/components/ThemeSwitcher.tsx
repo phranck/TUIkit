@@ -7,6 +7,7 @@ const themeColors: Record<Theme, string> = {
   green: "#33ff33",
   amber: "#ffaa00",
   red: "#ff4444",
+  violet: "#bb77ff",
   blue: "#00aaff",
   white: "#e8e8e8",
 };
@@ -16,6 +17,7 @@ const themeLabels: Record<Theme, string> = {
   green: "Green",
   amber: "Amber",
   red: "Red",
+  violet: "Violet",
   blue: "Blue",
   white: "White",
 };
