@@ -645,8 +645,8 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
     const runLoop = async () => {
       try {
-        /* Brief delay, then boot. */
-        await sleep(600);
+        /* Wait for zoom animation to finish before starting boot. */
+        await sleep(1200);
         await playBoot();
 
         /* Start session timer for Joshua. */
