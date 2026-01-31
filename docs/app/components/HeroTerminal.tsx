@@ -5,6 +5,45 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
 
 /**
+ * Synthesizes a CRT power-on hum using the Web Audio API.
+ *
+ * Combines a low-frequency mains hum (~100 Hz) with a high-frequency sweep
+ * (2 kHz → 4 kHz) that mimics the characteristic whine of a CRT monitor
+ * powering up. Both tones have a quick attack and ~0.8s exponential decay.
+ */
+function playCrtPowerOnSound(): void {
+  const audioCtx = new AudioContext();
+  const now = audioCtx.currentTime;
+
+  /* ── Low mains hum (100 Hz) ── */
+  const humOsc = audioCtx.createOscillator();
+  const humGain = audioCtx.createGain();
+  humOsc.type = "sine";
+  humOsc.frequency.setValueAtTime(100, now);
+  humGain.gain.setValueAtTime(0.15, now);
+  humGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+  humOsc.connect(humGain).connect(audioCtx.destination);
+
+  /* ── High-frequency CRT whine (2 kHz → 4 kHz sweep) ── */
+  const whineOsc = audioCtx.createOscillator();
+  const whineGain = audioCtx.createGain();
+  whineOsc.type = "sine";
+  whineOsc.frequency.setValueAtTime(2000, now);
+  whineOsc.frequency.exponentialRampToValueAtTime(4000, now + 0.3);
+  whineGain.gain.setValueAtTime(0.06, now);
+  whineGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+  whineOsc.connect(whineGain).connect(audioCtx.destination);
+
+  /* Start both oscillators and clean up after decay. */
+  humOsc.start(now);
+  whineOsc.start(now);
+  humOsc.stop(now + 0.9);
+  whineOsc.stop(now + 0.7);
+
+  setTimeout(() => audioCtx.close(), 1000);
+}
+
+/**
  * Interactive hero terminal with power-on animation.
  *
  * Initially shows the CRT logo at 320×320 with a static "Welcome to TUIkit"
@@ -46,9 +85,10 @@ export default function HeroTerminal() {
     };
   }, []);
 
-  /** Power on: glow the button, compute offset, zoom the terminal, start boot. */
+  /** Power on: play CRT hum, glow the button, compute offset, zoom the terminal, start boot. */
   const handlePowerOn = useCallback(() => {
     if (powered) return;
+    playCrtPowerOnSound();
     setPowered(true);
     /* Compute offset before zooming so it captures the inline position. */
     setCenterOffset(computeCenterOffset());
