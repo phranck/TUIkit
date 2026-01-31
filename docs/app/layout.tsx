@@ -36,7 +36,7 @@ export default function RootLayout({
     (function() {
       try {
         var stored = localStorage.getItem('tuikit-theme');
-        if (stored && ['green','amber','red','blue','white'].includes(stored)) {
+        if (stored && ['green','amber','red','violet','blue','white'].includes(stored)) {
           document.documentElement.setAttribute('data-theme', stored);
         } else {
           document.documentElement.setAttribute('data-theme', 'green');
