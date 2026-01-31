@@ -27,16 +27,16 @@ private struct MinimalPalette: Palette {
 @Suite("Palette Default Implementation Tests")
 struct PaletteDefaultTests {
 
-    @Test("Defaults derive backgroundSecondary from background")
-    func defaultBackgroundSecondary() {
+    @Test("Defaults derive containerBodyBackground from background")
+    func defaultContainerBodyBackground() {
         let palette = MinimalPalette()
-        #expect(palette.backgroundSecondary == palette.background)
+        #expect(palette.containerBodyBackground == palette.background)
     }
 
-    @Test("Defaults derive backgroundTertiary from background")
-    func defaultBackgroundTertiary() {
+    @Test("Defaults derive containerCapBackground from background")
+    func defaultContainerCapBackground() {
         let palette = MinimalPalette()
-        #expect(palette.backgroundTertiary == palette.background)
+        #expect(palette.containerCapBackground == palette.background)
     }
 
     @Test("Defaults derive foregroundSecondary from foreground")
@@ -69,10 +69,10 @@ struct PaletteDefaultTests {
         #expect(palette.selection == palette.accent)
     }
 
-    @Test("Defaults derive selectionBackground from backgroundSecondary")
+    @Test("Defaults derive selectionBackground from containerBodyBackground")
     func defaultSelectionBackground() {
         let palette = MinimalPalette()
-        #expect(palette.selectionBackground == palette.backgroundSecondary)
+        #expect(palette.selectionBackground == palette.containerBodyBackground)
     }
 
     @Test("Defaults derive disabled from foregroundTertiary")
@@ -84,16 +84,16 @@ struct PaletteDefaultTests {
     @Test("Defaults derive statusBar colors")
     func defaultStatusBar() {
         let palette = MinimalPalette()
-        #expect(palette.statusBarBackground == palette.backgroundSecondary)
+        #expect(palette.statusBarBackground == palette.background)
         #expect(palette.statusBarForeground == palette.foreground)
         #expect(palette.statusBarHighlight == palette.accent)
     }
 
-    @Test("Defaults derive container colors")
-    func defaultContainer() {
+    @Test("Defaults derive container and button backgrounds")
+    func defaultContainerColors() {
         let palette = MinimalPalette()
-        #expect(palette.containerBackground == palette.backgroundSecondary)
-        #expect(palette.containerHeaderBackground == palette.backgroundTertiary)
-        #expect(palette.buttonBackground == palette.backgroundSecondary)
+        #expect(palette.buttonBackground == palette.containerCapBackground)
+        #expect(palette.appHeaderBackground == palette.containerCapBackground)
+        #expect(palette.overlayBackground == palette.background)
     }
 }
