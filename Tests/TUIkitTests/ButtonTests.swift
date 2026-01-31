@@ -128,7 +128,6 @@ struct ButtonTests {
     func buttonRenders() {
         let context = createTestContext()
 
-
         let button = Button("OK") {}
         let buffer = renderToBuffer(button, context: context)
 
@@ -144,7 +143,6 @@ struct ButtonTests {
     func buttonWithBorderHeight() {
         let context = createTestContext()
 
-
         let button = Button("Test", style: .default) {}
         let buffer = renderToBuffer(button, context: context)
 
@@ -156,7 +154,6 @@ struct ButtonTests {
     func plainButtonSingleLine() {
         let context = createTestContext()
 
-
         let button = Button("Test", style: .plain) {}
         let buffer = renderToBuffer(button, context: context)
 
@@ -167,7 +164,6 @@ struct ButtonTests {
     @Test("Focused button is rendered bold without arrow indicator")
     func focusedButtonIsBold() {
         let context = createTestContext()
-
 
         let button = Button("Focus Me", focusID: "focused-button") {}
         let buffer = renderToBuffer(button, context: context)
@@ -253,7 +249,6 @@ struct ButtonRowTests {
     func buttonRowCreation() {
         let context = createTestContext()
 
-
         let row = ButtonRow {
             Button("Cancel") {}
             Button("OK") {}
@@ -270,7 +265,6 @@ struct ButtonRowTests {
     @Test("ButtonRow with custom spacing")
     func buttonRowSpacing() {
         let context = createTestContext()
-
 
         let row = ButtonRow(spacing: 5) {
             Button("A", style: .plain) {}
@@ -291,7 +285,6 @@ struct ButtonRowTests {
         let row = ButtonRow {}
         let context = createTestContext()
 
-
         let buffer = renderToBuffer(row, context: context)
 
         #expect(buffer.isEmpty)
@@ -300,7 +293,6 @@ struct ButtonRowTests {
     @Test("ButtonRow renders buttons horizontally")
     func buttonRowHorizontal() {
         let context = createTestContext()
-
 
         let row = ButtonRow {
             Button("First", style: .plain) {}
@@ -317,7 +309,6 @@ struct ButtonRowTests {
     @Test("ButtonRow normalizes button heights")
     func buttonRowNormalizesHeights() {
         let context = createTestContext()
-
 
         let row = ButtonRow {
             Button("Border", style: .default) {}  // 3 lines with border

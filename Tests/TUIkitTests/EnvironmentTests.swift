@@ -65,7 +65,7 @@ struct EnvironmentValuesTests {
         let original = EnvironmentValues()
         let modified = original.setting(\.testString, to: "changed")
         #expect(modified.testString == "changed")
-        #expect(original.testString == "default") // original unchanged
+        #expect(original.testString == "default")  // original unchanged
     }
 
     @Test("setting() preserves other values")
@@ -74,7 +74,7 @@ struct EnvironmentValuesTests {
         env.testInt = 99
         let modified = env.setting(\.testString, to: "new")
         #expect(modified.testString == "new")
-        #expect(modified.testInt == 99) // preserved
+        #expect(modified.testInt == 99)  // preserved
     }
 }
 
@@ -94,6 +94,4 @@ struct EnvironmentPropertyWrapperTests {
 
 @Suite("EnvironmentModifier Tests")
 struct EnvironmentModifierTests {
-
-
 }
