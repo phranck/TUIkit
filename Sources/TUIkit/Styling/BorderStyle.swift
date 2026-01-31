@@ -166,12 +166,12 @@ public struct BorderStyle: Sendable, Equatable {
     /// The character used for the bottom edge of block style.
     ///
     /// Block style uses different characters for top (▄) and bottom (▀).
-    public static let blockBottomHorizontal: Character = "▀"
+    static let blockBottomHorizontal: Character = "▀"
 
     /// The character used for body/footer separator in block style.
     ///
     /// Uses lower half block (▄) to create visual separation.
-    public static let blockFooterSeparator: Character = "▄"
+    static let blockFooterSeparator: Character = "▄"
 
     /// No visible border (space characters).
     public static let none = Self(

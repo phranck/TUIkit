@@ -346,7 +346,7 @@ public struct Color: Sendable, Equatable {
 // MARK: - ANSIColor
 
 /// The 8 standard ANSI colors.
-public enum ANSIColor: UInt8, Sendable {
+enum ANSIColor: UInt8, Sendable {
     case black = 0
     case red = 1
     case green = 2
@@ -358,22 +358,22 @@ public enum ANSIColor: UInt8, Sendable {
     case `default` = 9
 
     /// The ANSI code for foreground color (30-37, 39 for default).
-    public var foregroundCode: UInt8 {
+    var foregroundCode: UInt8 {
         30 + rawValue
     }
 
     /// The ANSI code for background color (40-47, 49 for default).
-    public var backgroundCode: UInt8 {
+    var backgroundCode: UInt8 {
         40 + rawValue
     }
 
     /// The ANSI code for bright foreground color (90-97).
-    public var brightForegroundCode: UInt8 {
+    var brightForegroundCode: UInt8 {
         90 + rawValue
     }
 
     /// The ANSI code for bright background color (100-107).
-    public var brightBackgroundCode: UInt8 {
+    var brightBackgroundCode: UInt8 {
         100 + rawValue
     }
 }

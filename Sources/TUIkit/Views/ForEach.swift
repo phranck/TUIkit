@@ -14,7 +14,7 @@
 /// ## Rendering
 ///
 /// `ForEach` has **no standalone rendering capability**. It declares
-/// `body: Never` but does *not* conform to ``Renderable``. On its own,
+/// `body: Never` but does *not* conform to `Renderable`. On its own,
 /// it would produce an empty ``FrameBuffer``.
 ///
 /// In practice, `ForEach` is always used inside a `@ViewBuilder` block
@@ -52,13 +52,13 @@
 /// ```
 public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: View>: View {
     /// The underlying data collection.
-    public let data: Data
+    let data: Data
 
     /// The key path to the unique ID of each element.
-    public let idKeyPath: KeyPath<Data.Element, ID>
+    let idKeyPath: KeyPath<Data.Element, ID>
 
     /// The closure that creates a view for each element.
-    public let content: (Data.Element) -> Content
+    let content: (Data.Element) -> Content
 
     /// Creates a ForEach with an explicit ID key path.
     ///
