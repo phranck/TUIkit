@@ -33,6 +33,9 @@ public struct EmptyView: View {
 /// A view that represents either the true or false branch of a conditional.
 ///
 /// This type is used internally by `ViewBuilder` for if-else statements.
+///
+/// - Important: This is framework infrastructure. Created automatically by
+///   `@ViewBuilder` for `if`/`else` branches. Do not instantiate directly.
 public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
     /// The true branch was executed.
     case trueContent(TrueContent)
@@ -56,14 +59,17 @@ public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
 ///     Text(item.name)
 /// }
 /// ```
+///
+/// - Important: This is framework infrastructure. Created automatically by
+///   `@ViewBuilder` for array content. Do not instantiate directly.
 public struct ViewArray<Element: View>: View {
     /// The contained views.
-    public let elements: [Element]
+    let elements: [Element]
 
     /// Creates a ViewArray from an array of views.
     ///
     /// - Parameter elements: The views this container holds.
-    public init(_ elements: [Element]) {
+    init(_ elements: [Element]) {
         self.elements = elements
     }
 
@@ -108,7 +114,7 @@ public struct AnyView: View {
 // MARK: - AnyView Rendering
 
 extension AnyView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         _render(context)
     }
 }
@@ -116,7 +122,7 @@ extension AnyView: Renderable {
 // MARK: - EmptyView Rendering
 
 extension EmptyView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer()
     }
 }
@@ -124,7 +130,7 @@ extension EmptyView: Renderable {
 // MARK: - ConditionalView Rendering
 
 extension ConditionalView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         switch self {
         case .trueContent(let content):
             return TUIkit.renderToBuffer(content, context: context)
@@ -137,7 +143,7 @@ extension ConditionalView: Renderable {
 // MARK: - ViewArray Rendering
 
 extension ViewArray: Renderable, ChildInfoProvider {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
 

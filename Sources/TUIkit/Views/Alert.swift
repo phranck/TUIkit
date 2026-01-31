@@ -37,16 +37,16 @@
 /// ```
 public struct Alert<Actions: View>: View {
     /// The alert title.
-    public let title: String
+    let title: String
 
     /// The alert message.
-    public let message: String
+    let message: String
 
     /// The shared visual configuration.
-    public let config: ContainerConfig
+    let config: ContainerConfig
 
     /// The action views (typically buttons).
-    public let actions: Actions
+    let actions: Actions
 
     /// Creates an alert with custom action views.
     ///
@@ -87,7 +87,7 @@ public struct Alert<Actions: View>: View {
 // MARK: - Rendering
 
 extension Alert: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let hasActions = !(actions is EmptyView)
         return renderContainer(
             title: title,

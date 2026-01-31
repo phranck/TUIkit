@@ -66,7 +66,7 @@ public struct PreferenceValues: @unchecked Sendable {
     private var storage: [ObjectIdentifier: Any] = [:]
 
     /// Creates empty preference values.
-    public init() {}
+    init() {}
 
     /// Accesses the preference value for the given key.
     public subscript<K: PreferenceKey>(key: K.Type) -> K.Value {
@@ -84,7 +84,7 @@ public struct PreferenceValues: @unchecked Sendable {
     /// Merges another set of preference values into this one.
     ///
     /// - Parameter other: The other preference values to merge.
-    public mutating func merge(_ other: Self) {
+    mutating func merge(_ other: Self) {
         for (key, value) in other.storage {
             storage[key] = value
         }
@@ -94,7 +94,7 @@ public struct PreferenceValues: @unchecked Sendable {
 // MARK: - Preference Storage
 
 /// Thread-local storage for collecting preferences during rendering.
-public final class PreferenceStorage: @unchecked Sendable {
+final class PreferenceStorage: @unchecked Sendable {
     /// Stack of preference values for nested rendering.
     private var stack: [PreferenceValues] = [PreferenceValues()]
 
@@ -102,10 +102,10 @@ public final class PreferenceStorage: @unchecked Sendable {
     private var callbacks: [ObjectIdentifier: [(Any) -> Void]] = [:]
 
     /// Creates a new preference storage.
-    public init() {}
+    init() {}
 
     /// The current preference values.
-    public var current: PreferenceValues {
+    var current: PreferenceValues {
         get { stack.last ?? PreferenceValues() }
         set {
             if stack.isEmpty {
@@ -117,12 +117,12 @@ public final class PreferenceStorage: @unchecked Sendable {
     }
 
     /// Pushes a new preference context.
-    public func push() {
+    func push() {
         stack.append(PreferenceValues())
     }
 
     /// Pops the current preference context and merges into parent.
-    public func pop() -> PreferenceValues {
+    func pop() -> PreferenceValues {
         guard stack.count > 1 else {
             return stack.last ?? PreferenceValues()
         }
@@ -138,7 +138,7 @@ public final class PreferenceStorage: @unchecked Sendable {
     }
 
     /// Sets a preference value.
-    public func setValue<K: PreferenceKey>(_ value: K.Value, forKey key: K.Type) {
+    func setValue<K: PreferenceKey>(_ value: K.Value, forKey key: K.Type) {
         var currentValues = current
         K.reduce(value: &currentValues[key]) { value }
         current = currentValues
@@ -153,7 +153,7 @@ public final class PreferenceStorage: @unchecked Sendable {
     }
 
     /// Registers a callback for preference changes.
-    public func onPreferenceChange<K: PreferenceKey>(
+    func onPreferenceChange<K: PreferenceKey>(
         _ key: K.Type,
         callback: @escaping (K.Value) -> Void
     ) {
@@ -175,7 +175,7 @@ public final class PreferenceStorage: @unchecked Sendable {
     /// Clears all accumulated callbacks and resets the value stack
     /// to a single empty context. Called at the start of each frame
     /// by `RenderLoop.render()` to prevent callback accumulation.
-    public func beginRenderPass() {
+    func beginRenderPass() {
         callbacks.removeAll()
         stack = [PreferenceValues()]
     }
@@ -183,7 +183,7 @@ public final class PreferenceStorage: @unchecked Sendable {
     /// Resets all preference state.
     ///
     /// Called once during app shutdown by `TUIContext.reset()`.
-    public func reset() {
+    func reset() {
         stack = [PreferenceValues()]
         callbacks.removeAll()
     }
@@ -192,20 +192,20 @@ public final class PreferenceStorage: @unchecked Sendable {
 // MARK: - Preference Modifier
 
 /// A modifier that sets a preference value.
-public struct PreferenceModifier<Content: View, K: PreferenceKey>: View {
+struct PreferenceModifier<Content: View, K: PreferenceKey>: View {
     /// The content view.
     let content: Content
 
     /// The preference value to set.
     let value: K.Value
 
-    public var body: Never {
+    var body: Never {
         fatalError("PreferenceModifier renders via Renderable")
     }
 }
 
 extension PreferenceModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Set the preference value
         context.tuiContext.preferences.setValue(value, forKey: K.self)
 
@@ -217,7 +217,7 @@ extension PreferenceModifier: Renderable {
 // MARK: - OnPreferenceChange Modifier
 
 /// A modifier that reacts to preference changes.
-public struct OnPreferenceChangeModifier<Content: View, K: PreferenceKey>: View
+struct OnPreferenceChangeModifier<Content: View, K: PreferenceKey>: View
 where K.Value: Equatable {
     /// The content view.
     let content: Content
@@ -225,13 +225,13 @@ where K.Value: Equatable {
     /// The action to perform when the preference changes.
     let action: (K.Value) -> Void
 
-    public var body: Never {
+    var body: Never {
         fatalError("OnPreferenceChangeModifier renders via Renderable")
     }
 }
 
 extension OnPreferenceChangeModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let prefs = context.tuiContext.preferences
 
         // Register callback for preference changes

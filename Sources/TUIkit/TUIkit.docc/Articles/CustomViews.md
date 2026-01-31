@@ -1,18 +1,17 @@
 # Custom Views
 
-Build your own views by composing existing ones or rendering directly to a frame buffer.
+Build your own views by composing existing ones or creating custom view modifiers.
 
 ## Overview
 
-TUIkit offers three ways to create custom views, each at a different level of abstraction:
+TUIkit offers two ways to create custom views:
 
 | Approach | When to Use | Complexity |
 |----------|-------------|------------|
 | **Composite View** (``View`` with `body`) | Combining existing views into reusable components | Low |
-| **Primitive View** (``View`` + ``Renderable``) | Full control over buffer output, custom layout logic | High |
 | **View Modifier** (``ViewModifier``) | Transforming any view's rendered buffer (padding, background) | Medium |
 
-Most custom views should be **composite views**. Only drop down to `Renderable` when you need pixel-level control over the output buffer.
+Most custom views should be **composite views**. For buffer-level transformations, implement a custom ``ViewModifier``.
 
 ## Composite Views
 
@@ -90,95 +89,33 @@ Section(title: "Settings") {
 }
 ```
 
-## Primitive Views
+### Building Custom Containers
 
-When you need full control over rendering — custom drawing, ANSI escape sequences, or layout algorithms — implement `Renderable` directly:
-
-```swift
-struct ProgressBar: View {
-    let progress: Double
-    let width: Int
-
-    // Required: body must be Never for primitive views
-    var body: Never {
-        fatalError("ProgressBar renders via Renderable")
-    }
-}
-
-extension ProgressBar: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let barWidth = min(width, context.availableWidth)
-        let filled = Int(Double(barWidth) * progress.clamped(to: 0...1))
-        let empty = barWidth - filled
-
-        let bar = String(repeating: "█", count: filled)
-            + String(repeating: "░", count: empty)
-        let label = String(format: " %.0f%%", progress * 100)
-
-        return FrameBuffer(text: bar + label)
-    }
-}
-```
-
-### The Rendering Contract
-
-A `Renderable` view must:
-
-1. Set `body` to `Never` with a `fatalError` — the framework never calls `body` on renderable views
-2. Implement `renderToBuffer(context:)` returning a ``FrameBuffer``
-3. Respect `context.availableWidth` and `context.availableHeight` to stay within bounds
-
-The ``RenderContext`` provides:
-
-| Property | Description |
-|----------|-------------|
-| `terminal` | Terminal capabilities and dimensions |
-| `availableWidth` | Maximum width in columns for this view |
-| `availableHeight` | Maximum height in rows for this view |
-| `environment` | Current ``EnvironmentValues`` (palette, focus manager, etc.) |
-| `tuiContext` | Access to ``TUIContext`` subsystems (preferences, lifecycle, key dispatch) |
-
-### Rendering Child Content
-
-Primitive views that contain children must use the free function `renderToBuffer(_:context:)` to render them:
+For richer containers, compose existing container views like ``Panel``, ``Card``, ``Box``, or ``Dialog``:
 
 ```swift
-struct Indented<Content: View>: View {
-    let indent: Int
+struct SettingsGroup<Content: View>: View {
+    let title: String
     let content: Content
 
-    var body: Never { fatalError("Indented renders via Renderable") }
-}
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
 
-extension Indented: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Reduce available width for children
-        var childContext = context
-        childContext.availableWidth = max(0, context.availableWidth - indent)
-
-        // Render child content
-        let childBuffer = TUIkit.renderToBuffer(content, context: childContext)
-
-        // Prepend indent to each line
-        let prefix = String(repeating: " ", count: indent)
-        var buffer = FrameBuffer()
-        for line in childBuffer.lines {
-            buffer.appendLine(prefix + line)
+    var body: some View {
+        Panel(title, borderStyle: .rounded, titleColor: .palette.accent) {
+            content
         }
-        return buffer
     }
 }
+
+// Usage
+SettingsGroup("Network") {
+    Text("Proxy: none")
+    Text("DNS: auto")
+}
 ```
-
-### The Dispatch Priority
-
-When the framework encounters a view, it checks in this order:
-
-1. **Renderable** — If the view conforms to `Renderable`, call `renderToBuffer(context:)`
-2. **body** — If `Body != Never`, recursively render `view.body`
-3. **Fallback** — Return an empty `FrameBuffer` (no crash, no output)
-
-This means `Renderable` always wins over `body`. That's why primitive views set `body: Never` — it's unreachable by design.
 
 ## View Modifiers
 
@@ -191,9 +128,8 @@ struct HighlightModifier: ViewModifier {
     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         // Transform each line in the buffer
         var result = FrameBuffer()
-        let resolvedColor = color.resolved(with: context.environment.palette)
         for line in buffer.lines {
-            result.appendLine(resolvedColor.applyBackground(to: line))
+            result.appendLine(ANSIRenderer.applyPersistentBackground(to: line, color: color))
         }
         return result
     }
@@ -222,16 +158,15 @@ extension View {
 Text("Important!").highlighted(.yellow)
 ```
 
-### ViewModifier vs. Wrapper View
+### When to Use ViewModifier
 
-TUIkit has two patterns for modifiers in its codebase:
+Use ``ViewModifier`` when your transformation is a pure buffer-to-buffer operation — adding visual effects, changing backgrounds, or adjusting layout after rendering. The ``RenderContext`` gives you access to:
 
-| Pattern | How It Works | Examples |
-|---------|-------------|----------|
-| **ViewModifier protocol** | `modify(buffer:context:)` on the rendered buffer via ``ModifiedView`` | `PaddingModifier`, `BackgroundModifier` |
-| **Wrapper View** | A standalone `View + Renderable` type that renders its content internally | `BorderedView`, `DimmedModifier`, `OverlayModifier` |
-
-Use `ViewModifier` when your transformation is a pure buffer-to-buffer operation (adding padding, changing background). Use a wrapper view when you need to control *how* the child renders (adjusting the context, registering handlers, interacting with subsystems like focus or preferences).
+| Property | Description |
+|----------|-------------|
+| `availableWidth` | Maximum width in columns for this view |
+| `availableHeight` | Maximum height in rows for this view |
+| `environment` | Current ``EnvironmentValues`` (palette, focus manager, etc.) |
 
 ## Type Erasure with AnyView
 
@@ -267,7 +202,6 @@ let view = Text("Hello").asAnyView()
 ### Protocols
 
 - ``View``
-- ``Renderable``
 - ``ViewModifier``
 
 ### Supporting Types

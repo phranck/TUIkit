@@ -52,16 +52,16 @@
 /// ```
 public struct Dialog<Content: View, Footer: View>: View {
     /// The dialog title.
-    public let title: String
+    let title: String
 
     /// The dialog content.
-    public let content: Content
+    let content: Content
 
     /// The footer content (typically buttons).
-    public let footer: Footer?
+    let footer: Footer?
 
     /// The shared visual configuration.
-    public let config: ContainerConfig
+    let config: ContainerConfig
 
     /// Creates a dialog with content and footer.
     ///
@@ -104,7 +104,7 @@ public struct Dialog<Content: View, Footer: View>: View {
 // MARK: - Rendering
 
 extension Dialog: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         renderContainer(
             title: title,
             config: config,

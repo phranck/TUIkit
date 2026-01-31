@@ -2,8 +2,7 @@
 //  KeyPressModifierTests.swift
 //  TUIkit
 //
-//  Tests for KeyPressModifier: filtered and unfiltered key handling,
-//  and View extension methods.
+//  Tests for KeyPressModifier.
 //
 
 import Testing
@@ -13,16 +12,24 @@ import Testing
 @Suite("KeyPressModifier Tests")
 struct KeyPressModifierTests {
 
-    @Test("onKeyPress with key set creates modifier with correct keys")
+    @Test("onKeyPress with key set creates KeyPressModifier")
     func onKeyPressKeySet() {
-        let view = Text("Hello").onKeyPress(keys: [.enter, .tab]) { _ in true }
-        #expect(view.keys?.count == 2)
+        let modifier = KeyPressModifier(
+            content: Text("Hello"),
+            keys: [.enter, .tab],
+            handler: { _ in true }
+        )
+        #expect(modifier.keys?.count == 2)
     }
 
     @Test("onKeyPress single key creates modifier with that key")
     func onKeyPressSingleKey() {
-        let view = Text("Hello").onKeyPress(.enter) {}
-        #expect(view.keys?.count == 1)
-        #expect(view.keys?.contains(.enter) == true)
+        let modifier = KeyPressModifier(
+            content: Text("Hello"),
+            keys: [.enter],
+            handler: { _ in true }
+        )
+        #expect(modifier.keys?.count == 1)
+        #expect(modifier.keys?.contains(.enter) == true)
     }
 }

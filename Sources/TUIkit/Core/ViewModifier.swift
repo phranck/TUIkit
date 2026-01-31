@@ -39,10 +39,13 @@ public protocol ViewModifier {
 /// It is created automatically — users don't instantiate this directly.
 ///
 /// `ModifiedView` is a **primitive view**: it declares `body: Never`
-/// and conforms to ``Renderable``. The rendering system calls
-/// ``Renderable/renderToBuffer(context:)`` which first renders the
+/// and conforms to `Renderable`. The rendering system calls
+/// `renderToBuffer(context:)` which first renders the
 /// wrapped `content`, then applies the modifier's transformation.
 /// The `body` property is never called.
+///
+/// - Important: This is framework infrastructure. Created automatically by
+///   `.modifier()`. Do not instantiate directly.
 public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The original view.
     public let content: Content
@@ -50,7 +53,7 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The modifier to apply.
     public let modifier: Modifier
 
-    /// Never called — rendering is handled by ``Renderable`` conformance.
+    /// Never called — rendering is handled by `Renderable` conformance.
     public var body: Never {
         fatalError("ModifiedView renders via Renderable")
     }
@@ -59,7 +62,7 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
 // MARK: - ModifiedView Rendering
 
 extension ModifiedView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let childBuffer = TUIkit.renderToBuffer(content, context: context)
         return modifier.modify(buffer: childBuffer, context: context)
     }
