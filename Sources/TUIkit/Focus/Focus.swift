@@ -258,7 +258,7 @@ private struct FocusManagerKey: EnvironmentKey {
 extension EnvironmentValues {
     /// The focus manager for managing keyboard focus.
     ///
-    /// Access via `@Environment(\.focusManager)` or `context.environment.focusManager`.
+    /// Access via `context.environment.focusManager` in `renderToBuffer(context:)`.
     public var focusManager: FocusManager {
         get { self[FocusManagerKey.self] }
         set { self[FocusManagerKey.self] = newValue }
