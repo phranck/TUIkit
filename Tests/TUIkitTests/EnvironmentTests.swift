@@ -2,8 +2,8 @@
 //  EnvironmentTests.swift
 //  TUIkit
 //
-//  Tests for EnvironmentValues, EnvironmentStorage (push/pop/withEnvironment),
-//  Environment property wrapper, and EnvironmentModifier.
+//  Tests for EnvironmentValues, Environment property wrapper (deprecated),
+//  and EnvironmentModifier.
 //
 
 import Testing
@@ -65,7 +65,7 @@ struct EnvironmentValuesTests {
         let original = EnvironmentValues()
         let modified = original.setting(\.testString, to: "changed")
         #expect(modified.testString == "changed")
-        #expect(original.testString == "default") // original unchanged
+        #expect(original.testString == "default")  // original unchanged
     }
 
     @Test("setting() preserves other values")
@@ -74,121 +74,19 @@ struct EnvironmentValuesTests {
         env.testInt = 99
         let modified = env.setting(\.testString, to: "new")
         #expect(modified.testString == "new")
-        #expect(modified.testInt == 99) // preserved
-    }
-}
-
-// MARK: - EnvironmentStorage Tests
-
-@Suite("EnvironmentStorage Tests", .serialized)
-struct EnvironmentStorageTests {
-
-    @Test("push and pop restore previous environment")
-    func pushPop() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-        let original = storage.environment
-
-        var modified = EnvironmentValues()
-        modified[TestStringKey.self] = "pushed"
-        storage.push(modified)
-        #expect(storage.environment[TestStringKey.self] == "pushed")
-
-        storage.pop()
-        #expect(storage.environment[TestStringKey.self] == original[TestStringKey.self])
-    }
-
-    @Test("Nested push/pop restores correctly")
-    func nestedPushPop() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-
-        var first = EnvironmentValues()
-        first[TestStringKey.self] = "first"
-        storage.push(first)
-
-        var second = EnvironmentValues()
-        second[TestStringKey.self] = "second"
-        storage.push(second)
-        #expect(storage.environment[TestStringKey.self] == "second")
-
-        storage.pop()
-        #expect(storage.environment[TestStringKey.self] == "first")
-
-        storage.pop()
-    }
-
-    @Test("Pop on empty stack is safe")
-    func popEmptyStack() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-        // Should not crash
-        storage.pop()
-    }
-
-    @Test("withEnvironment scopes environment correctly")
-    func withEnvironment() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-
-        var scoped = EnvironmentValues()
-        scoped[TestStringKey.self] = "scoped"
-
-        let result = storage.withEnvironment(scoped) {
-            storage.environment[TestStringKey.self]
-        }
-        #expect(result == "scoped")
-        #expect(storage.environment[TestStringKey.self] == "default")
-    }
-
-    @Test("reset clears all state")
-    func reset() {
-        let storage = EnvironmentStorage.active
-        var modified = EnvironmentValues()
-        modified[TestStringKey.self] = "dirty"
-        storage.push(modified)
-
-        storage.reset()
-        #expect(storage.environment[TestStringKey.self] == "default")
+        #expect(modified.testInt == 99)  // preserved
     }
 }
 
 // MARK: - Environment Property Wrapper Tests
 
-@Suite("Environment Property Wrapper Tests", .serialized)
+@Suite("Environment Property Wrapper Tests (Deprecated)")
 struct EnvironmentPropertyWrapperTests {
 
-    @Test("@Environment reads current value from shared storage")
-    func readsFromStorage() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-
-        var env = storage.environment
-        env[TestStringKey.self] = "from-storage"
-        storage.environment = env
-
-        let wrapper = Environment(\.testString)
-        #expect(wrapper.wrappedValue == "from-storage")
-
-        // Cleanup
-        storage.reset()
-    }
-
-    @Test("@Environment reflects changes after storage update")
-    func reflectsChanges() {
-        let storage = EnvironmentStorage.active
-        storage.reset()
-
+    @Test("Deprecated @Environment returns default values")
+    func returnsDefaults() {
         let wrapper = Environment(\.testString)
         #expect(wrapper.wrappedValue == "default")
-
-        var env = storage.environment
-        env[TestStringKey.self] = "updated"
-        storage.environment = env
-        #expect(wrapper.wrappedValue == "updated")
-
-        // Cleanup
-        storage.reset()
     }
 }
 
@@ -196,6 +94,4 @@ struct EnvironmentPropertyWrapperTests {
 
 @Suite("EnvironmentModifier Tests")
 struct EnvironmentModifierTests {
-
-
 }

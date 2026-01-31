@@ -122,6 +122,8 @@ public enum ANSIRenderer {
             return ["38", "5", "\(index)"]
         case .rgb(let red, let green, let blue):
             return ["38", "2", "\(red)", "\(green)", "\(blue)"]
+        case .semantic:
+            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
         }
     }
 
@@ -139,6 +141,8 @@ public enum ANSIRenderer {
             return ["48", "5", "\(index)"]
         case .rgb(let red, let green, let blue):
             return ["48", "2", "\(red)", "\(green)", "\(blue)"]
+        case .semantic:
+            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
         }
     }
 

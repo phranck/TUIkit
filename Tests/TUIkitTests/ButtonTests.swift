@@ -16,18 +16,12 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
     let focusManager = FocusManager()
     var environment = EnvironmentValues()
     environment.focusManager = focusManager
-    EnvironmentStorage.active.environment = environment
 
     return RenderContext(
         availableWidth: width,
         availableHeight: height,
         environment: environment
     )
-}
-
-/// Cleans up the environment after a test.
-private func cleanupEnvironment() {
-    EnvironmentStorage.active.reset()
 }
 
 // MARK: - Button Style Tests
@@ -133,7 +127,6 @@ struct ButtonTests {
     @Test("Button renders to buffer")
     func buttonRenders() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let button = Button("OK") {}
         let buffer = renderToBuffer(button, context: context)
@@ -149,7 +142,6 @@ struct ButtonTests {
     @Test("Button with border has proper height")
     func buttonWithBorderHeight() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let button = Button("Test", style: .default) {}
         let buffer = renderToBuffer(button, context: context)
@@ -161,7 +153,6 @@ struct ButtonTests {
     @Test("Plain button has single line")
     func plainButtonSingleLine() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let button = Button("Test", style: .plain) {}
         let buffer = renderToBuffer(button, context: context)
@@ -173,7 +164,6 @@ struct ButtonTests {
     @Test("Focused button is rendered bold without arrow indicator")
     func focusedButtonIsBold() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let button = Button("Focus Me", focusID: "focused-button") {}
         let buffer = renderToBuffer(button, context: context)
@@ -258,7 +248,6 @@ struct ButtonRowTests {
     @Test("ButtonRow can be created with buttons")
     func buttonRowCreation() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let row = ButtonRow {
             Button("Cancel") {}
@@ -276,7 +265,6 @@ struct ButtonRowTests {
     @Test("ButtonRow with custom spacing")
     func buttonRowSpacing() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let row = ButtonRow(spacing: 5) {
             Button("A", style: .plain) {}
@@ -296,7 +284,6 @@ struct ButtonRowTests {
     func emptyButtonRow() {
         let row = ButtonRow {}
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let buffer = renderToBuffer(row, context: context)
 
@@ -306,7 +293,6 @@ struct ButtonRowTests {
     @Test("ButtonRow renders buttons horizontally")
     func buttonRowHorizontal() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let row = ButtonRow {
             Button("First", style: .plain) {}
@@ -323,7 +309,6 @@ struct ButtonRowTests {
     @Test("ButtonRow normalizes button heights")
     func buttonRowNormalizesHeights() {
         let context = createTestContext()
-        defer { cleanupEnvironment() }
 
         let row = ButtonRow {
             Button("Border", style: .default) {}  // 3 lines with border

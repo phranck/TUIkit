@@ -171,12 +171,27 @@ public struct TextStyle: Sendable {
 
     /// Creates a default TextStyle with no formatting.
     public init() {}
+
+    /// Resolves any semantic colors in this style against the given palette.
+    ///
+    /// Non-semantic colors are left unchanged. Call this before passing
+    /// the style to ``ANSIRenderer``.
+    ///
+    /// - Parameter palette: The palette to resolve semantic colors against.
+    /// - Returns: A copy with all colors resolved to concrete values.
+    public func resolved(with palette: any Palette) -> TextStyle {
+        var copy = self
+        copy.foregroundColor = foregroundColor?.resolve(with: palette)
+        copy.backgroundColor = backgroundColor?.resolve(with: palette)
+        return copy
+    }
 }
 
 // MARK: - Text Rendering
 
 extension Text: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        FrameBuffer(text: ANSIRenderer.render(content, with: style))
+        let resolvedStyle = style.resolved(with: context.environment.palette)
+        return FrameBuffer(text: ANSIRenderer.render(content, with: resolvedStyle))
     }
 }

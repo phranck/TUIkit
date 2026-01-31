@@ -79,111 +79,14 @@ public struct EnvironmentValues: @unchecked Sendable {
     }
 }
 
-// MARK: - Current Environment
-
-/// Thread-local storage for the current environment during rendering.
-///
-/// This allows views to access environment values without explicit passing.
-/// The environment is set by the rendering system before rendering each view.
-///
-/// `AppRunner` creates and manages the active instance. Property wrappers
-/// like ``Environment`` and view modifiers like ``EnvironmentModifier``
-/// access it through ``active``.
-public final class EnvironmentStorage: @unchecked Sendable {
-    /// The active environment storage for the current application.
-    ///
-    /// Set by `AppRunner` during initialization. The ``Environment``
-    /// property wrapper, ``FocusState``, and ``EnvironmentModifier``
-    /// all read and write through this property.
-    public nonisolated(unsafe) static var active = EnvironmentStorage()
-
-    /// Lock protecting all mutable state.
-    private let lock = NSLock()
-
-    /// The current environment values.
-    private var current = EnvironmentValues()
-
-    /// Stack of environments for nested rendering.
-    private var stack: [EnvironmentValues] = []
-
-    /// Creates a new environment storage instance.
-    public init() {}
-
-    /// The current environment values.
-    public var environment: EnvironmentValues {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return current
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            current = newValue
-        }
-    }
-
-    /// Pushes a new environment onto the stack.
-    ///
-    /// - Parameter environment: The environment to push.
-    public func push(_ environment: EnvironmentValues) {
-        lock.lock()
-        defer { lock.unlock() }
-        stack.append(current)
-        current = environment
-    }
-
-    /// Pops the current environment and restores the previous one.
-    public func pop() {
-        lock.lock()
-        defer { lock.unlock() }
-        if let previous = stack.popLast() {
-            current = previous
-        }
-    }
-
-    /// Executes a closure with the given environment.
-    ///
-    /// - Parameters:
-    ///   - environment: The environment to use.
-    ///   - body: The closure to execute.
-    /// - Returns: The result of the closure.
-    public func withEnvironment<T>(_ environment: EnvironmentValues, _ body: () -> T) -> T {
-        push(environment)
-        defer { pop() }
-        return body()
-    }
-
-    /// Resets the environment to its initial state.
-    public func reset() {
-        lock.lock()
-        defer { lock.unlock() }
-        current = EnvironmentValues()
-        stack.removeAll()
-    }
-}
-
 // MARK: - Environment Property Wrapper
 
 /// A property wrapper that reads a value from the environment.
 ///
-/// Use this property wrapper to access environment values in your views.
-///
-/// # Example
-///
-/// ```swift
-/// struct MyView: View {
-///     @Environment(\.statusBar) var statusBar
-///
-///     var body: some View {
-///         Button("Add Item") {
-///             statusBar.push(context: "action") {
-///                 StatusBarItem(shortcut: "⎋", label: "cancel")
-///             }
-///         }
-///     }
-/// }
-/// ```
+/// - Important: Deprecated. Use `context.environment` in ``Renderable/renderToBuffer(context:)``
+///   instead. The `@Environment` wrapper relied on a global singleton that has been removed.
+///   Environment values now flow exclusively through ``RenderContext``.
+@available(*, deprecated, message: "Use context.environment in renderToBuffer(context:) instead")
 @propertyWrapper
 public struct Environment<Value>: @unchecked Sendable {
     /// The key path to the environment value.
@@ -196,9 +99,9 @@ public struct Environment<Value>: @unchecked Sendable {
         self.keyPath = keyPath
     }
 
-    /// The current value from the environment.
+    /// Returns the default value for the key — the backing singleton has been removed.
     public var wrappedValue: Value {
-        EnvironmentStorage.active.environment[keyPath: keyPath]
+        EnvironmentValues()[keyPath: keyPath]
     }
 }
 
@@ -229,13 +132,11 @@ public struct EnvironmentModifier<Content: View, V>: View {
 
 extension EnvironmentModifier: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Create modified environment
+        // Create modified environment and render content with it.
+        // The modified context carries the environment through the render tree —
+        // no singleton sync needed.
         let modifiedEnvironment = context.environment.setting(keyPath, to: value)
         let modifiedContext = context.withEnvironment(modifiedEnvironment)
-
-        // Render content with modified environment
-        return EnvironmentStorage.active.withEnvironment(modifiedEnvironment) {
-            TUIkit.renderToBuffer(content, context: modifiedContext)
-        }
+        return TUIkit.renderToBuffer(content, context: modifiedContext)
     }
 }
