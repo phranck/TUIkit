@@ -33,7 +33,7 @@ struct MyApp: App {
 ### Key Features
 
 - **Declarative syntax** — Build UIs with `VStack`, `HStack`, `Text`, `Button`, and more
-- **SwiftUI-like API** — `@State`, `@Environment`, `@ViewBuilder`, modifiers
+- **SwiftUI-like API** — `@State`, `@ViewBuilder`, environment values, modifiers
 - **Theming system** — 5 built-in phosphor themes with full RGB color support
 - **Focus management** — Keyboard-driven navigation between interactive elements
 - **Status bar** — Configurable shortcut bar with context stack
@@ -46,6 +46,7 @@ struct MyApp: App {
 
 - <doc:GettingStarted>
 - <doc:Architecture>
+- <doc:AppLifecycle>
 
 ### App Structure
 
@@ -86,10 +87,8 @@ struct MyApp: App {
 
 ### Environment
 
-- ``Environment``
 - ``EnvironmentKey``
 - ``EnvironmentValues``
-- ``EnvironmentStorage``
 
 ### Theming
 
@@ -97,7 +96,6 @@ struct MyApp: App {
 - ``Palette``
 - ``ThemeManager``
 - ``PaletteRegistry``
-- ``PaletteColors``
 - ``GreenPalette``
 - ``AmberPalette``
 - ``WhitePalette``
@@ -118,7 +116,6 @@ struct MyApp: App {
 ### Appearance
 
 - ``Appearance``
-- ``AppearanceManager``
 - ``BorderStyle``
 
 ### Focus System
