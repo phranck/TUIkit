@@ -45,6 +45,12 @@ struct PaletteDefaultTests {
         #expect(palette.foregroundSecondary == palette.foreground)
     }
 
+    @Test("Defaults derive foregroundPlaceholder from foregroundTertiary")
+    func defaultForegroundPlaceholder() {
+        let palette = MinimalPalette()
+        #expect(palette.foregroundPlaceholder == palette.foregroundTertiary)
+    }
+
     @Test("Defaults derive accentSecondary from accent")
     func defaultAccentSecondary() {
         let palette = MinimalPalette()

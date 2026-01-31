@@ -25,6 +25,7 @@ public struct VioletPalette: Palette {
     public let foreground: Color
     public let foregroundSecondary: Color
     public let foregroundTertiary: Color
+    public let foregroundPlaceholder: Color
 
     // Accent colors
     public let accent: Color
@@ -38,19 +39,12 @@ public struct VioletPalette: Palette {
 
     // UI elements
     public let border: Color
-    public let borderFocused: Color
-    public let selection: Color
-    public let selectionBackground: Color
 
     // Additional backgrounds
     public let statusBarBackground: Color
     public let appHeaderBackground: Color
     public let overlayBackground: Color
     public let buttonBackground: Color
-
-    // Status bar
-    public let statusBarForeground: Color
-    public let statusBarHighlight: Color
 
     public init() {
         let hue = Self.baseHue
@@ -64,6 +58,7 @@ public struct VioletPalette: Palette {
         self.foreground = Color.hsl(hue, 80, 70)
         self.foregroundSecondary = Color.hsl(hue, 70, 55)
         self.foregroundTertiary = Color.hsl(hue, 60, 40)
+        self.foregroundPlaceholder = Color.hsl(hue, 50, 28)
 
         // Accents: lighter/brighter variant
         self.accent = Color.hsl(hue, 85, 78)
@@ -77,19 +72,12 @@ public struct VioletPalette: Palette {
 
         // UI elements
         self.border = Color.hsl(hue, 40, 25)
-        self.borderFocused = Color.hsl(hue, 80, 70)
-        self.selection = Color.hsl(hue, 85, 78)
-        self.selectionBackground = Color.hsl(hue, 50, 18)
 
         // Additional backgrounds
         self.statusBarBackground = Color.hsl(hue, 35, 8)
         self.appHeaderBackground = Color.hsl(hue, 35, 7)  // Same as cap
         self.overlayBackground = Color.hsl(hue, 30, 3)  // Same as background
         self.buttonBackground = Color.hsl(hue, 45, 15)
-
-        // Status bar
-        self.statusBarForeground = Color.hsl(hue, 75, 65)
-        self.statusBarHighlight = Color.hsl(hue, 85, 78)
     }
 
     /// Wraps a hue value to the 0–360 range.
