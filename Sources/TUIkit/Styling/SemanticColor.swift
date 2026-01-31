@@ -45,15 +45,6 @@ enum SemanticColor: String, Sendable, Equatable {
 
     // UI Elements
     case border
-    case borderFocused
-    case separator
-    case selection
-    case selectionBackground
-    case disabled
-
-    // Status Bar
-    case statusBarForeground
-    case statusBarHighlight
 
     /// Resolves this token to a concrete color using the given palette.
     ///
@@ -79,13 +70,6 @@ enum SemanticColor: String, Sendable, Equatable {
         case .error: palette.error
         case .info: palette.info
         case .border: palette.border
-        case .borderFocused: palette.borderFocused
-        case .separator: palette.separator
-        case .selection: palette.selection
-        case .selectionBackground: palette.selectionBackground
-        case .disabled: palette.disabled
-        case .statusBarForeground: palette.statusBarForeground
-        case .statusBarHighlight: palette.statusBarHighlight
         }
     }
 }
