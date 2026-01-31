@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -25,19 +24,21 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 const STORAGE_KEY = "tuikit-theme";
 
+/**
+ * Reads the theme that the blocking script already applied to the DOM.
+ * Falls back to "amber" if nothing is set yet (SSR or first visit).
+ */
+function getInitialTheme(): Theme {
+  if (typeof document !== "undefined") {
+    const attr = document.documentElement.getAttribute("data-theme") as Theme | null;
+    if (attr && themes.includes(attr)) return attr;
+  }
+  return "amber";
+}
+
 /** Provides theme state and applies it to the document root via data-theme attribute. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("amber");
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (stored && themes.includes(stored)) {
-      setThemeState(stored);
-      document.documentElement.setAttribute("data-theme", stored);
-    } else {
-      document.documentElement.setAttribute("data-theme", "amber");
-    }
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
