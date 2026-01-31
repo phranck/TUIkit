@@ -49,9 +49,8 @@ public protocol Cyclable: Sendable {
 /// # Usage
 ///
 /// ```swift
-/// // Access the palette manager via the environment
-/// @Environment(\.paletteManager) var paletteManager
-///
+/// // Access the palette manager via context.environment
+/// let paletteManager = context.environment.paletteManager
 /// paletteManager.cycleNext()
 /// paletteManager.setCurrent(AmberPalette())
 /// let name = paletteManager.currentName

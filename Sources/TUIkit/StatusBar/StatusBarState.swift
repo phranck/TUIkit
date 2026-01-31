@@ -33,17 +33,11 @@ public enum QuitBehavior: Sendable {
 /// # Usage
 ///
 /// ```swift
-/// struct MyView: View {
-///     @Environment(\.statusBar) var statusBar
-///
-///     var body: some View {
-///         Button("Action") {
-///             statusBar.setItems([
-///                 StatusBarItem(shortcut: "⎋", label: "cancel")
-///             ])
-///         }
-///     }
-/// }
+/// // In renderToBuffer(context:):
+/// let statusBar = context.environment.statusBar
+/// statusBar.setItems([
+///     StatusBarItem(shortcut: "⎋", label: "cancel")
+/// ])
 /// ```
 public final class StatusBarState: @unchecked Sendable {
     // MARK: - User Items
@@ -343,8 +337,7 @@ extension EnvironmentValues {
     /// Use this to set status bar items from within your views:
     ///
     /// ```swift
-    /// @Environment(\.statusBar) var statusBar
-    ///
+    /// let statusBar = context.environment.statusBar
     /// statusBar.setItems([
     ///     StatusBarItem(shortcut: "q", label: "quit")
     /// ])
