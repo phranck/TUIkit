@@ -114,12 +114,9 @@ Available semantic tokens include:
 | `.palette.foregroundSecondary` | Secondary / dimmed text |
 | `.palette.accent` | Highlighted elements, titles |
 | `.palette.border` | Container borders |
-| `.palette.borderFocused` | Focused element borders |
 | `.palette.containerBodyBackground` | Container body / content area background |
 | `.palette.containerCapBackground` | Container header / footer background |
 | `.palette.success` / `.warning` / `.error` / `.info` | Status indicators |
-| `.palette.selection` / `.selectionBackground` | Selected items |
-| `.palette.disabled` | Inactive elements |
 
 ### In renderToBuffer (with RenderContext)
 
