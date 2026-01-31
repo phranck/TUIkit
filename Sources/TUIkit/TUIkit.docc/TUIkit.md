@@ -47,12 +47,24 @@ struct MyApp: App {
 - <doc:GettingStarted>
 - <doc:Architecture>
 - <doc:AppLifecycle>
+- <doc:RenderCycle>
+
+### Guides
+
+- <doc:StateManagement>
+- <doc:ThemingGuide>
+- <doc:FocusSystem>
+- <doc:StatusBarGuide>
+- <doc:AppearanceAndColors>
+- <doc:Preferences>
+- <doc:CustomViews>
 
 ### App Structure
 
 - ``App``
 - ``Scene``
 - ``WindowGroup``
+- ``renderOnce(content:)``
 
 ### Views
 
@@ -62,6 +74,7 @@ struct MyApp: App {
 - ``Menu``
 - ``Alert``
 - ``Dialog``
+- ``AnyView``
 
 ### Layout
 
@@ -70,6 +83,9 @@ struct MyApp: App {
 - ``ZStack``
 - ``Spacer``
 - ``ForEach``
+- ``HorizontalAlignment``
+- ``VerticalAlignment``
+- ``Alignment``
 
 ### Containers
 
@@ -77,10 +93,11 @@ struct MyApp: App {
 - ``Card``
 - ``Panel``
 - ``ContainerView``
+- ``ContainerConfig``
+- ``ContainerStyle``
 
 ### State Management
 
-- <doc:StateManagement>
 - ``State``
 - ``Binding``
 - ``AppState``
@@ -90,9 +107,13 @@ struct MyApp: App {
 - ``EnvironmentKey``
 - ``EnvironmentValues``
 
+### Preference System
+
+- ``PreferenceKey``
+- ``PreferenceValues``
+
 ### Theming
 
-- <doc:ThemingGuide>
 - ``Palette``
 - ``ThemeManager``
 - ``PaletteRegistry``
@@ -101,17 +122,22 @@ struct MyApp: App {
 - ``WhitePalette``
 - ``RedPalette``
 - ``NCursesPalette``
+- ``GeneratedPalette``
 
 ### Colors
 
 - ``Color``
 - ``ANSIColor``
+- ``SemanticColor``
+- ``TextStyle``
 
 ### View Composition
 
 - ``ViewBuilder``
 - ``ViewModifier``
 - ``ModifiedView``
+- ``EdgeInsets``
+- ``Edge``
 
 ### Appearance
 
@@ -121,6 +147,8 @@ struct MyApp: App {
 ### Focus System
 
 - ``FocusManager``
+- ``FocusState``
+- ``Focusable``
 
 ### Status Bar
 
@@ -130,10 +158,12 @@ struct MyApp: App {
 - ``StatusBarItemProtocol``
 - ``StatusBarStyle``
 - ``StatusBarAlignment``
+- ``Shortcut``
 
 ### Input Handling
 
 - ``KeyEvent``
+- ``Key``
 - ``QuitBehavior``
 
 ### Rendering
@@ -141,6 +171,7 @@ struct MyApp: App {
 - ``Renderable``
 - ``FrameBuffer``
 - ``RenderContext``
+- ``Terminal``
 
 ### Persistence
 
