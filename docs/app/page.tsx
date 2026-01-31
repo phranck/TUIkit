@@ -253,34 +253,24 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-center">
           <span className="text-base text-muted">
-            Made with ❤️ in Bregenz at Lake Constance
+            Made with ❤️ in Bregenz
           </span>
-          <div className="flex items-center gap-6 text-base text-muted">
-            <a
-              href="/documentation/tuikit"
-              className="transition-colors hover:text-foreground"
-            >
-              Docs
-            </a>
-            <a
-              href="https://github.com/phranck/TUIkit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-foreground"
-            >
-              GitHub
-            </a>
-            <a
-              href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-foreground"
-            >
-              CC BY-NC-SA 4.0
-            </a>
-          </div>
+          <span className="text-base text-muted">
+            at Lake Constance
+          </span>
+          <span className="text-base text-muted">
+            Austria
+          </span>
+          <a
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 text-xs text-muted/70 transition-colors hover:text-foreground"
+          >
+            CC BY-NC-SA 4.0
+          </a>
         </div>
       </footer>
     </div>
