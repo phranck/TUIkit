@@ -31,8 +31,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  /** Inline script that runs before first paint to prevent theme flash (FOUC). */
+  const themeInitScript = `
+    (function() {
+      try {
+        var stored = localStorage.getItem('tuikit-theme');
+        if (stored && ['green','amber','white','red'].includes(stored)) {
+          document.documentElement.setAttribute('data-theme', stored);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'amber');
+        }
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'amber');
+      }
+    })();
+  `;
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${geistMono.variable} antialiased`}
       >
