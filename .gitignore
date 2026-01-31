@@ -10,9 +10,10 @@ DerivedData/
 # DocC generated output
 /docs-output/
 
-# VitePress and dependencies
+# Next.js landing page
 docs/node_modules/
-docs/.vitepress/dist/
+docs/.next/
+docs/out/
 
 # Claude Code
 .claude/
