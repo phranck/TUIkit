@@ -45,7 +45,7 @@
 ///   and set `body: Never`.
 /// - **Warning**: A view with `body: Never` that does *not* conform to
 ///   `Renderable` will silently render as empty. There is no runtime error.
-public protocol Renderable {
+protocol Renderable {
     /// Renders this view into a ``FrameBuffer``.
     ///
     /// Called by the free function ``renderToBuffer(_:context:)`` when
@@ -61,12 +61,13 @@ public protocol Renderable {
 /// The context for rendering a view.
 ///
 /// Contains layout constraints, terminal information, environment values,
-/// and the central ``TUIContext`` that views need to determine their size,
+/// and the central `TUIContext` that views need to determine their size,
 /// content, and access framework services.
+///
+/// - Important: This is framework infrastructure passed to
+///   ``ViewModifier/modify(buffer:context:)``. Most developers only need
+///   ``availableWidth``, ``availableHeight``, and ``environment``.
 public struct RenderContext {
-    /// The target terminal.
-    public let terminal: Terminal
-
     /// The available width in characters.
     public var availableWidth: Int
 
@@ -76,11 +77,14 @@ public struct RenderContext {
     /// The environment values for this render pass.
     public var environment: EnvironmentValues
 
+    /// The target terminal.
+    let terminal: Terminal
+
     /// The central dependency container for framework services.
     ///
     /// Provides access to lifecycle tracking, key event dispatch,
     /// and preference storage without relying on singletons.
-    public let tuiContext: TUIContext
+    let tuiContext: TUIContext
 
     /// Creates a new RenderContext.
     ///
@@ -90,7 +94,7 @@ public struct RenderContext {
     ///   - availableHeight: The available height (defaults to terminal height).
     ///   - environment: The environment values (defaults to empty).
     ///   - tuiContext: The TUI context (defaults to a fresh instance).
-    public init(
+    init(
         terminal: Terminal = Terminal(),
         availableWidth: Int? = nil,
         availableHeight: Int? = nil,
@@ -108,7 +112,7 @@ public struct RenderContext {
     ///
     /// - Parameter environment: The new environment values.
     /// - Returns: A new RenderContext with the updated environment.
-    public func withEnvironment(_ environment: EnvironmentValues) -> Self {
+    func withEnvironment(_ environment: EnvironmentValues) -> Self {
         Self(
             terminal: terminal,
             availableWidth: availableWidth,
@@ -153,7 +157,7 @@ public struct RenderContext {
 ///   - view: The view to render.
 ///   - context: The rendering context with layout constraints.
 /// - Returns: A ``FrameBuffer`` containing the rendered terminal output.
-public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
+func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     // Priority 1: Direct rendering via Renderable protocol
     if let renderable = view as? Renderable {
         return renderable.renderToBuffer(context: context)

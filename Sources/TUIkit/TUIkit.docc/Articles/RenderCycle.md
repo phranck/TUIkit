@@ -28,15 +28,15 @@ Each call to `RenderLoop.render()` executes these steps in order:
 
 Three subsystems are reset at the start of every frame:
 
-- **``KeyEventDispatcher``** — All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
-- **``PreferenceStorage``** — All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
+- **`KeyEventDispatcher`** — All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
+- **`PreferenceStorage`** — All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
 - **``FocusManager``** — All focus registrations are cleared. Focusable views re-register during rendering.
 
 This ensures that views which disappeared between frames don't leave stale handlers or registrations behind.
 
 ### Step 2: Begin Lifecycle Tracking
 
-The ``LifecycleManager`` prepares for a new frame by clearing its `currentRenderTokens` set. As views render, they add their tokens to this set. After rendering, the manager compares it to the previous frame's tokens to detect which views appeared or disappeared.
+The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. As views render, they add their tokens to this set. After rendering, the manager compares it to the previous frame's tokens to detect which views appeared or disappeared.
 
 ### Step 3: Build Environment
 
@@ -61,11 +61,11 @@ A ``RenderContext`` bundles everything a view needs to render:
 
 | Property | What |
 |----------|------|
-| `terminal` | The ``Terminal`` instance for size queries |
+| `terminal` | The `Terminal` instance for size queries |
 | `availableWidth` | Terminal width (mutable — containers reduce this for children) |
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
-| `tuiContext` | The ``TUIContext`` (lifecycle, key dispatch, preferences) |
+| `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences) |
 
 The context is passed down the view tree. Each view can create a modified copy for its children — for example, a border reduces `availableWidth` by 2 before rendering its content.
 
@@ -83,7 +83,7 @@ The buffer lines are then written to the terminal row by row — each line padde
 
 ### Step 7: End Lifecycle Tracking
 
-The ``LifecycleManager`` compares the current frame's tokens with the previous frame's:
+The `LifecycleManager` compares the current frame's tokens with the previous frame's:
 
 - **Disappeared views** — tokens present last frame but absent now. Their `onDisappear` callbacks fire, and their tokens are removed from the appeared set (allowing future `onAppear` if they return).
 - **Visible views** — the current token set becomes the baseline for the next frame.
@@ -107,7 +107,7 @@ TUIkit has two ways for a view to produce output:
 
 ### Path 1: Direct Rendering (Renderable)
 
-Views that conform to ``Renderable`` implement `renderToBuffer(context:)` and produce a ``FrameBuffer`` directly. Their `body` property is **never called**.
+Views that conform to `Renderable` implement `renderToBuffer(context:)` and produce a ``FrameBuffer`` directly. Their `body` property is **never called**.
 
 This path is used by:
 - **Leaf views** — ``Text``, ``Spacer``, `Divider`, ``EmptyView``
@@ -193,7 +193,7 @@ RenderLoop.buildEnvironment()
     → Siblings and parents see the original (copy semantics)
 ```
 
-The ``EnvironmentModifier`` (created by `.environment(_:_:)`) works by:
+The `EnvironmentModifier` (created by `.environment(_:_:)`) works by:
 
 1. Creating a new `EnvironmentValues` with the modified key
 2. Creating a new `RenderContext` with that environment via `context.withEnvironment()`
@@ -205,11 +205,11 @@ There is no global environment — everything flows through the context paramete
 
 Preferences flow **bottom-up** — the reverse of environment values. Child views set values that parent views observe.
 
-``PreferenceStorage`` uses a stack-based collection mechanism:
+`PreferenceStorage` uses a stack-based collection mechanism:
 
-1. ``OnPreferenceChangeModifier`` calls `push()` — creates a new collection scope
-2. Its child tree renders, and ``PreferenceModifier`` calls `setValue()` on the current scope
-3. ``OnPreferenceChangeModifier`` calls `pop()` — merges collected values into the parent scope and fires the callback
+1. `OnPreferenceChangeModifier` calls `push()` — creates a new collection scope
+2. Its child tree renders, and `PreferenceModifier` calls `setValue()` on the current scope
+3. `OnPreferenceChangeModifier` calls `pop()` — merges collected values into the parent scope and fires the callback
 
 The `reduce(value:nextValue:)` function on ``PreferenceKey`` controls how multiple values from different children are combined. The default behavior: last value wins.
 
@@ -236,7 +236,7 @@ public protocol ViewModifier {
 
 More complex modifiers are full `View + Renderable` implementations that control when and how their content renders:
 
-- **`BorderedView`** — Reduces `availableWidth` by 2, renders content, adds border characters via ``BorderRenderer``
+- **`BorderedView`** — Reduces `availableWidth` by 2, renders content, adds border characters via `BorderRenderer`
 - **`FlexibleFrameView`** — Modifies `availableWidth`/`availableHeight` before rendering, applies min/max constraints and alignment after
 - **`OverlayModifier`** — Renders base and overlay separately, composites via `FrameBuffer.composited(with:at:)`
 - **`DimmedModifier`** — Renders content, then applies ANSI dim code to every line
@@ -244,7 +244,7 @@ More complex modifiers are full `View + Renderable` implementations that control
 
 ## Lifecycle Tracking
 
-The ``LifecycleManager`` tracks view visibility across frames using unique tokens (UUIDs):
+The `LifecycleManager` tracks view visibility across frames using unique tokens (UUIDs):
 
 ### onAppear
 

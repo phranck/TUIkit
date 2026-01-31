@@ -10,7 +10,7 @@ The system mirrors SwiftUI's preference API and consists of three parts:
 
 - **``PreferenceKey``** — Protocol that defines a named value type with a default and a reduce strategy
 - **``PreferenceValues``** — Type-safe storage that holds all preference values for a scope
-- **``PreferenceStorage``** — Stack-based collector that manages preference contexts per render pass
+- **`PreferenceStorage`** — Stack-based collector that manages preference contexts per render pass
 
 A built-in example is ``NavigationTitleKey``: a child view sets `.navigationTitle("Settings")`, and the enclosing navigation container reads that preference to render the title bar.
 

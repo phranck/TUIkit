@@ -43,7 +43,7 @@ Users can press `a` to cycle through appearances. The ``ThemeManager`` handles t
 
 ### Custom Appearances
 
-Register additional appearances with the ``AppearanceRegistry``:
+Register additional appearances with the `AppearanceRegistry`:
 
 ```swift
 let custom = Appearance(
@@ -94,7 +94,7 @@ let darker = color.darker(by: 0.3)    // 30% darker
 
 ## Semantic Colors
 
-``SemanticColor`` provides palette-aware color tokens that resolve at render time. This is the bridge between the color system and the theming system.
+`SemanticColor` provides palette-aware color tokens that resolve at render time. This is the bridge between the color system and the theming system.
 
 ### In View Bodies (no RenderContext)
 

@@ -71,19 +71,19 @@
 /// ```
 public struct Card<Content: View, Footer: View>: View {
     /// The card title (optional).
-    public let title: String?
+    let title: String?
 
     /// The content of the card.
-    public let content: Content
+    let content: Content
 
     /// The footer content (optional).
-    public let footer: Footer?
+    let footer: Footer?
 
     /// The shared visual configuration.
-    public let config: ContainerConfig
+    let config: ContainerConfig
 
     /// The background color (nil for transparent).
-    public let backgroundColor: Color?
+    let backgroundColor: Color?
 
     /// Creates a card with all options including footer.
     ///
@@ -129,7 +129,7 @@ public struct Card<Content: View, Footer: View>: View {
 // MARK: - Rendering
 
 extension Card: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Wrap content with background if specified
         let bodyContent: AnyView
         if let bgColor = backgroundColor {
