@@ -2,6 +2,7 @@ import Image from "next/image";
 import CloudBackground from "./components/CloudBackground";
 import CodePreview from "./components/CodePreview";
 import FeatureCard from "./components/FeatureCard";
+import HeroTerminal from "./components/HeroTerminal";
 import Icon from "./components/Icon";
 import PackageBadge from "./components/PackageBadge";
 import ThemeSwitcher from "./components/ThemeSwitcher";
@@ -50,14 +51,9 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-40 pb-24 text-center">
-        <Image
-          src="/tuikit-logo.png"
-          alt="TUIkit Logo"
-          width={200}
-          height={200}
-          className="mb-10 rounded-3xl"
-          priority
-        />
+        <div className="mb-10">
+          <HeroTerminal />
+        </div>
 
         <h1
           className="mb-6 max-w-4xl text-5xl leading-tight tracking-wide transition-all duration-500 md:text-7xl"
