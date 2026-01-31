@@ -38,29 +38,29 @@ struct GreenPaletteTests {
     }
 
     @Test("Green palette backgrounds get progressively brighter from app to container to buttons")
-    func greenBackgroundLuminanceOrder() {
+    func greenBackgroundLuminanceOrder() throws {
         let palette = GreenPalette()
-        let bgLum = try! #require(relativeLuminance(of: palette.background))
-        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+        let bgLum = try #require(relativeLuminance(of: palette.background))
+        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
 
-        // App background must be darkest
         #expect(bgLum < capLum, "background should be darker than containerCapBackground")
         #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
-        // Button background should be brighter than cap
         #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
     }
 
-    @Test("Green palette foregrounds get progressively dimmer")
-    func greenForegroundLuminanceOrder() {
+    @Test("Green palette foregrounds get progressively dimmer including placeholder")
+    func greenForegroundLuminanceOrder() throws {
         let palette = GreenPalette()
-        let fgLum = try! #require(relativeLuminance(of: palette.foreground))
-        let fgSecLum = try! #require(relativeLuminance(of: palette.foregroundSecondary))
-        let fgTerLum = try! #require(relativeLuminance(of: palette.foregroundTertiary))
+        let fgLum = try #require(relativeLuminance(of: palette.foreground))
+        let fgSecLum = try #require(relativeLuminance(of: palette.foregroundSecondary))
+        let fgTerLum = try #require(relativeLuminance(of: palette.foregroundTertiary))
+        let fgPlaceLum = try #require(relativeLuminance(of: palette.foregroundPlaceholder))
 
         #expect(fgLum > fgSecLum, "foreground should be brighter than foregroundSecondary")
         #expect(fgSecLum > fgTerLum, "foregroundSecondary should be brighter than foregroundTertiary")
+        #expect(fgTerLum > fgPlaceLum, "foregroundTertiary should be brighter than foregroundPlaceholder")
     }
 
     @Test("Green palette has distinct accent colors")
@@ -137,12 +137,12 @@ struct VioletPaletteTests {
     }
 
     @Test("Violet palette backgrounds get progressively brighter from app to container to buttons")
-    func violetBackgroundLuminanceOrder() {
+    func violetBackgroundLuminanceOrder() throws {
         let palette = VioletPalette()
-        let bgLum = try! #require(relativeLuminance(of: palette.background))
-        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+        let bgLum = try #require(relativeLuminance(of: palette.background))
+        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
 
         #expect(bgLum < capLum, "background should be darker than containerCapBackground")
         #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
@@ -171,12 +171,12 @@ struct BluePaletteTests {
     }
 
     @Test("Blue palette backgrounds get progressively brighter from app to container to buttons")
-    func blueBackgroundLuminanceOrder() {
+    func blueBackgroundLuminanceOrder() throws {
         let palette = BluePalette()
-        let bgLum = try! #require(relativeLuminance(of: palette.background))
-        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+        let bgLum = try #require(relativeLuminance(of: palette.background))
+        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
 
         #expect(bgLum < capLum, "background should be darker than containerCapBackground")
         #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
