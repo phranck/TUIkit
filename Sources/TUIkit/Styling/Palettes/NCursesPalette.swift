@@ -28,7 +28,6 @@ public struct NCursesPalette: Palette {
     public let error = Color.red
     public let info = Color.cyan
     public let border = Color.white
-    public let disabled = Color.brightBlack
     public let statusBarBackground = Color.blue
     public let appHeaderBackground = Color.brightBlack
     public let overlayBackground = Color.black

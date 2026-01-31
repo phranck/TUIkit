@@ -147,9 +147,9 @@ internal struct RenderLoop<A: App> {
         let palette = buildEnvironment().palette
         let highlightColor =
             statusBar.highlightColor == .cyan
-            ? palette.statusBarHighlight
+            ? palette.accent
             : statusBar.highlightColor
-        let labelColor = statusBar.labelColor ?? palette.statusBarForeground
+        let labelColor = statusBar.labelColor ?? palette.foreground
 
         let statusBarView = StatusBar(
             userItems: statusBar.currentUserItems,
