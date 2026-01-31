@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>FILEHEADER</key>
+    <string>
+//  ___FILENAME___
+//  ___PACKAGENAME___ — Terminal UI Framework for Swift
+//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
+
+</string>
+</dict>
+</plist>
