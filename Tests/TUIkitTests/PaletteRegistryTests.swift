@@ -14,19 +14,19 @@ struct PaletteRegistryTests {
 
     @Test("Registry contains all predefined palettes")
     func registryCount() {
-        // Green, Gen. Green, Amber, White, Red, NCurses, Violet = 7
+        // Green, Amber, Red, Violet, Blue, White, NCurses = 7
         #expect(PaletteRegistry.all.count == 7)
     }
 
-    @Test("Registry cycling order starts with green")
+    @Test("Registry cycling order follows color spectrum")
     func registryCyclingOrder() {
         #expect(PaletteRegistry.all[0].id == "green")
-        #expect(PaletteRegistry.all[1].id == "generated-gen. green")
-        #expect(PaletteRegistry.all[2].id == "amber")
-        #expect(PaletteRegistry.all[3].id == "white")
-        #expect(PaletteRegistry.all[4].id == "red")
-        #expect(PaletteRegistry.all[5].id == "ncurses")
-        #expect(PaletteRegistry.all[6].id == "generated-violet")
+        #expect(PaletteRegistry.all[1].id == "amber")
+        #expect(PaletteRegistry.all[2].id == "red")
+        #expect(PaletteRegistry.all[3].id == "violet")
+        #expect(PaletteRegistry.all[4].id == "blue")
+        #expect(PaletteRegistry.all[5].id == "white")
+        #expect(PaletteRegistry.all[6].id == "ncurses")
     }
 
     @Test("Registry finds palette by ID")
