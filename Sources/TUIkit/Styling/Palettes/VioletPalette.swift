@@ -18,13 +18,14 @@ public struct VioletPalette: Palette {
 
     // Background hierarchy
     public let background: Color
-    public let backgroundSecondary: Color
-    public let backgroundTertiary: Color
+    public let containerBodyBackground: Color
+    public let containerCapBackground: Color
 
     // Violet text hierarchy
     public let foreground: Color
     public let foregroundSecondary: Color
     public let foregroundTertiary: Color
+    public let foregroundPlaceholder: Color
 
     // Accent colors
     public let accent: Color
@@ -38,18 +39,11 @@ public struct VioletPalette: Palette {
 
     // UI elements
     public let border: Color
-    public let borderFocused: Color
-    public let selection: Color
-    public let selectionBackground: Color
 
-    // Status bar
+    // Additional backgrounds
     public let statusBarBackground: Color
-    public let statusBarForeground: Color
-    public let statusBarHighlight: Color
-
-    // Container colors for block appearance
-    public let containerBackground: Color
-    public let containerHeaderBackground: Color
+    public let appHeaderBackground: Color
+    public let overlayBackground: Color
     public let buttonBackground: Color
 
     public init() {
@@ -57,13 +51,14 @@ public struct VioletPalette: Palette {
 
         // Backgrounds: very dark, subtly tinted
         self.background = Color.hsl(hue, 30, 3)
-        self.backgroundSecondary = Color.hsl(hue, 40, 10)
-        self.backgroundTertiary = Color.hsl(hue, 35, 7)
+        self.containerBodyBackground = Color.hsl(hue, 40, 10)
+        self.containerCapBackground = Color.hsl(hue, 35, 7)
 
         // Foregrounds: bright, saturated text
         self.foreground = Color.hsl(hue, 80, 70)
         self.foregroundSecondary = Color.hsl(hue, 70, 55)
         self.foregroundTertiary = Color.hsl(hue, 60, 40)
+        self.foregroundPlaceholder = Color.hsl(hue, 50, 28)
 
         // Accents: lighter/brighter variant
         self.accent = Color.hsl(hue, 85, 78)
@@ -77,18 +72,11 @@ public struct VioletPalette: Palette {
 
         // UI elements
         self.border = Color.hsl(hue, 40, 25)
-        self.borderFocused = Color.hsl(hue, 80, 70)
-        self.selection = Color.hsl(hue, 85, 78)
-        self.selectionBackground = Color.hsl(hue, 50, 18)
 
-        // Status bar
+        // Additional backgrounds
         self.statusBarBackground = Color.hsl(hue, 35, 8)
-        self.statusBarForeground = Color.hsl(hue, 75, 65)
-        self.statusBarHighlight = Color.hsl(hue, 85, 78)
-
-        // Container (block appearance)
-        self.containerBackground = Color.hsl(hue, 40, 10)
-        self.containerHeaderBackground = Color.hsl(hue, 35, 7)
+        self.appHeaderBackground = Color.hsl(hue, 35, 7)  // Same as cap
+        self.overlayBackground = Color.hsl(hue, 30, 3)  // Same as background
         self.buttonBackground = Color.hsl(hue, 45, 15)
     }
 
