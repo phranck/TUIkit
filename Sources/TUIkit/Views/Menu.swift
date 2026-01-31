@@ -174,6 +174,8 @@ public struct Menu: View {
 
 extension Menu: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let palette = context.environment.palette
+
         // Register key handlers if this is an interactive menu
         if let binding = selectionBinding {
             registerKeyHandlers(binding: binding, context: context)
@@ -194,7 +196,7 @@ extension Menu: Renderable {
                 with: {
                     var style = TextStyle()
                     style.isBold = true
-                    style.foregroundColor = selectedColor ?? Color.theme.accent
+                    style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                     return style
                 }()
             )
@@ -232,12 +234,12 @@ extension Menu: Renderable {
             if isSelected {
                 // Selected: bold text with dimmed background, highlighted foreground
                 style.isBold = true
-                style.foregroundColor = selectedColor ?? Color.theme.accent
+                style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                 // Use a dimmed version of the accent color for background
-                style.backgroundColor = Color.theme.selectionBackground
+                style.backgroundColor = palette.selectionBackground
             } else {
-                // Use theme foreground color if no custom itemColor is set
-                style.foregroundColor = itemColor ?? Color.theme.foreground
+                // Use palette foreground color if no custom itemColor is set
+                style.foregroundColor = itemColor?.resolve(with: palette) ?? palette.foreground
             }
 
             let styledLine = ANSIRenderer.render(paddedText, with: style)
@@ -257,7 +259,8 @@ extension Menu: Renderable {
             style: effectiveBorderStyle,
             color: borderColor,
             dividerLineIndex: dividerLineIndex,
-            isBlockStyle: isBlockStyle
+            isBlockStyle: isBlockStyle,
+            palette: palette
         )
 
         return contentBuffer
@@ -336,7 +339,8 @@ extension Menu: Renderable {
         style: BorderStyle,
         color: Color?,
         dividerLineIndex: Int? = nil,
-        isBlockStyle: Bool = false
+        isBlockStyle: Bool = false,
+        palette: any Palette
     ) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
@@ -344,8 +348,8 @@ extension Menu: Renderable {
         var result: [String] = []
 
         if isBlockStyle {
-            let headerFooterBg = Color.theme.containerHeaderBackground
-            let bodyBg = Color.theme.containerBackground
+            let headerFooterBg = palette.containerHeaderBackground
+            let bodyBg = palette.containerBackground
             let hasHeader = dividerLineIndex != nil
 
             // Top border
@@ -391,7 +395,7 @@ extension Menu: Renderable {
             // Bottom border
             result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
         } else {
-            let borderForeground = color ?? Color.theme.border
+            let borderForeground = color?.resolve(with: palette) ?? palette.border
 
             result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 
