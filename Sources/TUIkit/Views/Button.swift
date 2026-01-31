@@ -117,22 +117,22 @@ public struct ButtonStyle: Sendable {
 /// ```
 public struct Button: View {
     /// The button's label text.
-    public let label: String
+    let label: String
 
     /// The action to perform when pressed.
-    public let action: () -> Void
+    let action: () -> Void
 
     /// The normal (unfocused) style.
-    public let style: ButtonStyle
+    let style: ButtonStyle
 
     /// The focused style.
-    public let focusedStyle: ButtonStyle
+    let focusedStyle: ButtonStyle
 
     /// The unique focus identifier.
-    public let focusID: String
+    let focusID: String
 
     /// Whether the button is disabled.
-    public let isDisabled: Bool
+    let isDisabled: Bool
 
     /// Creates a button with a label and action.
     ///
@@ -208,7 +208,7 @@ final class ButtonHandler: Focusable {
 // MARK: - Button Rendering
 
 extension Button: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Get focus manager from environment
         let focusManager = context.environment.focusManager
 

@@ -16,14 +16,14 @@ import Foundation
 /// The main app uses `RenderLoop` instead, which owns the full
 /// pipeline (environment assembly, lifecycle, status bar). Use
 /// `ViewRenderer` for one-off rendering outside the main loop.
-public final class ViewRenderer {
+final class ViewRenderer {
     /// The terminal to render to.
     private let terminal: Terminal
 
     /// Creates a new ViewRenderer.
     ///
     /// - Parameter terminal: The target terminal.
-    public init(terminal: Terminal = Terminal()) {
+    init(terminal: Terminal = Terminal()) {
         self.terminal = terminal
     }
 
@@ -33,7 +33,7 @@ public final class ViewRenderer {
     ///   - view: The view to render.
     ///   - row: The starting row (1-based, default: 1).
     ///   - column: The starting column (1-based, default: 1).
-    public func render<V: View>(_ view: V, atRow row: Int = 1, column: Int = 1) {
+    func render<V: View>(_ view: V, atRow row: Int = 1, column: Int = 1) {
         let context = RenderContext(terminal: terminal)
         let buffer = renderToBuffer(view, context: context)
         flush(buffer, atRow: row, column: column)

@@ -67,12 +67,12 @@ public final class ThemeManager: @unchecked Sendable {
     private var currentIndex: Int = 0
 
     /// All available items in cycling order.
-    public let items: [any Cyclable]
+    let items: [any Cyclable]
 
     /// Creates a theme manager with the given items.
     ///
     /// - Parameter items: The items to cycle through. Must not be empty.
-    public init(items: [any Cyclable]) {
+    init(items: [any Cyclable]) {
         precondition(!items.isEmpty, "ThemeManager requires at least one item")
         self.items = items
     }

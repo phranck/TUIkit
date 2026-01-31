@@ -15,7 +15,7 @@ import Foundation
 /// Bundles the previously separate `LifecycleTracker`, `DisappearCallbackStorage`,
 /// and `TaskStorage` singletons into a single cohesive manager.
 /// All mutable state is protected by `NSLock`.
-public final class LifecycleManager: @unchecked Sendable {
+final class LifecycleManager: @unchecked Sendable {
 
     /// Lock protecting all mutable state.
     private let lock = NSLock()
@@ -44,7 +44,7 @@ public final class LifecycleManager: @unchecked Sendable {
     // MARK: - Init
 
     /// Creates a new lifecycle manager.
-    public init() {}
+    init() {}
 
     // MARK: - Render Pass Tracking
 
@@ -201,19 +201,19 @@ public final class LifecycleManager: @unchecked Sendable {
 ///     }
 /// }
 /// ```
-public final class TUIContext: @unchecked Sendable {
+final class TUIContext: @unchecked Sendable {
 
     /// View lifecycle tracking (appear, disappear, task management).
-    public let lifecycle: LifecycleManager
+    let lifecycle: LifecycleManager
 
     /// Key event handler registration and dispatch.
-    public let keyEventDispatcher: KeyEventDispatcher
+    let keyEventDispatcher: KeyEventDispatcher
 
     /// Preference value collection during rendering.
-    public let preferences: PreferenceStorage
+    let preferences: PreferenceStorage
 
     /// Creates a new TUI context with fresh instances of all services.
-    public init() {
+    init() {
         self.lifecycle = LifecycleManager()
         self.keyEventDispatcher = KeyEventDispatcher()
         self.preferences = PreferenceStorage()
@@ -227,7 +227,7 @@ public final class TUIContext: @unchecked Sendable {
     ///   - lifecycle: The lifecycle manager to use.
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
-    public init(
+    init(
         lifecycle: LifecycleManager,
         keyEventDispatcher: KeyEventDispatcher,
         preferences: PreferenceStorage

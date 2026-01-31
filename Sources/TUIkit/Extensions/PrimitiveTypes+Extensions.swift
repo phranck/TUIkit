@@ -35,7 +35,7 @@ extension Optional: View where Wrapped: View {
 // MARK: - Optional Rendering
 
 extension Optional: Renderable where Wrapped: View {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         switch self {
         case .some(let view):
             return TUIkit.renderToBuffer(view, context: context)

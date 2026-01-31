@@ -30,7 +30,7 @@ import Foundation
 ///     }
 /// }
 /// ```
-public struct StatusBarItemsModifier<Content: View>: View {
+struct StatusBarItemsModifier<Content: View>: View {
     /// The content view.
     let content: Content
 
@@ -41,7 +41,7 @@ public struct StatusBarItemsModifier<Content: View>: View {
     /// If nil, items are set as global items.
     let context: String?
 
-    public var body: Never {
+    var body: Never {
         fatalError("StatusBarItemsModifier renders via Renderable")
     }
 }
@@ -49,7 +49,7 @@ public struct StatusBarItemsModifier<Content: View>: View {
 // MARK: - Renderable
 
 extension StatusBarItemsModifier: Renderable {
-    public func renderToBuffer(context renderContext: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context renderContext: RenderContext) -> FrameBuffer {
         // Get the status bar from the environment
         let statusBar = renderContext.environment.statusBar
 
