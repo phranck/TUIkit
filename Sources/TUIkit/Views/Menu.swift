@@ -196,7 +196,7 @@ extension Menu: Renderable {
                 with: {
                     var style = TextStyle()
                     style.isBold = true
-                    style.foregroundColor = selectedColor ?? palette.accent
+                    style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                     return style
                 }()
             )
@@ -234,12 +234,12 @@ extension Menu: Renderable {
             if isSelected {
                 // Selected: bold text with dimmed background, highlighted foreground
                 style.isBold = true
-                style.foregroundColor = selectedColor ?? palette.accent
+                style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                 // Use a dimmed version of the accent color for background
                 style.backgroundColor = palette.selectionBackground
             } else {
                 // Use palette foreground color if no custom itemColor is set
-                style.foregroundColor = itemColor ?? palette.foreground
+                style.foregroundColor = itemColor?.resolve(with: palette) ?? palette.foreground
             }
 
             let styledLine = ANSIRenderer.render(paddedText, with: style)
@@ -395,7 +395,7 @@ extension Menu: Renderable {
             // Bottom border
             result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
         } else {
-            let borderForeground = color ?? palette.border
+            let borderForeground = color?.resolve(with: palette) ?? palette.border
 
             result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 

@@ -280,7 +280,7 @@ extension ContainerView: Renderable {
         let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
         let palette = context.environment.palette
-        let borderColor = style.borderColor ?? palette.border
+        let borderColor = style.borderColor?.resolve(with: palette) ?? palette.border
 
         // Render body content
         let paddedContent = content.padding(padding)
@@ -344,7 +344,7 @@ extension ContainerView: Renderable {
                     innerWidth: innerWidth,
                     color: borderColor,
                     title: titleText,
-                    titleColor: titleColor ?? palette.accent
+                    titleColor: titleColor?.resolve(with: palette) ?? palette.accent
                 )
             )
         } else {
@@ -453,7 +453,7 @@ extension ContainerView: Renderable {
 
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
-            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor ?? palette.accent, bold: true)
+            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor?.resolve(with: palette) ?? palette.accent, bold: true)
             lines.append(
                 BorderRenderer.blockContentLine(
                     content: titleStyled,
