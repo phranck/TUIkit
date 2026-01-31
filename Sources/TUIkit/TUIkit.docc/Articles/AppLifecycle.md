@@ -171,4 +171,14 @@ The ``Terminal`` class also has a `deinit` safety net that disables raw mode if 
 
 ## Subsystem Dependency Graph
 
-@Image(source: "lifecycle-dependency-graph.png", alt: "Dependency graph showing AppRunner owning all subsystems. RenderLoop writes to Terminal, injects environment values from StatusBarState, FocusManager, and both ThemeManagers, and calls begin/end pass on LifecycleManager and PreferenceStorage. InputHandler dispatches through Layer 1 (StatusBarState), Layer 2 (KeyEventDispatcher), and Layer 3 (ThemeManagers). SignalManager communicates via flags to AppRunner.")
+### Ownership
+
+AppRunner creates and owns every subsystem. TUIContext acts as a secondary container for lifecycle, key dispatch, and preference storage.
+
+@Image(source: "dep-graph-ownership.png", alt: "Ownership diagram showing AppRunner owning all subsystems: SignalManager, Terminal, StatusBarState, FocusManager, both ThemeManagers, InputHandler, RenderLoop, and TUIContext. TUIContext contains LifecycleManager, KeyEventDispatcher, and PreferenceStorage. SignalManager sends SIGINT and SIGWINCH flags back to AppRunner.")
+
+### Runtime References
+
+During each frame, RenderLoop and InputHandler reference shared subsystems to build the environment and dispatch key events.
+
+@Image(source: "dep-graph-references.png", alt: "Runtime reference diagram showing RenderLoop writing output to Terminal, injecting environment values from StatusBarState, FocusManager, and both ThemeManagers, calling begin/end pass on LifecycleManager, begin pass on PreferenceStorage, and clearing handlers on KeyEventDispatcher. InputHandler dispatches through Layer 1 StatusBarState, Layer 2 KeyEventDispatcher, and Layer 3 both ThemeManagers.")
