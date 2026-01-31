@@ -55,26 +55,9 @@ The rendering pipeline converts the view tree into terminal output:
 
 ## Event Loop
 
-TUIkit runs a synchronous event loop:
+TUIkit runs a synchronous event loop. Each iteration checks for resize or state changes, renders the view tree, reads a key event, and dispatches it through three handler layers.
 
-```
-┌─────────────────────────┐
-│   Check resize/state    │
-│   ↓                     │
-│   Render view tree      │
-│   ↓                     │
-│   Read key event        │
-│   ↓                     │
-│   Dispatch to handlers  │
-│   ↓                     │
-│   Loop                  │
-└─────────────────────────┘
-```
-
-Key events are dispatched in order:
-1. Status bar items (system and user)
-2. Registered key event handlers (from `onKeyPress`)
-3. Default handlers (quit, theme cycling, appearance cycling)
+@Image(source: "architecture-event-loop.png", alt: "Event loop diagram showing the cycle: Check Resize/State, Render View Tree, Read Key Event, Dispatch to Handlers. Dispatch fans out into Layer 1 (status bar items), Layer 2 (onKeyPress handlers), and Layer 3 (default handlers for quit, theme, and appearance cycling).")
 
 ## Focus System
 
