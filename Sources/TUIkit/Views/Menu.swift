@@ -348,8 +348,8 @@ extension Menu: Renderable {
         var result: [String] = []
 
         if isBlockStyle {
-            let headerFooterBg = palette.containerHeaderBackground
-            let bodyBg = palette.containerBackground
+            let headerFooterBg = palette.containerCapBackground
+            let bodyBg = palette.containerBodyBackground
             let hasHeader = dividerLineIndex != nil
 
             // Top border

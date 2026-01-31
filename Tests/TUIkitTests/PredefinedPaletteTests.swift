@@ -9,6 +9,22 @@ import Testing
 
 @testable import TUIkit
 
+// MARK: - Test Helpers
+
+/// Extracts relative luminance from an RGB color using the sRGB formula.
+///
+/// Returns a value between 0.0 (black) and 1.0 (white).
+/// Non-RGB colors (ANSI, semantic) return nil.
+private func relativeLuminance(of color: Color) -> Double? {
+    guard case .rgb(let red, let green, let blue) = color.value else {
+        return nil
+    }
+    let redNorm = Double(red) / 255.0
+    let greenNorm = Double(green) / 255.0
+    let blueNorm = Double(blue) / 255.0
+    return 0.2126 * redNorm + 0.7152 * greenNorm + 0.0722 * blueNorm
+}
+
 // MARK: - Green Palette Tests
 
 @Suite("Green Palette Tests")
@@ -21,19 +37,30 @@ struct GreenPaletteTests {
         #expect(palette.name == "Green")
     }
 
-    @Test("Green palette has distinct background hierarchy")
-    func greenBackgrounds() {
+    @Test("Green palette backgrounds get progressively brighter from app to container to buttons")
+    func greenBackgroundLuminanceOrder() {
         let palette = GreenPalette()
-        #expect(palette.background != palette.backgroundSecondary)
-        #expect(palette.backgroundSecondary != palette.backgroundTertiary)
-        #expect(palette.background != palette.backgroundTertiary)
+        let bgLum = try! #require(relativeLuminance(of: palette.background))
+        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+
+        // App background must be darkest
+        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
+        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
+        // Button background should be brighter than cap
+        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
     }
 
-    @Test("Green palette has distinct foreground hierarchy")
-    func greenForegrounds() {
+    @Test("Green palette foregrounds get progressively dimmer")
+    func greenForegroundLuminanceOrder() {
         let palette = GreenPalette()
-        #expect(palette.foreground != palette.foregroundSecondary)
-        #expect(palette.foregroundSecondary != palette.foregroundTertiary)
+        let fgLum = try! #require(relativeLuminance(of: palette.foreground))
+        let fgSecLum = try! #require(relativeLuminance(of: palette.foregroundSecondary))
+        let fgTerLum = try! #require(relativeLuminance(of: palette.foregroundTertiary))
+
+        #expect(fgLum > fgSecLum, "foreground should be brighter than foregroundSecondary")
+        #expect(fgSecLum > fgTerLum, "foregroundSecondary should be brighter than foregroundTertiary")
     }
 
     @Test("Green palette has distinct accent colors")
@@ -109,12 +136,17 @@ struct VioletPaletteTests {
         #expect(palette.name == "Violet")
     }
 
-    @Test("Violet palette has distinct background hierarchy")
-    func violetBackgrounds() {
+    @Test("Violet palette backgrounds get progressively brighter from app to container to buttons")
+    func violetBackgroundLuminanceOrder() {
         let palette = VioletPalette()
-        #expect(palette.background != palette.backgroundSecondary)
-        #expect(palette.backgroundSecondary != palette.backgroundTertiary)
-        #expect(palette.background != palette.backgroundTertiary)
+        let bgLum = try! #require(relativeLuminance(of: palette.background))
+        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+
+        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
+        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
+        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
     }
 
     @Test("Violet palette colors differ from green palette")
@@ -138,12 +170,17 @@ struct BluePaletteTests {
         #expect(palette.name == "Blue")
     }
 
-    @Test("Blue palette has distinct background hierarchy")
-    func blueBackgrounds() {
+    @Test("Blue palette backgrounds get progressively brighter from app to container to buttons")
+    func blueBackgroundLuminanceOrder() {
         let palette = BluePalette()
-        #expect(palette.background != palette.backgroundSecondary)
-        #expect(palette.backgroundSecondary != palette.backgroundTertiary)
-        #expect(palette.background != palette.backgroundTertiary)
+        let bgLum = try! #require(relativeLuminance(of: palette.background))
+        let bodyLum = try! #require(relativeLuminance(of: palette.containerBodyBackground))
+        let capLum = try! #require(relativeLuminance(of: palette.containerCapBackground))
+        let buttonLum = try! #require(relativeLuminance(of: palette.buttonBackground))
+
+        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
+        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
+        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
     }
 
     @Test("Blue palette colors differ from violet palette")
