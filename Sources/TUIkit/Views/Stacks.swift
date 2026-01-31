@@ -232,7 +232,7 @@ public struct Alignment: Sendable {
 // MARK: - VStack Rendering
 
 extension VStack: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
         // Spacer distribution: divide remaining vertical space equally
@@ -293,7 +293,7 @@ extension VStack: Renderable {
 // MARK: - HStack Rendering
 
 extension HStack: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
         // Spacer distribution: divide remaining horizontal space equally
@@ -329,7 +329,7 @@ extension HStack: Renderable {
 // MARK: - ZStack Rendering
 
 extension ZStack: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
         var result = FrameBuffer()
         for info in infos {

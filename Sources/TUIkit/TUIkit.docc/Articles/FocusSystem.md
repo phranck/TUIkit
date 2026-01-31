@@ -75,6 +75,6 @@ Focus dispatch happens in Layer 2 of the key event pipeline (see <doc:AppLifecyc
 
 1. A key event arrives from stdin
 2. Layer 1 (status bar) gets first chance to handle it
-3. Layer 2: ``KeyEventDispatcher`` dispatches to the focused view's `handleKeyEvent(_:)`
+3. Layer 2: `KeyEventDispatcher` dispatches to the focused view's `handleKeyEvent(_:)`
 4. If not consumed, navigation keys (Tab, arrows) are handled by ``FocusManager``
 5. Layer 3 (default bindings) handles quit, theme cycling, etc.

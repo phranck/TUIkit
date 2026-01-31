@@ -19,12 +19,12 @@
 ///
 /// - **Composite views** implement `body` to compose other views.
 ///   The rendering system recurses into `body` to resolve the tree.
-/// - **Primitive views** additionally conform to ``Renderable`` and
+/// - **Primitive views** additionally conform to `Renderable` and
 ///   produce a ``FrameBuffer`` directly. They set `body: Never`
 ///   (which `fatalError`s if called) because their `body` is never used.
 ///
-/// The free function ``renderToBuffer(_:context:)`` checks `Renderable`
-/// first, then falls back to `body`. See ``Renderable`` for details.
+/// The free function `renderToBuffer(_:context:)` checks `Renderable`
+/// first, then falls back to `body`. See `Renderable` for details.
 ///
 /// ## Creating a composite view
 ///
@@ -53,7 +53,7 @@ public protocol View {
     /// The type of the body view.
     ///
     /// Swift automatically infers this type from the `body` implementation.
-    /// Primitive views that conform to ``Renderable`` set this to `Never`.
+    /// Primitive views that conform to `Renderable` set this to `Never`.
     associatedtype Body: View
 
     /// The content and behavior of this view.
@@ -61,9 +61,9 @@ public protocol View {
     /// Implement this property to define the structure of your view
     /// by composing other `View` types.
     ///
-    /// For primitive views that conform to ``Renderable``, set this
+    /// For primitive views that conform to `Renderable`, set this
     /// to `Never` with a `fatalError` body. The rendering system will
-    /// call ``Renderable/renderToBuffer(context:)`` instead.
+    /// call `renderToBuffer(context:)` instead.
     @ViewBuilder
     var body: Body { get }
 }

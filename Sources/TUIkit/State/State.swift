@@ -18,6 +18,9 @@ import Foundation
 /// `AppRunner` creates and assigns the active instance on startup.
 /// Property wrappers like ``State`` and ``AppStorage`` access it
 /// through ``active``.
+/// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
+///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
+///   where you manage state outside the view hierarchy.
 public final class AppState: @unchecked Sendable {
     /// The active app state for the current application.
     ///

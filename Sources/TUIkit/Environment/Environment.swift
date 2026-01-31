@@ -71,7 +71,7 @@ public struct EnvironmentValues: @unchecked Sendable {
     ///   - keyPath: The key path to the value to modify.
     ///   - value: The new value.
     /// - Returns: A new EnvironmentValues with the modified value.
-    public func setting<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) -> Self {
+    func setting<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) -> Self {
         var copy = self
         copy[keyPath: keyPath] = value
         return copy
@@ -87,7 +87,7 @@ public struct EnvironmentValues: @unchecked Sendable {
 /// the `body` property below is **never called during rendering**.
 /// It exists only to satisfy the `View` protocol requirement.
 /// All actual work happens in `renderToBuffer(context:)`.
-public struct EnvironmentModifier<Content: View, V>: View {
+struct EnvironmentModifier<Content: View, V>: View {
     /// The content view.
     let content: Content
 
@@ -98,13 +98,13 @@ public struct EnvironmentModifier<Content: View, V>: View {
     let value: V
 
     /// Not used during rendering — ``Renderable`` conformance takes priority.
-    public var body: some View {
+    var body: some View {
         content
     }
 }
 
 extension EnvironmentModifier: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Create modified environment and render content with it.
         // The modified context carries the environment through the render tree —
         // no singleton sync needed.

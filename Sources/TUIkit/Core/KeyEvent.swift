@@ -249,22 +249,22 @@ extension KeyEvent {
 ///
 /// Views can register handlers that are called when keys are pressed.
 /// Handlers are processed in reverse order (most recent first).
-public final class KeyEventDispatcher: @unchecked Sendable {
+final class KeyEventDispatcher: @unchecked Sendable {
     /// Registered key handlers.
     private var handlers: [(KeyEvent) -> Bool] = []
 
     /// Creates a new key event dispatcher.
-    public init() {}
+    init() {}
 
     /// Registers a key handler.
     ///
     /// - Parameter handler: A closure that returns true if the key was handled.
-    public func addHandler(_ handler: @escaping (KeyEvent) -> Bool) {
+    func addHandler(_ handler: @escaping (KeyEvent) -> Bool) {
         handlers.append(handler)
     }
 
     /// Clears all handlers.
-    public func clearHandlers() {
+    func clearHandlers() {
         handlers.removeAll()
     }
 
@@ -273,7 +273,7 @@ public final class KeyEventDispatcher: @unchecked Sendable {
     /// - Parameter event: The key event to dispatch.
     /// - Returns: True if any handler consumed the event.
     @discardableResult
-    public func dispatch(_ event: KeyEvent) -> Bool {
+    func dispatch(_ event: KeyEvent) -> Bool {
         // Process in reverse order (most recent handlers first)
         for handler in handlers.reversed() where handler(event) {
             return true

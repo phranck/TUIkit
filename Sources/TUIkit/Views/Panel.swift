@@ -75,16 +75,16 @@
 /// ```
 public struct Panel<Content: View, Footer: View>: View {
     /// The title displayed in the header/border.
-    public let title: String
+    let title: String
 
     /// The content of the panel.
-    public let content: Content
+    let content: Content
 
     /// The footer content (typically buttons).
-    public let footer: Footer?
+    let footer: Footer?
 
     /// The shared visual configuration.
-    public let config: ContainerConfig
+    let config: ContainerConfig
 
     /// Creates a panel with content and footer.
     ///
@@ -160,7 +160,7 @@ extension Panel where Footer == EmptyView {
 // MARK: - Panel Rendering
 
 extension Panel: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         renderContainer(
             title: title,
             config: config,

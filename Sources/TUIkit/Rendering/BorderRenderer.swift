@@ -14,10 +14,10 @@
 /// Two style families are supported:
 /// - **Standard**: box-drawing characters (┌─┐│└─┘├─┤)
 /// - **Block**: half-block characters (▄ █ ▀) for smooth visual edges
-public enum BorderRenderer {
+enum BorderRenderer {
 
     /// The total width consumed by left + right border characters (1 + 1 = 2).
-    public static let borderWidthOverhead = 2
+    static let borderWidthOverhead = 2
 
     // MARK: - Standard Style (Box-Drawing Characters)
 
@@ -30,7 +30,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The width of the content area (excluding borders).
     ///   - color: The foreground color for the border.
     /// - Returns: A colorized top border string.
-    public static func standardTopBorder(
+    static func standardTopBorder(
         style: BorderStyle,
         innerWidth: Int,
         color: Color
@@ -53,7 +53,7 @@ public enum BorderRenderer {
     ///   - title: The title text.
     ///   - titleColor: The title foreground color.
     /// - Returns: A colorized top border string with embedded title.
-    public static func standardTopBorder(
+    static func standardTopBorder(
         style: BorderStyle,
         innerWidth: Int,
         color: Color,
@@ -82,7 +82,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The content width.
     ///   - color: The border color.
     /// - Returns: A colorized bottom border string.
-    public static func standardBottomBorder(
+    static func standardBottomBorder(
         style: BorderStyle,
         innerWidth: Int,
         color: Color
@@ -103,7 +103,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The content width.
     ///   - color: The border color.
     /// - Returns: A colorized divider string.
-    public static func standardDivider(
+    static func standardDivider(
         style: BorderStyle,
         innerWidth: Int,
         color: Color
@@ -129,7 +129,7 @@ public enum BorderRenderer {
     ///   - color: The border color.
     ///   - backgroundColor: Optional background applied to the content area.
     /// - Returns: The bordered content line.
-    public static func standardContentLine(
+    static func standardContentLine(
         content: String,
         innerWidth: Int,
         style: BorderStyle,
@@ -157,7 +157,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The content width (border width = innerWidth + 2).
     ///   - color: The foreground color (typically the section's background color).
     /// - Returns: The top border string.
-    public static func blockTopBorder(
+    static func blockTopBorder(
         innerWidth: Int,
         color: Color
     ) -> String {
@@ -173,7 +173,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The content width (border width = innerWidth + 2).
     ///   - color: The foreground color (typically the section's background color).
     /// - Returns: The bottom border string.
-    public static func blockBottomBorder(
+    static func blockBottomBorder(
         innerWidth: Int,
         color: Color
     ) -> String {
@@ -191,7 +191,7 @@ public enum BorderRenderer {
     ///   - innerWidth: The target content width.
     ///   - sectionColor: The color for both `█` borders and content background.
     /// - Returns: The bordered content line.
-    public static func blockContentLine(
+    static func blockContentLine(
         content: String,
         innerWidth: Int,
         sectionColor: Color
@@ -213,7 +213,7 @@ public enum BorderRenderer {
     ///   - foregroundColor: The FG color (the section being transitioned from or to).
     ///   - backgroundColor: The BG color (the adjacent section).
     /// - Returns: The separator line.
-    public static func blockSeparator(
+    static func blockSeparator(
         innerWidth: Int,
         character: Character = BorderStyle.blockBottomHorizontal,
         foregroundColor: Color,

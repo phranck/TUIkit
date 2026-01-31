@@ -100,7 +100,7 @@ When the terminal delivers a key event, the `InputHandler` dispatches it through
 
 ### Layer 2: View-Registered Handlers
 
-The ``KeyEventDispatcher`` iterates handlers registered via `onKeyPress()` modifiers — in reverse order (newest first). If a handler returns `true`, dispatch stops.
+The `KeyEventDispatcher` iterates handlers registered via `onKeyPress()` modifiers — in reverse order (newest first). If a handler returns `true`, dispatch stops.
 
 ### Layer 3: Default Bindings
 
@@ -122,7 +122,7 @@ Key handlers, preference callbacks, and focus registrations are cleared. Views r
 
 ### Step 2: Begin Lifecycle Tracking
 
-The ``LifecycleManager`` prepares to track which views appear in this frame by clearing its current-frame token set.
+The `LifecycleManager` prepares to track which views appear in this frame by clearing its current-frame token set.
 
 ### Step 3: Build Environment
 
@@ -130,7 +130,7 @@ The ``LifecycleManager`` prepares to track which views appear in this frame by c
 
 ### Step 4: Create Render Context
 
-A ``RenderContext`` is created with the environment, terminal dimensions (minus status bar height), and the ``TUIContext``. This context threads through the entire view tree.
+A ``RenderContext`` is created with the environment, terminal dimensions (minus status bar height), and the `TUIContext`. This context threads through the entire view tree.
 
 ### Step 5: Evaluate Scene
 
@@ -140,7 +140,7 @@ A ``RenderContext`` is created with the environment, terminal dimensions (minus 
 
 The ``WindowGroup`` calls the free function `renderToBuffer()` on its content. This triggers the dual rendering dispatch:
 
-1. If the view conforms to ``Renderable`` → call `renderToBuffer(context:)` directly
+1. If the view conforms to `Renderable` → call `renderToBuffer(context:)` directly
 2. If the view has a `body` → recursively render the body
 3. Otherwise → return an empty ``FrameBuffer``
 
@@ -167,7 +167,7 @@ When the main loop exits — via Ctrl+C, the quit key, or programmatic shutdown 
 | 5 | Clear focus | Remove all focus registrations |
 | 6 | Reset TUIContext | Clear lifecycle, key handlers, and preferences |
 
-The ``Terminal`` class also has a `deinit` safety net that disables raw mode if it was not explicitly restored.
+The `Terminal` class also has a `deinit` safety net that disables raw mode if it was not explicitly restored.
 
 ## Subsystem Dependency Graph
 
