@@ -17,6 +17,9 @@ import Foundation
 ///
 /// Conforms to ``Cyclable`` so it can be managed by a ``ThemeManager``.
 ///
+/// For block-appearance-specific backgrounds (surfaces, elevated elements),
+/// see ``BlockPalette``.
+///
 /// # Usage
 ///
 /// ```swift
@@ -32,19 +35,10 @@ public protocol Palette: Cyclable {
     /// The app background color (darkest).
     var background: Color { get }
 
-    /// Container body/content background.
-    var containerBodyBackground: Color { get }
-
-    /// Container header/footer background (the "cap" of a container).
-    var containerCapBackground: Color { get }
-
-    /// Button background (slightly lighter than containerCapBackground).
-    var buttonBackground: Color { get }
-
     /// Status bar background.
     var statusBarBackground: Color { get }
 
-    /// App header background (for future use).
+    /// App header background.
     var appHeaderBackground: Color { get }
 
     /// Dimming overlay background for alerts and dialogs.
@@ -61,16 +55,10 @@ public protocol Palette: Cyclable {
     /// Tertiary text color (even less prominent).
     var foregroundTertiary: Color { get }
 
-    /// Placeholder text color (weakest foreground, e.g. for empty input fields).
-    var foregroundPlaceholder: Color { get }
-
     // MARK: - Accent Colors
 
     /// Primary accent color for interactive elements.
     var accent: Color { get }
-
-    /// Secondary accent color.
-    var accentSecondary: Color { get }
 
     // MARK: - Semantic Colors
 
@@ -97,23 +85,81 @@ public protocol Palette: Cyclable {
 extension Palette {
     // MARK: - Background Defaults
 
-    public var containerBodyBackground: Color { background }
-    public var containerCapBackground: Color { background }
-    public var buttonBackground: Color { containerCapBackground }
     public var statusBarBackground: Color { background }
-    public var appHeaderBackground: Color { containerCapBackground }
+    public var appHeaderBackground: Color { background }
     public var overlayBackground: Color { background }
 
     // MARK: - Foreground Defaults
 
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
-    public var foregroundPlaceholder: Color { foregroundTertiary }
+}
 
-    // MARK: - Accent Defaults
+// MARK: - BlockPalette Protocol
 
-    public var accentSecondary: Color { accent }
+/// A palette with additional background colors for block-style appearances.
+///
+/// Block appearances use solid background fills to visually separate containers,
+/// headers, and interactive elements. `BlockPalette` extends ``Palette`` with
+/// three surface-level backgrounds that create this visual hierarchy.
+///
+/// All three properties provide computed defaults based on ``Palette/background``
+/// using ``Color/lighter(by:)``, so conforming types don't need to define them
+/// explicitly unless custom values are desired.
+///
+/// # Default Hierarchy
+///
+/// ```
+/// background                          (darkest)
+/// └── surfaceHeaderBackground         (background.lighter(by: 0.05))
+///     └── surfaceBackground           (background.lighter(by: 0.08))
+///         └── elevatedBackground      (surfaceHeaderBackground.lighter(by: 0.05))
+/// ```
+public protocol BlockPalette: Palette {
+    /// Container body/content background.
+    ///
+    /// Used for the main content area of containers, menus, and bordered regions
+    /// in block appearance mode.
+    var surfaceBackground: Color { get }
 
+    /// Container header/footer background.
+    ///
+    /// Used for the "cap" area of containers (title bars, footers) and menu
+    /// headers in block appearance mode.
+    var surfaceHeaderBackground: Color { get }
+
+    /// Elevated element background (buttons, interactive surfaces).
+    ///
+    /// Used for elements that sit visually "above" the surface, such as
+    /// buttons in block appearance mode.
+    var elevatedBackground: Color { get }
+}
+
+// MARK: - Default BlockPalette Implementation
+
+extension BlockPalette {
+    public var surfaceBackground: Color { background.lighter(by: 0.08) }
+    public var surfaceHeaderBackground: Color { background.lighter(by: 0.05) }
+    public var elevatedBackground: Color { surfaceHeaderBackground.lighter(by: 0.05) }
+}
+
+// MARK: - BlockPalette Convenience Accessors
+
+extension Palette {
+    /// The surface background if this palette is a ``BlockPalette``, otherwise ``background``.
+    var blockSurfaceBackground: Color {
+        (self as? any BlockPalette)?.surfaceBackground ?? background
+    }
+
+    /// The surface header background if this palette is a ``BlockPalette``, otherwise ``background``.
+    var blockSurfaceHeaderBackground: Color {
+        (self as? any BlockPalette)?.surfaceHeaderBackground ?? background
+    }
+
+    /// The elevated background if this palette is a ``BlockPalette``, otherwise ``background``.
+    var blockElevatedBackground: Color {
+        (self as? any BlockPalette)?.elevatedBackground ?? background
+    }
 }
 
 // MARK: - Palette Environment Key
@@ -153,7 +199,7 @@ extension EnvironmentValues {
 struct PaletteRegistry {
     /// All available palettes in cycling order.
     ///
-    /// Order: Green → Amber → Red → Violet → Blue → White → NCurses
+    /// Order: Green → Amber → Red → Violet → Blue → White
     static let all: [any Palette] = [
         GreenPalette(),
         AmberPalette(),
@@ -161,7 +207,6 @@ struct PaletteRegistry {
         VioletPalette(),
         BluePalette(),
         WhitePalette(),
-        NCursesPalette(),
     ]
 
     /// Finds a palette by ID.
