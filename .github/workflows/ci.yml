@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ["*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -61,15 +62,46 @@ jobs:
           DISABLE_SWIFTLINT: "1"
         run: swift test
 
-  # ── DocC Documentation (macOS only, main branch only) ──────────
+  # ── Landing Page + DocC (macOS only, main/tag only) ────────────
   build-docs:
-    name: Build DocC
+    name: Build Landing Page & DocC
     needs: build
     runs-on: macos-15
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          # Use tag name if triggered by a tag push, otherwise latest tag
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.1.0")
+          fi
+          # Strip leading 'v' if present (v1.2.3 -> 1.2.3)
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Build landing page
+        working-directory: docs
+        env:
+          TUIKIT_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npm ci
+          npm run build
 
       - name: Build DocC documentation
         env:
@@ -81,19 +113,9 @@ jobs:
             --output-path docs-output \
             --transform-for-static-hosting
 
-      - name: Add root redirect to documentation
+      - name: Assemble site
         run: |
-          cat > docs-output/index.html << 'HTMLEOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta http-equiv="refresh" content="0; url=/documentation/tuikit" />
-          </head>
-          <body>
-            <a href="/documentation/tuikit">Redirecting to TUIkit Documentation...</a>
-          </body>
-          </html>
-          HTMLEOF
+          cp -r docs/out/* docs-output/
 
       - name: Add CNAME for custom domain
         run: echo "tuikit.layered.work" > docs-output/CNAME

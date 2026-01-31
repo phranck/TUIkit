@@ -1,0 +1,203 @@
+@import url("https://fonts.googleapis.com/css2?family=SN+Pro:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@font-face {
+  font-family: "WarText";
+  src: url("/fonts/WarText.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Theme: Amber (default) */
+:root,
+[data-theme="amber"] {
+  --background: #0a0a0a;
+  --foreground: #e8dcc2;
+  --accent: #fbbf24;
+  --accent-secondary: #f59e0b;
+  --accent-glow: 251, 191, 36;
+  --accent-glow-secondary: 245, 158, 11;
+  --accent-glow-tertiary: 217, 119, 6;
+  --headline-color: #ffbf00;
+  --headline-glow: 255, 191, 0;
+  --muted: #ad9a6e;
+  --border: #27272a;
+  --card: #111113;
+  --card-hover: #18181b;
+}
+
+/* Theme: Green */
+[data-theme="green"] {
+  --foreground: #c2e8d4;
+  --accent: #6ee7b7;
+  --accent-secondary: #34d399;
+  --accent-glow: 110, 231, 183;
+  --accent-glow-secondary: 52, 211, 153;
+  --accent-glow-tertiary: 16, 185, 129;
+  --headline-color: #33ff33;
+  --headline-glow: 51, 255, 51;
+  --muted: #7aad94;
+}
+
+/* Theme: White */
+[data-theme="white"] {
+  --foreground: #d8d8da;
+  --accent: #e4e4e7;
+  --accent-secondary: #a1a1aa;
+  --accent-glow: 228, 228, 231;
+  --accent-glow-secondary: 161, 161, 170;
+  --accent-glow-tertiary: 113, 113, 122;
+  --headline-color: #f0f0f0;
+  --headline-glow: 240, 240, 240;
+  --muted: #8a8a90;
+}
+
+/* Theme: Red */
+[data-theme="red"] {
+  --foreground: #e8c8c8;
+  --accent: #f87171;
+  --accent-secondary: #ef4444;
+  --accent-glow: 248, 113, 113;
+  --accent-glow-secondary: 239, 68, 68;
+  --accent-glow-tertiary: 220, 38, 38;
+  --headline-color: #ff3333;
+  --headline-glow: 255, 51, 51;
+  --muted: #ad7a7a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "SN Pro", system-ui, sans-serif;
+  font-size: 1.375rem;
+  line-height: 1.75;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Code block styling */
+code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Cloud animation keyframes — slow, massive wandering paths */
+@keyframes cloud-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  10% {
+    transform: translate(900px, -500px) scale(1.15);
+    opacity: 0.6;
+  }
+  22% {
+    transform: translate(-600px, 800px) scale(0.85);
+    opacity: 0.4;
+  }
+  38% {
+    transform: translate(1100px, 300px) scale(1.1);
+    opacity: 0.55;
+  }
+  52% {
+    transform: translate(-900px, -700px) scale(0.9);
+    opacity: 0.45;
+  }
+  68% {
+    transform: translate(500px, -1000px) scale(1.08);
+    opacity: 0.5;
+  }
+  82% {
+    transform: translate(-400px, 600px) scale(0.92);
+    opacity: 0.48;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes cloud-drift-reverse {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+  12% {
+    transform: translate(-1000px, 600px) scale(1.12);
+    opacity: 0.55;
+  }
+  25% {
+    transform: translate(700px, -900px) scale(0.88);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translate(-500px, -800px) scale(1.08);
+    opacity: 0.5;
+  }
+  55% {
+    transform: translate(1100px, 400px) scale(0.92);
+    opacity: 0.42;
+  }
+  70% {
+    transform: translate(-800px, 700px) scale(1.06);
+    opacity: 0.48;
+  }
+  85% {
+    transform: translate(400px, -500px) scale(0.95);
+    opacity: 0.44;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes cloud-drift-slow {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  14% {
+    transform: translate(800px, 900px) scale(1.1);
+    opacity: 0.5;
+  }
+  28% {
+    transform: translate(-1000px, -400px) scale(0.88);
+    opacity: 0.3;
+  }
+  42% {
+    transform: translate(600px, -1100px) scale(1.06);
+    opacity: 0.45;
+  }
+  57% {
+    transform: translate(-700px, 500px) scale(0.92);
+    opacity: 0.38;
+  }
+  72% {
+    transform: translate(1000px, -300px) scale(1.04);
+    opacity: 0.42;
+  }
+  86% {
+    transform: translate(-500px, 800px) scale(0.96);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+}
