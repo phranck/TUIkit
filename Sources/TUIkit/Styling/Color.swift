@@ -33,6 +33,7 @@ public struct Color: Sendable, Equatable {
         case bright(ANSIColor)
         case palette256(UInt8)
         case rgb(red: UInt8, green: UInt8, blue: UInt8)
+        case semantic(SemanticColor)
     }
 
     // MARK: - Standard ANSI Colors
@@ -109,6 +110,81 @@ public struct Color: Sendable, Equatable {
 
     /// Success color
     public static let success = Self.green
+
+    // MARK: - Palette-Aware Semantic Colors
+
+    /// Namespace for palette-aware semantic colors.
+    ///
+    /// These colors are resolved at render time against the current ``Palette``
+    /// via ``resolve(with:)``. Use them in view `body` properties where no
+    /// ``RenderContext`` is available:
+    ///
+    /// ```swift
+    /// Text("Hello").foregroundColor(.palette.accent)
+    /// ```
+    public enum Semantic {
+        // Background colors
+        public static let background = Color(value: .semantic(.background))
+        public static let backgroundSecondary = Color(value: .semantic(.backgroundSecondary))
+        public static let backgroundTertiary = Color(value: .semantic(.backgroundTertiary))
+
+        // Foreground colors
+        public static let foreground = Color(value: .semantic(.foreground))
+        public static let foregroundSecondary = Color(value: .semantic(.foregroundSecondary))
+        public static let foregroundTertiary = Color(value: .semantic(.foregroundTertiary))
+
+        // Accent colors
+        public static let accent = Color(value: .semantic(.accent))
+        public static let accentSecondary = Color(value: .semantic(.accentSecondary))
+
+        // Status colors
+        public static let success = Color(value: .semantic(.success))
+        public static let warning = Color(value: .semantic(.warning))
+        public static let error = Color(value: .semantic(.error))
+        public static let info = Color(value: .semantic(.info))
+
+        // UI element colors
+        public static let border = Color(value: .semantic(.border))
+        public static let borderFocused = Color(value: .semantic(.borderFocused))
+        public static let separator = Color(value: .semantic(.separator))
+        public static let selection = Color(value: .semantic(.selection))
+        public static let selectionBackground = Color(value: .semantic(.selectionBackground))
+        public static let disabled = Color(value: .semantic(.disabled))
+
+        // Status bar colors
+        public static let statusBarBackground = Color(value: .semantic(.statusBarBackground))
+        public static let statusBarForeground = Color(value: .semantic(.statusBarForeground))
+        public static let statusBarHighlight = Color(value: .semantic(.statusBarHighlight))
+
+        // Container colors
+        public static let containerBackground = Color(value: .semantic(.containerBackground))
+        public static let containerHeaderBackground = Color(value: .semantic(.containerHeaderBackground))
+        public static let buttonBackground = Color(value: .semantic(.buttonBackground))
+    }
+
+    /// Access palette-aware semantic colors.
+    ///
+    /// Colors returned by this namespace are not resolved until render time,
+    /// when the current ``Palette`` is available via ``RenderContext``.
+    ///
+    /// ```swift
+    /// Text("Hello").foregroundColor(.palette.accent)
+    /// ```
+    public static var palette: Semantic.Type { Semantic.self }
+
+    // MARK: - Semantic Resolution
+
+    /// Resolves this color against a palette.
+    ///
+    /// Non-semantic colors are returned unchanged. Semantic colors
+    /// are mapped to the corresponding palette property.
+    ///
+    /// - Parameter palette: The palette to resolve against.
+    /// - Returns: A concrete (non-semantic) color.
+    public func resolve(with palette: any Palette) -> Color {
+        guard case .semantic(let token) = value else { return self }
+        return token.resolve(with: palette)
+    }
 
     // MARK: - Custom Colors
 

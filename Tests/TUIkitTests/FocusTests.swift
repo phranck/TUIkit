@@ -319,40 +319,28 @@ struct FocusStateTests {
 
     @Test("FocusState generates UUID if no ID provided")
     func focusStateGeneratesUUID() {
-        let state = FocusState()
+        let manager = FocusManager()
+        let state = FocusState(focusManager: manager)
         #expect(!state.id.isEmpty)
         // UUID format check
         #expect(state.id.contains("-"))
     }
 
-    @Test("FocusState isFocused reflects environment focus manager state")
+    @Test("FocusState isFocused reflects focus manager state")
     func focusStateIsFocused() {
-        // Set up a focus manager in the environment
         let manager = FocusManager()
-        var environment = EnvironmentValues()
-        environment.focusManager = manager
-        EnvironmentStorage.active.environment = environment
-
-        let state = FocusState(id: "state-test")
+        let state = FocusState(id: "state-test", focusManager: manager)
         let element = MockFocusable(id: "state-test")
 
         manager.register(element)
 
         // The element is focused, so state should report focused
         #expect(state.isFocused)
-
-        // Cleanup
-        EnvironmentStorage.active.reset()
     }
 
-    @Test("FocusState requestFocus changes focus via environment manager")
+    @Test("FocusState requestFocus changes focus via manager")
     func focusStateRequestFocus() {
-        // Set up a dedicated focus manager in the environment.
-        // Note: FocusState.requestFocus() reads from EnvironmentStorage.active,
-        // so we must set it and verify in one uninterrupted sequence.
         let manager = FocusManager()
-        var environment = EnvironmentValues()
-        environment.focusManager = manager
 
         let element1 = MockFocusable(id: "req-1")
         let element2 = MockFocusable(id: "req-2")
@@ -363,15 +351,9 @@ struct FocusStateTests {
         // First element is focused after registration
         #expect(manager.isFocused(id: "req-1"))
 
-        // Set environment, request focus, and verify — all within the
-        // EnvironmentStorage scope to minimize the race window with
-        // other test suites that also mutate EnvironmentStorage.active.
-        EnvironmentStorage.active.environment = environment
-        FocusState(id: "req-2").requestFocus()
-        let focusedReq2 = manager.isFocused(id: "req-2")
-        EnvironmentStorage.active.reset()
-
-        #expect(focusedReq2, "req-2 should be focused after requestFocus()")
+        // Request focus for second element
+        FocusState(id: "req-2", focusManager: manager).requestFocus()
+        #expect(manager.isFocused(id: "req-2"), "req-2 should be focused after requestFocus()")
     }
 }
 

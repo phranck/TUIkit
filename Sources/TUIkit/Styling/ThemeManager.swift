@@ -40,8 +40,7 @@ public protocol Cyclable: Sendable {
 /// A manager for cycling through a collection of ``Cyclable`` items.
 ///
 /// `ThemeManager` provides methods to cycle forward/backward through items,
-/// set a specific item by reference, and apply the current selection to the
-/// environment so all views pick up the change.
+/// set a specific item by reference, and apply the current selection.
 ///
 /// TUIkit uses two instances:
 /// - A ``PaletteManager`` for color palettes
@@ -58,11 +57,12 @@ public protocol Cyclable: Sendable {
 /// let name = paletteManager.currentName
 /// ```
 ///
-/// # Environment Integration
+/// # Render Integration
 ///
-/// On every change the manager writes the current item into
-/// `EnvironmentStorage.active` via the closure provided at init,
-/// then triggers a re-render through `AppState.active.setNeedsRender()`.
+/// On every change the manager triggers a re-render through
+/// `AppState.active.setNeedsRender()`. The ``RenderLoop`` picks up the
+/// current item via ``currentPalette`` / ``currentAppearance`` when
+/// building the environment for the next frame.
 public final class ThemeManager: @unchecked Sendable {
     /// The current item index.
     private var currentIndex: Int = 0
@@ -70,19 +70,12 @@ public final class ThemeManager: @unchecked Sendable {
     /// All available items in cycling order.
     public let items: [any Cyclable]
 
-    /// Closure that writes the current item into the environment.
-    private let applyToEnvironment: @Sendable (any Cyclable) -> Void
-
-    /// Creates a theme manager with the given items and environment binding.
+    /// Creates a theme manager with the given items.
     ///
-    /// - Parameters:
-    ///   - items: The items to cycle through. Must not be empty.
-    ///   - applyToEnvironment: A closure that writes the current item
-    ///     into `EnvironmentStorage.active.environment`.
-    public init(items: [any Cyclable], applyToEnvironment: @escaping @Sendable (any Cyclable) -> Void) {
+    /// - Parameter items: The items to cycle through. Must not be empty.
+    public init(items: [any Cyclable]) {
         precondition(!items.isEmpty, "ThemeManager requires at least one item")
         self.items = items
-        self.applyToEnvironment = applyToEnvironment
     }
 
     // MARK: - Current Item
@@ -135,9 +128,8 @@ public final class ThemeManager: @unchecked Sendable {
 
     // MARK: - Apply
 
-    /// Applies the current item to the environment and triggers a re-render.
+    /// Triggers a re-render so the ``RenderLoop`` picks up the new current item.
     private func applyCurrentItem() {
-        applyToEnvironment(current)
         AppState.active.setNeedsRender()
     }
 }

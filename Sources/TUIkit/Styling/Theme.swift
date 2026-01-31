@@ -174,110 +174,6 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Color Palette Extension
-
-extension Color {
-    /// Access palette colors from the current environment.
-    ///
-    /// These colors read from `EnvironmentStorage.active` during rendering.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// Text("Hello").foregroundColor(.palette.foreground)
-    /// ```
-    public static var palette: PaletteColors.Type {
-        PaletteColors.self
-    }
-
-    /// Legacy accessor kept for source compatibility.
-    ///
-    /// Prefer `.palette` for new code.
-    public static var theme: PaletteColors.Type {
-        PaletteColors.self
-    }
-}
-
-/// Namespace for palette-aware colors.
-///
-/// These properties read the current palette from the environment storage
-/// that is set during rendering.
-public enum PaletteColors {
-    /// Gets the current palette from environment storage.
-    private static var current: any Palette {
-        EnvironmentStorage.active.environment.palette
-    }
-
-    /// Primary background color.
-    public static var background: Color { current.background }
-
-    /// Secondary background color.
-    public static var backgroundSecondary: Color { current.backgroundSecondary }
-
-    /// Tertiary background color.
-    public static var backgroundTertiary: Color { current.backgroundTertiary }
-
-    /// Primary foreground color.
-    public static var foreground: Color { current.foreground }
-
-    /// Secondary foreground color.
-    public static var foregroundSecondary: Color { current.foregroundSecondary }
-
-    /// Tertiary foreground color.
-    public static var foregroundTertiary: Color { current.foregroundTertiary }
-
-    /// Primary accent color.
-    public static var accent: Color { current.accent }
-
-    /// Secondary accent color.
-    public static var accentSecondary: Color { current.accentSecondary }
-
-    /// Success color.
-    public static var success: Color { current.success }
-
-    /// Warning color.
-    public static var warning: Color { current.warning }
-
-    /// Error color.
-    public static var error: Color { current.error }
-
-    /// Info color.
-    public static var info: Color { current.info }
-
-    /// Border color.
-    public static var border: Color { current.border }
-
-    /// Focused border color.
-    public static var borderFocused: Color { current.borderFocused }
-
-    /// Separator color.
-    public static var separator: Color { current.separator }
-
-    /// Selection color.
-    public static var selection: Color { current.selection }
-
-    /// Selection background color.
-    public static var selectionBackground: Color { current.selectionBackground }
-
-    /// Disabled color.
-    public static var disabled: Color { current.disabled }
-
-    /// Status bar background.
-    public static var statusBarBackground: Color { current.statusBarBackground }
-
-    /// Status bar foreground.
-    public static var statusBarForeground: Color { current.statusBarForeground }
-
-    /// Status bar highlight.
-    public static var statusBarHighlight: Color { current.statusBarHighlight }
-
-    /// Container body background (for block appearance).
-    public static var containerBackground: Color { current.containerBackground }
-
-    /// Container header/footer background (for block appearance).
-    public static var containerHeaderBackground: Color { current.containerHeaderBackground }
-}
-
 // MARK: - Palette Registry
 
 /// Registry of available palettes.
@@ -310,14 +206,7 @@ public struct PaletteRegistry {
 
 /// Environment key for the palette manager.
 private struct PaletteManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(
-        items: PaletteRegistry.all,
-        applyToEnvironment: { item in
-            if let palette = item as? any Palette {
-                EnvironmentStorage.active.environment.palette = palette
-            }
-        }
-    )
+    static let defaultValue = ThemeManager(items: PaletteRegistry.all)
 }
 
 extension EnvironmentValues {

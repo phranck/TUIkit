@@ -841,7 +841,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-        EnvironmentStorage.active.environment = environment
         _ = renderToBuffer(view, context: context)
 
         // Check that user items were set
@@ -875,7 +874,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-        EnvironmentStorage.active.environment = environment
         _ = renderToBuffer(view, context: context)
 
         // Context items should be active
@@ -907,7 +905,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-        EnvironmentStorage.active.environment = environment
         let buffer = renderToBuffer(view, context: context)
 
         // Content should be rendered
@@ -941,7 +938,6 @@ struct StatusBarItemsModifierTests {
             environment: environment
         )
 
-        EnvironmentStorage.active.environment = environment
         _ = renderToBuffer(outerView, context: context)
 
         // Inner context should be on top
