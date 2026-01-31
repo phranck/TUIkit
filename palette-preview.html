@@ -190,6 +190,21 @@
     flex: 1;
   }
 
+  .terminal-line-rule {
+    display: flex;
+  }
+
+  .terminal-line-rule .tl-corner {
+    flex-shrink: 0;
+  }
+
+  .terminal-line-rule .tl-rule {
+    flex: 1;
+    overflow: hidden;
+    border-bottom: 1px solid currentColor;
+    height: 0.55em;
+  }
+
   .terminal-cursor {
     display: inline-block;
     width: 9px;
@@ -582,13 +597,17 @@ function termBordered(borderColor, content) {
   return `<div class="terminal-line-bordered"><span class="tl-border" style="color:${borderColor}">│</span><span class="tl-content">${content}</span><span class="tl-border" style="color:${borderColor}">│</span></div>`;
 }
 
+function termRule(borderColor, left, right) {
+  return `<div class="terminal-line-rule" style="color:${borderColor}"><span class="tl-corner">${left}</span><span class="tl-rule"></span><span class="tl-corner">${right}</span></div>`;
+}
+
 function createTerminalPreview(palette) {
   const c = palette.colors;
   const b = c.border;
   return `<div class="terminal-preview" style="background:${c.background}">
-    <div class="terminal-line"><span style="color:${b}">╭──────────────────────────────────────╮</span></div>
+    ${termRule(b, "╭", "╮")}
     ${termBordered(b, ` <span style="color:${c.containerCapBackground};background:${c.containerCapBackground}">▓▓</span> <span style="color:${c.accent}">TUIkit Demo</span><span style="color:${c.foregroundTertiary}"> ─ Dashboard</span>`)}
-    <div class="terminal-line"><span style="color:${b}">├──────────────────────────────────────┤</span></div>
+    ${termRule(b, "├", "┤")}
     ${termBordered(b, ``)}
     ${termBordered(b, `  <span style="color:${c.foreground}">Welcome to TUIkit!</span>`)}
     ${termBordered(b, `  <span style="color:${c.foregroundSecondary}">Select an option below:</span>`)}
@@ -600,7 +619,7 @@ function createTerminalPreview(palette) {
     ${termBordered(b, ``)}
     ${termBordered(b, `  <span style="background:${c.buttonBackground};color:${c.accent};padding:0 6px;border-radius:2px">[ OK ]</span>  <span style="background:${c.buttonBackground};color:${c.foregroundSecondary};padding:0 6px;border-radius:2px">[ Cancel ]</span>`)}
     ${termBordered(b, ``)}
-    <div class="terminal-line"><span style="color:${b}">╰──────────────────────────────────────╯</span></div>
+    ${termRule(b, "╰", "╯")}
   </div>
   <div class="status-bar-preview" style="background:${c.statusBarBackground}">
     <span style="color:${c.statusBarForeground}">↑↓ Navigate</span>
