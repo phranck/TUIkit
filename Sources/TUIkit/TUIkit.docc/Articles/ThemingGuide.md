@@ -4,7 +4,7 @@ Customize the visual appearance of your TUIkit application with palettes.
 
 ## Overview
 
-TUIkit includes a full theming system with five built-in palettes inspired by classic CRT terminals, plus a ``GeneratedPalette`` that derives an entire color scheme from a single hue. Palettes define semantic colors for backgrounds, foregrounds, accents, and UI elements.
+TUIkit includes a full theming system with seven built-in palettes inspired by classic CRT terminals. Palettes define semantic colors for backgrounds, foregrounds, accents, and UI elements.
 
 ## Built-in Palettes
 
@@ -12,8 +12,10 @@ TUIkit includes a full theming system with five built-in palettes inspired by cl
 |---------|--------|-------------|
 | Green | ``GreenPalette`` | IBM 5151, Apple II |
 | Amber | ``AmberPalette`` | IBM 3278, Wyse 50 |
-| White | ``WhitePalette`` | DEC VT100, VT220 |
 | Red | ``RedPalette`` | Military terminals |
+| Violet | ``VioletPalette`` | Retro sci-fi displays |
+| Blue | ``BluePalette`` | VFD displays |
+| White | ``WhitePalette`` | DEC VT100, VT220 |
 | ncurses | ``NCursesPalette`` | Classic ncurses apps |
 
 ## Using Palettes
@@ -53,7 +55,7 @@ Use ``Color/palette`` to access the current palette's colors:
 ```swift
 Text("Styled text")
     .foregroundColor(.palette.foreground)
-    .backgroundColor(.palette.backgroundSecondary)
+    .backgroundColor(.palette.containerBodyBackground)
 ```
 
 Or read the palette directly from the environment:
@@ -86,12 +88,11 @@ struct MyCustomPalette: Palette {
 
 The ``Palette`` protocol defines these semantic color categories:
 
-- **Backgrounds**: `background`, `backgroundSecondary`, `backgroundTertiary`
+- **Backgrounds**: `background`, `containerBodyBackground`, `containerCapBackground`, `buttonBackground`, `statusBarBackground`, `appHeaderBackground`, `overlayBackground`
 - **Foregrounds**: `foreground`, `foregroundSecondary`, `foregroundTertiary`
 - **Accents**: `accent`, `accentSecondary`
 - **Semantic**: `success`, `warning`, `error`, `info`
-- **UI Elements**: `border`, `borderFocused`, `separator`, `selection`, `disabled`
-- **Status Bar**: `statusBarBackground`, `statusBarForeground`, `statusBarHighlight`
-- **Containers**: `containerBackground`, `containerHeaderBackground`, `buttonBackground`
+- **UI Elements**: `border`, `borderFocused`, `separator`, `selection`, `selectionBackground`, `disabled`
+- **Status Bar**: `statusBarForeground`, `statusBarHighlight`
 
 Many of these have default implementations that derive from the primary colors, so a minimal palette only needs to define a handful of values.
