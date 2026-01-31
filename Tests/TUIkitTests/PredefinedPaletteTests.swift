@@ -2,7 +2,7 @@
 //  PredefinedPaletteTests.swift
 //  TUIkit
 //
-//  Tests for all predefined palette structs: Green, Amber, Red, Violet, Blue, White, NCurses.
+//  Tests for all predefined palette structs: Green, Amber, Red, Violet, Blue, White.
 //
 
 import Testing
@@ -37,36 +37,28 @@ struct GreenPaletteTests {
         #expect(palette.name == "Green")
     }
 
-    @Test("Green palette backgrounds get progressively brighter from app to container to buttons")
-    func greenBackgroundLuminanceOrder() throws {
+    @Test("Green palette block surfaces get progressively brighter")
+    func greenBlockSurfaceLuminanceOrder() throws {
         let palette = GreenPalette()
         let bgLum = try #require(relativeLuminance(of: palette.background))
-        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
+        let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
+        let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
+        let elevatedLum = try #require(relativeLuminance(of: palette.elevatedBackground))
 
-        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
-        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
-        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
+        #expect(bgLum < headerLum, "background should be darker than surfaceHeaderBackground")
+        #expect(bgLum < surfaceLum, "background should be darker than surfaceBackground")
+        #expect(elevatedLum > headerLum, "elevatedBackground should be brighter than surfaceHeaderBackground")
     }
 
-    @Test("Green palette foregrounds get progressively dimmer including placeholder")
+    @Test("Green palette foregrounds get progressively dimmer")
     func greenForegroundLuminanceOrder() throws {
         let palette = GreenPalette()
         let fgLum = try #require(relativeLuminance(of: palette.foreground))
         let fgSecLum = try #require(relativeLuminance(of: palette.foregroundSecondary))
         let fgTerLum = try #require(relativeLuminance(of: palette.foregroundTertiary))
-        let fgPlaceLum = try #require(relativeLuminance(of: palette.foregroundPlaceholder))
 
         #expect(fgLum > fgSecLum, "foreground should be brighter than foregroundSecondary")
         #expect(fgSecLum > fgTerLum, "foregroundSecondary should be brighter than foregroundTertiary")
-        #expect(fgTerLum > fgPlaceLum, "foregroundTertiary should be brighter than foregroundPlaceholder")
-    }
-
-    @Test("Green palette has distinct accent colors")
-    func greenAccents() {
-        let palette = GreenPalette()
-        #expect(palette.accent != palette.accentSecondary)
     }
 
     @Test("Green palette has all semantic colors")
@@ -136,17 +128,17 @@ struct VioletPaletteTests {
         #expect(palette.name == "Violet")
     }
 
-    @Test("Violet palette backgrounds get progressively brighter from app to container to buttons")
-    func violetBackgroundLuminanceOrder() throws {
+    @Test("Violet palette block surfaces get progressively brighter")
+    func violetBlockSurfaceLuminanceOrder() throws {
         let palette = VioletPalette()
         let bgLum = try #require(relativeLuminance(of: palette.background))
-        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
+        let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
+        let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
+        let elevatedLum = try #require(relativeLuminance(of: palette.elevatedBackground))
 
-        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
-        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
-        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
+        #expect(bgLum < headerLum, "background should be darker than surfaceHeaderBackground")
+        #expect(bgLum < surfaceLum, "background should be darker than surfaceBackground")
+        #expect(elevatedLum > headerLum, "elevatedBackground should be brighter than surfaceHeaderBackground")
     }
 
     @Test("Violet palette colors differ from green palette")
@@ -170,17 +162,17 @@ struct BluePaletteTests {
         #expect(palette.name == "Blue")
     }
 
-    @Test("Blue palette backgrounds get progressively brighter from app to container to buttons")
-    func blueBackgroundLuminanceOrder() throws {
+    @Test("Blue palette block surfaces get progressively brighter")
+    func blueBlockSurfaceLuminanceOrder() throws {
         let palette = BluePalette()
         let bgLum = try #require(relativeLuminance(of: palette.background))
-        let bodyLum = try #require(relativeLuminance(of: palette.containerBodyBackground))
-        let capLum = try #require(relativeLuminance(of: palette.containerCapBackground))
-        let buttonLum = try #require(relativeLuminance(of: palette.buttonBackground))
+        let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
+        let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
+        let elevatedLum = try #require(relativeLuminance(of: palette.elevatedBackground))
 
-        #expect(bgLum < capLum, "background should be darker than containerCapBackground")
-        #expect(bgLum < bodyLum, "background should be darker than containerBodyBackground")
-        #expect(buttonLum > capLum, "buttonBackground should be brighter than containerCapBackground")
+        #expect(bgLum < headerLum, "background should be darker than surfaceHeaderBackground")
+        #expect(bgLum < surfaceLum, "background should be darker than surfaceBackground")
+        #expect(elevatedLum > headerLum, "elevatedBackground should be brighter than surfaceHeaderBackground")
     }
 
     @Test("Blue palette colors differ from violet palette")
@@ -190,29 +182,4 @@ struct BluePaletteTests {
         #expect(blue.foreground != violet.foreground)
         #expect(blue.accent != violet.accent)
     }
-}
-
-// MARK: - NCurses Palette Tests
-
-@Suite("NCurses Palette Tests")
-struct NCursesPaletteTests {
-
-    @Test("NCurses palette has correct identity")
-    func ncursesIdentity() {
-        let palette = NCursesPalette()
-        #expect(palette.id == "ncurses")
-        #expect(palette.name == "ncurses")
-    }
-
-    @Test("NCurses palette uses standard terminal colors")
-    func ncursesUsesStandardColors() {
-        let palette = NCursesPalette()
-        #expect(palette.background == .black)
-        #expect(palette.foreground == .white)
-        #expect(palette.accent == .cyan)
-        #expect(palette.success == .green)
-        #expect(palette.warning == .yellow)
-        #expect(palette.error == .red)
-    }
-
 }

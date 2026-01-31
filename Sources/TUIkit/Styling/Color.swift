@@ -123,24 +123,24 @@ public struct Color: Sendable, Equatable {
     /// Text("Hello").foregroundColor(.palette.accent)
     /// ```
     public enum Semantic {
-        // Background colors
+        // Background colors (Palette)
         public static let background = Color(value: .semantic(.background))
-        public static let containerBodyBackground = Color(value: .semantic(.containerBodyBackground))
-        public static let containerCapBackground = Color(value: .semantic(.containerCapBackground))
-        public static let buttonBackground = Color(value: .semantic(.buttonBackground))
         public static let statusBarBackground = Color(value: .semantic(.statusBarBackground))
         public static let appHeaderBackground = Color(value: .semantic(.appHeaderBackground))
         public static let overlayBackground = Color(value: .semantic(.overlayBackground))
+
+        // Background colors (BlockPalette)
+        public static let surfaceBackground = Color(value: .semantic(.surfaceBackground))
+        public static let surfaceHeaderBackground = Color(value: .semantic(.surfaceHeaderBackground))
+        public static let elevatedBackground = Color(value: .semantic(.elevatedBackground))
 
         // Foreground colors
         public static let foreground = Color(value: .semantic(.foreground))
         public static let foregroundSecondary = Color(value: .semantic(.foregroundSecondary))
         public static let foregroundTertiary = Color(value: .semantic(.foregroundTertiary))
-        public static let foregroundPlaceholder = Color(value: .semantic(.foregroundPlaceholder))
 
         // Accent colors
         public static let accent = Color(value: .semantic(.accent))
-        public static let accentSecondary = Color(value: .semantic(.accentSecondary))
 
         // Status colors
         public static let success = Color(value: .semantic(.success))
@@ -294,14 +294,69 @@ public struct Color: Sendable, Equatable {
         adjusted(by: -amount)
     }
 
+    // MARK: - RGB Conversion
+
+    /// The RGB components of this color.
+    ///
+    /// Converts any color type to its RGB representation:
+    /// - `.rgb` — returned directly
+    /// - `.standard` / `.bright` — mapped to xterm standard RGB values
+    /// - `.palette256` — mapped to xterm 256-color palette RGB values
+    /// - `.semantic` — returns nil (must be resolved first via ``resolve(with:)``)
+    public var rgbComponents: (red: UInt8, green: UInt8, blue: UInt8)? {
+        switch value {
+        case .rgb(let red, let green, let blue):
+            return (red, green, blue)
+        case .standard(let ansi):
+            return ansi.rgbValues
+        case .bright(let ansi):
+            return ansi.brightRGBValues
+        case .palette256(let index):
+            return Self.palette256ToRGB(index)
+        case .semantic:
+            return nil
+        }
+    }
+
+    /// Converts a 256-color palette index to RGB values.
+    ///
+    /// - Indices 0–7: standard ANSI colors
+    /// - Indices 8–15: bright ANSI colors
+    /// - Indices 16–231: 6×6×6 color cube
+    /// - Indices 232–255: grayscale ramp
+    private static func palette256ToRGB(_ index: UInt8) -> (red: UInt8, green: UInt8, blue: UInt8) {
+        switch index {
+        case 0...7:
+            guard let ansi = ANSIColor(rawValue: index) else { return (0, 0, 0) }
+            return ansi.rgbValues
+        case 8...15:
+            guard let ansi = ANSIColor(rawValue: index - 8) else { return (0, 0, 0) }
+            return ansi.brightRGBValues
+        case 16...231:
+            // 6×6×6 color cube: index = 16 + 36*r + 6*g + b (each 0–5)
+            let cubeIndex = index - 16
+            let cubeRed = cubeIndex / 36
+            let cubeGreen = (cubeIndex % 36) / 6
+            let cubeBlue = cubeIndex % 6
+            let channelMap: [UInt8] = [0, 95, 135, 175, 215, 255]
+            return (channelMap[Int(cubeRed)], channelMap[Int(cubeGreen)], channelMap[Int(cubeBlue)])
+        default:
+            // Grayscale ramp: 232–255 → 8, 18, 28, ..., 238
+            let gray = UInt8(8 + Int(index - 232) * 10)
+            return (gray, gray, gray)
+        }
+    }
+
     /// Adjusts brightness by a signed amount.
     ///
-    /// Positive values lighten, negative values darken.
+    /// Positive values lighten, negative values darken. Works with all color types
+    /// (ANSI, 256-palette, RGB) by converting to RGB first. The result is always
+    /// an RGB color.
     ///
     /// - Parameter amount: The adjustment amount (-1 to 1).
-    /// - Returns: The adjusted color, or self if not an RGB color.
+    /// - Returns: The adjusted color as RGB, or self if semantic (unresolved).
     private func adjusted(by amount: Double) -> Self {
-        guard case .rgb(let red, let green, let blue) = value else {
+        guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
@@ -316,12 +371,13 @@ public struct Color: Sendable, Equatable {
     /// Returns a color with adjusted opacity (simulated via color mixing).
     ///
     /// Since terminals don't support true transparency, this mixes
-    /// the color with black to simulate opacity.
+    /// the color with black to simulate opacity. Works with all color types
+    /// by converting to RGB first.
     ///
     /// - Parameter opacity: The opacity (0-1).
-    /// - Returns: A color simulating the given opacity.
+    /// - Returns: A color simulating the given opacity, or self if semantic.
     public func opacity(_ opacity: Double) -> Self {
-        guard case .rgb(let red, let green, let blue) = value else {
+        guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
@@ -365,5 +421,37 @@ enum ANSIColor: UInt8, Sendable {
     /// The ANSI code for bright background color (100-107).
     var brightBackgroundCode: UInt8 {
         100 + rawValue
+    }
+
+    // MARK: - xterm Standard RGB Values
+
+    /// The standard RGB values for this ANSI color (xterm defaults).
+    var rgbValues: (red: UInt8, green: UInt8, blue: UInt8) {
+        switch self {
+        case .black:   return (0, 0, 0)
+        case .red:     return (205, 0, 0)
+        case .green:   return (0, 205, 0)
+        case .yellow:  return (205, 205, 0)
+        case .blue:    return (0, 0, 238)
+        case .magenta: return (205, 0, 205)
+        case .cyan:    return (0, 205, 205)
+        case .white:   return (229, 229, 229)
+        case .default: return (229, 229, 229)
+        }
+    }
+
+    /// The bright RGB values for this ANSI color (xterm defaults).
+    var brightRGBValues: (red: UInt8, green: UInt8, blue: UInt8) {
+        switch self {
+        case .black:   return (127, 127, 127)
+        case .red:     return (255, 0, 0)
+        case .green:   return (0, 255, 0)
+        case .yellow:  return (255, 255, 0)
+        case .blue:    return (92, 92, 255)
+        case .magenta: return (255, 0, 255)
+        case .cyan:    return (0, 255, 255)
+        case .white:   return (255, 255, 255)
+        case .default: return (255, 255, 255)
+        }
     }
 }
