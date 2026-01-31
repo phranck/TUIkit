@@ -18,24 +18,24 @@
 /// Text("Hello").foregroundColor(.palette.accent)
 /// ```
 enum SemanticColor: String, Sendable, Equatable {
-    // Background
+    // Background (Palette)
     case background
-    case containerBodyBackground
-    case containerCapBackground
-    case buttonBackground
     case statusBarBackground
     case appHeaderBackground
     case overlayBackground
+
+    // Background (BlockPalette)
+    case surfaceBackground
+    case surfaceHeaderBackground
+    case elevatedBackground
 
     // Foreground
     case foreground
     case foregroundSecondary
     case foregroundTertiary
-    case foregroundPlaceholder
 
     // Accent
     case accent
-    case accentSecondary
 
     // Status
     case success
@@ -48,28 +48,37 @@ enum SemanticColor: String, Sendable, Equatable {
 
     /// Resolves this token to a concrete color using the given palette.
     ///
+    /// For ``BlockPalette``-specific tokens (`surfaceBackground`,
+    /// `surfaceHeaderBackground`, `elevatedBackground`), the palette is
+    /// cast to ``BlockPalette``. If the cast fails, `background` is used
+    /// as fallback.
+    ///
     /// - Parameter palette: The palette to read from.
     /// - Returns: The concrete ``Color`` from the palette.
     func resolve(with palette: any Palette) -> Color {
         switch self {
+        // Palette properties
         case .background: palette.background
-        case .containerBodyBackground: palette.containerBodyBackground
-        case .containerCapBackground: palette.containerCapBackground
-        case .buttonBackground: palette.buttonBackground
         case .statusBarBackground: palette.statusBarBackground
         case .appHeaderBackground: palette.appHeaderBackground
         case .overlayBackground: palette.overlayBackground
         case .foreground: palette.foreground
         case .foregroundSecondary: palette.foregroundSecondary
         case .foregroundTertiary: palette.foregroundTertiary
-        case .foregroundPlaceholder: palette.foregroundPlaceholder
         case .accent: palette.accent
-        case .accentSecondary: palette.accentSecondary
         case .success: palette.success
         case .warning: palette.warning
         case .error: palette.error
         case .info: palette.info
         case .border: palette.border
+
+        // BlockPalette properties (fallback to background)
+        case .surfaceBackground:
+            (palette as? any BlockPalette)?.surfaceBackground ?? palette.background
+        case .surfaceHeaderBackground:
+            (palette as? any BlockPalette)?.surfaceHeaderBackground ?? palette.background
+        case .elevatedBackground:
+            (palette as? any BlockPalette)?.elevatedBackground ?? palette.background
         }
     }
 }

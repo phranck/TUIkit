@@ -236,7 +236,7 @@ extension Menu: Renderable {
                 style.isBold = true
                 style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
                 // Use a dimmed version of the accent color for background
-                style.backgroundColor = palette.containerBodyBackground
+                style.backgroundColor = palette.blockSurfaceBackground
             } else {
                 // Use palette foreground color if no custom itemColor is set
                 style.foregroundColor = itemColor?.resolve(with: palette) ?? palette.foreground
@@ -348,8 +348,8 @@ extension Menu: Renderable {
         var result: [String] = []
 
         if isBlockStyle {
-            let headerFooterBg = palette.containerCapBackground
-            let bodyBg = palette.containerBodyBackground
+            let headerFooterBg = palette.blockSurfaceHeaderBackground
+            let bodyBg = palette.blockSurfaceBackground
             let hasHeader = dividerLineIndex != nil
 
             // Top border
