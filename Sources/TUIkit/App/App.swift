@@ -78,22 +78,8 @@ internal final class AppRunner<A: App> {
         self.statusBar = StatusBarState()
         self.focusManager = FocusManager()
         self.tuiContext = TUIContext()
-        self.paletteManager = ThemeManager(
-            items: PaletteRegistry.all,
-            applyToEnvironment: { item in
-                if let palette = item as? any Palette {
-                    EnvironmentStorage.active.environment.palette = palette
-                }
-            }
-        )
-        self.appearanceManager = ThemeManager(
-            items: AppearanceRegistry.all,
-            applyToEnvironment: { item in
-                if let appearance = item as? Appearance {
-                    EnvironmentStorage.active.environment.appearance = appearance
-                }
-            }
-        )
+        self.paletteManager = ThemeManager(items: PaletteRegistry.all)
+        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all)
 
         // Configure status bar style
         self.statusBar.style = .bordered
@@ -126,9 +112,6 @@ internal final class AppRunner<A: App> {
         terminal.enterAlternateScreen()
         terminal.hideCursor()
         terminal.enableRawMode()
-
-        // Set up environment with all managed subsystems
-        EnvironmentStorage.active.environment = renderer.buildEnvironment()
 
         // Register for state changes
         AppState.active.observe { [signals] in
@@ -169,7 +152,6 @@ internal final class AppRunner<A: App> {
         terminal.showCursor()
         terminal.exitAlternateScreen()
         AppState.active.clearObservers()
-        EnvironmentStorage.active.reset()
         focusManager.clear()
         tuiContext.reset()
     }

@@ -30,9 +30,9 @@ struct TextStylesPage: View {
             DemoSection("Combined Styles") {
                 Text("Bold + Italic").bold().italic()
                 Text("Bold + Underline").bold().underline()
-                Text("Bold + Color").bold().foregroundColor(.theme.accent)
+                Text("Bold + Color").bold().foregroundColor(.palette.accent)
                 Text("Italic + Dim").italic().dim()
-                Text("All combined").bold().italic().underline().foregroundColor(.theme.accent)
+                Text("All combined").bold().italic().underline().foregroundColor(.palette.accent)
             }
 
             DemoSection("Special Effects") {

@@ -122,7 +122,7 @@ struct AppearanceManagerTests {
 
     /// Creates a ThemeManager for appearances (test helper).
     private func makeAppearanceManager(items: [Appearance] = AppearanceRegistry.all) -> ThemeManager {
-        ThemeManager(items: items, applyToEnvironment: { _ in })
+        ThemeManager(items: items)
     }
 
     @Test("ThemeManager for appearances can be instantiated")
@@ -181,8 +181,7 @@ struct AppearanceEnvironmentTests {
     func managerEnvironmentSet() {
         var env = EnvironmentValues()
         let customManager = ThemeManager(
-            items: [Appearance.line, Appearance.block] as [Appearance],
-            applyToEnvironment: { _ in }
+            items: [Appearance.line, Appearance.block] as [Appearance]
         )
         env.appearanceManager = customManager
         #expect(env.appearanceManager.items.count == 2)
