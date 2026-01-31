@@ -92,7 +92,6 @@ The ``Palette`` protocol defines these semantic color categories:
 - **Foregrounds**: `foreground`, `foregroundSecondary`, `foregroundTertiary`
 - **Accents**: `accent`, `accentSecondary`
 - **Semantic**: `success`, `warning`, `error`, `info`
-- **UI Elements**: `border`, `borderFocused`, `separator`, `selection`, `selectionBackground`, `disabled`
-- **Status Bar**: `statusBarForeground`, `statusBarHighlight`
+- **UI Elements**: `border`
 
 Many of these have default implementations that derive from the primary colors, so a minimal palette only needs to define a handful of values.
