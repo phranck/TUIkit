@@ -34,8 +34,7 @@
     .palette-header { padding: 18px 20px 14px; }
     .palette-name { font-size: 22px; }
     .palette-body { padding: 18px 20px; }
-    .terminal-preview { font-size: 11px; padding: 12px 10px; overflow-x: auto; }
-    .status-bar-preview { font-size: 11px; flex-wrap: wrap; gap: 8px; }
+
     .hue-wheel { flex-direction: column; gap: 12px; padding: 16px; }
     .hue-legend { justify-content: center; }
   }
@@ -161,73 +160,7 @@
     text-align: center;
   }
 
-  /* Terminal preview */
-  .terminal-preview {
-    border-radius: 8px;
-    padding: 18px 20px;
-    font-family: "SF Mono", "Fira Code", "Cascadia Code", "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
-    font-size: 15px;
-    line-height: 1.3;
-    margin-top: 20px;
-    border: 1px solid rgba(255,255,255,0.04);
-    overflow-x: auto;
-  }
 
-  .terminal-line {
-    white-space: pre;
-  }
-
-  .terminal-line-bordered {
-    display: flex;
-    white-space: pre;
-  }
-
-  .terminal-line-bordered .tl-border {
-    flex-shrink: 0;
-  }
-
-  .terminal-line-bordered .tl-content {
-    flex: 1;
-  }
-
-  .terminal-line-rule {
-    display: flex;
-  }
-
-  .terminal-line-rule .tl-corner {
-    flex-shrink: 0;
-  }
-
-  .terminal-line-rule .tl-rule {
-    flex: 1;
-    overflow: hidden;
-    border-bottom: 1px solid currentColor;
-    height: 0.55em;
-  }
-
-  .terminal-cursor {
-    display: inline-block;
-    width: 9px;
-    height: 17px;
-    vertical-align: text-bottom;
-    animation: blink 1.2s step-end infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  /* Status bar preview */
-  .status-bar-preview {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 16px;
-    font-family: "SF Mono", "Fira Code", "Cascadia Code", "JetBrains Mono", Menlo, Monaco, "Courier New", monospace;
-    font-size: 14px;
-    border-radius: 5px;
-    margin-top: 10px;
-  }
 
   /* Existing palette section - more compact */
   .existing-grid {
@@ -593,41 +526,6 @@ function createSwatch(color, label) {
   </div>`;
 }
 
-function termBordered(borderColor, content) {
-  return `<div class="terminal-line-bordered"><span class="tl-border" style="color:${borderColor}">│</span><span class="tl-content">${content}</span><span class="tl-border" style="color:${borderColor}">│</span></div>`;
-}
-
-function termRule(borderColor, left, right) {
-  return `<div class="terminal-line-rule" style="color:${borderColor}"><span class="tl-corner">${left}</span><span class="tl-rule"></span><span class="tl-corner">${right}</span></div>`;
-}
-
-function createTerminalPreview(palette) {
-  const c = palette.colors;
-  const b = c.border;
-  return `<div class="terminal-preview" style="background:${c.background}">
-    ${termRule(b, "╭", "╮")}
-    ${termBordered(b, ` <span style="color:${c.containerCapBackground};background:${c.containerCapBackground}">▓▓</span> <span style="color:${c.accent}">TUIkit Demo</span><span style="color:${c.foregroundTertiary}"> ─ Dashboard</span>`)}
-    ${termRule(b, "├", "┤")}
-    ${termBordered(b, ``)}
-    ${termBordered(b, `  <span style="color:${c.foreground}">Welcome to TUIkit!</span>`)}
-    ${termBordered(b, `  <span style="color:${c.foregroundSecondary}">Select an option below:</span>`)}
-    ${termBordered(b, ``)}
-    ${termBordered(b, `  <span style="background:${c.selectionBackground};color:${c.selection}"> ▸ Components </span>`)}
-    ${termBordered(b, `    <span style="color:${c.foregroundSecondary}">Colors</span>`)}
-    ${termBordered(b, `    <span style="color:${c.foregroundSecondary}">Layout</span>`)}
-    ${termBordered(b, `    <span style="color:${c.foregroundTertiary}">Settings</span>`)}
-    ${termBordered(b, ``)}
-    ${termBordered(b, `  <span style="background:${c.buttonBackground};color:${c.accent};padding:0 6px;border-radius:2px">[ OK ]</span>  <span style="background:${c.buttonBackground};color:${c.foregroundSecondary};padding:0 6px;border-radius:2px">[ Cancel ]</span>`)}
-    ${termBordered(b, ``)}
-    ${termRule(b, "╰", "╯")}
-  </div>
-  <div class="status-bar-preview" style="background:${c.statusBarBackground}">
-    <span style="color:${c.statusBarForeground}">↑↓ Navigate</span>
-    <span style="color:${c.statusBarHighlight}">⏎ Select</span>
-    <span style="color:${c.statusBarForeground}">⎋ Quit  │  Theme: ${palette.name}</span>
-  </div>`;
-}
-
 function renderNewPalettes() {
   const container = document.getElementById("new-palettes");
   let html = "";
@@ -652,7 +550,6 @@ function renderNewPalettes() {
       </div>
       <div class="palette-body">
         ${swatchesHtml}
-        ${createTerminalPreview(palette)}
       </div>
     </div>`;
   }
