@@ -26,31 +26,6 @@
     margin: 0 auto;
   }
 
-  @media (max-width: 768px) {
-    body { padding: 24px 16px 60px; font-size: 16px; }
-    h1 { font-size: 32px; }
-    h2 { font-size: 24px; margin: 40px 0 20px; }
-    .subtitle { font-size: 17px; margin-bottom: 36px; }
-    .palette-header { padding: 18px 20px 14px; }
-    .palette-name { font-size: 22px; }
-    .palette-body { padding: 18px 20px; }
-
-    .hue-wheel { flex-direction: column; gap: 12px; padding: 16px; }
-    .hue-legend { justify-content: center; }
-  }
-
-  @media (max-width: 900px) {
-    .palette-grid { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 480px) {
-    body { padding: 16px 12px 40px; }
-    h1 { font-size: 26px; }
-    .swatch-row { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
-    .swatch-color { height: 32px; }
-    .existing-grid { grid-template-columns: 1fr; }
-  }
-
   h1 {
     font-size: 44px;
     font-weight: 700;
@@ -196,6 +171,7 @@
     border: 1px solid rgba(255,255,255,0.06);
   }
 
+  /* Hue distribution bar */
   .hue-wheel {
     display: flex;
     align-items: center;
@@ -263,6 +239,34 @@
     height: 3px;
     border-radius: 2px;
   }
+
+  /* ── Responsive ──────────────────────────────────────────────────── */
+
+  @media (max-width: 900px) {
+    .palette-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 24px 16px 60px; font-size: 16px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 24px; margin: 40px 0 20px; }
+    .subtitle { font-size: 17px; margin-bottom: 36px; }
+    .palette-header { padding: 18px 20px 14px; }
+    .palette-name { font-size: 22px; }
+    .palette-body { padding: 18px 20px; }
+    .hue-wheel { flex-direction: column; gap: 12px; padding: 16px; }
+    .hue-bar { width: 100%; height: 16px; flex: none; }
+    .hue-legend { justify-content: center; }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 16px 12px 40px; }
+    h1 { font-size: 26px; }
+    .swatch-row { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+    .swatch-color { height: 32px; }
+    .existing-grid { grid-template-columns: 1fr; }
+  }
+
 </style>
 </head>
 <body>
@@ -274,19 +278,17 @@
 <div class="hue-wheel">
   <div class="hue-bar">
     <!-- Existing palettes -->
-    <div class="hue-marker hue-marker-existing" style="left: 0%;" title="Red (0deg)"></div>
-    <div class="hue-marker hue-marker-existing" style="left: 8.3%;" title="Amber (30deg)"></div>
-    <div class="hue-marker hue-marker-existing" style="left: 33.3%;" title="Green (120deg)"></div>
-    <div class="hue-marker hue-marker-existing" style="left: 58.3%;" title="Blue (210deg)"></div>
-    <div class="hue-marker hue-marker-existing" style="left: 75%;" title="Violet (270deg)"></div>
-    <!-- White is achromatic, skip -->
-
+    <div class="hue-marker hue-marker-existing" style="left: 0%;" title="Red (0°)"></div>
+    <div class="hue-marker hue-marker-existing" style="left: 8.3%;" title="Amber (30°)"></div>
+    <div class="hue-marker hue-marker-existing" style="left: 33.3%;" title="Green (120°)"></div>
+    <div class="hue-marker hue-marker-existing" style="left: 58.3%;" title="Blue (210°)"></div>
+    <div class="hue-marker hue-marker-existing" style="left: 75%;" title="Violet (270°)"></div>
     <!-- New palettes -->
-    <div class="hue-marker hue-marker-new" style="left: 4.2%;" title="Coral (15deg)"></div>
-    <div class="hue-marker hue-marker-new" style="left: 12.5%;" title="Gold (45deg)"></div>
-    <div class="hue-marker hue-marker-new" style="left: 50%;" title="Teal (180deg)"></div>
-    <div class="hue-marker hue-marker-new" style="left: 54.2%;" title="Frost (195deg)"></div>
-    <div class="hue-marker hue-marker-new" style="left: 88.9%;" title="Magenta (320deg)"></div>
+    <div class="hue-marker hue-marker-new" style="left: 4.2%;" title="Coral (15°)"></div>
+    <div class="hue-marker hue-marker-new" style="left: 12.5%;" title="Gold (45°)"></div>
+    <div class="hue-marker hue-marker-new" style="left: 50%;" title="Teal (180°)"></div>
+    <div class="hue-marker hue-marker-new" style="left: 54.2%;" title="Frost (195°)"></div>
+    <div class="hue-marker hue-marker-new" style="left: 88.9%;" title="Magenta (320°)"></div>
   </div>
   <div class="hue-legend">
     <span><span class="hue-legend-mark" style="background: rgba(255,255,255,0.4);"></span>Existing</span>
@@ -316,6 +318,7 @@ const newPalettes = [
       foreground:               "#00DDC0",
       foregroundSecondary:      "#00AA94",
       foregroundTertiary:       "#007A6B",
+      foregroundPlaceholder:    "#00574C",
       accent:                   "#33FFE0",
       accentSecondary:          "#00BB9E",
       success:                  "#33FFAA",
@@ -323,12 +326,7 @@ const newPalettes = [
       error:                    "#FF6633",
       info:                     "#66FFEE",
       border:                   "#2D5A55",
-      borderFocused:            "#00DDC0",
-      selection:                "#33FFE0",
-      selectionBackground:      "#1A4D47",
       statusBarBackground:      "#0D1E1D",
-      statusBarForeground:      "#00CCAE",
-      statusBarHighlight:       "#33FFE0",
       buttonBackground:         "#144542",
       appHeaderBackground:      "#0A1B1C",
       overlayBackground:        "#060A0A",
@@ -344,6 +342,7 @@ const newPalettes = [
       foreground:               "#FF44CC",
       foregroundSecondary:      "#CC33A3",
       foregroundTertiary:       "#8F2472",
+      foregroundPlaceholder:    "#661952",
       accent:                   "#FF77DD",
       accentSecondary:          "#DD33AA",
       success:                  "#FF88DD",
@@ -351,12 +350,7 @@ const newPalettes = [
       error:                    "#FF6633",
       info:                     "#FF99EE",
       border:                   "#5A2D50",
-      borderFocused:            "#FF44CC",
-      selection:                "#FF77DD",
-      selectionBackground:      "#4D1A42",
       statusBarBackground:      "#180D19",
-      statusBarForeground:      "#EE3BBB",
-      statusBarHighlight:       "#FF77DD",
       buttonBackground:         "#3A1D3A",
       appHeaderBackground:      "#1C0E1E",
       overlayBackground:        "#0A060A",
@@ -372,6 +366,7 @@ const newPalettes = [
       foreground:               "#DDAA22",
       foregroundSecondary:      "#BB8E1A",
       foregroundTertiary:       "#8A6814",
+      foregroundPlaceholder:    "#634B0E",
       accent:                   "#FFCC44",
       accentSecondary:          "#CC9922",
       success:                  "#DDCC44",
@@ -379,12 +374,7 @@ const newPalettes = [
       error:                    "#FF6633",
       info:                     "#EEBB55",
       border:                   "#5A4D2D",
-      borderFocused:            "#DDAA22",
-      selection:                "#FFCC44",
-      selectionBackground:      "#4D4020",
       statusBarBackground:      "#191508",
-      statusBarForeground:      "#CC9E1E",
-      statusBarHighlight:       "#FFCC44",
       buttonBackground:         "#3A3018",
       appHeaderBackground:      "#1C170A",
       overlayBackground:        "#0A0906",
@@ -400,6 +390,7 @@ const newPalettes = [
       foreground:               "#FF7744",
       foregroundSecondary:      "#CC5E36",
       foregroundTertiary:       "#8F4226",
+      foregroundPlaceholder:    "#66301B",
       accent:                   "#FF9966",
       accentSecondary:          "#DD6633",
       success:                  "#FFAA77",
@@ -407,12 +398,7 @@ const newPalettes = [
       error:                    "#FF4433",
       info:                     "#FFBB88",
       border:                   "#5A3A2D",
-      borderFocused:            "#FF7744",
-      selection:                "#FF9966",
-      selectionBackground:      "#4D2E1F",
       statusBarBackground:      "#190F0A",
-      statusBarForeground:      "#EE6E3B",
-      statusBarHighlight:       "#FF9966",
       buttonBackground:         "#3A2418",
       appHeaderBackground:      "#1E100C",
       overlayBackground:        "#0A0706",
@@ -428,6 +414,7 @@ const newPalettes = [
       foreground:               "#88DDFF",
       foregroundSecondary:      "#66AACC",
       foregroundTertiary:       "#4A7A99",
+      foregroundPlaceholder:    "#35586E",
       accent:                   "#AAEEFF",
       accentSecondary:          "#66BBDD",
       success:                  "#88EEBB",
@@ -435,12 +422,7 @@ const newPalettes = [
       error:                    "#FF6633",
       info:                     "#BBEEFF",
       border:                   "#2D4A5A",
-      borderFocused:            "#88DDFF",
-      selection:                "#AAEEFF",
-      selectionBackground:      "#1A3A4D",
       statusBarBackground:      "#0D1720",
-      statusBarForeground:      "#77CCEE",
-      statusBarHighlight:       "#AAEEFF",
       buttonBackground:         "#142D3E",
       appHeaderBackground:      "#0A151E",
       overlayBackground:        "#060809",
@@ -453,69 +435,85 @@ const existingPalettes = [
     name: "Green",
     desc: "P1 phosphor",
     fg: "#33FF33",
-    colors: ["#060A07","#0E271C","#0A1B13","#33FF33","#27C227","#1F8F1F","#66FF66","#00CC00",
-             "#33FF33","#CCFF33","#FF6633","#33FFCC","#2D5A2D","#33FF33","#66FF66","#1A4D1A",
-             "#0F2215","#2FDD2F","#66FF66","#0E271C","#0A1B13","#145523"]
+    colors: ["#060A07","#0E271C","#0A1B13",
+             "#33FF33","#27C227","#1F8F1F","#165A16",
+             "#66FF66","#00CC00",
+             "#33FF33","#CCFF33","#FF6633","#33FFCC",
+             "#2D5A2D",
+             "#0F2215","#145523","#0A1B13","#060A07"]
   },
   {
     name: "Amber",
     desc: "P3 phosphor",
     fg: "#FFAA00",
-    colors: ["#0A0706","#251710","#1E110E","#FFAA00","#CC8800","#8F6600","#FFCC33","#CC9900",
-             "#FFCC00","#FFE066","#FF6633","#FFD966","#5A4A2D","#FFAA00","#FFCC33","#4D3A1F",
-             "#191613","#FFAA00","#FFCC33","#251710","#1E110E","#3A2A1D"]
+    colors: ["#0A0706","#251710","#1E110E",
+             "#FFAA00","#CC8800","#8F6600","#664D00",
+             "#FFCC33","#CC9900",
+             "#FFCC00","#FFE066","#FF6633","#FFD966",
+             "#5A4A2D",
+             "#191613","#3A2A1D","#1E110E","#0A0706"]
   },
   {
     name: "Red",
     desc: "Military",
     fg: "#FF4444",
-    colors: ["#0A0606","#281112","#1E0F10","#FF4444","#CC3333","#8F2222","#FF6666","#CC4444",
-             "#FF8080","#FFAA66","#FFFFFF","#FF9999","#5A2D2D","#FF4444","#FF6666","#4D1F1F",
-             "#191313","#F23B3B","#FF6666","#281112","#1E0F10","#3A1F22"]
+    colors: ["#0A0606","#281112","#1E0F10",
+             "#FF4444","#CC3333","#8F2222","#661616",
+             "#FF6666","#CC4444",
+             "#FF8080","#FFAA66","#FFFFFF","#FF9999",
+             "#5A2D2D",
+             "#191313","#3A1F22","#1E0F10","#0A0606"]
   },
   {
     name: "Violet",
     desc: "Sci-fi",
-    fg: "#BB77FF",
-    colors: ["#08060A","#1A0F2B","#11091D","#BB77FF","#8F4DD6","#6B33A3","#CC99FF","#9F40E0",
-             "#66FF66","#FFCC33","#FF6666","#7799FF","#33265A","#BB77FF","#CC99FF","#2E1A50",
-             "#120A1E","#AA66EE","#CC99FF","#1A0F2B","#11091D","#281744"]
+    fg: "#B275EF",
+    colors: ["#070509","#190F23","#110B18",
+             "#B275EF","#8C3BDC","#6528A3","#47236B",
+             "#C697F6","#7F1FDF",
+             "#E4A567","#EF75B2","#A5F159","#7CB2E8",
+             "#3F2659",
+             "#140D1B","#261537","#110B18","#070509"]
   },
   {
     name: "Blue",
     desc: "VFD",
     fg: "#00AAFF",
-    colors: ["#060708","#0E1825","#0A121C","#00AAFF","#0088CC","#006699","#33BBFF","#0099DD",
-             "#33CCFF","#66CCFF","#FF6633","#99DDFF","#2D4A5A","#00AAFF","#33BBFF","#1A3A4D",
-             "#0F1822","#0099EE","#33BBFF","#0E1825","#0A121C","#14304A"]
+    colors: ["#060708","#0E1825","#0A121C",
+             "#00AAFF","#0088CC","#006699","#004D73",
+             "#33BBFF","#0099DD",
+             "#33CCFF","#66CCFF","#FF6633","#99DDFF",
+             "#2D4A5A",
+             "#0F1822","#14304A","#0A121C","#060708"]
   },
   {
     name: "White",
     desc: "P4 phosphor",
     fg: "#E8E8E8",
-    colors: ["#06070A","#111A2A","#0D131D","#E8E8E8","#B0B0B0","#787878","#FFFFFF","#C0C0C0",
-             "#C0FFC0","#FFE0A0","#FFA0A0","#A0D0FF","#484848","#E8E8E8","#FFFFFF","#3A3A3A",
-             "#131619","#DCDCDC","#FFFFFF","#111A2A","#0D131D","#1D2535"]
+    colors: ["#06070A","#111A2A","#0D131D",
+             "#E8E8E8","#B0B0B0","#787878","#505050",
+             "#FFFFFF","#C0C0C0",
+             "#C0FFC0","#FFE0A0","#FFA0A0","#A0D0FF",
+             "#484848",
+             "#131619","#1D2535","#0D131D","#06070A"]
   },
 ];
 
 const colorLabels = [
   "background","containerBodyBackground","containerCapBackground",
-  "foreground","foregroundSecondary","foregroundTertiary",
+  "foreground","foregroundSecondary","foregroundTertiary","foregroundPlaceholder",
   "accent","accentSecondary",
   "success","warning","error","info",
-  "border","borderFocused","selection","selectionBackground",
-  "statusBarBg","statusBarFg","statusBarHighlight",
-  "buttonBg","appHeaderBg","overlayBg"
+  "border",
+  "statusBarBackground","buttonBackground","appHeaderBackground","overlayBackground"
 ];
 
 const swatchGroups = [
-  { title: "Backgrounds", keys: ["background","containerBodyBackground","containerCapBackground","buttonBackground","appHeaderBackground","overlayBackground"] },
-  { title: "Foregrounds", keys: ["foreground","foregroundSecondary","foregroundTertiary"] },
+  { title: "Backgrounds", keys: ["background","containerBodyBackground","containerCapBackground","buttonBackground","statusBarBackground","appHeaderBackground","overlayBackground"] },
+  { title: "Foregrounds", keys: ["foreground","foregroundSecondary","foregroundTertiary","foregroundPlaceholder"] },
   { title: "Accents", keys: ["accent","accentSecondary"] },
   { title: "Semantic", keys: ["success","warning","error","info"] },
-  { title: "UI Elements", keys: ["border","borderFocused","selection","selectionBackground"] },
-  { title: "Status Bar", keys: ["statusBarBackground","statusBarForeground","statusBarHighlight"] },
+  { title: "UI Elements", keys: ["border"] },
 ];
 
 function camelToLabel(key) {
