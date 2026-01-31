@@ -13,7 +13,7 @@ import Foundation
 /// with terminal cursor positioning. It is a thin wrapper — the actual
 /// rendering dispatch happens in `renderToBuffer`, not here.
 ///
-/// The main app uses ``RenderLoop`` instead, which owns the full
+/// The main app uses `RenderLoop` instead, which owns the full
 /// pipeline (environment assembly, lifecycle, status bar). Use
 /// `ViewRenderer` for one-off rendering outside the main loop.
 public final class ViewRenderer {
