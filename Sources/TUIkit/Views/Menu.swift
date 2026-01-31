@@ -68,13 +68,13 @@ public struct MenuItem: Identifiable {
 /// ```
 public struct Menu: View {
     /// The menu title (optional).
-    public let title: String?
+    let title: String?
 
     /// The menu items.
-    public let items: [MenuItem]
+    let items: [MenuItem]
 
     /// The currently selected item index.
-    public var selectedIndex: Int
+    var selectedIndex: Int
 
     /// Binding to the selection (for interactive menus).
     private let selectionBinding: Binding<Int>?
@@ -83,19 +83,19 @@ public struct Menu: View {
     private let onSelect: ((Int) -> Void)?
 
     /// The style for unselected items.
-    public let itemColor: Color?
+    let itemColor: Color?
 
     /// The style for the selected item.
-    public let selectedColor: Color?
+    let selectedColor: Color?
 
     /// The indicator for the selected item.
-    public let selectionIndicator: String
+    let selectionIndicator: String
 
     /// The border style (nil for no border).
-    public let borderStyle: BorderStyle?
+    let borderStyle: BorderStyle?
 
     /// The border color.
-    public let borderColor: Color?
+    let borderColor: Color?
 
     /// Creates a static menu (non-interactive).
     ///
@@ -173,7 +173,7 @@ public struct Menu: View {
 // MARK: - Menu Rendering
 
 extension Menu: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
 
         // Register key handlers if this is an interactive menu

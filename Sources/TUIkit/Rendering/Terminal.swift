@@ -31,14 +31,14 @@ import Foundation
 /// - Terminal size queries
 /// - Raw mode configuration
 /// - Safe input and output
-public final class Terminal: @unchecked Sendable {
+final class Terminal: @unchecked Sendable {
     /// The width of the terminal in characters.
-    public var width: Int {
+    var width: Int {
         getSize().width
     }
 
     /// The height of the terminal in lines.
-    public var height: Int {
+    var height: Int {
         getSize().height
     }
 
@@ -49,7 +49,7 @@ public final class Terminal: @unchecked Sendable {
     private var originalTermios: termios?
 
     /// Creates a new terminal instance.
-    public init() {}
+    init() {}
 
     /// Destructor ensures raw mode is disabled.
     deinit {
@@ -63,7 +63,7 @@ public final class Terminal: @unchecked Sendable {
     /// Returns the current terminal size.
     ///
     /// - Returns: A tuple with width and height in characters/lines.
-    public func getSize() -> (width: Int, height: Int) {
+    func getSize() -> (width: Int, height: Int) {
         var windowSize = winsize()
 
         #if canImport(Glibc) || canImport(Musl)
@@ -91,7 +91,7 @@ public final class Terminal: @unchecked Sendable {
     /// - Each keystroke is reported immediately (without Enter)
     /// - Echo is disabled
     /// - Signals like Ctrl+C are not automatically processed
-    public func enableRawMode() {
+    func enableRawMode() {
         guard !isRawMode else { return }
 
         var raw = termios()
@@ -133,7 +133,7 @@ public final class Terminal: @unchecked Sendable {
     }
 
     /// Disables raw mode and restores normal terminal operation.
-    public func disableRawMode() {
+    func disableRawMode() {
         guard isRawMode, var original = originalTermios else { return }
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &original)
         isRawMode = false
@@ -150,7 +150,7 @@ public final class Terminal: @unchecked Sendable {
     /// or `nonisolated(unsafe)` workarounds.
     ///
     /// - Parameter string: The string to write.
-    public func write(_ string: String) {
+    func write(_ string: String) {
         string.utf8CString.withUnsafeBufferPointer { buffer in
             // buffer includes null terminator — exclude it
             let count = buffer.count - 1
@@ -169,12 +169,12 @@ public final class Terminal: @unchecked Sendable {
     /// Writes a string and moves to a new line.
     ///
     /// - Parameter string: The string to write.
-    public func writeLine(_ string: String = "") {
+    func writeLine(_ string: String = "") {
         write(string + "\n")
     }
 
     /// Clears the screen and moves cursor to position (1,1).
-    public func clear() {
+    func clear() {
         write(ANSIRenderer.clearScreen + ANSIRenderer.moveCursor(toRow: 1, column: 1))
     }
 
@@ -184,7 +184,7 @@ public final class Terminal: @unchecked Sendable {
     /// Use this to set a consistent background before rendering content.
     ///
     /// - Parameter color: The background color to fill.
-    public func fillBackground(_ color: Color) {
+    func fillBackground(_ color: Color) {
         let size = getSize()
         let bgCode = ANSIRenderer.backgroundCode(for: color)
 
@@ -206,17 +206,17 @@ public final class Terminal: @unchecked Sendable {
     /// - Parameters:
     ///   - row: The row (1-based).
     ///   - column: The column (1-based).
-    public func moveCursor(toRow row: Int, column: Int) {
+    func moveCursor(toRow row: Int, column: Int) {
         write(ANSIRenderer.moveCursor(toRow: row, column: column))
     }
 
     /// Hides the cursor.
-    public func hideCursor() {
+    func hideCursor() {
         write(ANSIRenderer.hideCursor)
     }
 
     /// Shows the cursor.
-    public func showCursor() {
+    func showCursor() {
         write(ANSIRenderer.showCursor)
     }
 
@@ -226,12 +226,12 @@ public final class Terminal: @unchecked Sendable {
     ///
     /// The alternate buffer is useful for TUI apps, as the original
     /// terminal content is restored when exiting.
-    public func enterAlternateScreen() {
+    func enterAlternateScreen() {
         write(ANSIRenderer.enterAlternateScreen)
     }
 
     /// Exits the alternate screen buffer.
-    public func exitAlternateScreen() {
+    func exitAlternateScreen() {
         write(ANSIRenderer.exitAlternateScreen)
     }
 
@@ -243,7 +243,7 @@ public final class Terminal: @unchecked Sendable {
     /// for a maximum of 100ms).
     ///
     /// - Returns: The read character or nil on timeout/error.
-    public func readChar() -> Character? {
+    func readChar() -> Character? {
         var byte: UInt8 = 0
         let bytesRead = read(STDIN_FILENO, &byte, 1)
 
@@ -260,7 +260,7 @@ public final class Terminal: @unchecked Sendable {
     ///
     /// - Parameter maxBytes: Maximum bytes to read (default: 8).
     /// - Returns: The bytes read, or empty array on timeout/error.
-    public func readBytes(maxBytes: Int = 8) -> [UInt8] {
+    func readBytes(maxBytes: Int = 8) -> [UInt8] {
         var buffer = [UInt8](repeating: 0, count: maxBytes)
         let bytesRead = read(STDIN_FILENO, &buffer, 1)
 
@@ -286,7 +286,7 @@ public final class Terminal: @unchecked Sendable {
     /// as it properly handles escape sequences.
     ///
     /// - Returns: The key event, or nil on timeout/error.
-    public func readKeyEvent() -> KeyEvent? {
+    func readKeyEvent() -> KeyEvent? {
         let bytes = readBytes()
         guard !bytes.isEmpty else { return nil }
         return KeyEvent.parse(bytes)
@@ -295,7 +295,7 @@ public final class Terminal: @unchecked Sendable {
     /// Reads a complete line from the terminal.
     ///
     /// - Returns: The input line without newline.
-    public func readLine() -> String? {
+    func readLine() -> String? {
         Swift.readLine()
     }
 }

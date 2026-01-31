@@ -92,9 +92,6 @@ struct MyApp: App {
 - ``Box``
 - ``Card``
 - ``Panel``
-- ``ContainerView``
-- ``ContainerConfig``
-- ``ContainerStyle``
 
 ### State Management
 
@@ -116,7 +113,6 @@ struct MyApp: App {
 
 - ``Palette``
 - ``ThemeManager``
-- ``PaletteRegistry``
 - ``GreenPalette``
 - ``AmberPalette``
 - ``WhitePalette``
@@ -127,8 +123,6 @@ struct MyApp: App {
 ### Colors
 
 - ``Color``
-- ``ANSIColor``
-- ``SemanticColor``
 - ``TextStyle``
 
 ### View Composition
@@ -168,10 +162,8 @@ struct MyApp: App {
 
 ### Rendering
 
-- ``Renderable``
 - ``FrameBuffer``
 - ``RenderContext``
-- ``Terminal``
 
 ### Persistence
 

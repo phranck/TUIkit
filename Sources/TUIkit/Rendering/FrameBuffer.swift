@@ -13,6 +13,10 @@
 /// 3. The final root buffer is flushed to the terminal
 ///
 /// Each line in the buffer is a string that may contain ANSI escape codes.
+///
+/// - Important: This is framework infrastructure used as the rendering primitive in
+///   ``ViewModifier/modify(buffer:context:)``. Most developers don't need to interact
+///   with this type directly.
 public struct FrameBuffer {
     /// The lines of rendered content (may contain ANSI escape codes).
     public var lines: [String]
