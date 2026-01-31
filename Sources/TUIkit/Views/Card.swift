@@ -5,21 +5,48 @@
 //  A styled container view with optional header, content, and footer.
 //
 
-/// A container view that displays content in a card-like appearance.
+/// A padded, optionally titled container with background support.
 ///
-/// `Card` combines border, background, and padding into a single
-/// convenient container. It supports optional title (header) and footer.
+/// `Card` is the most feature-rich of the simple containers. It combines
+/// border, inner padding, optional background color, optional title, and
+/// optional footer into one view. Everything is optional — a bare `Card`
+/// with no title or footer still adds padding (default: 1 on all sides),
+/// giving content room to breathe inside the border.
+///
+/// ## How Card Differs from Box and Panel
+///
+/// | Feature | Box | Card | Panel |
+/// |---------|-----|------|-------|
+/// | Border | Yes | Yes | Yes |
+/// | Padding | No | **Yes (default: 1 all sides)** | Yes (default: horizontal 1) |
+/// | Background color | No | **Optional** | No |
+/// | Title | No | **Optional** | Required |
+/// | Footer | No | **Optional** | Optional |
+/// | Rendering | Composite (`body`) | Primitive (`Renderable`) | Primitive (`Renderable`) |
+///
+/// Use `Card` when content needs **visual padding and optional structure**.
+/// A ``Box`` is too tight (no padding), and a ``Panel`` forces you to
+/// provide a title. `Card` sits in between: comfortable defaults, with the
+/// option to add a title, footer, and background as needed.
+///
+/// ## Typical Use Cases
+///
+/// - Displaying a block of information (user profile, system status)
+/// - Self-contained content sections in a dashboard layout
+/// - Forms or detail views with an action footer (Save / Cancel)
+/// - Highlighted content with a distinct background color
 ///
 /// ## Structure
 ///
-/// - **Header**: Optional title (in border for standard appearances, separate section for block)
-/// - **Body**: Main content
-/// - **Footer**: Optional, typically buttons
+/// - **Header**: Optional title (rendered in the top border for standard
+///   appearances, as a separate section for block appearance)
+/// - **Body**: Main content, wrapped in configurable padding
+/// - **Footer**: Optional, typically ``Button`` or ``ButtonRow``
 ///
 /// ## Examples
 ///
 /// ```swift
-/// // Simple card (no title)
+/// // Simple card — padding, border, no title
 /// Card {
 ///     Text("Card content goes here")
 /// }
@@ -29,8 +56,8 @@
 ///     Text("Card content")
 /// }
 ///
-/// // Card with title and footer
-/// Card(title: "User Info") {
+/// // Card with title, footer, and background
+/// Card(title: "User Info", backgroundColor: .palette.containerBackground) {
 ///     Text("Name: John")
 ///     Text("Email: john@example.com")
 /// } footer: {
