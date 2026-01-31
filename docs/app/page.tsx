@@ -253,7 +253,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/30 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-8 text-center">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-0.5 px-6 py-8 text-center">
           <span className="text-base text-muted">
             Made with ❤️ in Bregenz
           </span>
@@ -267,7 +267,7 @@ export default function Home() {
             href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 text-xs text-muted/70 transition-colors hover:text-foreground"
+            className="mt-6 text-xs text-muted/70 transition-colors hover:text-foreground"
           >
             CC BY-NC-SA 4.0
           </a>
