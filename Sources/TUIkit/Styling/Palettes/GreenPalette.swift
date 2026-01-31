@@ -15,13 +15,14 @@ public struct GreenPalette: Palette {
 
     // Background hierarchy
     public let background = Color.hex(0x060A07)  // App background (darkest)
-    public let backgroundSecondary = Color.hex(0x0E271C)  // Container body background (brighter)
-    public let backgroundTertiary = Color.hex(0x0A1B13)  // Header/footer background
+    public let containerBodyBackground = Color.hex(0x0E271C)  // Container content background
+    public let containerCapBackground = Color.hex(0x0A1B13)  // Container header/footer background
 
     // Green text hierarchy
     public let foreground = Color.hex(0x33FF33)  // Bright green - primary text
     public let foregroundSecondary = Color.hex(0x27C227)  // Medium green - secondary text
     public let foregroundTertiary = Color.hex(0x1F8F1F)  // Dim green - tertiary/muted text
+    public let foregroundPlaceholder = Color.hex(0x165A16)  // Faint green - placeholder text
 
     // Accent colors
     public let accent = Color.hex(0x66FF66)  // Lighter green for highlights
@@ -35,18 +36,11 @@ public struct GreenPalette: Palette {
 
     // UI elements
     public let border = Color.hex(0x2D5A2D)  // Subtle green border
-    public let borderFocused = Color.hex(0x33FF33)  // Bright when focused
-    public let selection = Color.hex(0x66FF66)  // Bright green for selection text
-    public let selectionBackground = Color.hex(0x1A4D1A)  // Dark green for selection bar bg
 
-    // Status bar
+    // Additional backgrounds
     public let statusBarBackground = Color.hex(0x0F2215)  // Dark green for status bar
-    public let statusBarForeground = Color.hex(0x2FDD2F)  // Slightly dimmer than primary foreground
-    public let statusBarHighlight = Color.hex(0x66FF66)
-
-    // Container colors for block appearance
-    public var containerBackground: Color { backgroundSecondary }  // #0E271C - body
-    public var containerHeaderBackground: Color { backgroundTertiary }  // #0A1B13 - header/footer
+    public let appHeaderBackground = Color.hex(0x0A1B13)  // Same as cap
+    public let overlayBackground = Color.hex(0x060A07)  // Dimming overlay
     public var buttonBackground: Color { Color.hex(0x145523) }  // Lighter green for buttons
 
     public init() {}
