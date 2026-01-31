@@ -5,22 +5,39 @@
 //  A simple bordered container view.
 //
 
-/// A simple bordered container view.
+/// A minimal bordered container — just a border, nothing else.
 ///
-/// `Box` wraps content in a border without additional styling, padding, or background.
-/// It's the most minimal container - just a border around content.
+/// `Box` wraps content in a border without adding padding, background color,
+/// title, or footer. It is the thinnest container in TUIkit: content sits
+/// directly against the border characters.
 ///
-/// # Choosing the Right Container
+/// ## How Box Differs from Card and Panel
 ///
-/// - **Box**: Minimal - just a border, no padding or background
-/// - **Card**: Padded and filled - includes padding and subtle background
-/// - **Panel**: Titled box - includes optional title in the border
-/// - **ContainerView**: Full-featured - header, body, footer sections
+/// | Feature | Box | Card | Panel |
+/// |---------|-----|------|-------|
+/// | Border | Yes | Yes | Yes |
+/// | Padding | **No** | Yes (default: 1 all sides) | Yes (default: horizontal 1) |
+/// | Background color | **No** | Optional | No |
+/// | Title | **No** | Optional | **Required** |
+/// | Footer | **No** | Optional | Optional |
+/// | Rendering | Composite (`body`) | Primitive (`Renderable`) | Primitive (`Renderable`) |
 ///
-/// # Appearance Integration
+/// Use `Box` when you need a **visual boundary** without any structural
+/// overhead — for example to visually separate a block of text, highlight a
+/// code snippet, or frame a single value. If you need inner spacing, a
+/// heading, or action buttons, reach for ``Card`` or ``Panel`` instead.
 ///
-/// `Box` respects the current ``Appearance`` style. By default, it uses the
-/// theme's border color and the current appearance (rounded, doubleLine, etc.):
+/// ## Typical Use Cases
+///
+/// - Framing a single value or status indicator
+/// - Visually grouping a few lines of output
+/// - Wrapping content that already manages its own padding
+/// - Quick debug borders during layout development
+///
+/// ## Appearance Integration
+///
+/// `Box` respects the current ``Appearance`` style. By default it uses the
+/// theme's border color and the active appearance (rounded, doubleLine, etc.):
 ///
 /// ```swift
 /// Box {
@@ -37,32 +54,20 @@
 /// }
 /// ```
 ///
-/// # Example - Basic Usage
+/// ## Examples
 ///
 /// ```swift
+/// // Minimal border around content
 /// Box {
 ///     Text("Simple bordered content")
 /// }
-/// ```
 ///
-/// # Example - Custom Styling
-///
-/// ```swift
-/// VStack {
-///     Box(.doubleLine, color: .brightCyan) {
-///         Text("Double-line border")
-///         Text("In cyan")
-///     }
-///
-///     Box(.line, color: .yellow) {
-///         Text("Thin ASCII border")
-///     }
+/// // Custom border style and color
+/// Box(.doubleLine, color: .brightCyan) {
+///     Text("Double-line border in cyan")
 /// }
-/// ```
 ///
-/// # Example - With Multiple Children
-///
-/// ```swift
+/// // Multiple children
 /// Box {
 ///     VStack(spacing: 1) {
 ///         Text("Item 1").bold()
@@ -72,14 +77,14 @@
 /// }
 /// ```
 ///
-/// # Size Behavior
+/// ## Size Behavior
 ///
 /// The `Box` size is determined by its content:
 /// - If content has a fixed size, `Box` will be that size plus border
 /// - If content is flexible, `Box` expands to fill available space
 /// - Content inside `Box` respects its layout constraints
 ///
-/// # Rendering
+/// ## Rendering
 ///
 /// `Box` is a **composite view** — it does not conform to ``Renderable``.
 /// Instead, it uses `body` to delegate to `content.border(...)`, which

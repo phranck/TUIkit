@@ -5,15 +5,45 @@
 //  A titled container view with optional footer.
 //
 
-/// A bordered container with a title and optional footer.
+/// A labeled container — always has a title, optionally a footer.
 ///
-/// `Panel` is useful for grouping content with a visible label,
-/// similar to a fieldset in HTML or a group box in desktop UIs.
+/// `Panel` groups content under a visible heading. The title is mandatory,
+/// which makes it the right choice when the user needs to know *what* a
+/// section contains at a glance. Think of it as an HTML `<fieldset>` or
+/// a desktop "group box".
+///
+/// ## How Panel Differs from Box and Card
+///
+/// | Feature | Box | Card | Panel |
+/// |---------|-----|------|-------|
+/// | Border | Yes | Yes | Yes |
+/// | Padding | No | Yes (default: 1 all sides) | **Yes (default: horizontal 1)** |
+/// | Background color | No | Optional | **No** |
+/// | Title | No | Optional | **Required** |
+/// | Footer | No | Optional | **Optional** |
+/// | Rendering | Composite (`body`) | Primitive (`Renderable`) | Primitive (`Renderable`) |
+///
+/// Use `Panel` when the section **must have a label**. A ``Box`` has no
+/// title at all, and a ``Card`` makes it optional — so if you skip the
+/// title on a Card, there's nothing telling the user what they're looking
+/// at. Panel enforces that every instance has a visible heading.
+///
+/// Note that Panel has **less default padding** than Card (horizontal 1
+/// only, no vertical) and does **not** support background colors. This
+/// keeps it lightweight — if you need a background or generous padding,
+/// use ``Card`` instead.
+///
+/// ## Typical Use Cases
+///
+/// - Settings or configuration sections ("Network", "Display", "Audio")
+/// - Grouping related form fields under a heading
+/// - Sidebar sections with a labeled header
+/// - Any place where a named region helps orientation
 ///
 /// ## Behavior by Appearance
 ///
 /// - **Standard appearances** (line, rounded, doubleLine, heavy):
-///   Title is rendered IN the top border.
+///   Title is rendered **in the top border** (e.g. `┤ Settings ├`).
 ///
 /// - **Block appearance**:
 ///   Title becomes a separate header section with darker background.
@@ -21,7 +51,7 @@
 /// ## Examples
 ///
 /// ```swift
-/// // Simple panel
+/// // Simple panel — title is the first argument
 /// Panel("Settings") {
 ///     Text("Option 1")
 ///     Text("Option 2")
