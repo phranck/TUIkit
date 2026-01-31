@@ -150,15 +150,6 @@ public struct Color: Sendable, Equatable {
 
         // UI element colors
         public static let border = Color(value: .semantic(.border))
-        public static let borderFocused = Color(value: .semantic(.borderFocused))
-        public static let separator = Color(value: .semantic(.separator))
-        public static let selection = Color(value: .semantic(.selection))
-        public static let selectionBackground = Color(value: .semantic(.selectionBackground))
-        public static let disabled = Color(value: .semantic(.disabled))
-
-        // Status bar colors
-        public static let statusBarForeground = Color(value: .semantic(.statusBarForeground))
-        public static let statusBarHighlight = Color(value: .semantic(.statusBarHighlight))
     }
 
     /// Access palette-aware semantic colors.

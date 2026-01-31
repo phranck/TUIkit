@@ -165,7 +165,7 @@ public struct Button: View {
                 foregroundColor: nil,  // Will use theme.accent at render time
                 backgroundColor: style.backgroundColor,
                 borderStyle: style.borderStyle,
-                borderColor: nil,  // Will use theme.borderFocused at render time
+                borderColor: nil,  // Will use palette.accent at render time
                 isBold: true,
                 horizontalPadding: style.horizontalPadding
             )
@@ -232,7 +232,7 @@ extension Button: Renderable {
         var textStyle = TextStyle()
         let palette = context.environment.palette
         if isDisabled {
-            textStyle.foregroundColor = palette.disabled
+            textStyle.foregroundColor = palette.foregroundTertiary
         } else {
             // Use palette accent if no explicit color is set
             textStyle.foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
@@ -258,7 +258,7 @@ extension Button: Renderable {
             if borderStyle != .none {
                 let borderColor: Color
                 if isDisabled {
-                    borderColor = palette.disabled
+                    borderColor = palette.foregroundTertiary
                 } else {
                     borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
                 }
@@ -275,7 +275,7 @@ extension Button: Renderable {
                 let effectiveBorderStyle = context.environment.appearance.borderStyle
                 let borderColor: Color
                 if isDisabled {
-                    borderColor = palette.disabled
+                    borderColor = palette.foregroundTertiary
                 } else {
                     borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
                 }
