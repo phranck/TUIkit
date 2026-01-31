@@ -174,7 +174,7 @@ public final class PreferenceStorage: @unchecked Sendable {
     ///
     /// Clears all accumulated callbacks and resets the value stack
     /// to a single empty context. Called at the start of each frame
-    /// by ``RenderLoop/render()`` to prevent callback accumulation.
+    /// by `RenderLoop.render()` to prevent callback accumulation.
     public func beginRenderPass() {
         callbacks.removeAll()
         stack = [PreferenceValues()]
@@ -182,7 +182,7 @@ public final class PreferenceStorage: @unchecked Sendable {
 
     /// Resets all preference state.
     ///
-    /// Called once during app shutdown by ``TUIContext/reset()``.
+    /// Called once during app shutdown by `TUIContext.reset()`.
     public func reset() {
         stack = [PreferenceValues()]
         callbacks.removeAll()

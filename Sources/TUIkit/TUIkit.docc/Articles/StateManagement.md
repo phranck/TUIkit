@@ -47,7 +47,7 @@ let binding = Binding.constant(42)
 
 ## @Environment
 
-``Environment`` reads values propagated down the view hierarchy:
+``EnvironmentValues`` provides values propagated down the view hierarchy:
 
 ```swift
 struct MyView: View {
