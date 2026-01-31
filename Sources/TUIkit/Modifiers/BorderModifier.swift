@@ -55,7 +55,7 @@ extension BorderedView: Renderable {
 
     /// Renders with standard box-drawing characters.
     private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle, palette: any Palette) -> FrameBuffer {
-        let borderColor = color ?? palette.border
+        let borderColor = color?.resolve(with: palette) ?? palette.border
         var lines: [String] = []
 
         lines.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderColor))

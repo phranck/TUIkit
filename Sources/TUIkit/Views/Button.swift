@@ -235,9 +235,9 @@ extension Button: Renderable {
             textStyle.foregroundColor = palette.disabled
         } else {
             // Use palette accent if no explicit color is set
-            textStyle.foregroundColor = currentStyle.foregroundColor ?? palette.accent
+            textStyle.foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
         }
-        textStyle.backgroundColor = currentStyle.backgroundColor
+        textStyle.backgroundColor = currentStyle.backgroundColor?.resolve(with: palette)
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
         // In block appearance, add buttonBackground to button
@@ -260,7 +260,7 @@ extension Button: Renderable {
                 if isDisabled {
                     borderColor = palette.disabled
                 } else {
-                    borderColor = currentStyle.borderColor ?? palette.border
+                    borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
                 }
                 buffer = applyBorder(
                     to: buffer,
@@ -277,7 +277,7 @@ extension Button: Renderable {
                 if isDisabled {
                     borderColor = palette.disabled
                 } else {
-                    borderColor = currentStyle.borderColor ?? palette.border
+                    borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
                 }
                 buffer = applyBorder(
                     to: buffer,
