@@ -4,14 +4,14 @@ A visual reference for all built-in color palettes with their exact color values
 
 ## Overview
 
-TUIkit ships with **7 palettes** — 5 handcrafted phosphor themes, 1 classic ncurses theme, and 1 algorithmically generated theme. Each palette defines 24 semantic color tokens that the framework resolves at render time.
+TUIkit ships with **7 palettes** — 5 handcrafted phosphor themes, 1 classic ncurses theme, and 1 violet theme generated from a single base hue. Each palette defines semantic color tokens that the framework resolves at render time.
 
 Users access palette colors via `Color.palette.*`:
 
 ```swift
 Text("Hello")
     .foregroundColor(.palette.accent)
-    .background(.palette.backgroundSecondary)
+    .background(.palette.containerBodyBackground)
 ```
 
 Cycle through palettes at runtime by pressing `t` (default binding), or set a specific palette programmatically:
@@ -26,12 +26,12 @@ Every palette must define colors for these 6 categories:
 
 | Category | Tokens | Purpose |
 |----------|--------|---------|
-| **Background** | `background`, `backgroundSecondary`, `backgroundTertiary` | App background, containers, nested elements |
+| **Background** | `background`, `containerBodyBackground`, `containerCapBackground`, `buttonBackground`, `statusBarBackground`, `appHeaderBackground`, `overlayBackground` | App background, container body/cap, buttons, status bar, overlays |
 | **Foreground** | `foreground`, `foregroundSecondary`, `foregroundTertiary` | Primary, secondary, and tertiary text |
 | **Accent** | `accent`, `accentSecondary` | Interactive elements, highlights |
 | **Semantic** | `success`, `warning`, `error`, `info` | Status indicators |
 | **UI Elements** | `border`, `borderFocused`, `separator`, `selection`, `selectionBackground`, `disabled` | Borders, dividers, selection states |
-| **Component** | `statusBar*`, `container*`, `buttonBackground` | Status bar, container headers/bodies, buttons |
+| **Status Bar** | `statusBarForeground`, `statusBarHighlight` | Status bar text and highlights |
 
 Only 8 tokens are required — the remaining 16 have sensible defaults derived from the required ones. See <doc:ThemingGuide> for details on creating custom palettes.
 
@@ -46,8 +46,8 @@ Inspired by P1 phosphor CRT monitors (IBM 5151, Apple II). This is the default p
 | Token | Hex | RGB | Description |
 |-------|-----|-----|-------------|
 | `background` | `#060A07` | (6, 10, 7) | Near-black with green tint |
-| `backgroundSecondary` | `#0E271C` | (14, 39, 28) | Dark green for containers |
-| `backgroundTertiary` | `#0A1B13` | (10, 27, 19) | Nested elements |
+| `containerBodyBackground` | `#0E271C` | (14, 39, 28) | Container content area |
+| `containerCapBackground` | `#0A1B13` | (10, 27, 19) | Container header/footer |
 | `foreground` | `#33FF33` | (51, 255, 51) | Classic phosphor green |
 | `foregroundSecondary` | `#27C227` | (39, 194, 39) | Dimmer green |
 | `foregroundTertiary` | `#1F8F1F` | (31, 143, 31) | Subtle green |
@@ -87,8 +87,8 @@ Inspired by P3 phosphor CRT monitors (IBM 3278, Wyse 50). Warm amber tones remin
 | Token | Hex | RGB | Description |
 |-------|-----|-----|-------------|
 | `background` | `#0A0706` | (10, 7, 6) | Near-black with warm tint |
-| `backgroundSecondary` | `#251710` | (37, 23, 16) | Dark amber for containers |
-| `backgroundTertiary` | `#1E110E` | (30, 17, 14) | Nested elements |
+| `containerBodyBackground` | `#251710` | (37, 23, 16) | Container content area |
+| `containerCapBackground` | `#1E110E` | (30, 17, 14) | Container header/footer |
 | `foreground` | `#FFAA00` | (255, 170, 0) | Classic amber phosphor |
 | `foregroundSecondary` | `#CC8800` | (204, 136, 0) | Dimmer amber |
 | `foregroundTertiary` | `#8F6600` | (143, 102, 0) | Subtle amber |
@@ -128,8 +128,8 @@ Inspired by P4 phosphor CRT monitors (DEC VT100, VT220). Clean monochrome with c
 | Token | Hex | RGB | Description |
 |-------|-----|-----|-------------|
 | `background` | `#06070A` | (6, 7, 10) | Near-black with blue tint |
-| `backgroundSecondary` | `#111A2A` | (17, 26, 42) | Dark blue for containers |
-| `backgroundTertiary` | `#0D131D` | (13, 19, 29) | Nested elements |
+| `containerBodyBackground` | `#111A2A` | (17, 26, 42) | Container content area |
+| `containerCapBackground` | `#0D131D` | (13, 19, 29) | Container header/footer |
 | `foreground` | `#E8E8E8` | (232, 232, 232) | Off-white text |
 | `foregroundSecondary` | `#B0B0B0` | (176, 176, 176) | Light gray |
 | `foregroundTertiary` | `#787878` | (120, 120, 120) | Medium gray |
@@ -169,8 +169,8 @@ Inspired by military and night-vision-friendly displays. Preserves scotopic (nig
 | Token | Hex | RGB | Description |
 |-------|-----|-----|-------------|
 | `background` | `#0A0606` | (10, 6, 6) | Near-black with red tint |
-| `backgroundSecondary` | `#281112` | (40, 17, 18) | Dark red for containers |
-| `backgroundTertiary` | `#1E0F10` | (30, 15, 16) | Nested elements |
+| `containerBodyBackground` | `#281112` | (40, 17, 18) | Container content area |
+| `containerCapBackground` | `#1E0F10` | (30, 15, 16) | Container header/footer |
 | `foreground` | `#FF4444` | (255, 68, 68) | Bright red text |
 | `foregroundSecondary` | `#CC3333` | (204, 51, 51) | Dimmer red |
 | `foregroundTertiary` | `#8F2222` | (143, 34, 34) | Subtle red |
@@ -210,8 +210,8 @@ Classic ncurses terminal colors (htop, Midnight Commander, vim). The only palett
 | Token | ANSI Color | Code | Description |
 |-------|-----------|------|-------------|
 | `background` | Black | 30/40 | Terminal default black |
-| `backgroundSecondary` | Blue | 34/44 | Classic ncurses panel blue |
-| `backgroundTertiary` | Bright Black | 90/100 | Dark gray |
+| `containerBodyBackground` | Blue | 34/44 | Classic ncurses panel blue |
+| `containerCapBackground` | Bright Black | 90/100 | Dark gray |
 | `foreground` | White | 37/47 | Standard white |
 | `foregroundSecondary` | Bright White | 97/107 | Brighter white |
 | `foregroundTertiary` | Bright Black | 90/100 | Gray (dimmed) |
@@ -243,15 +243,15 @@ Classic ncurses terminal colors (htop, Midnight Commander, vim). The only palett
 
 > Tip: Use the ncurses palette when targeting terminals with limited color support (SSH sessions, older terminal emulators, or 16-color environments).
 
-## Violet (Generated)
+## Violet
 
-An algorithmically generated palette based on HSL color theory. Demonstrates the ``GeneratedPalette`` system.
+An algorithmically generated palette based on HSL color theory with a base hue of 270°. All colors are derived from this single hue using saturation and lightness variations.
 
-**Palette type:** ``GeneratedPalette`` · **Hue:** 270° · **ID:** `"generated-violet"`
+**Palette type:** ``VioletPalette`` · **ID:** `"violet"`
 
-### How Generated Palettes Work
+### How VioletPalette Works
 
-``GeneratedPalette`` takes a base hue (0–360°) and derives all 24 color tokens using HSL relationships:
+``VioletPalette`` takes a base hue (270°) and derives all color tokens using HSL relationships:
 
 - **Backgrounds** — Base hue at very low lightness (3–10%) with reduced saturation
 - **Foregrounds** — Base hue at medium-high lightness (40–70%)
@@ -264,13 +264,11 @@ An algorithmically generated palette based on HSL color theory. Demonstrates the
 
 ### Violet Token Values
 
-All values shown at default saturation (100%):
-
 | Token | HSL | Description |
 |-------|-----|-------------|
 | `background` | hsl(270, 30%, 3%) | Near-black with violet tint |
-| `backgroundSecondary` | hsl(270, 40%, 10%) | Dark violet |
-| `backgroundTertiary` | hsl(270, 35%, 7%) | Nested elements |
+| `containerBodyBackground` | hsl(270, 40%, 10%) | Container content area |
+| `containerCapBackground` | hsl(270, 35%, 7%) | Container header/footer |
 | `foreground` | hsl(270, 80%, 70%) | Light violet text |
 | `foregroundSecondary` | hsl(270, 70%, 55%) | Medium violet |
 | `foregroundTertiary` | hsl(270, 60%, 40%) | Dim violet |
@@ -289,16 +287,6 @@ All values shown at default saturation (100%):
 | `statusBarHighlight` | hsl(270, 85%, 78%) | Bright lavender |
 | `buttonBackground` | hsl(270, 45%, 15%) | Dark purple |
 
-### Creating Custom Generated Palettes
-
-```swift
-// Create a palette from any hue
-let oceanPalette = GeneratedPalette(name: "Ocean", hue: 200)
-
-// Reduce saturation for a more muted look
-let mutedPalette = GeneratedPalette(name: "Muted", hue: 200, saturation: 60)
-```
-
 ## Palette Cycling Order
 
 When pressing `t` to cycle themes, palettes rotate in this order:
@@ -306,12 +294,12 @@ When pressing `t` to cycle themes, palettes rotate in this order:
 | # | Palette | Type |
 |---|---------|------|
 | 1 | Green (default) | Handcrafted |
-| 2 | Generated Green | Generated (hue 120°) |
-| 3 | Amber | Handcrafted |
-| 4 | White | Handcrafted |
-| 5 | Red | Handcrafted |
-| 6 | ncurses | Handcrafted (ANSI) |
-| 7 | Violet | Generated (hue 270°) |
+| 2 | Amber | Handcrafted |
+| 3 | Red | Handcrafted |
+| 4 | Violet | HSL-generated (hue 270°) |
+| 5 | Blue | Handcrafted (VFD) |
+| 6 | White | Handcrafted |
+| 7 | ncurses | Handcrafted (ANSI) |
 
 ## Color Resolution Flow
 
@@ -331,10 +319,11 @@ This means the same view code produces different colors depending on the active 
 - ``Palette``
 - ``GreenPalette``
 - ``AmberPalette``
-- ``WhitePalette``
 - ``RedPalette``
+- ``VioletPalette``
+- ``BluePalette``
+- ``WhitePalette``
 - ``NCursesPalette``
-- ``GeneratedPalette``
 
 ### Color System
 

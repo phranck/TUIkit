@@ -125,13 +125,18 @@ public struct Color: Sendable, Equatable {
     public enum Semantic {
         // Background colors
         public static let background = Color(value: .semantic(.background))
-        public static let backgroundSecondary = Color(value: .semantic(.backgroundSecondary))
-        public static let backgroundTertiary = Color(value: .semantic(.backgroundTertiary))
+        public static let containerBodyBackground = Color(value: .semantic(.containerBodyBackground))
+        public static let containerCapBackground = Color(value: .semantic(.containerCapBackground))
+        public static let buttonBackground = Color(value: .semantic(.buttonBackground))
+        public static let statusBarBackground = Color(value: .semantic(.statusBarBackground))
+        public static let appHeaderBackground = Color(value: .semantic(.appHeaderBackground))
+        public static let overlayBackground = Color(value: .semantic(.overlayBackground))
 
         // Foreground colors
         public static let foreground = Color(value: .semantic(.foreground))
         public static let foregroundSecondary = Color(value: .semantic(.foregroundSecondary))
         public static let foregroundTertiary = Color(value: .semantic(.foregroundTertiary))
+        public static let foregroundPlaceholder = Color(value: .semantic(.foregroundPlaceholder))
 
         // Accent colors
         public static let accent = Color(value: .semantic(.accent))
@@ -152,14 +157,8 @@ public struct Color: Sendable, Equatable {
         public static let disabled = Color(value: .semantic(.disabled))
 
         // Status bar colors
-        public static let statusBarBackground = Color(value: .semantic(.statusBarBackground))
         public static let statusBarForeground = Color(value: .semantic(.statusBarForeground))
         public static let statusBarHighlight = Color(value: .semantic(.statusBarHighlight))
-
-        // Container colors
-        public static let containerBackground = Color(value: .semantic(.containerBackground))
-        public static let containerHeaderBackground = Color(value: .semantic(.containerHeaderBackground))
-        public static let buttonBackground = Color(value: .semantic(.buttonBackground))
     }
 
     /// Access palette-aware semantic colors.

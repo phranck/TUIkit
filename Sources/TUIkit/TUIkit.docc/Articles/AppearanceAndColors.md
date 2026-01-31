@@ -103,7 +103,7 @@ Use `Color.palette.*` — these return semantic tokens:
 ```swift
 Text("Hello")
     .foregroundColor(.palette.accent)    // resolves to palette's accent color
-    .background(.palette.containerBackground)
+    .background(.palette.containerBodyBackground)
 ```
 
 Available semantic tokens include:
@@ -115,8 +115,8 @@ Available semantic tokens include:
 | `.palette.accent` | Highlighted elements, titles |
 | `.palette.border` | Container borders |
 | `.palette.borderFocused` | Focused element borders |
-| `.palette.containerBackground` | Container body background |
-| `.palette.containerHeaderBackground` | Container header / footer background |
+| `.palette.containerBodyBackground` | Container body / content area background |
+| `.palette.containerCapBackground` | Container header / footer background |
 | `.palette.success` / `.warning` / `.error` / `.info` | Status indicators |
 | `.palette.selection` / `.selectionBackground` | Selected items |
 | `.palette.disabled` | Inactive elements |
