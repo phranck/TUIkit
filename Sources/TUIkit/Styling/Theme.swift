@@ -90,29 +90,6 @@ public protocol Palette: Cyclable {
 
     /// Border color for boxes, cards, etc.
     var border: Color { get }
-
-    /// Border color for focused elements.
-    var borderFocused: Color { get }
-
-    /// Separator/divider color.
-    var separator: Color { get }
-
-    /// Selection highlight color (foreground).
-    var selection: Color { get }
-
-    /// Selection background color (dimmed accent).
-    var selectionBackground: Color { get }
-
-    /// Color for disabled elements.
-    var disabled: Color { get }
-
-    // MARK: - Status Bar Colors
-
-    /// Status bar text color.
-    var statusBarForeground: Color { get }
-
-    /// Status bar shortcut highlight color.
-    var statusBarHighlight: Color { get }
 }
 
 // MARK: - Default Palette Implementation
@@ -137,18 +114,6 @@ extension Palette {
 
     public var accentSecondary: Color { accent }
 
-    // MARK: - UI Element Defaults (derived from essentials)
-
-    public var borderFocused: Color { accent }
-    public var separator: Color { border }
-    public var selection: Color { accent }
-    public var selectionBackground: Color { containerBodyBackground }
-    public var disabled: Color { foregroundTertiary }
-
-    // MARK: - Status Bar Defaults
-
-    public var statusBarForeground: Color { foreground }
-    public var statusBarHighlight: Color { accent }
 }
 
 // MARK: - Palette Environment Key

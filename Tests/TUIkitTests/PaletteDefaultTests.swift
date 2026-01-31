@@ -57,42 +57,10 @@ struct PaletteDefaultTests {
         #expect(palette.accentSecondary == palette.accent)
     }
 
-    @Test("Defaults derive borderFocused from accent")
-    func defaultBorderFocused() {
-        let palette = MinimalPalette()
-        #expect(palette.borderFocused == palette.accent)
-    }
-
-    @Test("Defaults derive separator from border")
-    func defaultSeparator() {
-        let palette = MinimalPalette()
-        #expect(palette.separator == palette.border)
-    }
-
-    @Test("Defaults derive selection from accent")
-    func defaultSelection() {
-        let palette = MinimalPalette()
-        #expect(palette.selection == palette.accent)
-    }
-
-    @Test("Defaults derive selectionBackground from containerBodyBackground")
-    func defaultSelectionBackground() {
-        let palette = MinimalPalette()
-        #expect(palette.selectionBackground == palette.containerBodyBackground)
-    }
-
-    @Test("Defaults derive disabled from foregroundTertiary")
-    func defaultDisabled() {
-        let palette = MinimalPalette()
-        #expect(palette.disabled == palette.foregroundTertiary)
-    }
-
-    @Test("Defaults derive statusBar colors")
-    func defaultStatusBar() {
+    @Test("Defaults derive statusBarBackground from background")
+    func defaultStatusBarBackground() {
         let palette = MinimalPalette()
         #expect(palette.statusBarBackground == palette.background)
-        #expect(palette.statusBarForeground == palette.foreground)
-        #expect(palette.statusBarHighlight == palette.accent)
     }
 
     @Test("Defaults derive container and button backgrounds")
