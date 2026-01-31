@@ -2,8 +2,7 @@
 //  EnvironmentTests.swift
 //  TUIkit
 //
-//  Tests for EnvironmentValues, Environment property wrapper (deprecated),
-//  and EnvironmentModifier.
+//  Tests for EnvironmentValues and EnvironmentModifier.
 //
 
 import Testing
@@ -75,18 +74,6 @@ struct EnvironmentValuesTests {
         let modified = env.setting(\.testString, to: "new")
         #expect(modified.testString == "new")
         #expect(modified.testInt == 99)  // preserved
-    }
-}
-
-// MARK: - Environment Property Wrapper Tests
-
-@Suite("Environment Property Wrapper Tests (Deprecated)")
-struct EnvironmentPropertyWrapperTests {
-
-    @Test("Deprecated @Environment returns default values")
-    func returnsDefaults() {
-        let wrapper = Environment(\.testString)
-        #expect(wrapper.wrappedValue == "default")
     }
 }
 

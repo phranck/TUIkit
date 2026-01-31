@@ -43,10 +43,10 @@ import Foundation
 /// .appearance(.ascii)
 /// ```
 ///
-/// Access in views:
+/// Access in `renderToBuffer(context:)`:
 ///
 /// ```swift
-/// @Environment(\.appearance) var appearance
+/// let appearance = context.environment.appearance
 /// let style = appearance.borderStyle
 /// ```
 public struct Appearance: Cyclable, Equatable {
@@ -201,10 +201,10 @@ extension EnvironmentValues {
     /// .appearance(.rounded)
     /// ```
     ///
-    /// Access the appearance in views:
+    /// Access the appearance in `renderToBuffer(context:)`:
     ///
     /// ```swift
-    /// @Environment(\.appearance) var appearance
+    /// let appearance = context.environment.appearance
     /// let borderStyle = appearance.borderStyle
     /// ```
     public var appearance: Appearance {
@@ -224,8 +224,7 @@ extension EnvironmentValues {
     /// The appearance manager for cycling and setting appearances.
     ///
     /// ```swift
-    /// @Environment(\.appearanceManager) var appearanceManager
-    ///
+    /// let appearanceManager = context.environment.appearanceManager
     /// appearanceManager.cycleNext()
     /// appearanceManager.setCurrent(Appearance.rounded)
     /// ```
