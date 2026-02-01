@@ -4,101 +4,6 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
 
-/** Lazily created, reused AudioContext to avoid browser limits (~6 concurrent). */
-let sharedAudioCtx: AudioContext | null = null;
-
-/**
- * Returns a shared AudioContext, creating one on first call.
- * Resumes the context if it was suspended (browsers require user gesture).
- */
-function getAudioContext(): AudioContext {
-  if (!sharedAudioCtx || sharedAudioCtx.state === "closed") {
-    sharedAudioCtx = new AudioContext();
-  }
-  if (sharedAudioCtx.state === "suspended") {
-    sharedAudioCtx.resume();
-  }
-  return sharedAudioCtx;
-}
-
-/**
- * Synthesizes a CRT power-on sound using the Web Audio API.
- *
- * Three layers mimicking a real CRT monitor powering up:
- * 1. **Degauss thump** — Short burst of filtered noise + deep 50 Hz sine
- *    simulating the degaussing coil firing (the "fumpp").
- * 2. **Mains hum** — 100 Hz sine with 0.8s decay (transformer buzz).
- * 3. **Flyback whine** — 800 Hz → 4 kHz sweep with 0.6s decay
- *    (high-voltage transformer spooling up).
- */
-async function playCrtPowerOnSound(): Promise<void> {
-  try {
-    const audioCtx = getAudioContext();
-    // Ensure context is running (required for autoplay policy)
-    if (audioCtx.state === "suspended") {
-      await audioCtx.resume();
-    }
-    const now = audioCtx.currentTime;
-
-  /* ── Degauss thump (filtered noise burst + deep sine) ── */
-  const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let sample = 0; sample < noiseData.length; sample++) {
-    noiseData[sample] = (Math.random() * 2 - 1) * (1 - sample / noiseData.length);
-  }
-  const noiseSource = audioCtx.createBufferSource();
-  noiseSource.buffer = noiseBuffer;
-  const noiseFilter = audioCtx.createBiquadFilter();
-  noiseFilter.type = "lowpass";
-  noiseFilter.frequency.setValueAtTime(200, now);
-  const noiseGain = audioCtx.createGain();
-  noiseGain.gain.setValueAtTime(0.25, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-  noiseSource.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
-
-  const thumpOsc = audioCtx.createOscillator();
-  const thumpGain = audioCtx.createGain();
-  thumpOsc.type = "sine";
-  thumpOsc.frequency.setValueAtTime(50, now);
-  thumpGain.gain.setValueAtTime(0.3, now);
-  thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-  thumpOsc.connect(thumpGain).connect(audioCtx.destination);
-
-  /* ── Mains hum (100 Hz, delayed slightly after thump) ── */
-  const humOsc = audioCtx.createOscillator();
-  const humGain = audioCtx.createGain();
-  humOsc.type = "sine";
-  humOsc.frequency.setValueAtTime(100, now + 0.1);
-  humGain.gain.setValueAtTime(0.001, now);
-  humGain.gain.linearRampToValueAtTime(0.12, now + 0.15);
-  humGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-  humOsc.connect(humGain).connect(audioCtx.destination);
-
-  /* ── Flyback whine (800 Hz → 4 kHz sweep, after thump) ── */
-  const whineOsc = audioCtx.createOscillator();
-  const whineGain = audioCtx.createGain();
-  whineOsc.type = "sine";
-  whineOsc.frequency.setValueAtTime(800, now + 0.12);
-  whineOsc.frequency.exponentialRampToValueAtTime(4000, now + 0.45);
-  whineGain.gain.setValueAtTime(0.001, now);
-  whineGain.gain.linearRampToValueAtTime(0.06, now + 0.18);
-  whineGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-  whineOsc.connect(whineGain).connect(audioCtx.destination);
-
-  /* Start all layers and clean up after decay. */
-  noiseSource.start(now);
-  thumpOsc.start(now);
-  thumpOsc.stop(now + 0.2);
-  humOsc.start(now + 0.1);
-  humOsc.stop(now + 1.0);
-  whineOsc.start(now + 0.12);
-  whineOsc.stop(now + 0.8);
-  } catch (error) {
-    // Silently fail if audio is blocked or unavailable
-    console.warn("CRT power-on sound failed:", error);
-  }
-}
-
 /**
  * Interactive hero terminal with power-on animation.
  *
@@ -126,26 +31,9 @@ export default function HeroTerminal() {
 
   useEffect(() => {
     setMounted(true);
-    
-    // Unlock AudioContext on first user interaction (required for autoplay policy)
-    const unlockAudio = () => {
-      const audioCtx = getAudioContext();
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume().catch(() => {
-          // Ignore if resume fails
-        });
-      }
-    };
-    
-    // Listen for any user interaction to unlock audio
-    document.addEventListener("click", unlockAudio, { once: true });
-    document.addEventListener("touchstart", unlockAudio, { once: true });
-    
     return () => {
       if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
       if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
-      document.removeEventListener("click", unlockAudio);
-      document.removeEventListener("touchstart", unlockAudio);
     };
   }, []);
 
@@ -164,10 +52,9 @@ export default function HeroTerminal() {
     };
   }, []);
 
-  /** Power on: play CRT hum, glow the button, compute offset, zoom the terminal, start boot. */
+  /** Power on: glow the button, compute offset, zoom the terminal, start boot. */
   const handlePowerOn = useCallback(() => {
     if (powered) return;
-    void playCrtPowerOnSound(); // Fire-and-forget async call
     setPowered(true);
     /* Compute offset before zooming so it captures the inline position. */
     setCenterOffset(computeCenterOffset());
