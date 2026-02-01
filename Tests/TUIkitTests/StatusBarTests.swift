@@ -523,8 +523,8 @@ struct StatusBarTests {
 
         // Content should start near the beginning (after padding)
         let line = buffer.lines[0]
-        let strippedLine = line.strippedLength > 0 ? line : ""
-        #expect(!strippedLine.isEmpty)
+        #expect(line.contains("alpha"))
+        #expect(line.contains("beta"))
     }
 
     @Test("StatusBar with trailing alignment")
@@ -543,7 +543,9 @@ struct StatusBarTests {
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Content should be at the end
-        #expect(!buffer.isEmpty)
+        let line = buffer.lines[0]
+        #expect(line.contains("alpha"))
+        #expect(line.contains("beta"))
     }
 
     @Test("StatusBar with center alignment")
@@ -561,8 +563,10 @@ struct StatusBarTests {
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(statusBar, context: context)
 
-        // Content should be centered - line should not be empty
-        #expect(!buffer.isEmpty)
+        // Content should be centered
+        let line = buffer.lines[0]
+        #expect(line.contains("alpha"))
+        #expect(line.contains("beta"))
     }
 
     @Test("StatusBar with justified alignment distributes items")
@@ -625,8 +629,8 @@ struct StatusBarAlignmentTests {
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Single item should be centered in justified mode
-        #expect(!buffer.isEmpty)
         let line = buffer.lines[0]
+        #expect(line.contains("only"))
         #expect(line.strippedLength == 40)
     }
 }
