@@ -33,17 +33,17 @@ export default function ThemeSwitcher() {
           key={themeOption}
           onClick={() => setTheme(themeOption)}
           aria-label={`Switch to ${themeLabels[themeOption]} theme`}
-          className="group relative flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110"
+          className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
         >
           <span
             className="block h-3 w-3 rounded-full transition-all"
             style={{
               backgroundColor: themeColors[themeOption],
               boxShadow:
-                theme === themeOption
+                theme !== null && theme === themeOption
                   ? `0 0 6px ${themeColors[themeOption]}, 0 0 14px ${themeColors[themeOption]}60`
                   : "none",
-              opacity: theme === themeOption ? 1 : 0.4,
+              opacity: theme === null ? 0.4 : theme === themeOption ? 1 : 0.4,
             }}
           />
         </button>
