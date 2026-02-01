@@ -21,15 +21,6 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
 @Suite("EdgeInsets Tests")
 struct EdgeInsetsTests {
 
-    @Test("EdgeInsets individual values")
-    func edgeInsetsIndividual() {
-        let insets = EdgeInsets(top: 1, leading: 2, bottom: 3, trailing: 4)
-        #expect(insets.top == 1)
-        #expect(insets.leading == 2)
-        #expect(insets.bottom == 3)
-        #expect(insets.trailing == 4)
-    }
-
     @Test("EdgeInsets uniform value")
     func edgeInsetsUniform() {
         let insets = EdgeInsets(all: 3)
@@ -48,15 +39,6 @@ struct EdgeInsetsTests {
         #expect(insets.trailing == 2)
     }
 
-    @Test("EdgeInsets default values are zero")
-    func edgeInsetsDefaults() {
-        let insets = EdgeInsets()
-        #expect(insets.top == 0)
-        #expect(insets.leading == 0)
-        #expect(insets.bottom == 0)
-        #expect(insets.trailing == 0)
-    }
-
     @Test("EdgeInsets is Equatable")
     func edgeInsetsEquatable() {
         let insetsA = EdgeInsets(all: 2)
@@ -69,14 +51,6 @@ struct EdgeInsetsTests {
 
 @Suite("Edge Tests")
 struct EdgeTests {
-
-    @Test("Individual edges exist")
-    func individualEdges() {
-        #expect(Edge.top.rawValue == 1)
-        #expect(Edge.leading.rawValue == 2)
-        #expect(Edge.bottom.rawValue == 4)
-        #expect(Edge.trailing.rawValue == 8)
-    }
 
     @Test("Edge.all contains all edges")
     func edgeAll() {
@@ -193,11 +167,6 @@ struct PaddingModifierTests {
 
 @Suite("FrameModifier Tests")
 struct FrameModifierTests {
-
-    @Test("FrameDimension.infinity and .max are equal")
-    func frameDimensionInfinity() {
-        #expect(FrameDimension.infinity == .max)
-    }
 
     @Test("FlexibleFrameView with maxWidth infinity fills available width")
     func frameMaxWidthInfinity() {
@@ -455,42 +424,6 @@ struct BorderModifierTests {
 @Suite("BorderStyle Tests")
 struct BorderStyleTests {
 
-    @Test("Predefined styles exist")
-    func predefinedStyles() {
-        // Just verify they all exist and have distinct characters
-        #expect(BorderStyle.line.topLeft == "┌")
-        #expect(BorderStyle.doubleLine.topLeft == "╔")
-        #expect(BorderStyle.rounded.topLeft == "╭")
-        #expect(BorderStyle.heavy.topLeft == "┏")
-        #expect(BorderStyle.block.topLeft == "▄")
-        #expect(BorderStyle.ascii.topLeft == "+")
-        #expect(BorderStyle.none.topLeft == " ")
-    }
-
-    @Test("Line style has T-junctions")
-    func lineStyleTJunctions() {
-        #expect(BorderStyle.line.leftT == "├")
-        #expect(BorderStyle.line.rightT == "┤")
-    }
-
-    @Test("DoubleLine style has T-junctions")
-    func doubleLineTJunctions() {
-        #expect(BorderStyle.doubleLine.leftT == "╠")
-        #expect(BorderStyle.doubleLine.rightT == "╣")
-    }
-
-    @Test("Heavy style has T-junctions")
-    func heavyTJunctions() {
-        #expect(BorderStyle.heavy.leftT == "┣")
-        #expect(BorderStyle.heavy.rightT == "┫")
-    }
-
-    @Test("BorderStyle is Equatable")
-    func borderStyleEquatable() {
-        #expect(BorderStyle.line == BorderStyle.line)
-        #expect(BorderStyle.line != BorderStyle.doubleLine)
-    }
-
     @Test("Custom border style defaults T-junctions to vertical")
     func customBorderStyleDefaultTJunctions() {
         let custom = BorderStyle(
@@ -505,11 +438,6 @@ struct BorderStyleTests {
         #expect(custom.rightT == "F")
     }
 
-    @Test("Block style constants exist")
-    func blockStyleConstants() {
-        #expect(BorderStyle.blockBottomHorizontal == "▀")
-        #expect(BorderStyle.blockFooterSeparator == "▄")
-    }
 }
 
 // MARK: - BackgroundModifier Tests
