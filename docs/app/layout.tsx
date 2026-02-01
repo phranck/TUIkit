@@ -9,9 +9,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tuikit.layered.work"),
+  alternates: {
+    canonical: "/",
+  },
   title: "TUIkit — Terminal UI Framework for Swift",
   description:
     "A declarative, SwiftUI-like framework for building Terminal User Interfaces in Swift. No ncurses, no C dependencies — pure Swift.",
+  keywords: [
+    "swift", "terminal", "TUI", "framework", "SwiftUI", "CLI",
+    "ncurses alternative", "macOS", "Linux", "terminal UI", "declarative",
+  ],
   openGraph: {
     title: "TUIkit — Terminal UI Framework for Swift",
     description:
@@ -19,6 +27,21 @@ export const metadata: Metadata = {
     url: "https://tuikit.layered.work",
     siteName: "TUIkit",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "TUIkit — Terminal UI Framework for Swift",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TUIkit — Terminal UI Framework for Swift",
+    description:
+      "Build terminal apps with SwiftUI-like syntax. Pure Swift, no ncurses.",
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [
@@ -28,6 +51,7 @@ export const metadata: Metadata = {
     ],
     apple: "/favicon-512.png",
   },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -55,6 +79,26 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareSourceCode",
+              name: "TUIkit",
+              description:
+                "A declarative, SwiftUI-like framework for building Terminal User Interfaces in Swift.",
+              url: "https://tuikit.layered.work",
+              codeRepository: "https://github.com/phranck/TUIkit",
+              programmingLanguage: "Swift",
+              operatingSystem: ["macOS", "Linux"],
+              license: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            }),
+          }}
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cloud.umami.is" />
         <script defer src="https://cloud.umami.is/script.js" data-website-id="4085eff5-2e56-4e3a-ba91-cf0828914169" />
       </head>
       <body
