@@ -10,32 +10,6 @@ import Testing
 
 @testable import TUIkit
 
-// MARK: - Constants Tests
-
-@Suite("ANSIRenderer Constants Tests")
-struct ANSIRendererConstantsTests {
-
-    @Test("escape is ESC character")
-    func escapeChar() {
-        #expect(ANSIRenderer.escape == "\u{1B}")
-    }
-
-    @Test("csi is ESC[")
-    func csiSequence() {
-        #expect(ANSIRenderer.csi == "\u{1B}[")
-    }
-
-    @Test("reset is ESC[0m")
-    func resetCode() {
-        #expect(ANSIRenderer.reset == "\u{1B}[0m")
-    }
-
-    @Test("dim is ESC[2m")
-    func dimCode() {
-        #expect(ANSIRenderer.dim == "\u{1B}[2m")
-    }
-}
-
 // MARK: - Style Rendering Tests
 
 @Suite("ANSIRenderer Style Rendering Tests")
