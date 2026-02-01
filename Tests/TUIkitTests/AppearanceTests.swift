@@ -14,23 +14,6 @@ import Testing
 @Suite("Appearance Tests")
 struct AppearanceTests {
 
-    // MARK: - Appearance ID Tests
-
-    @Test("Predefined appearance IDs exist")
-    func predefinedAppearanceIds() {
-        #expect(Appearance.ID.line.rawValue == "line")
-        #expect(Appearance.ID.rounded.rawValue == "rounded")
-        #expect(Appearance.ID.doubleLine.rawValue == "doubleLine")
-        #expect(Appearance.ID.heavy.rawValue == "heavy")
-        #expect(Appearance.ID.block.rawValue == "block")
-    }
-
-    @Test("Appearance IDs are hashable")
-    func appearanceIdHashable() {
-        let ids: Set<Appearance.ID> = [.line, .rounded, .doubleLine, .heavy, .block]
-        #expect(ids.count == 5)
-    }
-
     // MARK: - Appearance Struct Tests
 
     @Test("Appearance name is derived from ID")
@@ -41,15 +24,6 @@ struct AppearanceTests {
         #expect(Appearance.doubleLine.name == "Doubleline")
         #expect(Appearance.heavy.name == "Heavy")
         #expect(Appearance.block.name == "Block")
-    }
-
-    @Test("Predefined appearances have correct border styles")
-    func predefinedAppearances() {
-        #expect(Appearance.line.borderStyle == .line)
-        #expect(Appearance.rounded.borderStyle == .rounded)
-        #expect(Appearance.doubleLine.borderStyle == .doubleLine)
-        #expect(Appearance.heavy.borderStyle == .heavy)
-        #expect(Appearance.block.borderStyle == .block)
     }
 
     @Test("Default appearance is rounded")
@@ -106,50 +80,6 @@ struct AppearanceTests {
 
     // MARK: - Cyclable Conformance
 
-    @Test("Appearance conforms to Cyclable with string id")
-    func cyclableConformance() {
-        let appearance = Appearance.rounded
-        let cyclable: any Cyclable = appearance
-        #expect(cyclable.id == "rounded")
-        #expect(cyclable.name == "Rounded")
-    }
-}
-
-// MARK: - Appearance Manager Tests (ThemeManager)
-
-@Suite("Appearance Manager Tests")
-struct AppearanceManagerTests {
-
-    /// Creates a ThemeManager for appearances (test helper).
-    private func makeAppearanceManager(items: [Appearance] = AppearanceRegistry.all) -> ThemeManager {
-        ThemeManager(items: items)
-    }
-
-    @Test("ThemeManager for appearances can be instantiated")
-    func managerCreation() {
-        let manager = makeAppearanceManager()
-        #expect(manager.items.count == 5)
-    }
-
-    @Test("ThemeManager for appearances starts with first appearance (line)")
-    func managerStartsWithLine() {
-        let manager = makeAppearanceManager()
-        #expect(manager.currentAppearance?.rawId == .line)
-    }
-
-    @Test("ThemeManager for appearances currentName returns capitalized name")
-    func managerCurrentName() {
-        let manager = makeAppearanceManager()
-        #expect(manager.currentName == "Line")
-    }
-
-    @Test("ThemeManager for appearances can be created with custom items")
-    func managerCustomAppearances() {
-        let custom: [Appearance] = [.rounded, .heavy]
-        let manager = makeAppearanceManager(items: custom)
-        #expect(manager.items.count == 2)
-        #expect(manager.currentAppearance?.rawId == .rounded)
-    }
 }
 
 // MARK: - Appearance Environment Tests

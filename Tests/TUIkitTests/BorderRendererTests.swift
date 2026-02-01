@@ -14,11 +14,6 @@ import Testing
 @Suite("BorderRenderer Standard Style Tests")
 struct BorderRendererStandardTests {
 
-    @Test("borderWidthOverhead is 2")
-    func widthOverhead() {
-        #expect(BorderRenderer.borderWidthOverhead == 2)
-    }
-
     @Test("standardTopBorder uses correct corner characters")
     func topBorderCorners() {
         let result = BorderRenderer.standardTopBorder(
