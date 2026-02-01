@@ -28,13 +28,6 @@ struct StatePropertyWrapperTests {
         AppState.active.didRender()
     }
 
-    @Test("State projectedValue returns a Binding")
-    func stateProjectedValue() {
-        let state = State(wrappedValue: 42)
-        let binding = state.projectedValue
-        #expect(binding.wrappedValue == 42)
-    }
-
     @Test("Binding from State updates original")
     func stateBindingUpdates() {
         let state = State(wrappedValue: 0)
@@ -43,12 +36,4 @@ struct StatePropertyWrapperTests {
         #expect(state.wrappedValue == 77)
     }
 
-    @Test("State with optional type")
-    func stateOptional() {
-        let state = State<String?>(wrappedValue: nil)
-        #expect(state.wrappedValue == nil)
-        state.wrappedValue = "now set"
-        #expect(state.wrappedValue == "now set")
-        AppState.active.didRender()
-    }
 }

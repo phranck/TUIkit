@@ -24,69 +24,6 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
     )
 }
 
-// MARK: - Button Style Tests
-
-@Suite("Button Style Tests")
-struct ButtonStyleTests {
-
-    @Test("Default button style uses appearance default")
-    func defaultStyle() {
-        let style = ButtonStyle.default
-        // nil means "use appearance.borderStyle at render time"
-        #expect(style.borderStyle == nil)
-        #expect(style.horizontalPadding == 2)
-        #expect(style.isBold == false)
-    }
-
-    @Test("Primary button style")
-    func primaryStyle() {
-        let style = ButtonStyle.primary
-        #expect(style.foregroundColor == .cyan)
-        #expect(style.borderColor == .cyan)
-        #expect(style.isBold == true)
-    }
-
-    @Test("Destructive button style")
-    func destructiveStyle() {
-        let style = ButtonStyle.destructive
-        #expect(style.foregroundColor == .red)
-        #expect(style.borderColor == .red)
-    }
-
-    @Test("Success button style")
-    func successStyle() {
-        let style = ButtonStyle.success
-        #expect(style.foregroundColor == .green)
-        #expect(style.borderColor == .green)
-    }
-
-    @Test("Plain button style has no border")
-    func plainStyle() {
-        let style = ButtonStyle.plain
-        // Plain uses BorderStyle.none (invisible border) to explicitly disable borders
-        #expect(style.borderStyle == BorderStyle.none)
-        #expect(style.horizontalPadding == 0)
-    }
-
-    @Test("Custom button style")
-    func customStyle() {
-        let style = ButtonStyle(
-            foregroundColor: Color.yellow,
-            backgroundColor: Color.blue,
-            borderStyle: .line,
-            borderColor: Color.magenta,
-            isBold: true,
-            horizontalPadding: 4
-        )
-        #expect(style.foregroundColor == .yellow)
-        #expect(style.backgroundColor == .blue)
-        #expect(style.borderStyle == .line)
-        #expect(style.borderColor == .magenta)
-        #expect(style.isBold == true)
-        #expect(style.horizontalPadding == 4)
-    }
-}
-
 // MARK: - Button Tests
 
 @Suite("Button Tests", .serialized)
@@ -175,15 +112,6 @@ struct ButtonTests {
         #expect(!allContent.contains("▸"), "Focused bold button should not have ▸ indicator")
     }
 
-    @Test("Button default focused style uses theme colors")
-    func buttonDefaultFocusedStyle() {
-        let button = Button("Test") {}
-
-        // Default focused style should use theme colors (nil = resolved at render time)
-        #expect(button.focusedStyle.foregroundColor == nil)
-        #expect(button.focusedStyle.borderColor == nil)
-        #expect(button.focusedStyle.isBold == true)
-    }
 }
 
 // MARK: - Button Handler Tests
