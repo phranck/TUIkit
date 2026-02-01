@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=SN+Pro:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @font-face {
@@ -123,13 +122,14 @@
   --color-border: var(--border);
   --color-container-body: var(--container-body);
   --color-container-cap: var(--container-cap);
+  --font-sans: var(--font-nunito);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "SN Pro", system-ui, sans-serif;
+  font-family: var(--font-nunito), system-ui, sans-serif;
   font-size: 1.375rem;
   line-height: 1.75;
 }
