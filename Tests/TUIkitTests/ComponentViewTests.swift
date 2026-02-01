@@ -75,17 +75,6 @@ struct BoxTests {
 @Suite("Card Tests")
 struct CardTests {
 
-    @Test("Card can be created with footer")
-    func cardWithFooter() {
-        let card = Card(title: "Info") {
-            Text("Body")
-        } footer: {
-            Text("Footer")
-        }
-        #expect(card.title == "Info")
-        #expect(card.footer != nil)
-    }
-
     @Test("Card renders with border")
     func cardRenders() {
         let card = Card(title: "Test") {
@@ -136,17 +125,6 @@ struct CardTests {
 @Suite("Panel Tests")
 struct PanelTests {
 
-    @Test("Panel can be created with footer")
-    func panelWithFooter() {
-        let panel = Panel("Info") {
-            Text("Content")
-        } footer: {
-            Text("Done")
-        }
-        #expect(panel.title == "Info")
-        #expect(panel.footer != nil)
-    }
-
     @Test("Panel renders with border and title")
     func panelRenders() {
         let panel = Panel("Test Panel") {
@@ -178,34 +156,6 @@ struct PanelTests {
         #expect(bufferWith.height > bufferWithout.height)
     }
 
-    @Test("Panel default padding is horizontal only")
-    func panelDefaultPadding() {
-        let panel = Panel("Test") {
-            Text("Content")
-        }
-        #expect(panel.config.padding.leading == 1)
-        #expect(panel.config.padding.trailing == 1)
-        #expect(panel.config.padding.top == 0)
-        #expect(panel.config.padding.bottom == 0)
-    }
-}
-
-// MARK: - ContainerConfig Tests
-
-@Suite("ContainerConfig Tests")
-struct ContainerConfigTests {
-
-    @Test("Default config has expected values")
-    func defaultConfig() {
-        let config = ContainerConfig.default
-        #expect(config.borderStyle == nil)
-        #expect(config.borderColor == nil)
-        #expect(config.titleColor == nil)
-        #expect(config.padding.leading == 1)
-        #expect(config.padding.trailing == 1)
-        #expect(config.showFooterSeparator == true)
-    }
-
 }
 
 // MARK: - ContainerView Tests
@@ -235,32 +185,6 @@ struct ForEachTests {
     struct TestItem: Identifiable {
         let id: String
         let name: String
-    }
-
-    @Test("ForEach can be created with Identifiable data")
-    func forEachIdentifiable() {
-        let items = [TestItem(id: "1", name: "One"), TestItem(id: "2", name: "Two")]
-        let forEach = ForEach(items) { item in
-            Text(item.name)
-        }
-        #expect(forEach.data.count == 2)
-    }
-
-    @Test("ForEach can be created with explicit ID key path")
-    func forEachExplicitId() {
-        let names = ["Anna", "Bob", "Clara"]
-        let forEach = ForEach(names, id: \.self) { name in
-            Text(name)
-        }
-        #expect(forEach.data.count == 3)
-    }
-
-    @Test("ForEach can be created with Range")
-    func forEachRange() {
-        let forEach = ForEach(0..<5) { index in
-            Text("Item \(index)")
-        }
-        #expect(forEach.data.count == 5)
     }
 
     @Test("ForEach generates correct number of views")

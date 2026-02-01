@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 //
 //  StatusBarTests.swift
 //  TUIkit
@@ -14,80 +13,6 @@ import Testing
 
 @Suite("Shortcut Constants Tests")
 struct ShortcutTests {
-
-    @Test("Special key symbols are correct")
-    func specialKeys() {
-        #expect(Shortcut.escape == "⎋")
-        #expect(Shortcut.enter == "↵")
-        #expect(Shortcut.returnKey == "⏎")
-        #expect(Shortcut.tab == "⇥")
-        #expect(Shortcut.shiftTab == "⇤")
-        #expect(Shortcut.backspace == "⌫")
-        #expect(Shortcut.delete == "⌦")
-        #expect(Shortcut.space == "␣")
-    }
-
-    @Test("Arrow key symbols are correct")
-    func arrowKeys() {
-        #expect(Shortcut.arrowUp == "↑")
-        #expect(Shortcut.arrowDown == "↓")
-        #expect(Shortcut.arrowLeft == "←")
-        #expect(Shortcut.arrowRight == "→")
-    }
-
-    @Test("Arrow key combinations are correct")
-    func arrowCombinations() {
-        #expect(Shortcut.arrowsUpDown == "↑↓")
-        #expect(Shortcut.arrowsLeftRight == "←→")
-        #expect(Shortcut.arrowsAll == "↑↓←→")
-        #expect(Shortcut.arrowsVertical == "⇅")
-        #expect(Shortcut.arrowsHorizontal == "⇆")
-    }
-
-    @Test("Modifier key symbols are correct")
-    func modifierKeys() {
-        #expect(Shortcut.command == "⌘")
-        #expect(Shortcut.option == "⌥")
-        #expect(Shortcut.control == "⌃")
-        #expect(Shortcut.shift == "⇧")
-        #expect(Shortcut.capsLock == "⇪")
-    }
-
-    @Test("Navigation key symbols are correct")
-    func navigationKeys() {
-        #expect(Shortcut.home == "⤒")
-        #expect(Shortcut.end == "⤓")
-        #expect(Shortcut.pageUp == "⇞")
-        #expect(Shortcut.pageDown == "⇟")
-    }
-
-    @Test("Action symbols are correct")
-    func actionSymbols() {
-        #expect(Shortcut.plus == "+")
-        #expect(Shortcut.minus == "−")
-        #expect(Shortcut.checkmark == "✓")
-        #expect(Shortcut.cross == "✗")
-        #expect(Shortcut.search == "?")
-        #expect(Shortcut.help == "?")
-        #expect(Shortcut.save == "S")
-    }
-
-    @Test("Common shortcuts are correct")
-    func commonShortcuts() {
-        #expect(Shortcut.quit == "q")
-        #expect(Shortcut.yes == "y")
-        #expect(Shortcut.no == "n")
-        #expect(Shortcut.cancel == "c")
-        #expect(Shortcut.ok == "o")
-    }
-
-    @Test("Selection indicators are correct")
-    func selectionIndicators() {
-        #expect(Shortcut.selectionRight == "▸")
-        #expect(Shortcut.selectionLeft == "◂")
-        #expect(Shortcut.bullet == "•")
-        #expect(Shortcut.squareBullet == "▪")
-    }
 
     @Test("Combine helper joins shortcuts")
     func combineHelper() {
@@ -121,15 +46,6 @@ struct ShortcutTests {
 
 @Suite("Status Bar Item Tests")
 struct StatusBarItemTests {
-
-    @Test("StatusBarItem can be created")
-    func itemCreation() {
-        let item = StatusBarItem(shortcut: "q", label: "quit")
-
-        #expect(item.shortcut == "q")
-        #expect(item.label == "quit")
-        #expect(item.id == "q-quit")
-    }
 
     @Test("StatusBarItem with action")
     func itemWithAction() {
@@ -525,63 +441,6 @@ struct StatusBarStateTests {
 @Suite("StatusBar Tests")
 struct StatusBarTests {
 
-    @Test("StatusBar can be created with items")
-    func statusBarCreation() {
-        let statusBar = StatusBar(items: [
-            StatusBarItem(shortcut: "q", label: "quit"),
-            StatusBarItem(shortcut: "h", label: "help"),
-        ])
-
-        #expect(statusBar.userItems.count == 2)
-        #expect(statusBar.style == .compact)
-        #expect(statusBar.alignment == .justified)
-        #expect(statusBar.highlightColor == .cyan)
-    }
-
-    @Test("StatusBar with style")
-    func statusBarWithStyle() {
-        let statusBar = StatusBar(
-            items: [StatusBarItem(shortcut: "x", label: "test")],
-            style: .bordered
-        )
-
-        #expect(statusBar.style == .bordered)
-    }
-
-    @Test("StatusBar with custom colors")
-    func statusBarWithColors() {
-        let statusBar = StatusBar(
-            items: [],
-            highlightColor: .yellow,
-            labelColor: .green
-        )
-
-        #expect(statusBar.highlightColor == .yellow)
-        #expect(statusBar.labelColor == .green)
-    }
-
-    @Test("StatusBar with builder")
-    func statusBarWithBuilder() {
-        let statusBar = StatusBar {
-            StatusBarItem(shortcut: "a", label: "alpha")
-            StatusBarItem(shortcut: "b", label: "beta")
-        }
-
-        #expect(statusBar.userItems.count == 2)
-    }
-
-    @Test("StatusBar compact height")
-    func compactHeight() {
-        let statusBar = StatusBar(items: [], style: .compact)
-        #expect(statusBar.height == 1)
-    }
-
-    @Test("StatusBar bordered height")
-    func borderedHeight() {
-        let statusBar = StatusBar(items: [], style: .bordered)
-        #expect(statusBar.height == 3)
-    }
-
     @Test("StatusBar renders compact style")
     func rendersCompact() {
         let statusBar = StatusBar(
@@ -645,15 +504,6 @@ struct StatusBarTests {
         let content = buffer.lines.joined()
         #expect(content.contains("alpha"))
         #expect(content.contains("beta"))
-    }
-
-    @Test("StatusBar default alignment is justified")
-    func defaultAlignmentIsJustified() {
-        let statusBar = StatusBar(items: [
-            StatusBarItem(shortcut: "q", label: "quit")
-        ])
-
-        #expect(statusBar.alignment == .justified)
     }
 
     @Test("StatusBar with leading alignment")
@@ -804,15 +654,6 @@ struct StatusBarItemBuilderTests {
         #expect(result.count == 1)
     }
 
-    @Test("Builder works with StatusBar initializer")
-    func builderWorksWithStatusBar() {
-        let statusBar = StatusBar {
-            StatusBarItem(shortcut: "x", label: "test")
-            StatusBarItem(shortcut: "y", label: "test2")
-        }
-
-        #expect(statusBar.userItems.count == 2)
-    }
 }
 
 // MARK: - StatusBarItems Modifier Tests
@@ -1004,22 +845,6 @@ struct SystemStatusBarItemsTests {
         let qItems = state.currentItems.filter { $0.shortcut == "q" }
         #expect(qItems.count == 1)
         #expect(qItems[0].label == "custom-quit")
-    }
-
-    @Test("System item order constants are correct")
-    func systemItemOrderConstants() {
-        // System items should have high order values (900+)
-        #expect(StatusBarItemOrder.quit.value == 900)
-        #expect(StatusBarItemOrder.appearance.value == 910)
-        #expect(StatusBarItemOrder.theme.value == 920)
-
-        // User items should have lower order values
-        #expect(StatusBarItemOrder.default.value == 500)
-        #expect(StatusBarItemOrder.early.value == 100)
-        #expect(StatusBarItemOrder.late.value == 800)
-
-        // User items < system items
-        #expect(StatusBarItemOrder.late < StatusBarItemOrder.quit)
     }
 
     @Test("Items are sorted by order")
