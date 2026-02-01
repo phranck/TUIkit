@@ -14,23 +14,29 @@ export const themes = ["green", "amber", "red", "violet", "blue", "white"] as co
 export type Theme = (typeof themes)[number];
 
 interface ThemeContextValue {
-  theme: Theme;
+  /** Current theme, or null while hydrating (before localStorage is read). */
+  theme: Theme | null;
   setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "green",
+  theme: null,
   setTheme: () => {},
 });
 
 const STORAGE_KEY = "tuikit-theme";
 
 /**
- * Reads the theme that the blocking script already applied to the DOM.
- * Falls back to "amber" if nothing is set yet (SSR or first visit).
+ * Reads the persisted theme from localStorage (set by the blocking script
+ * in layout.tsx), then checks the DOM attribute as fallback.
+ * Returns "green" on first visit or during SSR.
  */
 function getInitialTheme(): Theme {
-  if (typeof document !== "undefined") {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      if (stored && themes.includes(stored)) return stored;
+    } catch { /* localStorage unavailable */ }
     const attr = document.documentElement.getAttribute("data-theme") as Theme | null;
     if (attr && themes.includes(attr)) return attr;
   }
@@ -39,12 +45,19 @@ function getInitialTheme(): Theme {
 
 /** Provides theme state and applies it to the document root via data-theme attribute. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  const [theme, setThemeState] = useState<Theme | null>(null);
 
-  /** Sync React state with the theme the blocking script already applied to the DOM. */
+  /**
+   * After hydration, read the real theme from localStorage.
+   * The blocking script in layout.tsx already set the correct data-theme
+   * on the DOM, so visually there's no flash — this just syncs React state.
+   * By starting with `null`, the ThemeSwitcher won't show any active
+   * indicator until the real value is known, preventing the green→blue flash.
+   */
   useEffect(() => {
     const actual = getInitialTheme();
     setThemeState(actual);
+    document.documentElement.setAttribute("data-theme", actual);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
