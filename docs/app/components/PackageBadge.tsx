@@ -19,7 +19,14 @@ export default function PackageBadge() {
   return (
     <div className="inline-flex items-center gap-3 rounded-full border border-border bg-container-body/50 px-6 py-3 text-muted backdrop-blur-sm">
       <Icon name="swift" size={20} className="text-accent" />
-      <code className="font-mono text-xl">
+      <code
+        className="font-mono text-xl"
+        style={{
+          color: "var(--foreground)",
+          textShadow:
+            "0 0 4px rgba(var(--accent-glow), 0.5), 0 0 12px rgba(var(--accent-glow), 0.2)",
+        }}
+      >
         {PACKAGE_LINE}
       </code>
       <button

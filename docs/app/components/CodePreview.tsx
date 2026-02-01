@@ -31,7 +31,10 @@ struct MyApp: App {
   };
 
   return (
-    <div className="group relative w-full overflow-hidden rounded-xl border border-border bg-[#0c0c0e]">
+    <div
+      className="group relative w-full overflow-hidden rounded-xl border border-border backdrop-blur-xl"
+      style={{ backgroundColor: "color-mix(in srgb, var(--container-body) 50%, transparent)" }}
+    >
       {/* Header bar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <div className="flex items-center gap-2">
