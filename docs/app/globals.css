@@ -225,6 +225,73 @@ code {
   }
 }
 
+/* Spinner light pulse — fade in, hold with subtle flicker, fade out */
+@keyframes spinner-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  12% {
+    opacity: var(--peak-opacity, 0.5);
+    transform: scale(1);
+  }
+  30% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.6);
+  }
+  45% {
+    opacity: var(--peak-opacity, 0.5);
+  }
+  60% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.7);
+  }
+  75% {
+    opacity: var(--peak-opacity, 0.5);
+  }
+  88% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.4);
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* Spinner light inward drift — flies toward center, shrinks as if receding into the scene.
+   Uses --drift-x and --drift-y in px set inline by SpinnerLights component. */
+@keyframes spinner-pulse-inward {
+  0% {
+    opacity: 0;
+    translate: 0px 0px;
+    scale: 1;
+  }
+  10% {
+    opacity: var(--peak-opacity, 0.5);
+    scale: 0.95;
+  }
+  30% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.7);
+    scale: 0.8;
+  }
+  50% {
+    opacity: var(--peak-opacity, 0.5);
+    scale: 0.6;
+  }
+  70% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.6);
+    scale: 0.4;
+  }
+  90% {
+    opacity: calc(var(--peak-opacity, 0.5) * 0.3);
+    scale: 0.2;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--drift-x) var(--drift-y);
+    scale: 0.1;
+  }
+}
+
 @keyframes cloud-drift-slow {
   0% {
     transform: translate(0, 0) scale(1);
