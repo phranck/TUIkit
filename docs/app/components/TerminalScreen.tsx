@@ -850,11 +850,8 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
   if (!mounted) return null;
 
-  /** Static welcome text when powered off. */
-  const welcomeLines = ["Welcome to TUIkit", "", "> "];
-
-  const displayLines = powered ? lines : welcomeLines;
-  const showCursor = powered ? cursorVisible : cursorVisible;
+  /* Powered off — no content, just dark glass. */
+  if (!powered) return null;
 
   return (
     <div
@@ -876,14 +873,14 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
             "0 0 4px rgba(var(--accent-glow), 0.6), 0 0 10px rgba(var(--accent-glow), 0.25)",
         }}
       >
-        {displayLines.map((line, index) => (
+        {lines.map((line, index) => (
           <div
             key={`${index}-${line}`}
             ref={(element) => { lineRefsRef.current[index] = element; }}
             className="whitespace-pre overflow-hidden"
           >
             {line.length > COLS ? line.slice(0, COLS) : line}
-            {index === displayLines.length - 1 && showCursor && (
+            {index === lines.length - 1 && cursorVisible && (
               <span className="opacity-80">_</span>
             )}
           </div>
