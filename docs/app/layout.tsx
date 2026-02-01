@@ -51,6 +51,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="4085eff5-2e56-4e3a-ba91-cf0828914169" />
       </head>
       <body
         className={`${geistMono.variable} antialiased`}
