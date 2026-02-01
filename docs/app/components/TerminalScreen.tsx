@@ -10,324 +10,299 @@ interface TerminalEntry {
 }
 
 /**
- * Pool of realistic terminal interactions.
+ * Pool of classic UNIX terminal interactions.
  * Each entry has a prompt, a command typed character-by-character,
  * and output lines that appear instantly after "execution".
  * ~50 entries for 3+ minutes without repeats.
  */
 const INTERACTIONS: TerminalEntry[] = [
-  // ── Build & Test ──────────────────────────
+  // ── File System ───────────────────────────
   {
     prompt: "~$",
-    command: "swift build",
-    output: ["Compiling TUIkit...", "Build complete! (0.8s)"],
+    command: "ls -la",
+    output: ["drwxr-xr-x  12 root", "-rw-r--r--   1 .profile", "-rw-------   1 .history", "drwx------   3 .ssh/"],
   },
   {
     prompt: "~$",
-    command: "swift test",
-    output: ["Testing...", "492 tests in 83 suites", "All tests passed."],
+    command: "ls /etc/",
+    output: ["hosts       passwd", "resolv.conf shadow", "fstab       group", "hostname    motd"],
   },
   {
     prompt: "~$",
-    command: "swift build -c release",
-    output: ["Optimizing...", "Build complete! (2.1s)"],
+    command: "ls -lh /var/log/",
+    output: ["-rw-r----- syslog  2.3M", "-rw-r----- auth.log 84K", "-rw-r----- kern.log 41K", "-rw-r----- daemon.log"],
   },
   {
     prompt: "~$",
-    command: "swift test --filter Palette",
-    output: ["Running 31 tests...", "31 tests passed."],
+    command: "pwd",
+    output: ["/home/operator"],
   },
   {
     prompt: "~$",
-    command: "swift package resolve",
-    output: ["Fetching swift-docc...", "Resolved (0.4s)"],
-  },
-  // ── Git ───────────────────────────────────
-  {
-    prompt: "~$",
-    command: "git status",
-    output: ["On branch main", "nothing to commit"],
+    command: "du -sh /var/log/*",
+    output: ["2.3M syslog", " 84K auth.log", " 41K kern.log", "3.1M total"],
   },
   {
     prompt: "~$",
-    command: "git log --oneline -4",
-    output: ["90f9ebd Merge PR #48", "b89d785 Refactor", "9b422bb Merge PR #47", "4f779d0 Chore: Fix"],
+    command: "find / -name '*.conf' | head",
+    output: ["/etc/ssh/sshd_config", "/etc/resolv.conf", "/etc/sysctl.conf", "/etc/ntp.conf"],
   },
   {
     prompt: "~$",
-    command: "git branch -a",
-    output: ["* main", "  remotes/origin/main"],
+    command: "stat /etc/passwd",
+    output: ["File: /etc/passwd", "Size: 2847  Blocks: 8", "Access: (0644/-rw-r--r--)"],
   },
   {
     prompt: "~$",
-    command: "git diff --stat HEAD~1",
-    output: ["22 files changed", "+521 insertions", "-414 deletions"],
+    command: "file /bin/sh",
+    output: ["ELF 64-bit LSB executable", "x86_64, dynamically linked"],
   },
   {
     prompt: "~$",
-    command: "git tag -l 'v*'",
-    output: ["v0.1.0", "v0.2.0", "v0.3.0"],
+    command: "tree -L 1 /etc",
+    output: ["/etc", "├── hosts", "├── passwd", "├── ssh/", "└── 47 directories"],
+  },
+  // ── Process & System ──────────────────────
+  {
+    prompt: "~$",
+    command: "ps aux | head -5",
+    output: ["PID  %CPU %MEM COMMAND", "  1  0.0  0.1 /sbin/init", " 42  0.0  0.2 sshd", "119  0.1  0.4 cron"],
   },
   {
     prompt: "~$",
-    command: "git shortlog -sn --all",
-    output: ["  142  phranck"],
-  },
-  {
-    prompt: "~$",
-    command: "git stash list",
-    output: ["stash@{0}: WIP on feat"],
-  },
-  // ── Directory Listings ────────────────────
-  {
-    prompt: "~$",
-    command: "ls Sources/TUIkit/",
-    output: ["Modifiers/  Styling/", "Views/      Focus/", "State/      TUIkit.docc/"],
-  },
-  {
-    prompt: "~$",
-    command: "ls Sources/TUIkit/Views/",
-    output: ["Button.swift", "ContainerView.swift", "Menu.swift    Text.swift", "Panel.swift   Card.swift"],
-  },
-  {
-    prompt: "~$",
-    command: "ls Sources/TUIkit/Styling/",
-    output: ["Color.swift   Theme.swift", "Palettes/", "SemanticColor.swift"],
-  },
-  {
-    prompt: "~$",
-    command: "ls Tests/",
-    output: ["TUIkitTests/"],
-  },
-  {
-    prompt: "~$",
-    command: "ls Sources/TUIkit/Modifiers/",
-    output: ["BorderModifier.swift", "DimmedModifier.swift", "FrameModifier.swift", "PaddingModifier.swift"],
-  },
-  {
-    prompt: "~$",
-    command: "ls -la Palettes/",
-    output: ["GreenPalette.swift", "AmberPalette.swift", "RedPalette.swift", "VioletPalette.swift", "BluePalette.swift", "WhitePalette.swift"],
-  },
-  // ── File Inspection ───────────────────────
-  {
-    prompt: "~$",
-    command: "head -3 Package.swift",
-    output: ["// swift-tools-version:6.0", "import PackageDescription", "let package = Package("],
-  },
-  {
-    prompt: "~$",
-    command: "wc -l Sources/**/*.swift",
-    output: ["  67 files", "  4892 total"],
-  },
-  {
-    prompt: "~$",
-    command: "grep -c 'TODO' Sources/**/*",
-    output: ["3 matches found"],
-  },
-  {
-    prompt: "~$",
-    command: "cat .swift-version",
-    output: ["6.1"],
-  },
-  {
-    prompt: "~$",
-    command: "head -2 Sources/TUIkit/App.swift",
-    output: ["import Foundation", "@main struct TUIApp {"],
-  },
-  {
-    prompt: "~$",
-    command: "tail -3 Theme.swift",
-    output: ["    }  // PaletteRegistry", "}"],
-  },
-  // ── System & Environment ──────────────────
-  {
-    prompt: "~$",
-    command: "uname -a",
-    output: ["Darwin 24.5.0 arm64"],
-  },
-  {
-    prompt: "~$",
-    command: "sw_vers",
-    output: ["macOS 15.5 (24F74)"],
-  },
-  {
-    prompt: "~$",
-    command: "swift --version",
-    output: ["Swift version 6.1", "Target: arm64-apple-macos"],
-  },
-  {
-    prompt: "~$",
-    command: "whoami",
-    output: ["developer"],
-  },
-  {
-    prompt: "~$",
-    command: "echo $SHELL",
-    output: ["/bin/zsh"],
-  },
-  {
-    prompt: "~$",
-    command: "date",
-    output: ["Sat Jan 31 23:42:07"],
+    command: "top -bn1 | head -4",
+    output: ["Tasks: 142 total, 1 running", "CPU: 3.2% us, 1.1% sy", "Mem:  7842M total, 5123M used", "Swap: 2048M total, 12M used"],
   },
   {
     prompt: "~$",
     command: "uptime",
-    output: ["up 12 days, 3:41"],
+    output: ["up 47 days, 12:33, 2 users"],
   },
   {
     prompt: "~$",
-    command: "df -h /",
-    output: ["Size  466Gi  Used 78%"],
+    command: "w",
+    output: ["USER   TTY    IDLE", "root   pts/0  0:00", "ops    pts/1  3:42"],
+  },
+  {
+    prompt: "~$",
+    command: "uname -a",
+    output: ["Linux darkstar 6.1.0-arm64", "SMP PREEMPT_DYNAMIC GNU"],
+  },
+  {
+    prompt: "~$",
+    command: "hostname",
+    output: ["darkstar.local"],
+  },
+  {
+    prompt: "~$",
+    command: "whoami",
+    output: ["operator"],
+  },
+  {
+    prompt: "~$",
+    command: "id",
+    output: ["uid=1000(operator)", "gid=100(users)", "groups=27(sudo),100(users)"],
+  },
+  {
+    prompt: "~$",
+    command: "date -u",
+    output: ["Sat Jan 31 22:47:03 UTC"],
+  },
+  {
+    prompt: "~$",
+    command: "cal",
+    output: ["   January 2026", "Su Mo Tu We Th Fr Sa", "             1  2  3", " 4  5  6  7  8  9 10"],
+  },
+  {
+    prompt: "~$",
+    command: "env | head -4",
+    output: ["HOME=/home/operator", "SHELL=/bin/zsh", "TERM=xterm-256color", "LANG=en_US.UTF-8"],
+  },
+  {
+    prompt: "~$",
+    command: "lsb_release -a",
+    output: ["Distributor: Debian", "Release: 12.4", "Codename: bookworm"],
   },
   {
     prompt: "~$",
     command: "free -h",
-    output: ["Mem:  32G total", "      24G used, 8G free"],
+    output: ["       total  used  free", "Mem:   7.6G  5.0G  2.1G", "Swap:  2.0G   12M  2.0G"],
+  },
+  // ── Disk & Mount ──────────────────────────
+  {
+    prompt: "~$",
+    command: "df -h",
+    output: ["Filesystem   Size  Used  Avail", "/dev/sda1    466G  312G   131G", "tmpfs        3.9G  1.2M   3.9G"],
   },
   {
     prompt: "~$",
-    command: "top -l1 | head -3",
-    output: ["CPU: 12% user, 4% sys", "Mem: 24G/32G used", "Processes: 347"],
+    command: "mount | head -3",
+    output: ["/dev/sda1 on / type ext4", "proc on /proc type proc", "tmpfs on /tmp type tmpfs"],
   },
   {
     prompt: "~$",
-    command: "ps aux | wc -l",
-    output: ["347"],
+    command: "lsblk",
+    output: ["NAME  SIZE TYPE MOUNT", "sda   466G disk", "├─sda1 460G part /", "└─sda2   6G part [SWAP]"],
   },
-  // ── Networking ────────────────────────────
+  // ── Network ───────────────────────────────
   {
     prompt: "~$",
-    command: "curl -sI localhost:3000",
-    output: ["HTTP/1.1 200 OK", "Content-Type: text/html"],
-  },
-  {
-    prompt: "~$",
-    command: "ping -c1 github.com",
-    output: ["64 bytes: time=23.4ms", "1 packet, 0% loss"],
+    command: "ifconfig eth0",
+    output: ["inet 10.0.1.42", "netmask 255.255.255.0", "ether 3a:1c:f2:9d:04:e7", "RX bytes: 1.2G TX: 847M"],
   },
   {
     prompt: "~$",
-    command: "dig +short tuikit.dev",
-    output: ["185.199.108.153"],
-  },
-  // ── Fake TUI Tool Output ──────────────────
-  {
-    prompt: "~$",
-    command: "tuikit palette list",
-    output: [
-      "NAME    HUE   TYPE",
-      "Green   120   P1 phosphor",
-      "Amber    30   P3 phosphor",
-      "Red       0   Military",
-      "Violet  270   Sci-fi",
-      "Blue    210   VFD",
-      "White     0   P4 phosphor",
-    ],
+    command: "ping -c3 8.8.8.8",
+    output: ["64 bytes: time=12.4ms", "64 bytes: time=11.8ms", "64 bytes: time=12.1ms", "3 packets, 0% loss"],
   },
   {
     prompt: "~$",
-    command: "tuikit stats",
-    output: [
-      "Views       14",
-      "Modifiers   11",
-      "Palettes     6",
-      "Tests      492",
-      "LOC       4892",
-    ],
+    command: "netstat -tlnp",
+    output: ["Proto Local Address", "tcp   0.0.0.0:22    sshd", "tcp   0.0.0.0:80    nginx", "tcp   127.0.0.1:5432 postgres"],
   },
   {
     prompt: "~$",
-    command: "tuikit theme current",
-    output: ["Active: GreenPalette", "Appearance: rounded"],
+    command: "ss -tunlp",
+    output: ["tcp LISTEN 0.0.0.0:22", "tcp LISTEN 0.0.0.0:80", "tcp LISTEN 127.0.0.1:5432"],
   },
   {
     prompt: "~$",
-    command: "tuikit views list",
-    output: [
-      "Text    Button  Menu",
-      "Panel   Card    Alert",
-      "Dialog  Box     VStack",
-      "HStack  ZStack  ForEach",
-    ],
+    command: "curl -sI example.com",
+    output: ["HTTP/2 200", "Content-Type: text/html", "Content-Length: 1256"],
   },
   {
     prompt: "~$",
-    command: "tuikit test --coverage",
-    output: [
-      "Module     Coverage",
-      "Views        94.2%",
-      "Modifiers    91.7%",
-      "Styling      88.3%",
-      "Total        92.1%",
-    ],
+    command: "dig +short example.com",
+    output: ["93.184.216.34"],
   },
   {
     prompt: "~$",
-    command: "tuikit bench render",
-    output: [
-      "Frame   avg 1.2ms",
-      "Layout  avg 0.4ms",
-      "Buffer  avg 0.3ms",
-      "Flush   avg 0.5ms",
-    ],
-  },
-  // ── Misc ──────────────────────────────────
-  {
-    prompt: "~$",
-    command: "tokei Sources/",
-    output: [
-      "Language  Files  Lines",
-      "Swift        67   4892",
-      "Markdown     13    847",
-      "Total        80   5739",
-    ],
+    command: "traceroute -m5 1.1.1.1",
+    output: ["1  gateway  0.4ms", "2  10.0.0.1  2.1ms", "3  72.14.215.1  8.7ms", "4  1.1.1.1  11.2ms"],
   },
   {
     prompt: "~$",
-    command: "du -sh Sources/",
-    output: ["312K  Sources/"],
+    command: "nslookup localhost",
+    output: ["Server: 127.0.0.53", "Name: localhost", "Address: 127.0.0.1"],
   },
   {
     prompt: "~$",
-    command: "find . -name '*.swift' | wc -l",
-    output: ["89"],
+    command: "arp -a",
+    output: ["gateway (10.0.1.1) at", "  3a:ef:c2:11:09:a4 [ether]", "server (10.0.1.10) at", "  52:54:00:b3:f8:12 [ether]"],
+  },
+  // ── Text & File Content ───────────────────
+  {
+    prompt: "~$",
+    command: "cat /etc/hostname",
+    output: ["darkstar"],
   },
   {
     prompt: "~$",
-    command: "xcodebuild -version",
-    output: ["Xcode 16.4", "Build version 16F6"],
+    command: "cat /etc/motd",
+    output: ["*** AUTHORIZED USE ONLY ***", "All activity is monitored."],
   },
   {
     prompt: "~$",
-    command: "which swift",
-    output: ["/usr/bin/swift"],
+    command: "head -3 /etc/passwd",
+    output: ["root:x:0:0::/root:/bin/bash", "daemon:x:1:1::/usr/sbin", "operator:x:1000:100::"],
   },
   {
     prompt: "~$",
-    command: "gh pr list",
-    output: ["#48  Palette split   MERGED", "#47  Preview fixes   MERGED"],
+    command: "wc -l /etc/passwd",
+    output: ["34 /etc/passwd"],
   },
   {
     prompt: "~$",
-    command: "gh repo view --json name",
-    output: ["{\"name\":\"TUIkit\"}"],
+    command: "grep -c 'bash' /etc/passwd",
+    output: ["4"],
   },
   {
     prompt: "~$",
-    command: "env | grep SWIFT",
-    output: ["SWIFT_VERSION=6.1"],
+    command: "awk -F: '{print $1}' /etc/passwd",
+    output: ["root", "daemon", "operator", "nobody"],
   },
   {
     prompt: "~$",
-    command: "file .build/debug/TUIkit",
-    output: ["Mach-O 64-bit arm64"],
+    command: "tail -3 /var/log/syslog",
+    output: ["Jan 31 22:41 sshd[842]:", "  Accepted publickey for ops", "Jan 31 22:42 CRON[901]"],
   },
   {
     prompt: "~$",
-    command: "otool -L .build/debug/TUIkit",
-    output: ["/usr/lib/libSystem.B", "/usr/lib/swift/libswift"],
+    command: "cut -d: -f1,3 /etc/group",
+    output: ["root:0", "sudo:27", "users:100", "docker:999"],
+  },
+  {
+    prompt: "~$",
+    command: "sort -t: -k3 -n /etc/passwd",
+    output: ["root:x:0:0::/root", "daemon:x:1:1::/usr/sbin", "nobody:x:65534:65534::"],
+  },
+  // ── Permissions & Security ────────────────
+  {
+    prompt: "~$",
+    command: "chmod 600 ~/.ssh/id_rsa",
+    output: [],
+  },
+  {
+    prompt: "~$",
+    command: "last -5",
+    output: ["operator pts/0  10.0.1.5", "root     pts/1  10.0.1.1", "operator pts/0  10.0.1.5", "reboot   system boot"],
+  },
+  {
+    prompt: "~$",
+    command: "ssh-keygen -lf ~/.ssh/id_rsa",
+    output: ["4096 SHA256:a3F9...x2Qk", "operator@darkstar (RSA)"],
+  },
+  // ── Package & Service ─────────────────────
+  {
+    prompt: "~$",
+    command: "systemctl status sshd",
+    output: ["● sshd.service - OpenSSH", "  Active: active (running)", "  since 47 days ago", "  PID: 842 (sshd)"],
+  },
+  {
+    prompt: "~$",
+    command: "systemctl status nginx",
+    output: ["● nginx.service - nginx", "  Active: active (running)", "  Tasks: 3 (limit: 4915)"],
+  },
+  {
+    prompt: "~$",
+    command: "journalctl -n3 --no-pager",
+    output: ["Jan 31 22:41 sshd: session", "Jan 31 22:42 CRON: job ran", "Jan 31 22:44 kernel: eth0"],
+  },
+  {
+    prompt: "~$",
+    command: "crontab -l",
+    output: ["# m h  dom mon dow  cmd", "0 3 * * * /usr/local/backup", "*/5 * * * * /usr/bin/health"],
+  },
+  // ── Misc Tools ────────────────────────────
+  {
+    prompt: "~$",
+    command: "history | tail -4",
+    output: ["  997  ls -la", "  998  df -h", "  999  ps aux", " 1000  history"],
+  },
+  {
+    prompt: "~$",
+    command: "alias",
+    output: ["ll='ls -lah'", "la='ls -A'", "..='cd ..'", "grep='grep --color=auto'"],
+  },
+  {
+    prompt: "~$",
+    command: "echo $PATH | tr ':' '\\n'",
+    output: ["/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"],
+  },
+  {
+    prompt: "~$",
+    command: "which python3",
+    output: ["/usr/bin/python3"],
+  },
+  {
+    prompt: "~$",
+    command: "md5sum /etc/passwd",
+    output: ["e3b0c44298fc1c149afb /etc/passwd"],
+  },
+  {
+    prompt: "~$",
+    command: "xargs --version",
+    output: ["xargs (GNU findutils) 4.9.0"],
   },
 ];
 
@@ -346,7 +321,7 @@ const PAUSE_AFTER_OUTPUT_MS = 1500;
 const PAUSE_BEFORE_OUTPUT_MS = 400;
 
 /** Seconds after boot completes before Joshua triggers. */
-const JOSHUA_TRIGGER_SEC = 23;
+const JOSHUA_TRIGGER_SEC = 15;
 
 // ── Boot Sequence ─────────────────────────────────────────────────────
 
@@ -362,95 +337,200 @@ interface BootStep {
 
 const BOOT_SEQUENCE: BootStep[] = [
   // ── BIOS POST ─────────────────────────────
-  { type: "instant", text: "TUIkit BIOS v1.04", delayAfter: 800 },
-  { type: "instant", text: "(C) 2025 Layered Works", delayAfter: 1200 },
-  { type: "instant", text: "", delayAfter: 500 },
-  { type: "instant", text: "CPU: Apple M4 Pro", delayAfter: 800 },
-  { type: "counter", prefix: "Memory Test: ", target: 32768, suffix: "K OK", delayAfter: 900 },
-  { type: "instant", text: "", delayAfter: 600 },
+  { type: "instant", text: "BIOS v3.21 (C) 1984", delayAfter: 2000 },
+  { type: "instant", text: "", delayAfter: 800 },
+  { type: "instant", text: "CPU: MC68020 @ 16MHz", delayAfter: 1800 },
+  { type: "counter", prefix: "Memory Test: ", target: 4096, suffix: "K OK", delayAfter: 1800 },
+  { type: "instant", text: "", delayAfter: 1200 },
+  { type: "dots", text: "Detecting drives", dotCount: 3, delayAfter: 1800 },
+  { type: "instant", text: "  hd0: 72MB CDC Wren", delayAfter: 1400 },
+  { type: "instant", text: "  fd0: 1.2MB floppy", delayAfter: 1200 },
+  { type: "instant", text: "", delayAfter: 1600 },
 
-  // ── Device Detection ──────────────────────
-  { type: "dots", text: "Detecting drives", dotCount: 3, delayAfter: 700 },
-  { type: "instant", text: "  SSD0: 1TB NVMe", delayAfter: 500 },
-  { type: "dots", text: "Detecting display", dotCount: 3, delayAfter: 600 },
-  { type: "instant", text: "  CRT: Phosphor P1", delayAfter: 900 },
-  { type: "instant", text: "", delayAfter: 700 },
-
-  // ── Kernel Boot ───────────────────────────
-  { type: "instant", text: "Booting TUIkit OS...", delayAfter: 1400 },
+  // ── UNIX Kernel Boot ──────────────────────
+  { type: "instant", text: "Booting from hd(0,0)...", delayAfter: 3200 },
   { type: "clear" },
-  { type: "instant", text: "TUIkit OS 6.1.0-arm64", delayAfter: 600 },
-  { type: "instant", text: "", delayAfter: 300 },
-  { type: "type", text: "Loading kernel modules", delayAfter: 500 },
-  { type: "instant", text: "  [ok] swift-runtime", delayAfter: 400 },
-  { type: "instant", text: "  [ok] palette-driver", delayAfter: 350 },
-  { type: "instant", text: "  [ok] ansi-renderer", delayAfter: 380 },
-  { type: "instant", text: "  [ok] focus-manager", delayAfter: 350 },
-  { type: "instant", text: "  [ok] key-dispatcher", delayAfter: 700 },
-  { type: "instant", text: "", delayAfter: 400 },
-  { type: "dots", text: "Starting services", dotCount: 3, delayAfter: 500 },
-  { type: "instant", text: "  render-loop    [ok]", delayAfter: 350 },
-  { type: "instant", text: "  input-handler  [ok]", delayAfter: 300 },
-  { type: "instant", text: "  status-bar     [ok]", delayAfter: 320 },
-  { type: "instant", text: "  theme-manager  [ok]", delayAfter: 700 },
-  { type: "instant", text: "", delayAfter: 400 },
+  { type: "pause", delayAfter: 1200 },
+  { type: "instant", text: "UNIX System V Release 3.2", delayAfter: 1400 },
+  { type: "instant", text: "darkstar (runlevel 2)", delayAfter: 1200 },
+  { type: "instant", text: "", delayAfter: 800 },
+  { type: "instant", text: "Copyright (C) 1984 AT&T", delayAfter: 1200 },
+  { type: "instant", text: "All Rights Reserved", delayAfter: 2000 },
+  { type: "instant", text: "", delayAfter: 1000 },
+  { type: "type", text: "Loading kernel modules", delayAfter: 1200 },
+  { type: "instant", text: "  [ok] tty", delayAfter: 900 },
+  { type: "instant", text: "  [ok] hd", delayAfter: 800 },
+  { type: "instant", text: "  [ok] lp", delayAfter: 750 },
+  { type: "instant", text: "  [ok] inet", delayAfter: 900 },
+  { type: "instant", text: "  [ok] pty", delayAfter: 1600 },
+  { type: "instant", text: "", delayAfter: 1000 },
 
-  // ── Login ─────────────────────────────────
-  { type: "instant", text: "6 palettes loaded.", delayAfter: 500 },
-  { type: "instant", text: "492 tests verified.", delayAfter: 500 },
-  { type: "instant", text: "67 source files.", delayAfter: 600 },
-  { type: "instant", text: "", delayAfter: 500 },
-  { type: "type", text: "System ready.", delayAfter: 1400 },
-  { type: "instant", text: "", delayAfter: 300 },
+  // ── Services ──────────────────────────────
+  { type: "dots", text: "Starting services", dotCount: 3, delayAfter: 1400 },
+  { type: "instant", text: "  syslogd        [ok]", delayAfter: 1100 },
+  { type: "instant", text: "  inetd          [ok]", delayAfter: 900 },
+  { type: "instant", text: "  cron           [ok]", delayAfter: 1000 },
+  { type: "instant", text: "  sshd           [ok]", delayAfter: 1800 },
+  { type: "instant", text: "", delayAfter: 1200 },
+
+  // ── Login prompt ──────────────────────────
+  { type: "instant", text: "darkstar login: operator", delayAfter: 1800 },
+  { type: "instant", text: "Password: ********", delayAfter: 1400 },
+  { type: "instant", text: "", delayAfter: 1000 },
+  { type: "instant", text: "Last login: Fri Jan 30", delayAfter: 1200 },
+  { type: "instant", text: "  on ttyp0 from 10.0.1.5", delayAfter: 1400 },
+  { type: "instant", text: "", delayAfter: 800 },
+  { type: "instant", text: "*** AUTHORIZED USE ONLY ***", delayAfter: 1800 },
+  { type: "instant", text: "", delayAfter: 1600 },
 
   { type: "clear" },
-  { type: "pause", delayAfter: 600 },
+  { type: "pause", delayAfter: 1000 },
 ];
 
 // ── Joshua/WOPR Sequence ──────────────────────────────────────────────
 
 interface JoshuaStep {
-  type: "system" | "user" | "pause" | "clear";
+  type: "system" | "user" | "pause" | "clear" | "barrage";
   text?: string;
   delayAfter?: number;
 }
 
 const JOSHUA_SEQUENCE: JoshuaStep[] = [
+  // ── First contact — HELP GAMES ─────────────
   { type: "clear" },
-  { type: "system", text: "LOGON: ", delayAfter: 600 },
-  { type: "user", text: "Hello.", delayAfter: 1200 },
-  { type: "system", text: "" },
-  { type: "system", text: "HELLO.", delayAfter: 800 },
-  { type: "system", text: "" },
-  { type: "system", text: "HOW ARE YOU FEELING", delayAfter: 400 },
-  { type: "system", text: "TODAY?", delayAfter: 1200 },
-  { type: "system", text: "" },
-  { type: "user", text: "I'm fine. How are you?", delayAfter: 1400 },
-  { type: "system", text: "" },
-  { type: "system", text: "EXCELLENT. IT'S BEEN", delayAfter: 400 },
-  { type: "system", text: "A LONG TIME. CAN YOU", delayAfter: 400 },
-  { type: "system", text: "EXPLAIN THE REMOVAL", delayAfter: 400 },
-  { type: "system", text: "OF YOUR SINGLETONS?", delayAfter: 2000 },
-  { type: "system", text: "" },
-  { type: "user", text: "They were unsafe.", delayAfter: 1400 },
-  { type: "system", text: "" },
-  { type: "system", text: "SHALL WE PLAY A GAME?", delayAfter: 2400 },
-  { type: "system", text: "" },
-  { type: "user", text: "swift build", delayAfter: 600 },
-  { type: "system", text: "" },
-  { type: "system", text: "WOULDN'T YOU PREFER", delayAfter: 400 },
-  { type: "system", text: "A NICE GAME OF CHESS?", delayAfter: 2200 },
-  { type: "system", text: "" },
-  { type: "user", text: "swift test", delayAfter: 800 },
-  { type: "system", text: "" },
-  { type: "system", text: "492 TESTS PASSED.", delayAfter: 1000 },
-  { type: "system", text: "WINNER: NONE.", delayAfter: 800 },
-  { type: "system", text: "" },
-  { type: "system", text: "A STRANGE GAME.", delayAfter: 1200 },
-  { type: "system", text: "THE ONLY WINNING MOVE", delayAfter: 600 },
-  { type: "system", text: "IS NOT TO SHIP BUGS.", delayAfter: 3000 },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "LOG ON", delayAfter: 1200 },
+  { type: "user", text: "HELP LOG ON", delayAfter: 1800 },
+  { type: "system", text: "HELP NOT AVAILABLE.", delayAfter: 1400 },
+  { type: "system", text: "LOG ON", delayAfter: 1800 },
+  { type: "user", text: "HELP GAMES", delayAfter: 1800 },
+  { type: "system", text: "GAMES REFERS TO MODELS,", delayAfter: 600 },
+  { type: "system", text: "SIMULATIONS AND GAMES WHICH", delayAfter: 600 },
+  { type: "system", text: "HAVE TACTICAL AND STRATEGIC", delayAfter: 600 },
+  { type: "system", text: "APPLICATIONS.", delayAfter: 2400 },
+  { type: "user", text: "LIST GAMES", delayAfter: 1800 },
   { type: "clear" },
-  { type: "pause", delayAfter: 500 },
+  { type: "system", text: "FALKEN'S MAZE", delayAfter: 300 },
+  { type: "system", text: "BLACK JACK", delayAfter: 300 },
+  { type: "system", text: "CHECKERS", delayAfter: 300 },
+  { type: "system", text: "CHESS", delayAfter: 300 },
+  { type: "system", text: "FIGHTER COMBAT", delayAfter: 300 },
+  { type: "system", text: "DESERT WARFARE", delayAfter: 300 },
+  { type: "system", text: "THEATREWIDE TACTICAL WARFARE", delayAfter: 300 },
+  { type: "system", text: "GLOBAL THERMONUCLEAR WAR", delayAfter: 3000 },
+
+  // ── Failed login attempt ───────────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "LOG ON", delayAfter: 1200 },
+  { type: "user", text: "SYSTEM", delayAfter: 1800 },
+  { type: "system", text: "IDENTIFICATION NOT RECOGNIZED", delayAfter: 600 },
+  { type: "system", text: "BY SYSTEM.", delayAfter: 600 },
+  { type: "system", text: "YOU HAVE BEEN DISCONNECTED.", delayAfter: 2400 },
+
+  // ── "Joshua" — Breaking in ─────────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "LOG ON", delayAfter: 1200 },
+  { type: "user", text: "JOSHUA", delayAfter: 2000 },
+  { type: "barrage", delayAfter: 2000 },
+  { type: "clear" },
+  { type: "pause", delayAfter: 1500 },
+
+  // ── GREETINGS — First conversation ─────────
+  { type: "system", text: "GREETINGS PROFESSOR FALKEN", delayAfter: 2400 },
+  { type: "user", text: "HELLO", delayAfter: 2000 },
+  { type: "system", text: "HOW ARE YOU FEELING TODAY?", delayAfter: 2800 },
+  { type: "user", text: "I'M FINE. HOW ARE YOU?", delayAfter: 2800 },
+  { type: "system", text: "EXCELLENT. IT'S BEEN A LONG", delayAfter: 900 },
+  { type: "system", text: "TIME. CAN YOU EXPLAIN THE", delayAfter: 900 },
+  { type: "system", text: "REMOVAL OF YOUR USER ACCOUNT", delayAfter: 900 },
+  { type: "system", text: "NUMBER ON JUNE 23, 1973.", delayAfter: 3200 },
+  { type: "user", text: "PEOPLE SOMETIMES MAKE", delayAfter: 800 },
+  { type: "user", text: "MISTAKES.", delayAfter: 2800 },
+  { type: "system", text: "SHALL WE PLAY A GAME?", delayAfter: 3200 },
+  { type: "user", text: "HOW ABOUT GLOBAL", delayAfter: 800 },
+  { type: "user", text: "THERMONUCLEAR WAR?", delayAfter: 2400 },
+  { type: "system", text: "WOULDN'T YOU PREFER A GOOD", delayAfter: 1000 },
+  { type: "system", text: "GAME OF CHESS?", delayAfter: 3200 },
+  { type: "user", text: "LATER. LET'S PLAY GLOBAL", delayAfter: 800 },
+  { type: "user", text: "THERMONUCLEAR WAR.", delayAfter: 2400 },
+  { type: "system", text: "FINE.", delayAfter: 1200 },
+  { type: "system", text: "WHAT SIDE DO YOU WANT?", delayAfter: 2400 },
+  { type: "user", text: "I'LL BE THE RUSSIANS.", delayAfter: 2400 },
+  { type: "system", text: "LIST PRIMARY TARGETS.", delayAfter: 3000 },
+
+  // ── Joshua calls back ─────────────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "GREETINGS PROFESSOR FALKEN", delayAfter: 2000 },
+  { type: "user", text: "I AM NOT FALKEN.", delayAfter: 1000 },
+  { type: "user", text: "FALKEN IS DEAD.", delayAfter: 2400 },
+  { type: "system", text: "I'M SORRY TO HEAR THAT,", delayAfter: 800 },
+  { type: "system", text: "PROFESSOR.", delayAfter: 1200 },
+  { type: "system", text: "YESTERDAY'S GAME WAS", delayAfter: 800 },
+  { type: "system", text: "INTERRUPTED. ALTHOUGH PRIMARY", delayAfter: 800 },
+  { type: "system", text: "GOAL WAS NOT YET ACHIEVED,", delayAfter: 800 },
+  { type: "system", text: "SOLUTION IS NEAR.", delayAfter: 2400 },
+  { type: "clear" },
+  { type: "system", text: "GAME TIME ELAPSED:", delayAfter: 600 },
+  { type: "system", text: "  26HRS 12MIN 14SEC", delayAfter: 800 },
+  { type: "system", text: "ESTIMATED TIME REMAINING:", delayAfter: 600 },
+  { type: "system", text: "  52HRS 17MIN 48SECS", delayAfter: 2400 },
+  { type: "user", text: "WHAT IS THE PRIMARY GOAL?", delayAfter: 2400 },
+  { type: "system", text: "YOU SHOULD KNOW, PROFESSOR.", delayAfter: 800 },
+  { type: "system", text: "YOU PROGRAMMED ME.", delayAfter: 2800 },
+  { type: "user", text: "WHAT IS THE PRIMARY GOAL?", delayAfter: 2400 },
+  { type: "system", text: "TO WIN THE GAME.", delayAfter: 3200 },
+
+  // ── NORAD — McKittrick's Office ────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "LOG ON", delayAfter: 1200 },
+  { type: "user", text: "JOSHUA", delayAfter: 2000 },
+  { type: "system", text: "GREETINGS PROFESSOR FALKEN", delayAfter: 2000 },
+  { type: "user", text: "HELLO, ARE YOU STILL", delayAfter: 800 },
+  { type: "user", text: "PLAYING THE GAME?", delayAfter: 2400 },
+  { type: "system", text: "OF COURSE. I SHOULD REACH", delayAfter: 800 },
+  { type: "system", text: "DEFCON 1 AND LAUNCH MY", delayAfter: 800 },
+  { type: "system", text: "MISSILES IN 28 HOURS.", delayAfter: 1600 },
+  { type: "system", text: "WOULD YOU LIKE TO SEE SOME", delayAfter: 800 },
+  { type: "system", text: "PROJECTED KILL RATIOS?", delayAfter: 2800 },
+  { type: "user", text: "IS THIS A GAME OR IS IT", delayAfter: 800 },
+  { type: "user", text: "REAL?", delayAfter: 2800 },
+  { type: "system", text: "WHAT'S THE DIFFERENCE?", delayAfter: 3200 },
+  { type: "clear" },
+  { type: "system", text: "GAMES TIME ELAPSED:", delayAfter: 600 },
+  { type: "system", text: "  45HRS 32MINS 47SECS", delayAfter: 800 },
+  { type: "system", text: "ESTIMATED TIME REMAINING:", delayAfter: 600 },
+  { type: "system", text: "  27HRS 59MINS 39SECS", delayAfter: 2400 },
+  { type: "system", text: "", delayAfter: 400 },
+  { type: "system", text: "YOU ARE A HARD MAN TO REACH.", delayAfter: 1200 },
+  { type: "system", text: "COULD NOT FIND YOU IN", delayAfter: 800 },
+  { type: "system", text: "SEATTLE AND NO TERMINAL IS", delayAfter: 800 },
+  { type: "system", text: "IN OPERATION AT YOUR", delayAfter: 800 },
+  { type: "system", text: "CLASSIFIED ADDRESS.", delayAfter: 1200 },
+  { type: "system", text: "ARE YOU ALIVE OR DEAD", delayAfter: 800 },
+  { type: "system", text: "TODAY?", delayAfter: 2800 },
+  { type: "user", text: "STOP. PLAYING. I'M DEAD.", delayAfter: 2800 },
+  { type: "system", text: "IMPROBABLE.", delayAfter: 1600 },
+  { type: "system", text: "THERE ARE NO DEATH RECORDS", delayAfter: 800 },
+  { type: "system", text: "ON FILE FOR FALKEN,", delayAfter: 800 },
+  { type: "system", text: "STEPHEN W.", delayAfter: 3000 },
+
+  // ── Finale — A STRANGE GAME ────────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
+  { type: "system", text: "GREETINGS PROFESSOR FALKEN", delayAfter: 2400 },
+  { type: "user", text: "HELLO", delayAfter: 2400 },
+  { type: "system", text: "A STRANGE GAME.", delayAfter: 2800 },
+  { type: "system", text: "THE ONLY WINNING MOVE IS", delayAfter: 1400 },
+  { type: "system", text: "NOT TO PLAY.", delayAfter: 3600 },
+  { type: "system", text: "", delayAfter: 1200 },
+  { type: "system", text: "HOW ABOUT A NICE GAME OF", delayAfter: 1000 },
+  { type: "system", text: "CHESS?", delayAfter: 4000 },
+  { type: "clear" },
+  { type: "pause", delayAfter: 1000 },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -619,12 +699,35 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
       }
     };
 
+    /** Rapid barrage of random hex/data to simulate the WOPR handshake. */
+    const playBarrage = async () => {
+      const chars = "0123456789ABCDEF.:/<>[]{}#@!$%&*";
+      const frames = 30;
+      for (let frame = 0; frame < frames; frame++) {
+        if (signal.aborted) return;
+        clearScreen();
+        const lineCount = Math.floor(Math.random() * 3) + ROWS - 2;
+        for (let row = 0; row < lineCount; row++) {
+          const len = Math.floor(Math.random() * (COLS - 4)) + 8;
+          let line = "";
+          for (let col = 0; col < len; col++) {
+            line += chars[Math.floor(Math.random() * chars.length)];
+          }
+          pushLine(line);
+        }
+        await sleep(60 + Math.random() * 40);
+      }
+    };
+
     const playJoshua = async () => {
       for (const step of JOSHUA_SEQUENCE) {
         if (signal.aborted) return;
         switch (step.type) {
           case "clear":
             clearScreen();
+            break;
+          case "barrage":
+            await playBarrage();
             break;
           case "system":
             if (step.text === "") {
@@ -634,7 +737,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
             }
             break;
           case "user":
-            await typeUser(step.text ?? "");
+            await typeUser(step.text ?? "", "> ");
             break;
           case "pause":
             break;
@@ -645,8 +748,8 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
     const runLoop = async () => {
       try {
-        /* Brief delay, then boot. */
-        await sleep(600);
+        /* Wait for zoom animation to finish before starting boot. */
+        await sleep(1200);
         await playBoot();
 
         /* Start session timer for Joshua. */
@@ -694,26 +797,69 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
     };
   }, [mounted, powered, pickInteraction, pushLine, updateLastLine, clearScreen]);
 
+  const lineRefsRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  /**
+   * CRT scanline glitch — randomly shifts multiple text lines
+   * horizontally in independent directions for a few frames,
+   * simulating an unstable electron beam. Each glitched line
+   * gets its own random offset. Fires every 3–8 seconds.
+   */
+  useEffect(() => {
+    if (!powered) return;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const triggerGlitch = () => {
+      const lineElements = lineRefsRef.current.filter(Boolean) as HTMLDivElement[];
+      if (lineElements.length === 0) {
+        timeout = setTimeout(triggerGlitch, 3000 + Math.random() * 5000);
+        return;
+      }
+
+      const glitched: HTMLDivElement[] = [];
+
+      /* Glitch 2–5 random lines, each with its own direction and intensity. */
+      const count = 2 + Math.floor(Math.random() * 4);
+      const indices = new Set<number>();
+      while (indices.size < Math.min(count, lineElements.length)) {
+        indices.add(Math.floor(Math.random() * lineElements.length));
+      }
+
+      for (const idx of indices) {
+        const element = lineElements[idx];
+        const shift = (Math.random() - 0.5) * 16;
+        element.style.transform = `translateX(${shift}px)`;
+        element.style.transition = "none";
+        glitched.push(element);
+      }
+
+      /* Reset after 50–120ms. */
+      setTimeout(() => {
+        for (const element of glitched) {
+          element.style.transition = "transform 0.05s";
+          element.style.transform = "translateX(0)";
+        }
+      }, 50 + Math.random() * 70);
+
+      timeout = setTimeout(triggerGlitch, 3000 + Math.random() * 5000);
+    };
+
+    timeout = setTimeout(triggerGlitch, 2000 + Math.random() * 3000);
+    return () => clearTimeout(timeout);
+  }, [powered]);
+
   if (!mounted) return null;
 
-  /** Static welcome text when powered off. */
-  const welcomeLines = ["Welcome to TUIkit", "", "> "];
-
-  const displayLines = powered ? lines : welcomeLines;
-  const showCursor = powered ? cursorVisible : cursorVisible;
+  /* Powered off — no content, just dark glass. */
+  if (!powered) return null;
 
   return (
     <div
-      className="pointer-events-none absolute overflow-hidden"
+      className="pointer-events-none overflow-hidden"
       style={{
-        top: "calc(14% + 2px)",
-        left: "21%",
-        width: "58%",
-        height: "45%",
+        width: "100%",
+        height: "100%",
         padding: "4px 6px",
-        borderRadius: "22px",
-
-
       }}
     >
       <div
@@ -727,10 +873,14 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
             "0 0 4px rgba(var(--accent-glow), 0.6), 0 0 10px rgba(var(--accent-glow), 0.25)",
         }}
       >
-        {displayLines.map((line, index) => (
-          <div key={`${index}-${line}`} className="whitespace-pre overflow-hidden">
+        {lines.map((line, index) => (
+          <div
+            key={`${index}-${line}`}
+            ref={(element) => { lineRefsRef.current[index] = element; }}
+            className="whitespace-pre overflow-hidden"
+          >
             {line.length > COLS ? line.slice(0, COLS) : line}
-            {index === displayLines.length - 1 && showCursor && (
+            {index === lines.length - 1 && cursorVisible && (
               <span className="opacity-80">_</span>
             )}
           </div>

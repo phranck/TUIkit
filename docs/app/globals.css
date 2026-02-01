@@ -144,6 +144,16 @@ code {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+/* CRT scanline glow — faint band sweeping top to bottom */
+@keyframes crt-scanline {
+  0% {
+    background-position: 0 -30%;
+  }
+  100% {
+    background-position: 0 130%;
+  }
+}
+
 /* Cloud animation keyframes — slow, massive wandering paths */
 @keyframes cloud-drift {
   0% {
