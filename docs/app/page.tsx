@@ -1,5 +1,7 @@
 import Image from "next/image";
 import CloudBackground from "./components/CloudBackground";
+import RainOverlay from "./components/RainOverlay";
+import SpinnerLights from "./components/SpinnerLights";
 import CodePreview from "./components/CodePreview";
 import FeatureCard from "./components/FeatureCard";
 import HeroTerminal from "./components/HeroTerminal";
@@ -11,7 +13,11 @@ export default function Home() {
   return (
     <div className="relative min-h-screen">
       <CloudBackground />
+      <RainOverlay />
+      <SpinnerLights />
 
+      {/* All page content above atmosphere layers */}
+      <div className="relative z-10">
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -152,7 +158,10 @@ export default function Home() {
 
       {/* Architecture highlights */}
       <section className="mx-auto max-w-6xl px-6 pb-28">
-        <div className="rounded-2xl border border-border bg-container-body/50 p-8 backdrop-blur-sm md:p-12">
+        <div
+          className="rounded-2xl border border-border p-8 backdrop-blur-xl md:p-12"
+          style={{ backgroundColor: "color-mix(in srgb, var(--container-body) 50%, transparent)" }}
+        >
           <h2 className="mb-8 text-center text-4xl font-bold text-foreground">
             Built right
           </h2>
@@ -269,6 +278,7 @@ export default function Home() {
           </a>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
