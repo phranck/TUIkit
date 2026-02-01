@@ -158,7 +158,7 @@ export default function CRTEffects({
 
       {/* Horizontal scanline glow */}
       <div
-        className="absolute inset-0 animate-crt-scanline"
+        className="absolute inset-0"
         style={{
           background: `linear-gradient(
             to bottom,
@@ -166,7 +166,8 @@ export default function CRTEffects({
             rgba(var(--accent-glow), ${scanlineIntensity * 0.3}) 50%,
             transparent 100%
           )`,
-          height: "3px",
+          height: "8px",
+          animation: "crt-scanline 30s linear infinite",
           pointerEvents: "none",
         }}
       />
