@@ -18,291 +18,357 @@ interface TerminalEntry {
 const INTERACTIONS: TerminalEntry[] = [
   // ── File System ───────────────────────────
   {
-    prompt: "~$",
+    prompt: "$",
     command: "ls -la",
-    output: ["drwxr-xr-x  12 root", "-rw-r--r--   1 .profile", "-rw-------   1 .history", "drwx------   3 .ssh/"],
+    output: ["drwxr-xr-x  12 root", "-rw-r--r--   1 .profile", "-rw-------   1 .runcom", "drwx------   3 .rhost"],
   },
   {
-    prompt: "~$",
-    command: "ls /etc/",
-    output: ["hosts       passwd", "resolv.conf shadow", "fstab       group", "hostname    motd"],
+    prompt: "$",
+    command: "ls /etc",
+    output: ["hosts       passwd", "inittab     shadow", "fstab       group", "rc2.d       motd"],
   },
   {
-    prompt: "~$",
-    command: "ls -lh /var/log/",
-    output: ["-rw-r----- syslog  2.3M", "-rw-r----- auth.log 84K", "-rw-r----- kern.log 41K", "-rw-r----- daemon.log"],
+    prompt: "$",
+    command: "ls -l /var/adm",
+    output: ["-rw-r----- syslog    47K", "-rw-r----- sulog      8K", "-rw-r----- messages  12K", "-rw-r----- wtmp      31K"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "pwd",
-    output: ["/home/operator"],
+    output: ["/usr/operator"],
   },
   {
-    prompt: "~$",
-    command: "du -sh /var/log/*",
-    output: ["2.3M syslog", " 84K auth.log", " 41K kern.log", "3.1M total"],
+    prompt: "$",
+    command: "du -s /var/adm/*",
+    output: ["94  syslog", "16  sulog", "24  messages", "62  wtmp"],
   },
   {
-    prompt: "~$",
-    command: "find / -name '*.conf' | head",
-    output: ["/etc/ssh/sshd_config", "/etc/resolv.conf", "/etc/sysctl.conf", "/etc/ntp.conf"],
+    prompt: "$",
+    command: "find /etc -name '*.conf'",
+    output: ["/etc/resolv.conf", "/etc/ntp.conf", "/etc/syslog.conf", "/etc/uucp/Systems"],
   },
   {
-    prompt: "~$",
-    command: "stat /etc/passwd",
-    output: ["File: /etc/passwd", "Size: 2847  Blocks: 8", "Access: (0644/-rw-r--r--)"],
-  },
-  {
-    prompt: "~$",
+    prompt: "$",
     command: "file /bin/sh",
-    output: ["ELF 64-bit LSB executable", "x86_64, dynamically linked"],
+    output: ["MC68020 executable", "not stripped"],
   },
   {
-    prompt: "~$",
-    command: "tree -L 1 /etc",
-    output: ["/etc", "├── hosts", "├── passwd", "├── ssh/", "└── 47 directories"],
+    prompt: "$",
+    command: "ls /dev/console",
+    output: ["crw--w--w- 0,0 console"],
   },
   // ── Process & System ──────────────────────
   {
-    prompt: "~$",
-    command: "ps aux | head -5",
-    output: ["PID  %CPU %MEM COMMAND", "  1  0.0  0.1 /sbin/init", " 42  0.0  0.2 sshd", "119  0.1  0.4 cron"],
+    prompt: "$",
+    command: "ps -ef | head -5",
+    output: ["  PID TTY  TIME CMD", "    0 ?    0:12 sched", "    1 ?    0:03 /etc/init", "   42 ?    0:01 /etc/cron", "   58 co   0:00 /bin/sh"],
   },
   {
-    prompt: "~$",
-    command: "top -bn1 | head -4",
-    output: ["Tasks: 142 total, 1 running", "CPU: 3.2% us, 1.1% sy", "Mem:  7842M total, 5123M used", "Swap: 2048M total, 12M used"],
-  },
-  {
-    prompt: "~$",
+    prompt: "$",
     command: "uptime",
     output: ["up 47 days, 12:33, 2 users"],
   },
   {
-    prompt: "~$",
-    command: "w",
-    output: ["USER   TTY    IDLE", "root   pts/0  0:00", "ops    pts/1  3:42"],
+    prompt: "$",
+    command: "who",
+    output: ["root     console  Jan 30", "operator ttyp0    Jan 31"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "uname -a",
-    output: ["Linux darkstar 6.1.0-arm64", "SMP PREEMPT_DYNAMIC GNU"],
+    output: ["UNIX darkstar 3.2 2 m68k"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "hostname",
-    output: ["darkstar.local"],
-  },
-  {
-    prompt: "~$",
-    command: "whoami",
-    output: ["operator"],
-  },
-  {
-    prompt: "~$",
-    command: "id",
-    output: ["uid=1000(operator)", "gid=100(users)", "groups=27(sudo),100(users)"],
-  },
-  {
-    prompt: "~$",
-    command: "date -u",
-    output: ["Sat Jan 31 22:47:03 UTC"],
-  },
-  {
-    prompt: "~$",
-    command: "cal",
-    output: ["   January 2026", "Su Mo Tu We Th Fr Sa", "             1  2  3", " 4  5  6  7  8  9 10"],
-  },
-  {
-    prompt: "~$",
-    command: "env | head -4",
-    output: ["HOME=/home/operator", "SHELL=/bin/zsh", "TERM=xterm-256color", "LANG=en_US.UTF-8"],
-  },
-  {
-    prompt: "~$",
-    command: "lsb_release -a",
-    output: ["Distributor: Debian", "Release: 12.4", "Codename: bookworm"],
-  },
-  {
-    prompt: "~$",
-    command: "free -h",
-    output: ["       total  used  free", "Mem:   7.6G  5.0G  2.1G", "Swap:  2.0G   12M  2.0G"],
-  },
-  // ── Disk & Mount ──────────────────────────
-  {
-    prompt: "~$",
-    command: "df -h",
-    output: ["Filesystem   Size  Used  Avail", "/dev/sda1    466G  312G   131G", "tmpfs        3.9G  1.2M   3.9G"],
-  },
-  {
-    prompt: "~$",
-    command: "mount | head -3",
-    output: ["/dev/sda1 on / type ext4", "proc on /proc type proc", "tmpfs on /tmp type tmpfs"],
-  },
-  {
-    prompt: "~$",
-    command: "lsblk",
-    output: ["NAME  SIZE TYPE MOUNT", "sda   466G disk", "├─sda1 460G part /", "└─sda2   6G part [SWAP]"],
-  },
-  // ── Network ───────────────────────────────
-  {
-    prompt: "~$",
-    command: "ifconfig eth0",
-    output: ["inet 10.0.1.42", "netmask 255.255.255.0", "ether 3a:1c:f2:9d:04:e7", "RX bytes: 1.2G TX: 847M"],
-  },
-  {
-    prompt: "~$",
-    command: "ping -c3 8.8.8.8",
-    output: ["64 bytes: time=12.4ms", "64 bytes: time=11.8ms", "64 bytes: time=12.1ms", "3 packets, 0% loss"],
-  },
-  {
-    prompt: "~$",
-    command: "netstat -tlnp",
-    output: ["Proto Local Address", "tcp   0.0.0.0:22    sshd", "tcp   0.0.0.0:80    nginx", "tcp   127.0.0.1:5432 postgres"],
-  },
-  {
-    prompt: "~$",
-    command: "ss -tunlp",
-    output: ["tcp LISTEN 0.0.0.0:22", "tcp LISTEN 0.0.0.0:80", "tcp LISTEN 127.0.0.1:5432"],
-  },
-  {
-    prompt: "~$",
-    command: "curl -sI example.com",
-    output: ["HTTP/2 200", "Content-Type: text/html", "Content-Length: 1256"],
-  },
-  {
-    prompt: "~$",
-    command: "dig +short example.com",
-    output: ["93.184.216.34"],
-  },
-  {
-    prompt: "~$",
-    command: "traceroute -m5 1.1.1.1",
-    output: ["1  gateway  0.4ms", "2  10.0.0.1  2.1ms", "3  72.14.215.1  8.7ms", "4  1.1.1.1  11.2ms"],
-  },
-  {
-    prompt: "~$",
-    command: "nslookup localhost",
-    output: ["Server: 127.0.0.53", "Name: localhost", "Address: 127.0.0.1"],
-  },
-  {
-    prompt: "~$",
-    command: "arp -a",
-    output: ["gateway (10.0.1.1) at", "  3a:ef:c2:11:09:a4 [ether]", "server (10.0.1.10) at", "  52:54:00:b3:f8:12 [ether]"],
-  },
-  // ── Text & File Content ───────────────────
-  {
-    prompt: "~$",
-    command: "cat /etc/hostname",
     output: ["darkstar"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
+    command: "id",
+    output: ["uid=100(operator)", "gid=100(users)"],
+  },
+  {
+    prompt: "$",
+    command: "date",
+    output: ["Fri Jan 31 22:47:03 EST"],
+  },
+  {
+    prompt: "$",
+    command: "cal",
+    output: ["   January 1986", "Su Mo Tu We Th Fr Sa", "          1  2  3  4", " 5  6  7  8  9 10 11"],
+  },
+  {
+    prompt: "$",
+    command: "env | head -4",
+    output: ["HOME=/usr/operator", "SHELL=/bin/sh", "TERM=vt100", "TZ=EST5EDT"],
+  },
+  {
+    prompt: "$",
+    command: "sar -u 3 1",
+    output: ["darkstar  UNIX 3.2  m68k", "%usr %sys %wio %idle", " 4.2  2.1  0.8  92.9"],
+  },
+  // ── Disk & Mount ──────────────────────────
+  {
+    prompt: "$",
+    command: "df",
+    output: ["/dev/dsk/0s0  72MB  51MB  21MB", "/dev/dsk/0s1  72MB  38MB  34MB"],
+  },
+  {
+    prompt: "$",
+    command: "mount",
+    output: ["/dev/dsk/0s0 on / type s5", "/dev/dsk/0s1 on /usr type s5", "/dev/fd0 on /mnt type s5"],
+  },
+  // ── Network ───────────────────────────────
+  {
+    prompt: "$",
+    command: "ifconfig en0",
+    output: ["inet 10.0.1.42", "netmask 255.255.255.0", "broadcast 10.0.1.255", "UP RUNNING"],
+  },
+  {
+    prompt: "$",
+    command: "ping darkstar",
+    output: ["darkstar is alive"],
+  },
+  {
+    prompt: "$",
+    command: "netstat -rn",
+    output: ["Destination  Gateway", "default      10.0.1.1", "10.0.1.0     10.0.1.42", "127.0.0.1    127.0.0.1"],
+  },
+  {
+    prompt: "$",
+    command: "netstat -a | head -4",
+    output: ["Proto Local Address", "tcp   *.telnet  LISTEN", "tcp   *.ftp     LISTEN", "tcp   *.smtp   LISTEN"],
+  },
+  {
+    prompt: "$",
+    command: "arp -a",
+    output: ["gateway (10.0.1.1) at", "  08:00:20:1a:2b:3c", "wopr (10.0.1.10) at", "  08:00:20:4d:5e:6f"],
+  },
+  {
+    prompt: "$",
+    command: "nslookup darkstar",
+    output: ["Server: 10.0.1.1", "Name: darkstar", "Address: 10.0.1.42"],
+  },
+  {
+    prompt: "$",
+    command: "finger @darkstar",
+    output: ["Login   Name      TTY Idle", "root    Super-User co  0:12", "operator          p0     "],
+  },
+  {
+    prompt: "$",
+    command: "rlogin wopr",
+    output: ["Connection refused"],
+  },
+  // ── Text & File Content ───────────────────
+  {
+    prompt: "$",
     command: "cat /etc/motd",
     output: ["*** AUTHORIZED USE ONLY ***", "All activity is monitored."],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "head -3 /etc/passwd",
-    output: ["root:x:0:0::/root:/bin/bash", "daemon:x:1:1::/usr/sbin", "operator:x:1000:100::"],
+    output: ["root:x:0:0:Super-User:/:/bin/sh", "daemon:x:1:1::/:", "operator:x:100:100::/usr/operator"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "wc -l /etc/passwd",
-    output: ["34 /etc/passwd"],
+    output: ["18 /etc/passwd"],
   },
   {
-    prompt: "~$",
-    command: "grep -c 'bash' /etc/passwd",
-    output: ["4"],
+    prompt: "$",
+    command: "grep 'sh' /etc/passwd",
+    output: ["root:x:0:0:Super-User:/:/bin/sh", "operator:x:100:100::/usr/operator"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "awk -F: '{print $1}' /etc/passwd",
-    output: ["root", "daemon", "operator", "nobody"],
+    output: ["root", "daemon", "bin", "operator", "nobody", "uucp", "lp"],
   },
   {
-    prompt: "~$",
-    command: "tail -3 /var/log/syslog",
-    output: ["Jan 31 22:41 sshd[842]:", "  Accepted publickey for ops", "Jan 31 22:42 CRON[901]"],
+    prompt: "$",
+    command: "tail -5 /var/adm/syslog",
+    output: ["Jan 31 22:41 login: ROOT", "  LOGIN on console", "Jan 31 22:42 cron: CMD", "  /usr/lib/sa/sadc", "Jan 31 22:45 inetd[58]"],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "cut -d: -f1,3 /etc/group",
-    output: ["root:0", "sudo:27", "users:100", "docker:999"],
+    output: ["root:0", "other:1", "bin:2", "sys:3", "adm:4", "users:100"],
   },
   {
-    prompt: "~$",
-    command: "sort -t: -k3 -n /etc/passwd",
-    output: ["root:x:0:0::/root", "daemon:x:1:1::/usr/sbin", "nobody:x:65534:65534::"],
+    prompt: "$",
+    command: "cat /etc/inittab | head -4",
+    output: ["id:2:initdefault:", "si::sysinit:/etc/bcheckrc", "s2:2:wait:/etc/rc2", "co:2:respawn:/etc/getty console"],
   },
-  // ── Permissions & Security ────────────────
   {
-    prompt: "~$",
-    command: "chmod 600 ~/.ssh/id_rsa",
+    prompt: "$",
+    command: "cat /etc/rc2.d/S80lp",
+    output: ["#!/bin/sh", "# Start LP spooler", "/usr/lib/lpsched"],
+  },
+  // ── Permissions & Admin ───────────────────
+  {
+    prompt: "$",
+    command: "chmod 600 .runcom",
     output: [],
   },
   {
-    prompt: "~$",
+    prompt: "$",
     command: "last -5",
-    output: ["operator pts/0  10.0.1.5", "root     pts/1  10.0.1.1", "operator pts/0  10.0.1.5", "reboot   system boot"],
+    output: ["operator ttyp0 10.0.1.5", "root     console", "operator ttyp0 10.0.1.5", "reboot   ~      system boot"],
   },
   {
-    prompt: "~$",
-    command: "ssh-keygen -lf ~/.ssh/id_rsa",
-    output: ["4096 SHA256:a3F9...x2Qk", "operator@darkstar (RSA)"],
+    prompt: "$",
+    command: "su -",
+    output: ["Password:", "su: Sorry"],
   },
-  // ── Package & Service ─────────────────────
+  // ── UUCP & Communication ──────────────────
   {
-    prompt: "~$",
-    command: "systemctl status sshd",
-    output: ["● sshd.service - OpenSSH", "  Active: active (running)", "  since 47 days ago", "  PID: 842 (sshd)"],
-  },
-  {
-    prompt: "~$",
-    command: "systemctl status nginx",
-    output: ["● nginx.service - nginx", "  Active: active (running)", "  Tasks: 3 (limit: 4915)"],
+    prompt: "$",
+    command: "uuname",
+    output: ["darkstar", "wopr", "norad"],
   },
   {
-    prompt: "~$",
-    command: "journalctl -n3 --no-pager",
-    output: ["Jan 31 22:41 sshd: session", "Jan 31 22:42 CRON: job ran", "Jan 31 22:44 kernel: eth0"],
+    prompt: "$",
+    command: "mailx",
+    output: ["No mail for operator"],
   },
   {
-    prompt: "~$",
-    command: "crontab -l",
-    output: ["# m h  dom mon dow  cmd", "0 3 * * * /usr/local/backup", "*/5 * * * * /usr/bin/health"],
+    prompt: "$",
+    command: "write root",
+    output: ["Permission denied"],
   },
   // ── Misc Tools ────────────────────────────
   {
-    prompt: "~$",
-    command: "history | tail -4",
-    output: ["  997  ls -la", "  998  df -h", "  999  ps aux", " 1000  history"],
+    prompt: "$",
+    command: "echo $PATH",
+    output: ["/bin:/usr/bin:/usr/local/bin"],
   },
   {
-    prompt: "~$",
-    command: "alias",
-    output: ["ll='ls -lah'", "la='ls -A'", "..='cd ..'", "grep='grep --color=auto'"],
+    prompt: "$",
+    command: "crontab -l",
+    output: ["# operator crontab", "0 3 * * * /usr/local/backup", "0 * * * * /usr/lib/sa/sadc"],
   },
   {
-    prompt: "~$",
-    command: "echo $PATH | tr ':' '\\n'",
-    output: ["/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"],
+    prompt: "$",
+    command: "stty",
+    output: ["speed 9600 baud", "rows 24; columns 80", "erase = ^H; kill = ^U"],
   },
   {
-    prompt: "~$",
-    command: "which python3",
-    output: ["/usr/bin/python3"],
+    prompt: "$",
+    command: "tty",
+    output: ["/dev/ttyp0"],
   },
   {
-    prompt: "~$",
-    command: "md5sum /etc/passwd",
-    output: ["e3b0c44298fc1c149afb /etc/passwd"],
+    prompt: "$",
+    command: "sum /bin/sh",
+    output: ["42struc 14 /bin/sh"],
   },
   {
-    prompt: "~$",
-    command: "xargs --version",
-    output: ["xargs (GNU findutils) 4.9.0"],
+    prompt: "$",
+    command: "banner HELLO",
+    output: ["#  #  #### #    #    ###", "#  #  #    #    #    # #", "####  ###  #    #    # #", "#  #  #    #    #    # #", "#  #  #### #### #### ###"],
+  },
+  // ── UUCP & Modem ──────────────────────────
+  {
+    prompt: "$",
+    command: "uustat -a",
+    output: ["darkstarN0042 01/31 22:14", "  norad!~/receive 847 bytes", "darkstarN0043 01/31 22:31", "  wopr!~/spool/batch 2.1K"],
+  },
+  {
+    prompt: "$",
+    command: "uulog -s norad",
+    output: ["uucp norad (01/31-22:14)", "  OK (startup)", "  SUCCEEDED (call to norad)", "  OK (conversation complete)"],
+  },
+  {
+    prompt: "$",
+    command: "cu -s 2400 -l /dev/tty01",
+    output: ["Connected.", "login:", "^d", "Disconnected."],
+  },
+  {
+    prompt: "$",
+    command: "cat /etc/uucp/Systems",
+    output: ["norad  Any ACU 2400 5551234", "  ogin: uucp ssword: secret", "wopr   Any ACU 1200 5559876", "  ogin: guest ssword: joshua"],
+  },
+  // ── Printing ──────────────────────────────
+  {
+    prompt: "$",
+    command: "lpstat -t",
+    output: ["scheduler is running", "lp0 accepting requests", "  printer lp0 now printing", "  lp0-127 operator  2841 bytes"],
+  },
+  {
+    prompt: "$",
+    command: "lpstat -o",
+    output: ["lp0-127 operator  2841 Jan 31", "lp0-128 root      1204 Jan 31"],
+  },
+  {
+    prompt: "$",
+    command: "cancel lp0-128",
+    output: ["request \"lp0-128\" cancelled"],
+  },
+  // ── Editor ────────────────────────────────
+  {
+    prompt: "$",
+    command: "ed /etc/motd",
+    output: ["58", "1,$p", "*** AUTHORIZED USE ONLY ***", "All activity is monitored.", "q"],
+  },
+  {
+    prompt: "$",
+    command: "vi --version",
+    output: ["Version SVR3.2 (10/15/84)"],
+  },
+  // ── Archiving & Tape ──────────────────────
+  {
+    prompt: "$",
+    command: "tar tvf /dev/rmt/0",
+    output: ["drwxr-xr-x root/sys", "  usr/spool/uucp/", "-rw-r--r-- uucp/uucp", "  LOGFILE 4217 Jan 31"],
+  },
+  {
+    prompt: "$",
+    command: "cpio -itv < /dev/rmt/0",
+    output: ["-rw-r--r--  1 root", "  etc/passwd  847 Jan 30", "-rw-------  1 root", "  etc/shadow  412 Jan 30"],
+  },
+  {
+    prompt: "$",
+    command: "dd if=/dev/rmt/0 bs=512",
+    output: ["142+0 records in", "142+0 records out"],
+  },
+  // ── System Admin ──────────────────────────
+  {
+    prompt: "$",
+    command: "vmstat 1 3",
+    output: [" procs  memory   page", " r b  avm  fre  fr  sr", " 1 0  842  312   0   0", " 0 0  842  312   0   0"],
+  },
+  {
+    prompt: "$",
+    command: "swap -l",
+    output: ["swapfile       blocks  free", "/dev/dsk/0s2    16384  15840"],
+  },
+  {
+    prompt: "$",
+    command: "sysdef | head -4",
+    output: ["* System Devices", "MC68020 processor", "4096K memory", "1 CDC Wren 72MB disk"],
+  },
+  {
+    prompt: "$",
+    command: "dmesg | tail -4",
+    output: ["mem = 4096K", "hd0: CDC Wren IV 72MB", "  94 cyls, 9 heads, 17 sec", "clock: ticking at 100 Hz"],
+  },
+  {
+    prompt: "$",
+    command: "whodo",
+    output: ["Fri Jan 31 22:51 darkstar", "console  root     22:14", "  init", "ttyp0    operator 22:33", "  sh"],
+  },
+  // ── Kermit ────────────────────────────────
+  {
+    prompt: "$",
+    command: "kermit -l /dev/tty01",
+    output: ["C-Kermit 4E(072)", "  for UNIX System V", "Type ? for help", "C-Kermit>"],
+  },
+  {
+    prompt: "$",
+    command: "tip -2400 norad",
+    output: ["connected", "login:", "~.", "disconnected"],
   },
 ];
 
@@ -370,7 +436,7 @@ const BOOT_SEQUENCE: BootStep[] = [
   { type: "instant", text: "  syslogd        [ok]", delayAfter: 1100 },
   { type: "instant", text: "  inetd          [ok]", delayAfter: 900 },
   { type: "instant", text: "  cron           [ok]", delayAfter: 1000 },
-  { type: "instant", text: "  sshd           [ok]", delayAfter: 1800 },
+  { type: "instant", text: "  telnetd        [ok]", delayAfter: 1800 },
   { type: "instant", text: "", delayAfter: 1200 },
 
   // ── Login prompt ──────────────────────────
@@ -553,7 +619,6 @@ interface TerminalScreenProps {
 export default function TerminalScreen({ powered, zoomed = false }: TerminalScreenProps) {
   const [lines, setLines] = useState<string[]>([]);
   const [cursorVisible, setCursorVisible] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const linesRef = useRef<string[]>([]);
@@ -563,7 +628,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
   const pickInteraction = useCallback((): TerminalEntry => {
     const used = usedIndicesRef.current;
-    if (used.size >= INTERACTIONS.length - 2) {
+    if (used.size >= INTERACTIONS.length) {
       used.clear();
     }
     let index: number;
@@ -590,11 +655,8 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
   const clearScreen = useCallback(() => {
     linesRef.current = [];
+    lineRefsRef.current = [];
     setLines([]);
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
   }, []);
 
   /** Cursor blink. */
@@ -621,7 +683,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
   /** Main animation loop — only runs when powered. */
   useEffect(() => {
-    if (!mounted || !powered) return;
+    if (!powered) return;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -644,12 +706,36 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
       }
     };
 
-    const typeUser = async (text: string, promptSuffix = "") => {
-      const prefix = promptSuffix;
+    /**
+     * Simulates a human typing at a physical keyboard.
+     *
+     * Varies timing per character to mimic real keystrokes:
+     * - Short bursts of fast typing (50–80ms) for familiar sequences
+     * - Thinking pauses (300–600ms) after spaces and punctuation
+     * - Occasional mid-word hesitation (200–350ms, ~15% chance)
+     * - Slightly faster within a word, slower at boundaries
+     */
+    const typeUser = async (text: string, prefix = "") => {
       pushLine(prefix);
       for (let charIdx = 0; charIdx < text.length; charIdx++) {
         updateLastLine(prefix + text.slice(0, charIdx + 1));
-        const delay = TYPE_MIN_MS + Math.random() * (TYPE_MAX_MS - TYPE_MIN_MS);
+        const char = text[charIdx];
+        const nextChar = text[charIdx + 1];
+
+        let delay: number;
+        if (char === " " || char === "." || char === "," || char === "?") {
+          /* Pause after word boundary or punctuation — thinking time. */
+          delay = 250 + Math.random() * 350;
+        } else if (nextChar === " " || charIdx === text.length - 1) {
+          /* Slightly slower on last char of a word — finger lifting. */
+          delay = 100 + Math.random() * 120;
+        } else if (Math.random() < 0.15) {
+          /* Occasional mid-word hesitation — hunting for the right key. */
+          delay = 180 + Math.random() * 170;
+        } else {
+          /* Fast burst within a word. */
+          delay = 45 + Math.random() * 55;
+        }
         await sleep(delay);
       }
     };
@@ -795,7 +881,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
       controller.abort();
       abortRef.current = null;
     };
-  }, [mounted, powered, pickInteraction, pushLine, updateLastLine, clearScreen]);
+  }, [powered, pickInteraction, pushLine, updateLastLine, clearScreen]);
 
   const lineRefsRef = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -848,8 +934,6 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
     return () => clearTimeout(timeout);
   }, [powered]);
 
-  if (!mounted) return null;
-
   /* Powered off — no content, just dark glass. */
   if (!powered) return null;
 
@@ -875,7 +959,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
       >
         {lines.map((line, index) => (
           <div
-            key={`${index}-${line}`}
+            key={index}
             ref={(element) => { lineRefsRef.current[index] = element; }}
             className="whitespace-pre overflow-hidden"
           >

@@ -40,10 +40,10 @@ export default function ThemeSwitcher() {
             style={{
               backgroundColor: themeColors[themeOption],
               boxShadow:
-                theme !== null && theme === themeOption
+                theme === themeOption
                   ? `0 0 6px ${themeColors[themeOption]}, 0 0 14px ${themeColors[themeOption]}60`
                   : "none",
-              opacity: theme === null ? 0.4 : theme === themeOption ? 1 : 0.4,
+              opacity: theme === themeOption ? 1 : 0.4,
             }}
           />
         </button>

@@ -13,7 +13,10 @@ export default function FeatureCard({
   description,
 }: FeatureCardProps) {
   return (
-    <div className="group rounded-xl border border-border bg-container-body p-6 transition-all duration-300 hover:border-accent/30 hover:bg-container-cap">
+    <div
+      className="group rounded-xl border border-border p-6 backdrop-blur-xl transition-all duration-300 hover:border-accent/30"
+      style={{ backgroundColor: "color-mix(in srgb, var(--container-body) 50%, transparent)" }}
+    >
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent transition-colors group-hover:bg-accent/15">
           {icon}
