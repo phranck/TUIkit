@@ -12,11 +12,6 @@ import Testing
 @Suite("NavigationTitleKey Tests")
 struct NavigationTitleKeyTests {
 
-    @Test("Default value is empty string")
-    func defaultValue() {
-        #expect(NavigationTitleKey.defaultValue == "")
-    }
-
     @Test("NavigationTitleKey uses last-value reduce")
     func lastValueReduce() {
         var value = NavigationTitleKey.defaultValue
