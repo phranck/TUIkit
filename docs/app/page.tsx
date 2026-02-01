@@ -70,7 +70,7 @@ export default function Home() {
               "0 0 7px rgba(var(--headline-glow),0.6), 0 0 20px rgba(var(--headline-glow),0.35), 0 0 42px rgba(var(--headline-glow),0.15)",
           }}
         >
-          &gt; Terminal UIs, the Swift way_
+          &gt; Terminal UIs, the Swift way<span className="animate-cursor-blink">_</span>
         </h1>
 
         <p className="mb-10 max-w-2xl text-2xl leading-relaxed text-muted">
