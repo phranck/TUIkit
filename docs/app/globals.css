@@ -292,6 +292,22 @@ code {
   }
 }
 
+/* Headline cursor blink — classic terminal block cursor on/off */
+@keyframes cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@utility animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
 @keyframes cloud-drift-slow {
   0% {
     transform: translate(0, 0) scale(1);
