@@ -26,6 +26,8 @@ struct AnyViewTests {
         let anyView = Text("Test").bold().asAnyView()
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(anyView, context: context)
-        #expect(!buffer.isEmpty)
+        #expect(buffer.height == 1)
+        #expect(buffer.lines[0].contains("Test"))
+        #expect(buffer.lines[0].contains("\u{1B}[1m")) // bold ANSI code
     }
 }
