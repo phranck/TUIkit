@@ -4,6 +4,23 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
 
+/** Lazily created, reused AudioContext to avoid browser limits (~6 concurrent). */
+let sharedAudioCtx: AudioContext | null = null;
+
+/**
+ * Returns a shared AudioContext, creating one on first call.
+ * Resumes the context if it was suspended (browsers require user gesture).
+ */
+function getAudioContext(): AudioContext {
+  if (!sharedAudioCtx || sharedAudioCtx.state === "closed") {
+    sharedAudioCtx = new AudioContext();
+  }
+  if (sharedAudioCtx.state === "suspended") {
+    sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+}
+
 /**
  * Synthesizes a CRT power-on sound using the Web Audio API.
  *
@@ -15,7 +32,7 @@ import TerminalScreen from "./TerminalScreen";
  *    (high-voltage transformer spooling up).
  */
 function playCrtPowerOnSound(): void {
-  const audioCtx = new AudioContext();
+  const audioCtx = getAudioContext();
   const now = audioCtx.currentTime;
 
   /* ── Degauss thump (filtered noise burst + deep sine) ── */
@@ -72,7 +89,6 @@ function playCrtPowerOnSound(): void {
   whineOsc.start(now + 0.12);
   whineOsc.stop(now + 0.8);
 
-  setTimeout(() => audioCtx.close(), 1200);
 }
 
 /**
@@ -94,15 +110,19 @@ export default function HeroTerminal() {
   const [zoomed, setZoomed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const zoomTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const powerOffTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   /** Offset to translate the element from its inline position to viewport center. */
   const [centerOffset, setCenterOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setMounted(true);
+    return () => {
+      if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
+      if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
+    };
   }, []);
-
-
 
   /** Computes the translation needed to center the element in the viewport. */
   const computeCenterOffset = useCallback(() => {
@@ -127,14 +147,14 @@ export default function HeroTerminal() {
     /* Compute offset before zooming so it captures the inline position. */
     setCenterOffset(computeCenterOffset());
     /* Small delay so the glow appears before zoom. */
-    setTimeout(() => setZoomed(true), 200);
+    zoomTimerRef.current = setTimeout(() => setZoomed(true), 200);
   }, [powered, computeCenterOffset]);
 
   /** Power off: zoom back, stop terminal. */
   const handlePowerOff = useCallback(() => {
     setZoomed(false);
     /* Wait for zoom-out animation to finish before killing power. */
-    setTimeout(() => setPowered(false), 500);
+    powerOffTimerRef.current = setTimeout(() => setPowered(false), 500);
   }, []);
 
   /** Close on Escape key. */
@@ -170,6 +190,7 @@ export default function HeroTerminal() {
           transform: zoomed
             ? `translate(${centerOffset.x}px, ${centerOffset.y}px) scale(2)`
             : "translate(0, 0) scale(1)",
+
         }}
       >
         {/* Layer 1: Black backing surface — hinterste Ebene hinter dem transparenten Frame */}
@@ -235,8 +256,7 @@ export default function HeroTerminal() {
           )}
         </div>
 
-        {/* Layer 4: CRT glass sheen — subtle specular highlight on curved glass.
-            Only visible when powered off, fades out when terminal boots. */}
+        {/* Layer 4: CRT glass sheen — permanent specular highlight on curved glass. */}
         <div
           className="pointer-events-none absolute"
           style={{
@@ -251,8 +271,37 @@ export default function HeroTerminal() {
               /* Soft edge vignette — darkens toward edges like curved glass */
               "radial-gradient(ellipse 80% 80% at 48% 45%, rgba(var(--accent-glow), 0.03) 0%, rgba(60,60,70,0.4) 100%)",
             ].join(", "),
-            opacity: 1,
             zIndex: 4,
+          }}
+        />
+
+        {/* Layer 5: Anamorphic lens flares — horizontal light streaks bleeding
+            outward from the CRT screen, like light through an anamorphic lens.
+            Only visible when powered on. */}
+        <div
+          className="pointer-events-none absolute transition-opacity duration-700"
+          style={{
+            top: "calc(14% + 2px + 22%)",
+            left: "-40%",
+            width: "180%",
+            height: "2px",
+            background: `linear-gradient(90deg, transparent 0%, rgba(var(--accent-glow), 0.15) 20%, rgba(var(--accent-glow), 0.4) 45%, rgba(var(--accent-glow), 0.4) 55%, rgba(var(--accent-glow), 0.15) 80%, transparent 100%)`,
+            opacity: powered ? 1 : 0,
+            filter: "blur(3px)",
+            zIndex: 6,
+          }}
+        />
+        <div
+          className="pointer-events-none absolute transition-opacity duration-700"
+          style={{
+            top: "calc(14% + 2px + 18%)",
+            left: "-25%",
+            width: "150%",
+            height: "1px",
+            background: `linear-gradient(90deg, transparent 0%, rgba(var(--accent-glow), 0.08) 25%, rgba(var(--accent-glow), 0.2) 45%, rgba(var(--accent-glow), 0.2) 55%, rgba(var(--accent-glow), 0.08) 75%, transparent 100%)`,
+            opacity: powered ? 1 : 0,
+            filter: "blur(5px)",
+            zIndex: 6,
           }}
         />
 
