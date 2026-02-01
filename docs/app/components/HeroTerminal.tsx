@@ -31,9 +31,14 @@ function getAudioContext(): AudioContext {
  * 3. **Flyback whine** — 800 Hz → 4 kHz sweep with 0.6s decay
  *    (high-voltage transformer spooling up).
  */
-function playCrtPowerOnSound(): void {
-  const audioCtx = getAudioContext();
-  const now = audioCtx.currentTime;
+async function playCrtPowerOnSound(): Promise<void> {
+  try {
+    const audioCtx = getAudioContext();
+    // Ensure context is running (required for autoplay policy)
+    if (audioCtx.state === "suspended") {
+      await audioCtx.resume();
+    }
+    const now = audioCtx.currentTime;
 
   /* ── Degauss thump (filtered noise burst + deep sine) ── */
   const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
@@ -88,7 +93,10 @@ function playCrtPowerOnSound(): void {
   humOsc.stop(now + 1.0);
   whineOsc.start(now + 0.12);
   whineOsc.stop(now + 0.8);
-
+  } catch (error) {
+    // Silently fail if audio is blocked or unavailable
+    console.warn("CRT power-on sound failed:", error);
+  }
 }
 
 /**
@@ -118,9 +126,26 @@ export default function HeroTerminal() {
 
   useEffect(() => {
     setMounted(true);
+    
+    // Unlock AudioContext on first user interaction (required for autoplay policy)
+    const unlockAudio = () => {
+      const audioCtx = getAudioContext();
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {
+          // Ignore if resume fails
+        });
+      }
+    };
+    
+    // Listen for any user interaction to unlock audio
+    document.addEventListener("click", unlockAudio, { once: true });
+    document.addEventListener("touchstart", unlockAudio, { once: true });
+    
     return () => {
       if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
       if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
     };
   }, []);
 
@@ -142,7 +167,7 @@ export default function HeroTerminal() {
   /** Power on: play CRT hum, glow the button, compute offset, zoom the terminal, start boot. */
   const handlePowerOn = useCallback(() => {
     if (powered) return;
-    playCrtPowerOnSound();
+    void playCrtPowerOnSound(); // Fire-and-forget async call
     setPowered(true);
     /* Compute offset before zooming so it captures the inline position. */
     setCenterOffset(computeCenterOffset());
