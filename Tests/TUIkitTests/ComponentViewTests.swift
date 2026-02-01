@@ -85,7 +85,9 @@ struct CardTests {
 
         // Should have top border + content + bottom border
         #expect(buffer.height >= 3)
-        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Hello"))
+        #expect(allContent.contains("Test")) // title
     }
 
     @Test("Card without title renders")
@@ -97,7 +99,8 @@ struct CardTests {
         let buffer = card.renderToBuffer(context: context)
 
         #expect(buffer.height >= 3)
-        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Content"))
     }
 
     @Test("Card with footer is taller than without")
@@ -135,7 +138,9 @@ struct PanelTests {
 
         // Top border (with title) + content + bottom border
         #expect(buffer.height >= 3)
-        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Test Panel")) // title
+        #expect(allContent.contains("Hello"))
     }
 
     @Test("Panel with footer is taller")
@@ -172,7 +177,9 @@ struct ContainerViewDirectTests {
         let buffer = container.renderToBuffer(context: context)
 
         #expect(buffer.height >= 3)
-        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Test")) // title
+        #expect(allContent.contains("Content"))
     }
 
 }

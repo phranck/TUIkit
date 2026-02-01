@@ -87,7 +87,7 @@ struct MenuTests {
         )
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(menu, context: context)
-        #expect(!buffer.isEmpty)
+        #expect(buffer.height >= 3) // border + items + border
         let allContent = buffer.lines.joined()
         // Title should be present
         #expect(allContent.contains("My Menu"))

@@ -191,7 +191,7 @@ struct ANSIRendererConvenienceTests {
     @Test("colorize with bold applies bold")
     func colorizeBold() {
         let result = ANSIRenderer.colorize("Hello", bold: true)
-        #expect(result.contains("1")) // bold
+        #expect(result.contains("\u{1B}[1m")) // bold ANSI code
     }
 
     @Test("colorize with all options")

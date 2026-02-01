@@ -319,7 +319,9 @@ struct BorderModifierTests {
 
         // Top border + content + bottom border
         #expect(buffer.height == 3)
-        #expect(!buffer.isEmpty)
+        #expect(buffer.lines[0].contains("┌")) // top-left corner
+        #expect(buffer.lines[1].contains("Test"))
+        #expect(buffer.lines[2].contains("└")) // bottom-left corner
     }
 
     @Test("BorderedView with empty content returns empty")
