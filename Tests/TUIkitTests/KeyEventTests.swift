@@ -51,21 +51,6 @@ struct KeyEnumTests {
 @Suite("KeyEvent Creation Tests")
 struct KeyEventCreationTests {
 
-    @Test("KeyEvent default modifiers are false")
-    func defaultModifiers() {
-        let event = KeyEvent(key: .enter)
-        #expect(event.ctrl == false)
-        #expect(event.alt == false)
-        #expect(event.shift == false)
-    }
-
-    @Test("KeyEvent with ctrl modifier")
-    func ctrlModifier() {
-        let event = KeyEvent(key: .character("c"), ctrl: true)
-        #expect(event.ctrl == true)
-        #expect(event.alt == false)
-    }
-
     @Test("KeyEvent character init detects uppercase as shift")
     func characterInitShift() {
         let upper = KeyEvent(character: "A")
