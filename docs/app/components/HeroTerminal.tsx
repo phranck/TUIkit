@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
+import CRTEffects from "./CRTEffects";
 
 /**
  * Interactive hero terminal with power-on animation.
@@ -81,6 +82,16 @@ export default function HeroTerminal() {
 
   return (
     <>
+      {/* CRT Monitor Effects — only when terminal is powered on */}
+      <CRTEffects
+        enabled={powered && zoomed}
+        scanlineIntensity={0.12}
+        curvature={0.08}
+        glowIntensity={0.25}
+        flickerIntensity={0.02}
+        noiseIntensity={0.04}
+      />
+
       {/* Dimming overlay — behind the zoomed terminal */}
       <div
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-opacity duration-500"
