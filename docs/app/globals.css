@@ -359,7 +359,7 @@ code {
 }
 
 @utility animate-crt-scanline {
-  animation: crt-scanline 8s linear infinite;
+  animation: crt-scanline 30s linear infinite;
 }
 
 @keyframes cloud-drift-slow {
