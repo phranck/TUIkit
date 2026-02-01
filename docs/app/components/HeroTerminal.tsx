@@ -235,6 +235,27 @@ export default function HeroTerminal() {
           )}
         </div>
 
+        {/* Layer 4: CRT glass sheen — subtle specular highlight on curved glass.
+            Only visible when powered off, fades out when terminal boots. */}
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            top: "calc(14% + 2px - 13px)",
+            left: "calc(21% - 10px)",
+            width: "calc(58% + 20px)",
+            height: "calc(45% + 20px)",
+            borderRadius: "31px",
+            background: [
+              /* Diagonal specular highlight — light reflecting off convex glass with theme tint */
+              "linear-gradient(135deg, rgba(var(--accent-glow), 0.15) 0%, rgba(var(--accent-glow), 0.05) 35%, transparent 60%)",
+              /* Soft edge vignette — darkens toward edges like curved glass */
+              "radial-gradient(ellipse 80% 80% at 48% 45%, rgba(var(--accent-glow), 0.03) 0%, rgba(60,60,70,0.4) 100%)",
+            ].join(", "),
+            opacity: 1,
+            zIndex: 4,
+          }}
+        />
+
         {/* CRT Monitor frame — on top of everything, transparent center reveals content behind */}
         <Image
           src="/tuikit-logo.png"
