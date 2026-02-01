@@ -36,7 +36,11 @@ interface IconProps {
   className?: string;
 }
 
-/** Wrapper around SFSymbol that works in both server and client contexts. */
+/** Decorative icon wrapper — hidden from screen readers since adjacent text conveys meaning. */
 export default function Icon({ name, size = 20, className }: IconProps) {
-  return <SFSymbol name={icons[name]} size={size} className={className} />;
+  return (
+    <span aria-hidden="true">
+      <SFSymbol name={icons[name]} size={size} className={className} />
+    </span>
+  );
 }
