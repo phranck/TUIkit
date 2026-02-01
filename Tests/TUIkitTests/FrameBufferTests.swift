@@ -87,14 +87,15 @@ struct OverlayTests {
     @Test("Overlay modifier renders overlay on top of base")
     func overlayRendering() {
         let view = Text("Base Content")
-            .overlay {
+            .overlay(alignment: .center) {
                 Text("Top")
             }
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(view, context: context)
         // The overlay "Top" should be centered on "Base Content"
         #expect(buffer.height >= 1)
-        #expect(!buffer.isEmpty)
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Top"))
     }
 
     @Test("Dimmed modifier applies dim effect")
@@ -115,8 +116,13 @@ struct OverlayTests {
             }
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(view, context: context)
-        // The result should contain both the dimmed background and the modal
-        #expect(!buffer.isEmpty)
+        // The result should contain both the dimmed background and the modal overlay
+        #expect(buffer.height == 1)
+        // Overlay compositing should show "Modal" overlaid on "Background"
+        let stripped = buffer.lines[0].stripped
+        #expect(stripped.contains("Modal"))
+        // The visible text shows the overlay positioned over the base
+        #expect(buffer.width >= 5) // at least "Modal" width
     }
 
     @Test("FrameBuffer compositing places overlay at correct position")

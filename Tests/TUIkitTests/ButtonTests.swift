@@ -68,12 +68,11 @@ struct ButtonTests {
         let button = Button("OK") {}
         let buffer = renderToBuffer(button, context: context)
 
-        #expect(!buffer.isEmpty)
-        #expect(buffer.height >= 1)
-
-        // Should contain the label
+        #expect(buffer.height >= 3) // border + content + border
+        // Should contain the label and border
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("OK"))
+        #expect(allContent.contains("╭")) // rounded border
     }
 
     @Test("Button with border has proper height")
@@ -184,7 +183,7 @@ struct ButtonRowTests {
 
         let buffer = renderToBuffer(row, context: context)
 
-        #expect(!buffer.isEmpty)
+        #expect(buffer.height >= 3) // bordered buttons
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("Cancel"))
         #expect(allContent.contains("OK"))
@@ -201,8 +200,8 @@ struct ButtonRowTests {
 
         let buffer = renderToBuffer(row, context: context)
 
-        #expect(!buffer.isEmpty)
         // Both buttons should be present
+        #expect(buffer.height == 1) // plain buttons without border
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("A"))
         #expect(allContent.contains("B"))
