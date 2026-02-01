@@ -16,6 +16,14 @@ export default function Home() {
       <RainOverlay />
       <SpinnerLights />
 
+      {/* Skip navigation for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-accent"
+      >
+        Skip to main content
+      </a>
+
       {/* All page content above atmosphere layers */}
       <div className="relative z-10">
       {/* Navigation */}
@@ -55,6 +63,8 @@ export default function Home() {
         </div>
       </nav>
 
+      {/* Main content */}
+      <main id="main-content">
       {/* Hero Section */}
       <section className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-40 pb-24 text-center">
         <div className="mb-10">
@@ -255,6 +265,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border bg-container-body/30 backdrop-blur-sm">
