@@ -185,6 +185,8 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     const updated = [...linesRef.current, entry];
     const trimmed = updated.length > ROWS ? updated.slice(updated.length - ROWS) : updated;
     linesRef.current = trimmed;
+    // Keep lineRefsRef in sync to prevent stale DOM refs from accumulating.
+    lineRefsRef.current = lineRefsRef.current.slice(-ROWS);
     setLines(trimmed);
   }, []);
 
