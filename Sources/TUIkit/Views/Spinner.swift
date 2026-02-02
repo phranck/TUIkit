@@ -398,7 +398,7 @@ extension Spinner: Renderable {
 
         // Retrieve or create persistent start time for this spinner.
         let timeKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let startTimeBox: StateBox<Double> = stateStorage.storage(for: timeKey, default: CFAbsoluteTimeGetCurrent())
+        let startTimeBox: StateBox<Double> = stateStorage.storage(for: timeKey, default: Date().timeIntervalSinceReferenceDate)
         stateStorage.markActive(context.identity)
 
         // Start render-trigger task on first appearance.
@@ -433,7 +433,7 @@ extension Spinner: Renderable {
         )
 
         // Calculate frame index from elapsed time (each spinner respects its own interval).
-        let elapsed = CFAbsoluteTimeGetCurrent() - startTimeBox.value
+        let elapsed = Date().timeIntervalSinceReferenceDate - startTimeBox.value
         let frameCount: Int
         switch style {
         case .bouncing:
