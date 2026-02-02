@@ -16,21 +16,41 @@ import path from "path";
  * Convert Markdown formatting to HTML-like tags for terminal display.
  * These will be rendered by TerminalScreen component.
  * Supports: bold, underline, strikethrough, italic
+ * 
+ * Important: Only matches if there's actual text content between markers,
+ * not just repeated special chars (e.g., ******** for password masking)
  */
 function parseMarkdownFormatting(text: string): string {
   let result = text;
   
+  // Skip formatting if line contains only special characters (like ********)
+  if (/^[*_~\s]+$/.test(text)) {
+    return text;
+  }
+  
+  // Process in order, being careful not to match literal asterisks
+  
   // **bold** → <b>bold</b>
-  result = result.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // Only match if:
+  // - Content has at least one non-* character
+  // - NOT preceded or followed by another * (to avoid matching *** as bold)
+  result = result.replace(/(?<!\*)\*\*([^*]+?)\*\*(?!\*)/g, '<b>$1</b>');
   
   // __underline__ → <u>underline</u>
-  result = result.replace(/__(.+?)__/g, '<u>$1</u>');
+  // Matches content between __ and __, including spaces
+  // Only match if content has at least one word character
+  result = result.replace(/__([^_]+?)__/g, '<u>$1</u>');
   
   // ~~strikethrough~~ → <s>strikethrough</s>
-  result = result.replace(/~~(.+?)~~/g, '<s>$1</s>');
+  // Only match if content has at least one non-~ character
+  result = result.replace(/~~([^~]+?)~~/g, '<s>$1</s>');
   
-  // *italic* (but not ** which is already handled)
-  result = result.replace(/(?<!\*)\*(?!\*)(.+?)\*(?!\*)/g, '<i>$1</i>');
+  // *italic* - process last, very carefully
+  // Match single * that:
+  // - Is preceded by whitespace or start of string (to avoid ** and ***)
+  // - Is followed by whitespace or end of string (to avoid ** and ***)
+  // - Content starts with word character (to avoid matching *** or ****)
+  result = result.replace(/(^|\s)\*(\w[^\*]*?\w)\*(\s|$)/g, '$1<i>$2</i>$3');
   
   return result;
 }
