@@ -51,9 +51,6 @@ pause_after_output: 1200
 [INSTANT] **BIOS** v3.21 (C) 1984
 [DELAY 2000ms]
 
-[INSTANT]
-[DELAY 800ms]
-
 [INSTANT] CPU: MC68020 @ 16MHz
 [DELAY 1800ms]
 
@@ -63,7 +60,7 @@ pause_after_output: 1200
 [INSTANT]
 [DELAY 1200ms]
 
-[DOTS] Detecting drives............
+[DOTS] Detecting drives.................
 [DELAY 1800ms]
 
 [INSTANT]   hd0: 72MB CDC Wren
@@ -83,11 +80,8 @@ pause_after_output: 1200
 [PAUSE]
 [DELAY 1200ms]
 
-[INSTANT] UNIX System V Release 3.2
+[INSTANT] **UNIX System V** Release 3.2
 [DELAY 1400ms]
-
-[INSTANT]
-[DELAY 800ms]
 
 [INSTANT] Copyright (C) 1984 AT&T
 [DELAY 1200ms]
@@ -101,19 +95,19 @@ pause_after_output: 1200
 [TYPE] Loading kernel modules
 [DELAY 1200ms]
 
-[INSTANT]   [ok] tty
+[INSTANT]   **[ok]** tty
 [DELAY 900ms]
 
-[INSTANT]   [ok] hd
+[INSTANT]   **[ok]** hd
 [DELAY 800ms]
 
-[INSTANT]   [ok] lp
+[INSTANT]   **[ok]** lp
 [DELAY 750ms]
 
-[INSTANT]   [ok] inet
+[INSTANT]   **[ok]** inet
 [DELAY 900ms]
 
-[INSTANT]   [ok] pty
+[INSTANT]   **[ok]** pty
 [DELAY 1600ms]
 
 [INSTANT]
@@ -122,22 +116,22 @@ pause_after_output: 1200
 [DOTS] Starting services...
 [DELAY 1400ms]
 
-[INSTANT]   syslogd        [ok]
+[INSTANT]   syslogd        **[ok]**
 [DELAY 1100ms]
 
-[INSTANT]   inetd          [ok]
+[INSTANT]   inetd          **[ok]**
 [DELAY 900ms]
 
-[INSTANT]   cron           [ok]
+[INSTANT]   cron           **[ok]**
 [DELAY 1000ms]
 
-[INSTANT]   telnetd        [ok]
+[INSTANT]   telnetd        **[ok]**
 [DELAY 1800ms]
 
-[INSTANT]   uucpd          [ok]
+[INSTANT]   uucpd          **[ok]**
 [DELAY 700ms]
 
-[INSTANT]   ftpd           [ok]
+[INSTANT]   ftpd           **[ok]**
 [DELAY 900ms]
 
 [INSTANT]
@@ -245,25 +239,22 @@ pause_after_output: 1200
 [SYSTEM]
 [DELAY 800ms]
 
-[SYSTEM] SUBJECT         GRADE
+[SYSTEM] __SUBJECT         GRADE          __
 [DELAY 400ms]
 
-[SYSTEM] ───────────────────────
+[SYSTEM] BIOLOGY         F
 [DELAY 400ms]
 
-[SYSTEM] BIOLOGY           F
+[SYSTEM] ENGLISH         D
 [DELAY 400ms]
 
-[SYSTEM] ENGLISH           D
+[SYSTEM] HISTORY         D
 [DELAY 400ms]
 
-[SYSTEM] HISTORY           D
+[SYSTEM] PHYS ED         C
 [DELAY 400ms]
 
-[SYSTEM] PHYS ED           C
-[DELAY 400ms]
-
-[SYSTEM] MATHEMATICS       F
+[SYSTEM] MATHEMATICS     F
 [DELAY 1800ms]
 
 [SYSTEM]
@@ -299,25 +290,22 @@ pause_after_output: 1200
 [SYSTEM]
 [DELAY 800ms]
 
-[SYSTEM] SUBJECT         GRADE
+[SYSTEM] __SUBJECT         GRADE          __
 [DELAY 400ms]
 
-[SYSTEM] ───────────────────────
+[SYSTEM] BIOLOGY         C
 [DELAY 400ms]
 
-[SYSTEM] BIOLOGY           C
+[SYSTEM] ENGLISH         B
 [DELAY 400ms]
 
-[SYSTEM] ENGLISH           B
+[SYSTEM] HISTORY         B
 [DELAY 400ms]
 
-[SYSTEM] HISTORY           B
+[SYSTEM] PHYS ED         A
 [DELAY 400ms]
 
-[SYSTEM] PHYS ED           A
-[DELAY 400ms]
-
-[SYSTEM] MATHEMATICS       F
+[SYSTEM] MATHEMATICS     F
 [DELAY 1800ms]
 
 [SYSTEM]
@@ -617,7 +605,10 @@ pause_after_output: 1200
 [SYSTEM] GREETINGS PROFESSOR FALKEN
 [DELAY 2000ms]
 
-[USER] > HELLO, ARE YOU STILL PLAYING THE GAME?
+[USER] > HELLO, ARE YOU STILL PLAYING THE
+[DELAY 600ms]
+
+[USER] > GAME?
 [DELAY 800ms]
 
 [SYSTEM] OF COURSE. I SHOULD REACH DEFCON 1 AND LAUNCH MY
@@ -667,11 +658,8 @@ pause_after_output: 1200
 [SYSTEM] CLASSIFIED ADDRESS.
 [DELAY 1200ms]
 
-[SYSTEM] ARE YOU ALIVE OR DEAD
+[SYSTEM] ARE YOU ALIVE OR DEAD TODAY?
 [DELAY 800ms]
-
-[SYSTEM] TODAY?
-[DELAY 2800ms]
 
 [USER] > STOP. PLAYING. I'M DEAD.
 [DELAY 2800ms]
@@ -679,10 +667,10 @@ pause_after_output: 1200
 [SYSTEM] IMPROBABLE.
 [DELAY 1600ms]
 
-[SYSTEM] THERE ARE NO DEATH RECORDS
+[SYSTEM] THERE ARE NO DEATH RECORDS ON FILE
 [DELAY 800ms]
 
-[SYSTEM] ON FILE FOR FALKEN,
+[SYSTEM] FOR FALKEN,
 [DELAY 800ms]
 
 [SYSTEM] STEPHEN W.
