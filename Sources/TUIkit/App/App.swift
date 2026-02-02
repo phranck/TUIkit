@@ -136,6 +136,12 @@ internal final class AppRunner<A: App> {
                 break
             }
 
+            // Invalidate diff cache on terminal resize so every line
+            // is rewritten with the new dimensions.
+            if signals.consumeResizeFlag() {
+                renderer.invalidateDiffCache()
+            }
+
             // Check if terminal was resized or state changed
             if signals.consumeRerenderFlag() || appState.needsRender {
                 appState.didRender()
@@ -180,50 +186,24 @@ internal final class AppRunner<A: App> {
 /// the free function `renderToBuffer` on its content view, entering
 /// the standard `Renderable`-or-`body` dispatch.
 internal protocol SceneRenderable {
-    /// Renders the scene's content to the terminal.
+    /// Renders the scene's content into a ``FrameBuffer``.
+    ///
+    /// The caller (``RenderLoop``) is responsible for writing the buffer
+    /// to the terminal via ``FrameDiffWriter``.
     ///
     /// - Parameter context: The rendering context with layout constraints.
-    func renderScene(context: RenderContext)
+    /// - Returns: The rendered frame buffer.
+    func renderScene(context: RenderContext) -> FrameBuffer
 }
 
-/// Renders the window group's content view to the terminal.
+/// Renders the window group's content view into a ``FrameBuffer``.
 ///
 /// This is the bridge from `Scene` to `View` rendering:
-/// calls ``renderToBuffer(_:context:)`` on `content`, writes the
-/// resulting ``FrameBuffer`` line-by-line with persistent background.
+/// calls ``renderToBuffer(_:context:)`` on `content` and returns the
+/// resulting ``FrameBuffer``. Terminal output (diffing, writing) is
+/// handled by ``RenderLoop`` via ``FrameDiffWriter``.
 extension WindowGroup: SceneRenderable {
-    func renderScene(context: RenderContext) {
-        let buffer = renderToBuffer(content, context: context)
-        let terminal = context.terminal
-        let terminalWidth = terminal.width
-        let terminalHeight = context.availableHeight
-
-        // Get background color from palette
-        let bgColor = context.environment.palette.background
-        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
-        let reset = ANSIRenderer.reset
-
-        // Write buffer to terminal, ensuring consistent background color
-        for row in 0..<terminalHeight {
-            terminal.moveCursor(toRow: 1 + row, column: 1)
-
-            if row < buffer.lines.count {
-                let line = buffer.lines[row]
-                let visibleWidth = line.strippedLength
-                let padding = max(0, terminalWidth - visibleWidth)
-
-                // Replace all reset codes with "reset + restore background"
-                // This ensures background color persists after styled text
-                let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
-
-                // Wrap entire line with background
-                let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
-                terminal.write(paddedLine)
-            } else {
-                // Empty row - fill with background color
-                let emptyLine = bgCode + String(repeating: " ", count: terminalWidth) + reset
-                terminal.write(emptyLine)
-            }
-        }
+    func renderScene(context: RenderContext) -> FrameBuffer {
+        renderToBuffer(content, context: context)
     }
 }
