@@ -99,6 +99,7 @@ internal final class AppRunner<A: App> {
         )
         self.renderer = RenderLoop(
             app: app,
+            scene: app.body,
             terminal: terminal,
             statusBar: statusBar,
             focusManager: focusManager,
