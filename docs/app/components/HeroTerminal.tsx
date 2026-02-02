@@ -18,8 +18,25 @@ const CRT = {
   glow: { top: "calc(14% + 2px - 18px)", left: "calc(21% - 15px)", width: "calc(58% + 30px)", height: "calc(45% + 30px)", borderRadius: "31px" },
 } as const;
 
-/** Duration of the zoom-out CSS transition in ms. */
-const ZOOM_OUT_DURATION_MS = 500;
+/**
+ * CRT power-on animation timing.
+ * The vertical deflection coils need a moment to reach full amplitude,
+ * so the image starts as a bright horizontal line and expands vertically.
+ * Less dramatic than power-off — no visible dot phase.
+ */
+const CRT_EXPAND_VERTICAL_MS = 300;
+
+/**
+ * CRT power-off animation timing.
+ * Real CRTs collapse the image vertically to a bright horizontal line,
+ * then horizontally to a glowing dot, which slowly fades as the phosphor
+ * afterglow decays.
+ */
+const CRT_COLLAPSE_VERTICAL_MS = 150;
+const CRT_COLLAPSE_HORIZONTAL_MS = 200;
+const CRT_AFTERGLOW_MS = 600;
+const CRT_SHUTDOWN_TOTAL_MS =
+  CRT_COLLAPSE_VERTICAL_MS + CRT_COLLAPSE_HORIZONTAL_MS + CRT_AFTERGLOW_MS;
 /** Delay before boot spin loop starts (slightly before boot audio ends). */
 const SPIN_START_DELAY_MS = 19900;
 /** Delay before random seek sounds begin (after boot finishes). */
@@ -39,6 +56,17 @@ export default function HeroTerminal() {
   const [powered, setPowered] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  /**
+   * CRT boot phase: null (not booting), or a phase number.
+   * 1 = horizontal line (scaleY≈0), 2 = expanding vertically to full image.
+   */
+  const [bootPhase, setBootPhase] = useState<1 | 2 | null>(null);
+  /**
+   * CRT shutdown phase: null (not shutting down), or a phase number.
+   * 1 = vertical collapse (scaleY → 0), 2 = horizontal collapse (scaleX → 0),
+   * 3 = afterglow dot fading out.
+   */
+  const [shutdownPhase, setShutdownPhase] = useState<1 | 2 | 3 | null>(null);
   /** Guards against rapid double-clicks bypassing the `powered` state check. */
   const poweringOnRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,13 +140,25 @@ export default function HeroTerminal() {
     };
   }, []);
 
-  /** Power on: play boot sound, start spin loop, add random seeks. */
+  /** Power on: CRT raster expansion, then play boot sound, start spin loop, add random seeks. */
   const handlePowerOn = useCallback(() => {
     if (powered || poweringOnRef.current) return;
     poweringOnRef.current = true;
     
+    // Start with horizontal line, then expand vertically
+    setBootPhase(1);
     setPowered(true);
     setCenterOffset(computeCenterOffset());
+
+    // Phase 2: vertical expansion (CSS transition handles the animation)
+    // Use requestAnimationFrame to ensure phase 1 is painted first
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setBootPhase(2);
+      });
+    });
+    // Clear boot phase after expansion completes
+    scheduleTimer(() => setBootPhase(null), CRT_EXPAND_VERTICAL_MS + 50);
     
     if (powerOnAudioRef.current && bootAudioRef.current && spinAudioRef.current) {
       powerOnAudioRef.current.seek(0);
@@ -158,9 +198,9 @@ export default function HeroTerminal() {
     scheduleTimer(() => setZoomed(true), 200);
   }, [powered, computeCenterOffset, scheduleTimer]);
 
-  /** Power off: stop all sounds, play power-off sound, zoom back. */
+  /** Power off: run CRT shutdown animation, then zoom back and kill power. */
   const handlePowerOff = useCallback(() => {
-    setZoomed(false);
+    if (shutdownPhase !== null) return; // Already shutting down
     clearAllTimers();
     poweringOnRef.current = false;
     
@@ -175,9 +215,27 @@ export default function HeroTerminal() {
       powerOffAudioRef.current.play();
     }
     
-    /* Wait for zoom-out animation to finish before killing power. */
-    scheduleTimer(() => setPowered(false), ZOOM_OUT_DURATION_MS);
-  }, [clearAllTimers, scheduleTimer]);
+    // Phase 1: Vertical collapse
+    setShutdownPhase(1);
+    
+    // Phase 2: Horizontal collapse
+    scheduleTimer(() => setShutdownPhase(2), CRT_COLLAPSE_VERTICAL_MS);
+    
+    // Phase 3: Afterglow dot
+    scheduleTimer(
+      () => setShutdownPhase(3),
+      CRT_COLLAPSE_VERTICAL_MS + CRT_COLLAPSE_HORIZONTAL_MS,
+    );
+    
+    // Complete: kill power immediately (screen is already black),
+    // then zoom back. Order matters — powered must be false before
+    // shutdownPhase clears, otherwise the content flashes back briefly.
+    scheduleTimer(() => {
+      setPowered(false);
+      setShutdownPhase(null);
+      setZoomed(false);
+    }, CRT_SHUTDOWN_TOTAL_MS);
+  }, [shutdownPhase, clearAllTimers, scheduleTimer]);
 
   /** Close on Escape key. */
   useEffect(() => {
@@ -224,27 +282,78 @@ export default function HeroTerminal() {
           }}
         />
 
-        {/* Layer 2: Terminal content — above backing, below glow */}
+        {/* Layer 2: Terminal content — above backing, below glow.
+            Boot-up: starts as bright horizontal line (scaleY≈0), expands vertically.
+            Shutdown: collapses vertically → horizontally → afterglow dot. */}
         <div
           className="pointer-events-none absolute overflow-hidden"
           style={{
             ...CRT.content,
             zIndex: 2,
+            /* Boot animation */
+            ...(bootPhase === 1 ? {
+              transform: "scaleY(0.008)",
+              filter: `brightness(3) drop-shadow(0 0 6px rgba(var(--accent-glow), 0.9))`,
+            } : bootPhase === 2 ? {
+              transform: "scaleY(1)",
+              transition: `transform ${CRT_EXPAND_VERTICAL_MS}ms ease-out, filter ${CRT_EXPAND_VERTICAL_MS}ms ease-out`,
+              filter: "brightness(1)",
+            } : {}),
+            /* Shutdown animation (overrides boot if both somehow active) */
+            ...(shutdownPhase === 1 ? {
+              transform: "scaleY(0.005)",
+              transition: `transform ${CRT_COLLAPSE_VERTICAL_MS}ms ease-in`,
+              filter: `brightness(2.5) drop-shadow(0 0 8px rgba(var(--accent-glow), 0.8))`,
+            } : shutdownPhase === 2 ? {
+              transform: "scaleY(0.005) scaleX(0)",
+              transition: `transform ${CRT_COLLAPSE_HORIZONTAL_MS}ms ease-in`,
+              filter: `brightness(2.5) drop-shadow(0 0 8px rgba(var(--accent-glow), 0.8))`,
+            } : shutdownPhase === 3 ? {
+              transform: "scale(0)",
+            } : {}),
           }}
         >
           <TerminalScreen powered={powered} />
         </div>
 
+        {/* CRT afterglow dot — bright phosphor dot that fades after the image collapses */}
+        {shutdownPhase === 3 && (
+          <div
+            className="pointer-events-none absolute"
+            style={{
+              ...CRT.content,
+              zIndex: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: `rgba(var(--accent-glow), 0.9)`,
+                boxShadow: `0 0 12px 6px rgba(var(--accent-glow), 0.6), 0 0 30px 12px rgba(var(--accent-glow), 0.3)`,
+                animation: `crt-afterglow ${CRT_AFTERGLOW_MS}ms ease-out forwards`,
+              }}
+            />
+          </div>
+        )}
+
         {/* Layer 3: CRT edge glow + scanline sweep — above content, below frame.
-            Inner glow simulates the edge darkening of a real CRT monitor. */}
+            Inner glow simulates the edge darkening of a real CRT monitor.
+            Only visible when powered on and not shutting down. */}
         <div
           className="pointer-events-none absolute"
           style={{
             ...CRT.glow,
-            boxShadow:
-              "inset 0 0 16px 7px rgba(var(--accent-glow), 0.42), inset 0 0 38px 14px rgba(var(--accent-glow), 0.15)",
+            boxShadow: powered && !shutdownPhase
+              ? "inset 0 0 16px 7px rgba(var(--accent-glow), 0.42), inset 0 0 38px 14px rgba(var(--accent-glow), 0.15)"
+              : "none",
             overflow: "hidden",
             zIndex: 3,
+            transition: `box-shadow ${CRT_COLLAPSE_VERTICAL_MS}ms ease-out`,
           }}
         >
           {/* Scanline sweep — cathode ray with sharp bottom edge, trailing upward */}
