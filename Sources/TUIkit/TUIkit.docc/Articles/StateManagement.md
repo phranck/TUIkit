@@ -97,17 +97,44 @@ struct SettingsView: View {
 }
 ```
 
-## How Re-Rendering Works
+## How State Survives Re-Rendering
 
-TUIkit uses a single-threaded event loop. When a ``State`` value changes:
+TUIkit re-evaluates the entire view tree on every frame. When `body` is called, views are
+reconstructed from scratch. Despite this, `@State` values persist — they are never reset
+to their initial value.
 
-1. The ``State`` property wrapper signals the active ``AppState`` via ``RenderNotifier``
-2. ``AppState/setNeedsRender()`` notifies the observer registered by `AppRunner`
-3. The main loop detects the change and re-renders the entire view tree
-4. The new ``FrameBuffer`` output is written to the terminal
+### Structural Identity
 
-``AppState`` is an instance owned by `AppRunner` and injected into services via constructor
-injection. Property wrappers access it through the framework-internal ``RenderNotifier`` —
-invisible to user code.
+Each view in the tree has a **structural identity** — a path like `"ContentView/VStack.0/Menu"`.
+This path is built automatically during rendering based on:
+- The view's type name
+- Its position among siblings (child index)
+- Conditional branches (`true`/`false` for `if`/`else`)
 
-This is simple and predictable — no diffing, no virtual DOM, just full re-renders on every state change.
+### Persistent State Storage
+
+All `@State` values live in a central `StateStorage` (owned by `TUIContext`), keyed by:
+- The view's structural identity
+- The property's declaration index within the view (0, 1, 2, ...)
+
+When `@State var count = 0` is declared, the `init` checks if a persistent value already
+exists for this position. If it does, the existing value is used instead of the default.
+
+### Re-Render Trigger
+
+When a ``State`` value changes:
+
+1. The ``StateBox`` triggers ``RenderNotifier/current`` → ``AppState/setNeedsRender()``
+2. The observer registered by `AppRunner` requests a re-render
+3. The main loop re-evaluates `app.body` fresh — reconstructing all views
+4. Each `@State.init` self-hydrates from `StateStorage`, recovering persisted values
+5. The new ``FrameBuffer`` output is written to the terminal
+
+### Garbage Collection
+
+Views that disappear from the tree (e.g., a conditional branch switches) have their state
+automatically cleaned up at the end of each render pass. `ConditionalView` also immediately
+invalidates the inactive branch's state to prevent stale values.
+
+This is simple and predictable — no diffing, no virtual DOM, just full re-renders with
+persistent state.
