@@ -185,6 +185,7 @@ final class LifecycleManager: @unchecked Sendable {
 /// - ``lifecycle``: View lifecycle tracking (appear/disappear/task)
 /// - ``keyEventDispatcher``: Key event handler registration and dispatch
 /// - ``preferences``: Preference value collection during rendering
+/// - ``stateStorage``: Persistent `@State` value storage indexed by view identity
 ///
 /// ## Usage
 ///
@@ -211,11 +212,15 @@ final class TUIContext: @unchecked Sendable {
     /// Preference value collection during rendering.
     let preferences: PreferenceStorage
 
+    /// Persistent `@State` value storage indexed by ``ViewIdentity``.
+    let stateStorage: StateStorage
+
     /// Creates a new TUI context with fresh instances of all services.
     init() {
         self.lifecycle = LifecycleManager()
         self.keyEventDispatcher = KeyEventDispatcher()
         self.preferences = PreferenceStorage()
+        self.stateStorage = StateStorage()
     }
 
     /// Creates a new TUI context with the given services.
@@ -226,14 +231,17 @@ final class TUIContext: @unchecked Sendable {
     ///   - lifecycle: The lifecycle manager to use.
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
+    ///   - stateStorage: The state storage to use.
     init(
         lifecycle: LifecycleManager,
         keyEventDispatcher: KeyEventDispatcher,
-        preferences: PreferenceStorage
+        preferences: PreferenceStorage,
+        stateStorage: StateStorage = StateStorage()
     ) {
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
+        self.stateStorage = stateStorage
     }
 
     /// Resets all services to their initial state.
@@ -241,5 +249,6 @@ final class TUIContext: @unchecked Sendable {
         lifecycle.reset()
         keyEventDispatcher.clearHandlers()
         preferences.reset()
+        stateStorage.reset()
     }
 }
