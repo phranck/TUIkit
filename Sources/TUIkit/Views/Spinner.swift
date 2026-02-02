@@ -7,102 +7,6 @@
 
 import Foundation
 
-// MARK: - Spinner Speed
-
-/// The animation speed of a spinner.
-///
-/// Each speed maps to a style-specific interval. Faster styles like ``dots``
-/// use shorter base intervals than ``bouncing``.
-public enum SpinnerSpeed: Sendable {
-    /// Slow animation.
-    case slow
-
-    /// Normal animation (default).
-    case regular
-
-    /// Fast animation.
-    case fast
-
-    /// Returns the interval multiplier relative to the style's base interval.
-    var multiplier: Double {
-        switch self {
-        case .slow: return 2.2
-        case .regular: return 1.4
-        case .fast: return 0.8
-        }
-    }
-}
-
-// MARK: - Bouncing Trail Length
-
-/// The length of the fading trail behind the bouncing spinner's highlight.
-///
-/// Controls how many blocks (highlight + fading positions) are visible
-/// as the highlight moves across the track.
-public enum BouncingTrailLength: Sendable {
-    /// Short trail: highlight + 1 fade step (2 blocks total).
-    case short
-
-    /// Regular trail: highlight + 3 fade steps (4 blocks total, default).
-    case regular
-
-    /// Long trail: highlight + 5 fade steps (6 blocks total).
-    case long
-
-    /// The opacity values for the trail positions (highlight first, then fading).
-    var opacities: [Double] {
-        switch self {
-        case .short: return [1.0, 0.4]
-        case .regular: return [1.0, 0.7, 0.4, 0.15]
-        case .long: return [1.0, 0.85, 0.65, 0.45, 0.25, 0.10]
-        }
-    }
-}
-
-// MARK: - Bouncing Track Width
-
-/// The track width for the bouncing spinner style.
-///
-/// The track is the row of positions the highlight bounces across.
-/// Use ``max`` to fill the available terminal width (responds to resizing).
-public enum BouncingTrackWidth: Sendable, Equatable {
-    /// Minimum width (7 positions).
-    case minimum
-
-    /// Default width (9 positions).
-    case `default`
-
-    /// Fill the available terminal width (minus label and spacing).
-    ///
-    /// The actual width is resolved at render time using the available
-    /// width from ``RenderContext``. Responds to terminal resizing.
-    case maximum
-
-    /// Explicit width in characters (clamped to minimum of 7).
-    case fixed(Int)
-
-    /// Resolves the track width to a concrete character count.
-    ///
-    /// - Parameters:
-    ///   - availableWidth: The available width from the render context.
-    ///   - labelWidth: The visible character count of the label (including spacing).
-    /// - Returns: The resolved track width, clamped to the minimum.
-    func resolve(availableWidth: Int, labelWidth: Int) -> Int {
-        let raw: Int
-        switch self {
-        case .minimum:
-            raw = SpinnerStyle.minimumTrackWidth
-        case .default:
-            raw = 9
-        case .maximum:
-            raw = availableWidth - labelWidth
-        case .fixed(let width):
-            raw = width
-        }
-        return Swift.max(raw, SpinnerStyle.minimumTrackWidth)
-    }
-}
-
 // MARK: - Spinner Style
 
 /// The visual style of a spinner animation.
@@ -111,39 +15,27 @@ public enum BouncingTrackWidth: Sendable, Equatable {
 ///
 /// - ``dots``: Braille character rotation (`⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`)
 /// - ``line``: ASCII line rotation (`|/-\`)
-/// - ``bouncing``: A highlight block (`▇`) bouncing across a track of dots with a fading trail (Knight Rider / Larson scanner)
-///
-/// Each style has a default animation interval that can be overridden
-/// when creating a ``Spinner``.
+/// - ``bouncing``: A highlight block (`▇`) bouncing across a track with a fading trail (Knight Rider / Larson scanner)
 public enum SpinnerStyle: Sendable {
     /// Braille character rotation.
     ///
     /// Cycles through: `⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏`
-    ///
-    /// Default interval: 80ms.
     case dots
 
     /// ASCII line rotation.
     ///
     /// Cycles through: `| / - \`
-    ///
-    /// Default interval: 100ms.
     case line
 
     /// A highlight block bouncing across a track of small squares with a
     /// fading trail behind it (Larson scanner / Knight Rider effect).
     ///
-    /// The highlight moves back and forth. Three trailing positions fade
-    /// out progressively behind it, creating a smooth motion trail.
-    ///
-    /// Default interval: 120ms. Default track length: 7.
+    /// The highlight moves back and forth across a fixed 9-position track.
+    /// Three trailing positions fade out progressively, creating a smooth
+    /// motion trail.
     case bouncing
 
-    /// The animation frames for this style.
-    ///
-    /// For ``dots`` and ``line``, these are plain character strings.
-    /// For ``bouncing``, the frames are position indices encoded as strings
-    /// (the actual colored rendering happens in ``Spinner``'s `renderToBuffer`).
+    /// The animation frames for frame-based styles (dots, line).
     var frames: [String] {
         switch self {
         case .dots:
@@ -151,40 +43,54 @@ public enum SpinnerStyle: Sendable {
         case .line:
             return ["|", "/", "-", "\\"]
         case .bouncing:
-            return Self.bouncingPositions(trackLength: BouncingTrackWidth.default.resolve(availableWidth: 0, labelWidth: 0))
+            return Self.bouncingPositions(trackLength: Self.trackWidth)
                 .map { String($0) }
         }
     }
 
-    /// The base animation interval for this style at ``SpinnerSpeed/regular``.
-    var baseInterval: TimeInterval {
+    /// The fixed animation interval for this style.
+    var interval: TimeInterval {
         switch self {
-        case .dots: return 0.08
-        case .line: return 0.10
-        case .bouncing: return 0.07
+        case .dots: return 0.110
+        case .line: return 0.140
+        case .bouncing: return 0.100
         }
     }
 
-    /// The minimum track width for the bouncing style.
-    public static let minimumTrackWidth = 7
+    /// The fixed track width for the bouncing style (9 positions).
+    static let trackWidth = 9
+
+    /// The fixed trail opacities for the bouncing style.
+    ///
+    /// Index 0 is the highlight itself, followed by 4 fading positions.
+    static let trailOpacities: [Double] = [1.0, 0.7, 0.4, 0.2, 0.08]
+
+    /// How many positions the highlight overshoots beyond each edge of
+    /// the visible track. This lets the trail fade out smoothly at the
+    /// edges instead of being cut off abruptly.
+    static let edgeOvershoot = 2
 
     /// Generates the bounce position sequence for the given track length.
     ///
-    /// Positions move forward (0 → trackLength-1) then backward
-    /// (trackLength-2 → 1), skipping endpoints to avoid stutter.
+    /// The highlight travels from `-edgeOvershoot` to
+    /// `trackLength - 1 + edgeOvershoot`, then bounces back. Positions
+    /// outside the visible range `0..<trackLength` are still valid — the
+    /// highlight is off-screen there but its trail remains partially visible.
     ///
-    /// - Parameter trackLength: The number of positions in the track.
+    /// - Parameter trackLength: The number of visible positions in the track.
     /// - Returns: An array of highlight positions for each frame.
     static func bouncingPositions(trackLength: Int) -> [Int] {
+        let lower = -edgeOvershoot
+        let upper = trackLength - 1 + edgeOvershoot
         var positions: [Int] = []
 
-        // Forward: 0 → trackLength-1
-        for position in 0..<trackLength {
+        // Forward: lower → upper
+        for position in lower...upper {
             positions.append(position)
         }
 
-        // Backward: trackLength-2 → 1 (skip endpoints to avoid double-pause)
-        for position in stride(from: trackLength - 2, through: 1, by: -1) {
+        // Backward: upper-1 → lower+1 (skip endpoints to avoid double-pause)
+        for position in stride(from: upper - 1, through: lower + 1, by: -1) {
             positions.append(position)
         }
 
@@ -193,20 +99,18 @@ public enum SpinnerStyle: Sendable {
 
     /// Renders a single bouncing frame with colored trail.
     ///
-    /// The highlight position gets the full color. Up to 3 positions behind
-    /// it (in the direction of movement) get progressively faded colors.
-    /// All other positions render as dimmed small squares.
+    /// The highlight position may be outside the visible track (overshoot).
+    /// Only positions within `0..<trackWidth` are rendered. Trail positions
+    /// that fall within the visible range still get their faded color, even
+    /// when the highlight itself is off-screen.
     ///
     /// - Parameters:
     ///   - frameIndex: The current frame index in the bounce sequence.
     ///   - color: The resolved highlight color.
-    ///   - trackLength: The number of positions in the track.
     /// - Returns: An ANSI-colored string representing the track.
     static func renderBouncingFrame(
         frameIndex: Int,
-        color: Color,
-        trackWidth: Int,
-        trailLength: BouncingTrailLength
+        color: Color
     ) -> String {
         let positions = bouncingPositions(trackLength: trackWidth)
         let currentPos = positions[frameIndex % positions.count]
@@ -214,20 +118,18 @@ public enum SpinnerStyle: Sendable {
         // Determine direction: compare with previous position.
         let prevIndex = (frameIndex - 1 + positions.count) % positions.count
         let prevPos = positions[prevIndex]
-        let movingForward = currentPos > prevPos || (currentPos == 0 && prevPos == 1)
+        let movingForward = currentPos > prevPos || (currentPos == -edgeOvershoot && prevPos == -edgeOvershoot + 1)
 
-        let opacities = trailLength.opacities
         var result = ""
         for trackIndex in 0..<trackWidth {
             let distance = trailDistance(
                 from: currentPos,
                 to: trackIndex,
-                movingForward: movingForward,
-                trackLength: trackWidth
+                movingForward: movingForward
             )
 
-            if let distance, distance < opacities.count {
-                let fadedColor = color.opacity(opacities[distance])
+            if let distance, distance < trailOpacities.count {
+                let fadedColor = color.opacity(trailOpacities[distance])
                 result += ANSIRenderer.colorize("▇", foreground: fadedColor)
             } else {
                 result += ANSIRenderer.colorize("■", foreground: color.opacity(0.15))
@@ -246,13 +148,11 @@ public enum SpinnerStyle: Sendable {
     ///   - highlight: The current highlight position.
     ///   - target: The track position to check.
     ///   - movingForward: Whether the highlight is moving left→right.
-    ///   - trackLength: The track length (unused but kept for future extension).
     /// - Returns: The trail distance, or `nil` if not in the trail.
     private static func trailDistance(
         from highlight: Int,
         to target: Int,
-        movingForward: Bool,
-        trackLength: Int
+        movingForward: Bool
     ) -> Int? {
         if target == highlight { return 0 }
 
@@ -277,8 +177,8 @@ public enum SpinnerStyle: Sendable {
 /// an optional label.
 ///
 /// The animation runs automatically via a background task that triggers
-/// re-renders at the configured interval. The task is started when the
-/// spinner first appears and cancelled when it disappears.
+/// re-renders at a fixed interval. The task is started when the spinner
+/// first appears and cancelled when it disappears.
 ///
 /// # Example
 ///
@@ -295,11 +195,11 @@ public enum SpinnerStyle: Sendable {
 ///
 /// # Styles
 ///
-/// | Style | Visual | Default Interval |
-/// |-------|--------|-----------------|
-/// | `.dots` | `⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏` | 80ms |
-/// | `.line` | `\| / - \\` | 100ms |
-/// | `.bouncing` | `▪▪▇▇▇▇▪` (with fade trail) | 180ms |
+/// | Style | Visual | Interval |
+/// |-------|--------|----------|
+/// | `.dots` | `⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏` | 110ms |
+/// | `.line` | `\| / - \\` | 140ms |
+/// | `.bouncing` | `■■▇▇▇▇■■■` (with fade trail) | 100ms |
 public struct Spinner: View {
     /// The optional label displayed after the spinner.
     let label: String?
@@ -307,21 +207,8 @@ public struct Spinner: View {
     /// The animation style.
     let style: SpinnerStyle
 
-    /// The animation speed.
-    let speed: SpinnerSpeed
-
     /// The spinner color (uses theme accent if nil).
     let color: Color?
-
-    /// The track width for the bouncing style.
-    ///
-    /// Ignored for ``SpinnerStyle/dots`` and ``SpinnerStyle/line``.
-    let trackWidth: BouncingTrackWidth
-
-    /// The trail length for the bouncing style.
-    ///
-    /// Ignored for ``SpinnerStyle/dots`` and ``SpinnerStyle/line``.
-    let trailLength: BouncingTrailLength
 
     /// Unique lifecycle token for this spinner instance.
     let token: String
@@ -331,55 +218,15 @@ public struct Spinner: View {
     /// - Parameters:
     ///   - label: Text displayed after the spinner indicator.
     ///   - style: The animation style (default: `.dots`).
-    ///   - speed: The animation speed (default: `.regular`).
     ///   - color: The spinner color (default: theme accent).
-    ///   - trackWidth: The track width for bouncing style
-    ///     (default: `.default`). Use `.max` to fill available width.
-    ///     Ignored for other styles.
-    ///   - trailLength: The length of the fading trail for bouncing style
-    ///     (default: `.regular`). Ignored for other styles.
     public init(
         _ label: String? = nil,
         style: SpinnerStyle = .dots,
-        speed: SpinnerSpeed = .regular,
-        color: Color? = nil,
-        trackWidth: BouncingTrackWidth = .default,
-        trailLength: BouncingTrailLength = .regular
+        color: Color? = nil
     ) {
         self.label = label
         self.style = style
-        self.speed = speed
         self.color = color
-        self.trackWidth = trackWidth
-        self.trailLength = trailLength
-        self.token = "spinner-\(UUID().uuidString)"
-    }
-
-    /// Creates a spinner with an explicit track width in characters.
-    ///
-    /// - Parameters:
-    ///   - label: Text displayed after the spinner indicator.
-    ///   - style: The animation style (default: `.dots`).
-    ///   - speed: The animation speed (default: `.regular`).
-    ///   - color: The spinner color (default: theme accent).
-    ///   - trackWidth: The track width in characters (minimum: 7).
-    ///     Ignored for non-bouncing styles.
-    ///   - trailLength: The length of the fading trail for bouncing style
-    ///     (default: `.regular`). Ignored for other styles.
-    public init(
-        _ label: String? = nil,
-        style: SpinnerStyle = .dots,
-        speed: SpinnerSpeed = .regular,
-        color: Color? = nil,
-        trackWidth: Int,
-        trailLength: BouncingTrailLength = .regular
-    ) {
-        self.label = label
-        self.style = style
-        self.speed = speed
-        self.color = color
-        self.trackWidth = .fixed(trackWidth)
-        self.trailLength = trailLength
         self.token = "spinner-\(UUID().uuidString)"
     }
 
@@ -394,7 +241,6 @@ extension Spinner: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let lifecycle = context.tuiContext.lifecycle
         let stateStorage = context.tuiContext.stateStorage
-        let effectiveInterval = style.baseInterval * speed.multiplier
 
         // Retrieve or create persistent start time for this spinner.
         let timeKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
@@ -402,7 +248,7 @@ extension Spinner: Renderable {
         stateStorage.markActive(context.identity)
 
         // Start render-trigger task on first appearance.
-        // The task fires at a fixed rate (~50ms) to request redraws.
+        // The task fires at a fixed rate (~40ms) to request redraws.
         // The actual animation speed is determined by time-based frame
         // index calculation, not by the trigger interval.
         if !lifecycle.hasAppeared(token: token) {
@@ -425,23 +271,16 @@ extension Spinner: Renderable {
             lifecycle.cancelTask(token: token)
         }
 
-        // Resolve track width for bouncing (needs label width for .max).
-        let labelWidth = label.map { $0.count + 1 } ?? 0  // +1 for spacing
-        let resolvedTrackWidth = trackWidth.resolve(
-            availableWidth: context.availableWidth,
-            labelWidth: labelWidth
-        )
-
-        // Calculate frame index from elapsed time (each spinner respects its own interval).
+        // Calculate frame index from elapsed time.
         let elapsed = Date().timeIntervalSinceReferenceDate - startTimeBox.value
         let frameCount: Int
         switch style {
         case .bouncing:
-            frameCount = SpinnerStyle.bouncingPositions(trackLength: resolvedTrackWidth).count
+            frameCount = SpinnerStyle.bouncingPositions(trackLength: SpinnerStyle.trackWidth).count
         case .dots, .line:
             frameCount = style.frames.count
         }
-        let frameIndex = Int(elapsed / effectiveInterval) % frameCount
+        let frameIndex = Int(elapsed / style.interval) % frameCount
 
         // Resolve color.
         let resolvedColor = (color ?? .palette.accent).resolve(with: context.environment.palette)
@@ -452,9 +291,7 @@ extension Spinner: Renderable {
         case .bouncing:
             coloredSpinner = SpinnerStyle.renderBouncingFrame(
                 frameIndex: frameIndex,
-                color: resolvedColor,
-                trackWidth: resolvedTrackWidth,
-                trailLength: trailLength
+                color: resolvedColor
             )
         case .dots, .line:
             coloredSpinner = ANSIRenderer.colorize(
