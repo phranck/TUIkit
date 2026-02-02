@@ -119,12 +119,13 @@ final class Terminal: @unchecked Sendable {
         // Set character size to 8 bits
         raw.c_cflag |= TermFlag(CS8)
 
-        // Set timeouts: VMIN=0, VTIME=1 (100ms timeout)
+        // Set timeouts: VMIN=0, VTIME=0 (non-blocking read).
+        // Polling rate is controlled by usleep in the run loop (~40ms = 25 FPS).
         // c_cc is a tuple in Swift, so we need to use withUnsafeMutablePointer
         withUnsafeMutablePointer(to: &raw.c_cc) { pointer in
             pointer.withMemoryRebound(to: cc_t.self, capacity: Int(NCCS)) { buffer in
                 buffer[Int(VMIN)] = 0
-                buffer[Int(VTIME)] = 1
+                buffer[Int(VTIME)] = 0
             }
         }
 
