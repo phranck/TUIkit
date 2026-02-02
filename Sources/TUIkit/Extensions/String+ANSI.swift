@@ -9,8 +9,16 @@
 
 extension String {
     /// The visible length of the string, excluding ANSI escape codes.
+    ///
+    /// Counts visible characters without allocating an intermediate
+    /// stripped string. Subtracts the total length of all ANSI escape
+    /// sequences from the character count.
     var strippedLength: Int {
-        stripped.count
+        var ansiLength = 0
+        for match in self.matches(of: ANSIRenderer.ansiRegex) {
+            ansiLength += self[match.range].count
+        }
+        return count - ansiLength
     }
 
     /// The string with all ANSI escape codes removed.
