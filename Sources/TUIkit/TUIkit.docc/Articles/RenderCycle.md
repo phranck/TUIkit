@@ -4,7 +4,7 @@ Understand how TUIkit turns your view tree into terminal output — one frame at
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → track lifecycle → render the status bar**. There is no double buffering, no async scheduling, and no diffing — each frame is a full top-to-bottom traversal that writes directly to the terminal.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written — and all writes are collected in a frame buffer and flushed as a **single `write()` syscall**.
 
 ## What Triggers a Frame
 
@@ -22,7 +22,7 @@ All triggers converge on boolean flags that the main loop checks each iteration.
 
 Each call to `RenderLoop.render()` executes these steps in order:
 
-@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 8-step render pipeline: clear per-frame state, begin lifecycle tracking, build environment, create render context, evaluate scene, render view tree, end lifecycle tracking, render status bar.")
+@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 12-step render pipeline: clear per-frame state, begin lifecycle tracking, build environment, create render context, evaluate scene, render view tree, build output lines, begin buffered frame, diff and write changed lines, render status bar into same buffer, flush frame, end lifecycle tracking.")
 
 ### Step 1: Clear Per-Frame State
 
@@ -61,12 +61,13 @@ A ``RenderContext`` bundles everything a view needs to render:
 
 | Property | What |
 |----------|------|
-| `terminal` | The `Terminal` instance for size queries |
 | `availableWidth` | Terminal width (mutable — containers reduce this for children) |
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
 | `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences, state storage) |
 | `identity` | The current view's structural identity (``ViewIdentity``) |
+
+`RenderContext` is a pure data container — it does not hold a reference to `Terminal`. All terminal I/O happens after the view tree has been rendered into a ``FrameBuffer``.
 
 The context is passed down the view tree. Each view can create a modified copy for its children — for example, a border reduces `availableWidth` by 2 before rendering its content. Container views extend the `identity` path for each child.
 
@@ -80,11 +81,34 @@ The context is passed down the view tree. Each view can create a modified copy f
 
 This is where the dual rendering system kicks in. ``WindowGroup`` calls the free function `renderToBuffer()` on its content, which recursively traverses the entire view tree and produces a ``FrameBuffer``.
 
-The buffer lines are then written to the terminal row by row — each line padded to full terminal width with a persistent background color.
-
 > See <doc:RenderCycle#The-Dual-Rendering-System> below for details on how views are dispatched.
 
-### Step 7: End Lifecycle and State Tracking
+### Step 7: Build Output Lines
+
+The ``FrameBuffer`` is converted into terminal-ready output lines by `FrameDiffWriter.buildOutputLines()`:
+
+1. Lines with content get their ANSI reset codes replaced with `reset + backgroundColor` (persistent background)
+2. Each line is padded to full terminal width
+3. Empty rows are filled with the background color
+4. The total output is exactly `terminalHeight` lines
+
+### Step 8: Begin Buffered Frame
+
+`Terminal.beginFrame()` activates output buffering. From this point, all `Terminal.write()` calls append to an internal `[UInt8]` buffer instead of issuing syscalls.
+
+### Step 9: Diff and Write Changed Lines
+
+`FrameDiffWriter.writeContentDiff()` compares the new output lines with the previous frame and writes **only changed lines** to the terminal buffer. For mostly-static UIs, this reduces writes by ~94%.
+
+### Step 10: Render Status Bar
+
+The status bar renders in a separate pass (see below) but writes into the **same frame buffer**, so content and status bar are flushed together.
+
+### Step 11: Flush Frame
+
+`Terminal.endFrame()` writes the entire collected buffer to `STDOUT_FILENO` in a **single `write()` syscall**, then resets the buffer. This reduces per-frame syscalls from ~40+ to exactly 1.
+
+### Step 12: End Lifecycle and State Tracking
 
 The `LifecycleManager` compares the current frame's tokens with the previous frame's:
 
@@ -95,16 +119,17 @@ The `StateStorage` performs garbage collection: any state whose view identity wa
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
 
-### Step 8: Render Status Bar
+### Status Bar Rendering (Step 10)
 
-The status bar renders in a completely separate pass:
+The status bar renders in a separate pass but within the same buffered frame:
 
 1. A ``StatusBar`` view is created with resolved palette colors
 2. A dedicated ``RenderContext`` is created with `availableHeight` set to the status bar's height
 3. `renderToBuffer()` runs on the status bar view — same dispatch as the main content
-4. The buffer is written starting at row `terminal.height - statusBarHeight + 1`
+4. `FrameDiffWriter.writeStatusBarDiff()` diffs the status bar independently from the main content
+5. Changed lines are written into the same frame buffer as the content
 
-The status bar is **never affected** by view dimming or overlays. It always renders last, at the bottom of the terminal.
+The status bar is **never affected** by view dimming or overlays. It always renders at the bottom of the terminal.
 
 ## The Dual Rendering System
 
@@ -182,14 +207,15 @@ Layout containers combine child buffers using `FrameBuffer` methods:
 | `overlay(_:)` | `ZStack` | Line-by-line overlay, non-empty lines replace base |
 | `composited(with:at:)` | Overlay modifier | Character-level compositing at (x, y) position |
 
-### Writing to Terminal
+### Diff-Based Output
 
-``WindowGroup`` iterates over the buffer and writes each line to the terminal:
+After the view tree produces a ``FrameBuffer``, the `FrameDiffWriter` prepares terminal-ready output:
 
 1. Lines with content get their ANSI reset codes replaced with `reset + backgroundColor` (persistent background)
 2. Each line is padded to full terminal width
 3. Empty lines are filled with the background color
-4. `Terminal.moveCursor()` + `Terminal.write()` per line
+
+The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and flushed as a single syscall.
 
 ## Environment Flow
 
@@ -283,12 +309,24 @@ The `TaskModifier` (created by `.task()`) combines appearance tracking with asyn
 2. Registers a disappear callback that cancels the task
 3. If the view reappears, a new task starts
 
-## Why No Double Buffer
+## Output Optimization
 
-TUIkit writes each frame directly to the terminal — there is no previous-frame comparison or minimal-update optimization. This is intentional:
+TUIkit uses three techniques to minimize terminal I/O:
 
-1. **Terminal rendering is fast** — ANSI writes are cheap for typical TUI sizes (< 200×60 characters)
-2. **No layout diffing needed** — the view tree is fully re-evaluated each frame, so there's nothing to diff against
-3. **Simplicity** — single-pass rendering eliminates entire categories of bugs (stale state, partial updates, layout thrashing)
+### Line-Level Diffing
+
+`FrameDiffWriter` stores the previous frame's output lines and compares them with the new frame. Only lines that actually changed are written to the terminal. For mostly-static UIs (where only a few elements change per frame), this reduces terminal writes by ~94%.
+
+### Frame Buffering
+
+All terminal writes during a frame are collected in an internal `[UInt8]` buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is flushed to `STDOUT_FILENO` in a **single `write()` syscall**, reducing per-frame syscalls from ~40+ to exactly 1.
+
+### Width Caching
+
+``FrameBuffer`` caches its `width` as a stored property, recomputed only when `lines` is mutated. This eliminates hundreds of redundant ANSI-stripping regex runs per frame. The `strippedLength` property also avoids intermediate string allocations.
+
+### What Is NOT Diffed
+
+The **view tree** is always fully re-evaluated each frame — there is no virtual DOM or subtree memoization. This keeps the architecture simple and eliminates stale-state bugs. The diffing happens only at the terminal output level.
 
 The alternate screen buffer (entered during setup) ensures that the user's previous terminal content is preserved and restored on exit.
