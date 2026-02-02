@@ -37,9 +37,8 @@ export default function HeroTerminal() {
   const powerOffAudioRef = useRef<Howl | null>(null);
   const seekIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
+  // Preload audio on mount
   useEffect(() => {
-    setMounted(true);
-    
     // Preload all audio files with Howler.js
     powerOnAudioRef.current = new Howl({
       src: ["/sounds/power-on.mp3"],
@@ -76,6 +75,12 @@ export default function HeroTerminal() {
         }
       });
     };
+  }, []);
+
+  // Handle client-side hydration for power button
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
   }, []);
 
   /** Computes the translation needed to center the element in the viewport. */

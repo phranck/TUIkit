@@ -65,28 +65,13 @@ struct MyApp: App {
 
 /** Minimal Swift syntax highlighter — no external dependency. */
 function Highlight({ code }: { code: string }) {
-  const keywords =
-    /\b(struct|var|some|func|import|let|return|if|else|for|in|while|switch|case|default|class|protocol|enum|init|self|true|false|nil|private|public|internal)\b/g;
-  const decorators = /(@\w+)/g;
-  const types = /\b(App|Scene|WindowGroup|VStack|HStack|Text|Button|View|String|Int|Bool|Never)\b/g;
-  const strings = /("(?:[^"\\]|\\.)*")/g;
-  const comments = /(\/\/.*$)/gm;
-  const modifiers = /(\.\w+\()/g;
-
   const lines = code.split("\n");
 
   return (
     <>
       {lines.map((line, lineIndex) => (
         <span key={lineIndex}>
-          {tokenizeLine(line, {
-            keywords,
-            decorators,
-            types,
-            strings,
-            comments,
-            modifiers,
-          })}
+          {tokenizeLine(line)}
           {lineIndex < lines.length - 1 && "\n"}
         </span>
       ))}
@@ -94,31 +79,22 @@ function Highlight({ code }: { code: string }) {
   );
 }
 
-interface Patterns {
-  keywords: RegExp;
-  decorators: RegExp;
-  types: RegExp;
-  strings: RegExp;
-  comments: RegExp;
-  modifiers: RegExp;
-}
-
-function tokenizeLine(line: string, patterns: Patterns) {
+function tokenizeLine(line: string) {
   // Comments take precedence
   const commentMatch = line.match(/^(.*?)(\/\/.*)$/);
   if (commentMatch) {
     const [, before, comment] = commentMatch;
     return (
       <>
-        {tokenizeSegment(before, patterns)}
+        {tokenizeSegment(before)}
         <span className="text-[#6a737d]">{comment}</span>
       </>
     );
   }
-  return tokenizeSegment(line, patterns);
+  return tokenizeSegment(line);
 }
 
-function tokenizeSegment(segment: string, patterns: Patterns) {
+function tokenizeSegment(segment: string) {
   // Build a combined regex for all token types
   const combined =
     /(@\w+)|("(?:[^"\\]|\\.)*")|(\.\w+)\(|\b(struct|var|some|func|import|let|return|if|else|for|in|while|switch|case|default|class|protocol|enum|init|self|true|false|nil|private|public|internal)\b|\b(App|Scene|WindowGroup|VStack|HStack|Text|Button|View|String|Int|Bool|Never)\b/g;
