@@ -240,14 +240,14 @@ struct StateStorageIdentityTests {
 /// A view that initializes @State to 0 then immediately sets it to 42.
 /// On reconstruction, the state should still be 42 (not reset to 0).
 private struct CounterView: View {
-    @State var count = 0
+    @State var countValue = 0
 
     var body: some View {
-        if count == 0 {
+        if countValue == 0 {
             // First render: set to 42
-            count = 42
+            countValue = 42
         }
-        return Text("Count:\(count)")
+        return Text("Count:\(countValue)")
     }
 }
 
