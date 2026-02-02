@@ -44,16 +44,18 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <a
               href="/documentation/tuikit"
-              className="text-lg text-muted transition-colors hover:text-foreground"
+              className="flex items-center gap-1.5 text-lg text-muted transition-colors hover:text-foreground"
             >
+              <Icon name="book" size={16} className="text-current" />
               Documentation
             </a>
             <a
               href="https://github.com/phranck/TUIkit"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-lg text-muted transition-colors hover:text-foreground"
+              className="flex items-center gap-1.5 text-lg text-muted transition-colors hover:text-foreground"
             >
+              <Icon name="code" size={16} className="text-current" />
               GitHub
             </a>
             <div className="ml-2 border-l border-border pl-4">

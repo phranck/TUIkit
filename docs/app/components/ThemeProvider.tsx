@@ -46,27 +46,21 @@ function getInitialTheme(): Theme {
 /** Provides theme state and applies it to the document root via data-theme attribute. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   /**
-   * Initialize theme from DOM attribute that was set by blocking script in layout.tsx.
-   * This avoids setState in useEffect and prevents hydration mismatches.
+   * Start with null on both server and client to avoid hydration mismatch.
+   * The blocking script in layout.tsx already sets data-theme on <html> before
+   * first paint, so there is no FOUC. React state catches up in useEffect below.
    */
-  const [theme, setThemeState] = useState<Theme | null>(() => {
-    if (typeof window === "undefined") return null;
-    const attr = document.documentElement.getAttribute("data-theme") as Theme;
-    return attr || null;
-  });
+  const [theme, setThemeState] = useState<Theme | null>(null);
 
   /**
-   * After hydration, ensure theme is set if it wasn't captured in initial state.
-   * This is a safety net for edge cases.
+   * After hydration, read the actual theme from DOM/localStorage.
+   * This runs once on mount and sets the React state to match reality.
    */
   useEffect(() => {
-    if (theme === null) {
-      const actual = getInitialTheme();
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setThemeState(actual);
-      document.documentElement.setAttribute("data-theme", actual);
-    }
-  }, [theme]);
+    const actual = getInitialTheme();
+    setThemeState(actual);
+    document.documentElement.setAttribute("data-theme", actual);
+  }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);

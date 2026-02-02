@@ -298,6 +298,11 @@ code {
   animation: cursor-blink 1s step-end infinite;
 }
 
+@keyframes theme-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
 /* CRT scanline - moving element from top to bottom within container only */
 @keyframes crt-scanline-move {
   0% {
