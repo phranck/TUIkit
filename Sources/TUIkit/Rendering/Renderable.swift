@@ -86,6 +86,13 @@ public struct RenderContext {
     /// and preference storage via constructor injection.
     let tuiContext: TUIContext
 
+    /// The current view's structural identity in the render tree.
+    ///
+    /// Built incrementally as `renderToBuffer` traverses the view hierarchy.
+    /// Container views append child indices, composite views append type names.
+    /// Used by ``StateStorage`` to persist `@State` values across render passes.
+    var identity: ViewIdentity
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
@@ -94,18 +101,21 @@ public struct RenderContext {
     ///   - availableHeight: The available height (defaults to terminal height).
     ///   - environment: The environment values (defaults to empty).
     ///   - tuiContext: The TUI context (defaults to a fresh instance).
+    ///   - identity: The view identity path (defaults to root).
     init(
         terminal: Terminal = Terminal(),
         availableWidth: Int? = nil,
         availableHeight: Int? = nil,
         environment: EnvironmentValues = EnvironmentValues(),
-        tuiContext: TUIContext = TUIContext()
+        tuiContext: TUIContext = TUIContext(),
+        identity: ViewIdentity = ViewIdentity(path: "")
     ) {
         self.terminal = terminal
         self.availableWidth = availableWidth ?? terminal.width
         self.availableHeight = availableHeight ?? terminal.height
         self.environment = environment
         self.tuiContext = tuiContext
+        self.identity = identity
     }
 
     /// Creates a new context with the same terminal and size but different environment.
@@ -113,13 +123,49 @@ public struct RenderContext {
     /// - Parameter environment: The new environment values.
     /// - Returns: A new RenderContext with the updated environment.
     func withEnvironment(_ environment: EnvironmentValues) -> Self {
-        Self(
-            terminal: terminal,
-            availableWidth: availableWidth,
-            availableHeight: availableHeight,
-            environment: environment,
-            tuiContext: tuiContext
-        )
+        var copy = self
+        copy.environment = environment
+        return copy
+    }
+
+    /// Creates a new context with a child identity for the given type and index.
+    ///
+    /// Used by container views (`TupleView`, `ViewArray`) to assign
+    /// structural identities to their children.
+    ///
+    /// - Parameters:
+    ///   - type: The child view's type.
+    ///   - index: The child's position within the container.
+    /// - Returns: A new RenderContext with the extended identity path.
+    func withChildIdentity<V>(type: V.Type, index: Int) -> Self {
+        var copy = self
+        copy.identity = identity.child(type: type, index: index)
+        return copy
+    }
+
+    /// Creates a new context with a child identity for a composite view's body.
+    ///
+    /// Used when descending into a view's `body` where there is exactly
+    /// one child (no sibling disambiguation needed).
+    ///
+    /// - Parameter type: The child view's type.
+    /// - Returns: A new RenderContext with the extended identity path.
+    func withChildIdentity<V>(type: V.Type) -> Self {
+        var copy = self
+        copy.identity = identity.child(type: type)
+        return copy
+    }
+
+    /// Creates a new context with a branch identity.
+    ///
+    /// Used by ``ConditionalView`` to distinguish between if/else branches.
+    ///
+    /// - Parameter label: The branch label (`"true"` or `"false"`).
+    /// - Returns: A new RenderContext with the branch identity.
+    func withBranchIdentity(_ label: String) -> Self {
+        var copy = self
+        copy.identity = identity.branch(label)
+        return copy
     }
 }
 
@@ -163,9 +209,37 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         return renderable.renderToBuffer(context: context)
     }
 
-    // Priority 2: Composite view — recurse into body
+    // Priority 2: Composite view — set up hydration context and recurse into body.
+    //
+    // Before evaluating `body`, we activate the hydration context so that any
+    // @State properties created during body evaluation self-hydrate from StateStorage.
+    //
+    // For the view's OWN @State properties: these were already hydrated when the
+    // view was constructed (either via self-hydrating init if activeContext was set,
+    // or via the parent's body evaluation context). The context here is for CHILDREN
+    // that will be constructed inside this view's body.
     if V.Body.self != Never.self {
-        return renderToBuffer(view.body, context: context)
+        let childContext = context.withChildIdentity(type: V.Body.self)
+
+        // Save previous hydration state (supports nested composite views).
+        let previousContext = StateRegistration.activeContext
+        let previousCounter = StateRegistration.counter
+
+        // Activate hydration: @State.init will use this to look up persistent storage.
+        StateRegistration.activeContext = HydrationContext(
+            identity: context.identity,
+            storage: context.tuiContext.stateStorage
+        )
+        StateRegistration.counter = 0
+
+        let body = view.body
+
+        // Restore previous hydration state and mark this identity as active for GC.
+        StateRegistration.activeContext = previousContext
+        StateRegistration.counter = previousCounter
+        context.tuiContext.stateStorage.markActive(context.identity)
+
+        return renderToBuffer(body, context: childContext)
     }
 
     // Priority 3: No rendering path — return empty buffer silently.

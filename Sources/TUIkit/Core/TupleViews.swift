@@ -41,7 +41,12 @@ extension TupleView: Renderable, ChildInfoProvider {
 
     func childInfos(context: RenderContext) -> [ChildInfo] {
         var infos: [ChildInfo] = []
-        repeat infos.append(makeChildInfo(for: each children, context: context))
+        repeat infos.append(
+            makeChildInfo(
+                for: each children,
+                context: context.withChildIdentity(type: type(of: each children), index: infos.count)
+            )
+        )
         return infos
     }
 }

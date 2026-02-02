@@ -15,46 +15,66 @@ import TUIkit
 /// - Plain style (no border)
 /// - ButtonRow for horizontal groups
 /// - Focus navigation with Tab
+/// - Live click counter demonstrating `@State` persistence across re-renders
 struct ButtonsPage: View {
+    @State var clickCount: Int = 0
+
     var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Buttons & Focus Demo")
 
+            DemoSection("Interactive Counter (@State)") {
+                HStack(spacing: 2) {
+                    Button("+1", style: .primary) {
+                        clickCount += 1
+                    }
+                    Button("+10", style: .success) {
+                        clickCount += 10
+                    }
+                    Button("Reset", style: .destructive) {
+                        clickCount = 0
+                    }
+                    Text("Clicks: \(clickCount)")
+                        .bold()
+                        .foregroundColor(.palette.accent)
+                }
+            }
+
             DemoSection("Button Styles") {
                 HStack(spacing: 2) {
                     Button("Default") {
-                        // Default style button action
+                        clickCount += 1
                     }
                     Button("Primary", style: .primary) {
-                        // Primary button action
+                        clickCount += 1
                     }
                     Button("Success", style: .success) {
-                        // Success button action
+                        clickCount += 1
                     }
                     Button("Destructive", style: .destructive) {
-                        // Destructive button action
+                        clickCount += 1
                     }
                 }
             }
 
             DemoSection("Disabled Button") {
                 HStack(spacing: 2) {
-                    Button("Enabled") {}
+                    Button("Enabled") { clickCount += 1 }
                     Button("Disabled") {}.disabled()
                 }
             }
 
             DemoSection("Plain Style (No Border)") {
                 HStack(spacing: 2) {
-                    Button("Link 1", style: .plain) {}
-                    Button("Link 2", style: .plain) {}
+                    Button("Link 1", style: .plain) { clickCount += 1 }
+                    Button("Link 2", style: .plain) { clickCount += 1 }
                 }
             }
 
             DemoSection("ButtonRow (Horizontal Group)") {
                 ButtonRow(spacing: 3) {
-                    Button("Cancel") {}
-                    Button("Save", style: .primary) {}
+                    Button("Cancel") { clickCount += 1 }
+                    Button("Save", style: .primary) { clickCount += 1 }
                 }
             }
 

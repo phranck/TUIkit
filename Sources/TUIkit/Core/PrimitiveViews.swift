@@ -131,11 +131,14 @@ extension EmptyView: Renderable {
 
 extension ConditionalView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let stateStorage = context.tuiContext.stateStorage
         switch self {
         case .trueContent(let content):
-            return TUIkit.renderToBuffer(content, context: context)
+            stateStorage.invalidateDescendants(of: context.identity.branch("false"))
+            return TUIkit.renderToBuffer(content, context: context.withBranchIdentity("true"))
         case .falseContent(let content):
-            return TUIkit.renderToBuffer(content, context: context)
+            stateStorage.invalidateDescendants(of: context.identity.branch("true"))
+            return TUIkit.renderToBuffer(content, context: context.withBranchIdentity("false"))
         }
     }
 }
@@ -148,6 +151,11 @@ extension ViewArray: Renderable, ChildInfoProvider {
     }
 
     func childInfos(context: RenderContext) -> [ChildInfo] {
-        elements.map { makeChildInfo(for: $0, context: context) }
+        elements.enumerated().map { index, element in
+            makeChildInfo(
+                for: element,
+                context: context.withChildIdentity(type: type(of: element), index: index)
+            )
+        }
     }
 }
