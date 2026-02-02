@@ -3,6 +3,55 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TERMINAL_SCRIPT } from "./terminal-data";
 
+/**
+ * Parse simple HTML-like tags in terminal text for formatting.
+ * Supports: <b>, <u>, <s>, <i>
+ */
+function parseTerminalFormatting(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+  
+  // Match <b>, <u>, <s>, <i> tags
+  const regex = /<(b|u|s|i)>(.+?)<\/\1>/g;
+  let match: RegExpExecArray | null;
+  
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before tag
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    
+    // Add formatted text
+    const tag = match[1];
+    const content = match[2];
+    
+    switch (tag) {
+      case 'b':
+        parts.push(<strong key={key++} className="font-bold">{content}</strong>);
+        break;
+      case 'u':
+        parts.push(<span key={key++} className="underline">{content}</span>);
+        break;
+      case 's':
+        parts.push(<span key={key++} className="line-through">{content}</span>);
+        break;
+      case 'i':
+        parts.push(<em key={key++} className="italic">{content}</em>);
+        break;
+    }
+    
+    lastIndex = regex.lastIndex;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  return parts.length > 0 ? parts : [text];
+}
+
 /** A single terminal interaction: command + optional output lines. */
 interface TerminalEntry {
   prompt: string;
@@ -509,18 +558,21 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
             "0 0 4px rgba(var(--accent-glow), 0.6), 0 0 10px rgba(var(--accent-glow), 0.25)",
         }}
       >
-        {lines.map((line, index) => (
-          <div
-            key={index}
-            ref={(element) => { lineRefsRef.current[index] = element; }}
-            className="whitespace-pre overflow-hidden"
-          >
-            {line.length > COLS ? line.slice(0, COLS) : line}
-            {index === lines.length - 1 && cursorVisible && (
-              <span className="opacity-80">_</span>
-            )}
-          </div>
-        ))}
+        {lines.map((line, index) => {
+          const displayLine = line.length > COLS ? line.slice(0, COLS) : line;
+          return (
+            <div
+              key={index}
+              ref={(element) => { lineRefsRef.current[index] = element; }}
+              className="whitespace-pre overflow-hidden"
+            >
+              {parseTerminalFormatting(displayLine)}
+              {index === lines.length - 1 && cursorVisible && (
+                <span className="opacity-80">_</span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

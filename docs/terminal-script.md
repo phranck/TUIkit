@@ -2,6 +2,30 @@
 
 This file defines the complete terminal animation sequence shown on the landing page.
 
+## Markdown Formatting Support
+
+The parser supports basic Markdown formatting in all text fields.
+Formatting is converted to HTML tags and rendered with CSS styles:
+
+- `**bold**` → Bold text (`<strong>`)
+- `__underline__` → Underlined text (`<span class="underline">`)
+- `~~strikethrough~~` → Strikethrough text (`<span class="line-through">`)
+- `*italic*` → Italic text (`<em>`)
+
+**Examples:**
+```
+[INSTANT] **BIOS** v3.21 (C) 1984
+[SYSTEM] LOGGED IN AS: __MR. DABNEY__
+[USER] > I'm *fine*. How are you?
+[INSTANT] *** __AUTHORIZED USE ONLY__ ***
+```
+
+**How it works:**
+1. Markdown syntax is parsed at build time
+2. Converted to simple HTML tags (`<b>`, `<u>`, `<s>`, `<i>`)
+3. Rendered as React components with Tailwind classes
+4. Styled with terminal-appropriate fonts and effects
+
 ---
 
 ## Configuration
@@ -24,7 +48,7 @@ pause_after_output: 1200
 ## Boot Sequence
 
 ```terminal
-[INSTANT] BIOS v3.21 (C) 1984
+[INSTANT] **BIOS** v3.21 (C) 1984
 [DELAY 2000ms]
 
 [INSTANT]
@@ -137,7 +161,7 @@ pause_after_output: 1200
 [INSTANT]
 [DELAY 800ms]
 
-[INSTANT] *** AUTHORIZED USE ONLY ***
+[INSTANT] *** __AUTHORIZED USE ONLY__ ***
 [DELAY 1800ms]
 
 [INSTANT]
