@@ -386,8 +386,11 @@ const PAUSE_AFTER_OUTPUT_MS = 1500;
 /** Pause after typing command before showing output. */
 const PAUSE_BEFORE_OUTPUT_MS = 400;
 
-/** Seconds after boot completes before Joshua triggers. */
-const JOSHUA_TRIGGER_SEC = 15;
+/** Seconds after boot before school computer scene. */
+const SCHOOL_TRIGGER_SEC = 12;
+
+/** Seconds after school scene before Joshua/WOPR scene. */
+const JOSHUA_TRIGGER_SEC = 12;
 
 // ── Boot Sequence ─────────────────────────────────────────────────────
 
@@ -451,6 +454,89 @@ const BOOT_SEQUENCE: BootStep[] = [
 
   { type: "clear" },
   { type: "pause", delayAfter: 1000 },
+];
+
+// ── School Computer Grade Change Sequence ─────────────────────────────
+
+interface SchoolStep {
+  type: "system" | "user" | "inline" | "pause" | "clear";
+  prompt?: string;  // For inline type: the prompt text
+  text?: string;
+  delayAfter?: number;
+}
+
+const SCHOOL_SEQUENCE: SchoolStep[] = [
+  // ── Login to school system ─────────────────
+  { type: "clear" },
+  { type: "pause", delayAfter: 1500 },
+  { type: "system", text: "CRYSTAL SPRINGS HIGH SCHOOL", delayAfter: 800 },
+  { type: "system", text: "ADMINISTRATIVE SYSTEM", delayAfter: 1200 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "inline", prompt: "USER: ", text: "DABNEY", delayAfter: 1800 },
+  { type: "inline", prompt: "PASSWORD: ", text: "PENCIL", delayAfter: 2000 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "system", text: "LOGGED IN AS: MR. DABNEY", delayAfter: 1600 },
+  { type: "system", text: "", delayAfter: 1200 },
+  
+  // ── Main menu ──────────────────────────────
+  { type: "system", text: "1. STUDENT RECORDS", delayAfter: 400 },
+  { type: "system", text: "2. GRADE REPORTS", delayAfter: 400 },
+  { type: "system", text: "3. ATTENDANCE", delayAfter: 400 },
+  { type: "system", text: "4. LOGOUT", delayAfter: 1400 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "inline", prompt: "SELECT: ", text: "2", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1000 },
+  
+  // ── David's grades ─────────────────────────
+  { type: "inline", prompt: "STUDENT NAME: ", text: "LIGHTMAN", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1200 },
+  { type: "system", text: "LIGHTMAN, DAVID", delayAfter: 1000 },
+  { type: "system", text: "GRADE 11  ID: 4471829", delayAfter: 1400 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "system", text: "SUBJECT         GRADE", delayAfter: 400 },
+  { type: "system", text: "───────────────────────", delayAfter: 400 },
+  { type: "system", text: "BIOLOGY           F", delayAfter: 400 },
+  { type: "system", text: "ENGLISH           D", delayAfter: 400 },
+  { type: "system", text: "HISTORY           D", delayAfter: 400 },
+  { type: "system", text: "PHYS ED           C", delayAfter: 400 },
+  { type: "system", text: "MATHEMATICS       F", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1000 },
+  
+  // ── Change Biology grade ───────────────────
+  { type: "inline", prompt: "CHANGE GRADE (Y/N): ", text: "Y", delayAfter: 1400 },
+  { type: "inline", prompt: "SUBJECT: ", text: "BIOLOGY", delayAfter: 1600 },
+  { type: "inline", prompt: "NEW GRADE: ", text: "A", delayAfter: 1400 },
+  { type: "system", text: "GRADE UPDATED.", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1200 },
+  
+  // ── Jennifer's grades ──────────────────────
+  { type: "inline", prompt: "STUDENT NAME: ", text: "MACK", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1200 },
+  { type: "system", text: "MACK, JENNIFER", delayAfter: 1000 },
+  { type: "system", text: "GRADE 11  ID: 4472156", delayAfter: 1400 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "system", text: "SUBJECT         GRADE", delayAfter: 400 },
+  { type: "system", text: "───────────────────────", delayAfter: 400 },
+  { type: "system", text: "BIOLOGY           C", delayAfter: 400 },
+  { type: "system", text: "ENGLISH           B", delayAfter: 400 },
+  { type: "system", text: "HISTORY           B", delayAfter: 400 },
+  { type: "system", text: "PHYS ED           A", delayAfter: 400 },
+  { type: "system", text: "MATHEMATICS       F", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1000 },
+  
+  // ── Change her Biology grade too ───────────
+  { type: "inline", prompt: "CHANGE GRADE (Y/N): ", text: "Y", delayAfter: 1400 },
+  { type: "inline", prompt: "SUBJECT: ", text: "BIOLOGY", delayAfter: 1600 },
+  { type: "inline", prompt: "NEW GRADE: ", text: "A", delayAfter: 1400 },
+  { type: "system", text: "GRADE UPDATED.", delayAfter: 1800 },
+  { type: "system", text: "", delayAfter: 1200 },
+  
+  // ── Logout ─────────────────────────────────
+  { type: "inline", prompt: "CONTINUE (Y/N): ", text: "N", delayAfter: 1400 },
+  { type: "system", text: "", delayAfter: 800 },
+  { type: "system", text: "LOGGING OUT...", delayAfter: 1600 },
+  { type: "clear" },
+  { type: "pause", delayAfter: 2000 },
 ];
 
 // ── Joshua/WOPR Sequence ──────────────────────────────────────────────
@@ -619,11 +705,13 @@ interface TerminalScreenProps {
 export default function TerminalScreen({ powered, zoomed = false }: TerminalScreenProps) {
   const [lines, setLines] = useState<string[]>([]);
   const [cursorVisible, setCursorVisible] = useState(true);
+  const [terminalOpacity, setTerminalOpacity] = useState(0);
 
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const linesRef = useRef<string[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const sessionTimeRef = useRef<number>(0);
+  const schoolPlayedRef = useRef(false);
   const joshuaPlayedRef = useRef(false);
 
   const pickInteraction = useCallback((): TerminalEntry => {
@@ -667,6 +755,30 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
     return () => clearInterval(interval);
   }, []);
 
+  /** Fade in entire terminal over 6 seconds when powered on. */
+  useEffect(() => {
+    if (powered) {
+      setTerminalOpacity(0);
+      
+      const startTime = Date.now();
+      const duration = 6000; // 6 seconds
+      
+      const fadeIn = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        setTerminalOpacity(progress);
+        
+        if (progress < 1) {
+          requestAnimationFrame(fadeIn);
+        }
+      };
+      
+      requestAnimationFrame(fadeIn);
+    } else {
+      setTerminalOpacity(0);
+    }
+  }, [powered]);
+
   /** Reset state when powered off. */
   useEffect(() => {
     if (!powered) {
@@ -676,6 +788,7 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
         abortRef.current = null;
       }
       clearScreen();
+      schoolPlayedRef.current = false;
       joshuaPlayedRef.current = false;
       usedIndicesRef.current.clear();
     }
@@ -805,6 +918,34 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
       }
     };
 
+    const playSchool = async () => {
+      for (const step of SCHOOL_SEQUENCE) {
+        if (signal.aborted) return;
+        switch (step.type) {
+          case "clear":
+            clearScreen();
+            break;
+          case "system":
+            if (step.text === "") {
+              pushLine("");
+            } else {
+              await typeSystem(step.text ?? "");
+            }
+            break;
+          case "user":
+            await typeUser(step.text ?? "", "");
+            break;
+          case "inline":
+            // Prompt and user input on same line
+            await typeUser(step.text ?? "", step.prompt ?? "");
+            break;
+          case "pause":
+            break;
+        }
+        if (step.delayAfter) await sleep(step.delayAfter);
+      }
+    };
+
     const playJoshua = async () => {
       for (const step of JOSHUA_SEQUENCE) {
         if (signal.aborted) return;
@@ -834,18 +975,33 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
     const runLoop = async () => {
       try {
-        /* Wait for zoom animation to finish before starting boot. */
-        await sleep(1200);
+        /* Show only prompt with blinking cursor for 18 seconds */
+        pushLine("> ");
+        await sleep(18000);
+        
+        /* Clear and start boot sequence */
+        clearScreen();
         await playBoot();
 
-        /* Start session timer for Joshua. */
+        /* Start session timer for scenes. */
         sessionTimeRef.current = Date.now();
 
         while (!signal.aborted) {
           const elapsed = (Date.now() - sessionTimeRef.current) / 1000;
-          if (!joshuaPlayedRef.current && elapsed >= JOSHUA_TRIGGER_SEC) {
+          
+          /* Trigger school computer scene after 12 seconds of UNIX commands */
+          if (!schoolPlayedRef.current && elapsed >= SCHOOL_TRIGGER_SEC) {
+            schoolPlayedRef.current = true;
+            await playSchool();
+            sessionTimeRef.current = Date.now(); // Reset timer for next scene
+            continue;
+          }
+          
+          /* Trigger Joshua/WOPR scene after another 12 seconds of UNIX commands */
+          if (schoolPlayedRef.current && !joshuaPlayedRef.current && elapsed >= JOSHUA_TRIGGER_SEC) {
             joshuaPlayedRef.current = true;
             await playJoshua();
+            sessionTimeRef.current = Date.now(); // Reset timer, continue normal loop
             continue;
           }
 
@@ -944,6 +1100,8 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
         width: "100%",
         height: "100%",
         padding: "4px 6px",
+        opacity: terminalOpacity,
+        transition: "none", // Use requestAnimationFrame instead of CSS transition
       }}
     >
       <div

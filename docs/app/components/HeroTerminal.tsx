@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Howl } from "howler";
 import TerminalScreen from "./TerminalScreen";
 
 /**
@@ -29,11 +30,51 @@ export default function HeroTerminal() {
   /** Offset to translate the element from its inline position to viewport center. */
   const [centerOffset, setCenterOffset] = useState({ x: 0, y: 0 });
 
+  /** Audio references for hard drive sounds */
+  const powerOnAudioRef = useRef<Howl | null>(null);
+  const bootAudioRef = useRef<Howl | null>(null);
+  const spinAudioRef = useRef<Howl | null>(null);
+  const powerOffAudioRef = useRef<Howl | null>(null);
+  const seekIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
   useEffect(() => {
     setMounted(true);
+    
+    // Preload all audio files with Howler.js
+    powerOnAudioRef.current = new Howl({
+      src: ["/sounds/power-on.mp3"],
+      volume: 0.3,
+    });
+    
+    bootAudioRef.current = new Howl({
+      src: ["/sounds/hard-drive-boot.m4a"],
+      volume: 0.6,
+    });
+    
+    // Spin sound with loop enabled for gapless playback
+    spinAudioRef.current = new Howl({
+      src: ["/sounds/hard-drive-spin.m4a"],
+      volume: 0.6,
+      loop: true, // Howler.js handles gapless looping automatically
+    });
+    
+    powerOffAudioRef.current = new Howl({
+      src: ["/sounds/hard-drive-power-off.m4a"],
+      volume: 0.6,
+    });
+    
     return () => {
       if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
       if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
+      if (seekIntervalRef.current) clearInterval(seekIntervalRef.current);
+      
+      // Stop all audio
+      [powerOnAudioRef, bootAudioRef, spinAudioRef, powerOffAudioRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.stop();
+          ref.current.unload();
+        }
+      });
     };
   }, []);
 
@@ -52,19 +93,82 @@ export default function HeroTerminal() {
     };
   }, []);
 
-  /** Power on: glow the button, compute offset, zoom the terminal, start boot. */
+  /** Power on: play boot sound, start spin loop, add random seeks */
   const handlePowerOn = useCallback(() => {
     if (powered) return;
+    
     setPowered(true);
-    /* Compute offset before zooming so it captures the inline position. */
     setCenterOffset(computeCenterOffset());
-    /* Small delay so the glow appears before zoom. */
+    
+    // Play power-on beep first, then boot sound
+    if (powerOnAudioRef.current && bootAudioRef.current && spinAudioRef.current) {
+      powerOnAudioRef.current.seek(0);
+      powerOnAudioRef.current.play();
+      
+      bootAudioRef.current.seek(0);
+      bootAudioRef.current.play();
+      
+      // Start gapless spin loop slightly before boot ends for seamless transition
+      setTimeout(() => {
+        if (spinAudioRef.current) {
+          spinAudioRef.current.play(); // Howler.js handles gapless looping with loop: true
+        }
+      }, 19900); // Start 280ms before boot ends (~20.18s) for overlap
+      
+      // Random seek sounds every 15-25 seconds (only seek1), sometimes double-seek
+      setTimeout(() => {
+        seekIntervalRef.current = setInterval(() => {
+          const seekSound = new Howl({
+            src: ["/sounds/hard-drive-seek1.m4a"],
+            volume: 0.4, // Quieter than boot/spin
+          });
+          seekSound.play();
+          
+          // 30% chance for a second seek shortly after (200-400ms delay)
+          if (Math.random() < 0.3) {
+            setTimeout(() => {
+              const seekSound2 = new Howl({
+                src: ["/sounds/hard-drive-seek1.m4a"],
+                volume: 0.4,
+              });
+              seekSound2.play();
+            }, 200 + Math.random() * 200); // 200-400ms delay
+          }
+        }, 15000 + Math.random() * 10000); // 15-25s random interval
+      }, 20300); // Start after boot finishes (~20.18s)
+    }
+    
+    // Zoom after 200ms delay
     zoomTimerRef.current = setTimeout(() => setZoomed(true), 200);
   }, [powered, computeCenterOffset]);
 
-  /** Power off: zoom back, stop terminal. */
+  /** Power off: stop all sounds, play power-off sound, zoom back */
   const handlePowerOff = useCallback(() => {
     setZoomed(false);
+    
+    // Stop seek interval
+    if (seekIntervalRef.current) {
+      clearInterval(seekIntervalRef.current);
+      seekIntervalRef.current = undefined;
+    }
+    
+    // Stop all running sounds
+    if (powerOnAudioRef.current) {
+      powerOnAudioRef.current.stop();
+    }
+    if (bootAudioRef.current) {
+      bootAudioRef.current.stop();
+    }
+    if (spinAudioRef.current) {
+      spinAudioRef.current.stop(); // Howler.js stop() method
+    }
+    
+    // Play power-off sound
+    if (powerOffAudioRef.current) {
+      powerOffAudioRef.current.seek(0);
+      powerOffAudioRef.current.play();
+    }
+    
     /* Wait for zoom-out animation to finish before killing power. */
     powerOffTimerRef.current = setTimeout(() => setPowered(false), 500);
   }, []);
@@ -170,7 +274,7 @@ export default function HeroTerminal() {
                   width: "100%",
                   height: "100%",
                   background:
-                    "linear-gradient(to bottom, transparent 0%, rgba(var(--accent-glow), 0.02) 40%, rgba(var(--accent-glow), 0.04) 70%, rgba(var(--accent-glow), 0.08) 90%, rgba(var(--accent-glow), 0.1) 100%)",
+                    "linear-gradient(to bottom, transparent 0%, rgba(var(--accent-glow), 0.01) 40%, rgba(var(--accent-glow), 0.02) 70%, rgba(var(--accent-glow), 0.04) 90%, rgba(var(--accent-glow), 0.05) 100%)",
                   filter: "blur(3px)",
                 }}
               />
@@ -182,7 +286,7 @@ export default function HeroTerminal() {
                   bottom: 0,
                   width: "100%",
                   height: "2px",
-                  background: "rgba(var(--accent-glow), 0.08)",
+                  background: "rgba(var(--accent-glow), 0.04)",
                 }}
               />
             </div>
