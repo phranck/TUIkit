@@ -145,8 +145,8 @@ struct BorderRendererStandardTests {
             color: .white,
             backgroundColor: .blue
         )
-        // Should contain background ANSI code
-        #expect(result.contains("\u{1B}["))
+        // Should contain ANSI blue background code (44)
+        #expect(result.contains("\u{1B}[44m"))
     }
 
     // MARK: Double Line Style

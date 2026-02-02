@@ -97,8 +97,7 @@ struct ANSIRendererStyleTests {
         style.isBold = true
         style.isUnderlined = true
         let result = ANSIRenderer.render("Both", with: style)
-        // Should have 1;4 (bold;underline)
-        #expect(result.contains("1;4"))
+        #expect(result.contains("\u{1B}[1;4m"))
     }
 
     @Test("Foreground color produces correct code")
@@ -106,8 +105,7 @@ struct ANSIRendererStyleTests {
         var style = TextStyle()
         style.foregroundColor = .red
         let result = ANSIRenderer.render("Red", with: style)
-        // Standard red foreground code is 31
-        #expect(result.contains("31"))
+        #expect(result.contains("\u{1B}[31m"))
     }
 
     @Test("Background color produces correct code")
@@ -115,8 +113,7 @@ struct ANSIRendererStyleTests {
         var style = TextStyle()
         style.backgroundColor = .blue
         let result = ANSIRenderer.render("Blue", with: style)
-        // Standard blue background code is 44
-        #expect(result.contains("44"))
+        #expect(result.contains("\u{1B}[44m"))
     }
 
     @Test("RGB foreground uses 38;2;r;g;b format")
@@ -156,8 +153,7 @@ struct ANSIRendererStyleTests {
         var style = TextStyle()
         style.foregroundColor = .brightRed
         let result = ANSIRenderer.render("Bright", with: style)
-        // Bright red foreground = 91
-        #expect(result.contains("91"))
+        #expect(result.contains("\u{1B}[91m"))
     }
 
     @Test("Bright background uses correct code")
@@ -165,8 +161,7 @@ struct ANSIRendererStyleTests {
         var style = TextStyle()
         style.backgroundColor = .brightBlue
         let result = ANSIRenderer.render("Bright", with: style)
-        // Bright blue background = 104
-        #expect(result.contains("104"))
+        #expect(result.contains("\u{1B}[104m"))
     }
 }
 
@@ -178,27 +173,27 @@ struct ANSIRendererConvenienceTests {
     @Test("colorize with foreground applies color")
     func colorizeForeground() {
         let result = ANSIRenderer.colorize("Hello", foreground: .green)
-        #expect(result.contains("32")) // green foreground
+        #expect(result.contains("\u{1B}[32m"))
         #expect(result.stripped == "Hello")
     }
 
     @Test("colorize with background applies color")
     func colorizeBackground() {
         let result = ANSIRenderer.colorize("Hello", background: .red)
-        #expect(result.contains("41")) // red background
+        #expect(result.contains("\u{1B}[41m"))
     }
 
     @Test("colorize with bold applies bold")
     func colorizeBold() {
         let result = ANSIRenderer.colorize("Hello", bold: true)
-        #expect(result.contains("\u{1B}[1m")) // bold ANSI code
+        #expect(result.contains("\u{1B}[1m"))
     }
 
-    @Test("colorize with all options")
+    @Test("colorize with all options applies foreground, background, and bold")
     func colorizeAll() {
         let result = ANSIRenderer.colorize("Hello", foreground: .white, background: .blue, bold: true)
         #expect(result.stripped == "Hello")
-        #expect(result.contains("\u{1B}["))
+        #expect(result.contains("\u{1B}[1;37;44m"))
     }
 
     @Test("colorize without options returns plain text")
@@ -210,15 +205,13 @@ struct ANSIRendererConvenienceTests {
     @Test("backgroundCode produces correct sequence")
     func backgroundCodeMethod() {
         let code = ANSIRenderer.backgroundCode(for: .green)
-        #expect(code.contains("42")) // green background
-        #expect(code.hasPrefix("\u{1B}["))
-        #expect(code.hasSuffix("m"))
+        #expect(code == "\u{1B}[42m")
     }
 
     @Test("applyPersistentBackground wraps with bg code")
     func persistentBackground() {
         let result = ANSIRenderer.applyPersistentBackground("Text", color: .blue)
-        #expect(result.contains("44")) // blue background
+        #expect(result.contains("\u{1B}[44m"))
     }
 
     @Test("applyPersistentBackground replaces inner resets")
