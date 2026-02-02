@@ -62,6 +62,51 @@ jobs:
           DISABLE_SWIFTLINT: "1"
         run: swift test
 
+  # ── Update test count badge in README (main only) ─────────────
+  update-badge:
+    name: Update test badge
+    needs: build
+    runs-on: macos-15
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Count tests and suites
+        id: counts
+        run: |
+          TESTS=$(grep -r '@Test\b' Tests/ --include='*.swift' | wc -l | tr -d ' ')
+          SUITES=$(grep -r '@Suite\b' Tests/ --include='*.swift' | wc -l | tr -d ' ')
+          echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
+          echo "suites=$SUITES" >> "$GITHUB_OUTPUT"
+          echo "Found $TESTS tests in $SUITES suites"
+
+      - name: Update README badge and counts
+        env:
+          TESTS: ${{ steps.counts.outputs.tests }}
+          SUITES: ${{ steps.counts.outputs.suites }}
+        run: |
+          # Badge: Tests-NNN_passing
+          sed -i '' "s/Tests-[0-9]*_passing/Tests-${TESTS}_passing/" README.md
+          # Project structure: NNN tests across NN test suites
+          sed -i '' "s/[0-9]* tests across [0-9]* test suites/${TESTS} tests across ${SUITES} test suites/" README.md
+          # Developer notes: All NNN tests run in parallel
+          sed -i '' "s/All [0-9]* tests run/All ${TESTS} tests run/" README.md
+
+      - name: Commit if changed
+        run: |
+          git diff --quiet README.md && echo "No changes" && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          # [skip ci] prevents the push from triggering another workflow run
+          git commit -m "Chore: Update test count badge to ${{ steps.counts.outputs.tests }} tests [skip ci]"
+          git push
+
   # ── Landing Page + DocC (macOS only, main/tag only) ────────────
   build-docs:
     name: Build Landing Page & DocC
