@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
-import CRTEffects from "./CRTEffects";
 
 /**
  * Interactive hero terminal with power-on animation.
@@ -82,16 +81,6 @@ export default function HeroTerminal() {
 
   return (
     <>
-      {/* CRT Monitor Effects — only when terminal is powered on */}
-      <CRTEffects
-        enabled={powered && zoomed}
-        scanlineIntensity={0.12}
-        curvature={0.08}
-        glowIntensity={0.25}
-        flickerIntensity={0.02}
-        noiseIntensity={0.04}
-      />
-
       {/* Dimming overlay — behind the zoomed terminal */}
       <div
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-opacity duration-500"
@@ -160,7 +149,7 @@ export default function HeroTerminal() {
             zIndex: 3,
           }}
         >
-          {/* Scanline sweep — faint band moving top to bottom */}
+          {/* Scanline sweep — cathode ray with sharp bottom edge, trailing upward */}
           {powered && (
             <div
               style={{
@@ -168,14 +157,35 @@ export default function HeroTerminal() {
                 left: 0,
                 top: 0,
                 width: "100%",
-                height: "100%",
-                background:
-                  "linear-gradient(to bottom, transparent 0%, rgba(var(--accent-glow), 0.2) 50%, transparent 100%)",
-                backgroundSize: "100% 30%",
-                backgroundRepeat: "no-repeat",
-                animation: "crt-scanline 3.14s linear infinite",
+                height: "150px",
+                animation: "crt-scanline-move 15s linear infinite",
               }}
-            />
+            >
+              {/* Trailing glow above - blurred */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: "100%",
+                  height: "100%",
+                  background:
+                    "linear-gradient(to bottom, transparent 0%, rgba(var(--accent-glow), 0.02) 40%, rgba(var(--accent-glow), 0.04) 70%, rgba(var(--accent-glow), 0.08) 90%, rgba(var(--accent-glow), 0.1) 100%)",
+                  filter: "blur(3px)",
+                }}
+              />
+              {/* Sharp bottom edge - no blur */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "rgba(var(--accent-glow), 0.08)",
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -198,35 +208,7 @@ export default function HeroTerminal() {
           }}
         />
 
-        {/* Layer 5: Anamorphic lens flares — horizontal light streaks bleeding
-            outward from the CRT screen, like light through an anamorphic lens.
-            Only visible when powered on. */}
-        <div
-          className="pointer-events-none absolute transition-opacity duration-700"
-          style={{
-            top: "calc(14% + 2px + 22%)",
-            left: "-40%",
-            width: "180%",
-            height: "2px",
-            background: `linear-gradient(90deg, transparent 0%, rgba(var(--accent-glow), 0.15) 20%, rgba(var(--accent-glow), 0.4) 45%, rgba(var(--accent-glow), 0.4) 55%, rgba(var(--accent-glow), 0.15) 80%, transparent 100%)`,
-            opacity: powered ? 1 : 0,
-            filter: "blur(3px)",
-            zIndex: 6,
-          }}
-        />
-        <div
-          className="pointer-events-none absolute transition-opacity duration-700"
-          style={{
-            top: "calc(14% + 2px + 18%)",
-            left: "-25%",
-            width: "150%",
-            height: "1px",
-            background: `linear-gradient(90deg, transparent 0%, rgba(var(--accent-glow), 0.08) 25%, rgba(var(--accent-glow), 0.2) 45%, rgba(var(--accent-glow), 0.2) 55%, rgba(var(--accent-glow), 0.08) 75%, transparent 100%)`,
-            opacity: powered ? 1 : 0,
-            filter: "blur(5px)",
-            zIndex: 6,
-          }}
-        />
+
 
         {/* CRT Monitor frame — on top of everything, transparent center reveals content behind */}
         <Image
