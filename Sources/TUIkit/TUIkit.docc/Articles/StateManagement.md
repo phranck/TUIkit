@@ -101,9 +101,13 @@ struct SettingsView: View {
 
 TUIkit uses a single-threaded event loop. When a ``State`` value changes:
 
-1. ``AppState/setNeedsRender()`` is called
-2. The main loop detects the change
-3. The entire view tree is re-rendered
+1. The ``State`` property wrapper signals the active ``AppState`` via ``RenderNotifier``
+2. ``AppState/setNeedsRender()`` notifies the observer registered by `AppRunner`
+3. The main loop detects the change and re-renders the entire view tree
 4. The new ``FrameBuffer`` output is written to the terminal
+
+``AppState`` is an instance owned by `AppRunner` and injected into services via constructor
+injection. Property wrappers access it through the framework-internal ``RenderNotifier`` —
+invisible to user code.
 
 This is simple and predictable — no diffing, no virtual DOM, just full re-renders on every state change.
