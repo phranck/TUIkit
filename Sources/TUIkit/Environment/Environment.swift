@@ -107,7 +107,7 @@ extension EnvironmentModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Create modified environment and render content with it.
         // The modified context carries the environment through the render tree —
-        // no singleton sync needed.
+        // no global state sync needed.
         let modifiedEnvironment = context.environment.setting(keyPath, to: value)
         let modifiedContext = context.withEnvironment(modifiedEnvironment)
         return TUIkit.renderToBuffer(content, context: modifiedContext)
