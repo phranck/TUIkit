@@ -16,7 +16,7 @@ interface TerminalEntry {
  * and output lines that appear instantly after "execution".
  * ~50 entries for 3+ minutes without repeats.
  */
-const INTERACTIONS: TerminalEntry[] = TERMINAL_SCRIPT.unixCommands;
+const INTERACTIONS: TerminalEntry[] = TERMINAL_SCRIPT.unixCommands as TerminalEntry[];
 
 /** Maximum visible columns and rows on the CRT screen area. */
 const COLS = 37;
