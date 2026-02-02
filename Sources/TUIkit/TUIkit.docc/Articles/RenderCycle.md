@@ -13,8 +13,8 @@ Three things cause `RenderLoop` to produce a new frame:
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
 | Terminal resize | `SIGWINCH` signal | `SignalManager` sets a boolean flag |
-| State mutation | `@State` property change | ``AppState`` notifies its observer, which sets the rerender flag |
-| Programmatic | `AppState.active.setNeedsRender()` | Same observer path as above |
+| State mutation | `@State` property change | ``AppState`` notifies its observer via ``RenderNotifier``, which sets the rerender flag |
+| Programmatic | `appState.setNeedsRender()` | Same observer path as above (services receive `AppState` via constructor injection) |
 
 All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread — signal handlers never render directly.
 
@@ -53,7 +53,7 @@ env.appearanceManager = appearanceManager
 env.appearance      = appearanceManager.current // e.g. BorderStyle.rounded
 ```
 
-This environment is immutable for the frame — no global state, no singletons.
+This environment is immutable for the duration of the frame.
 
 ### Step 4: Create Render Context
 

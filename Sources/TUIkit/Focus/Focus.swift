@@ -48,8 +48,8 @@ extension Focusable {
 /// The focus manager tracks which element currently has focus and
 /// provides methods to move focus between elements.
 ///
-/// FocusManager is injected via the Environment system, not as a singleton.
-/// Each app instance gets its own FocusManager, allowing for proper test isolation.
+/// `FocusManager` is injected via the Environment system.
+/// Each app instance gets its own `FocusManager`, ensuring test isolation.
 ///
 /// # Usage
 ///
