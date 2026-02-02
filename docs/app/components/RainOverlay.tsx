@@ -35,6 +35,9 @@ export default function RainOverlay() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // Skip canvas animation entirely for users who prefer reduced motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -42,6 +45,9 @@ export default function RainOverlay() {
     if (!ctx) return;
 
     let animationId: number;
+    let lastFrameTime = 0;
+    /** Target ~30fps (33ms between frames) to halve GPU/CPU usage. */
+    const FRAME_INTERVAL_MS = 33;
 
     /** Resize canvas to fill viewport. */
     const resize = () => {
@@ -87,8 +93,14 @@ export default function RainOverlay() {
       attributeFilter: ["data-theme"],
     });
 
-    /** Animation loop — clear, update, draw. */
-    const frame = () => {
+    /** Animation loop — clear, update, draw. Capped at ~30fps. */
+    const frame = (timestamp: number) => {
+      if (timestamp - lastFrameTime < FRAME_INTERVAL_MS) {
+        animationId = requestAnimationFrame(frame);
+        return;
+      }
+      lastFrameTime = timestamp;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       for (const drop of drops) {
@@ -131,6 +143,7 @@ export default function RainOverlay() {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className="pointer-events-none fixed inset-0"
       style={{ zIndex: 0 }}
     />

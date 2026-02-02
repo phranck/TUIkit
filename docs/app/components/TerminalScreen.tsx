@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TERMINAL_SCRIPT } from "./terminal-data";
+import type { BootStep, SchoolStep, JoshuaStep, TerminalEntry } from "../../lib/terminal-parser";
 
 /**
  * Parse simple HTML-like tags in terminal text for formatting.
@@ -109,20 +110,13 @@ function truncateToVisibleLength(text: string, maxVisible: number): string {
   return result;
 }
 
-/** A single terminal interaction: command + optional output lines. */
-interface TerminalEntry {
-  prompt: string;
-  command: string;
-  output: string[];
-}
-
 /**
  * Pool of classic UNIX terminal interactions.
  * Each entry has a prompt, a command typed character-by-character,
  * and output lines that appear instantly after "execution".
  * ~50 entries for 3+ minutes without repeats.
  */
-const INTERACTIONS: TerminalEntry[] = TERMINAL_SCRIPT.unixCommands as TerminalEntry[];
+const INTERACTIONS: TerminalEntry[] = TERMINAL_SCRIPT.unixCommands;
 
 /** Maximum visible columns and rows on the CRT screen area. */
 const COLS = 37;
@@ -130,6 +124,7 @@ const ROWS = 9;
 
 /** Load configuration from parsed script. */
 const { config } = TERMINAL_SCRIPT;
+const INITIAL_CURSOR_DELAY_MS = config.initialCursorDelay;
 const TYPE_MIN_MS = config.typeMin;
 const TYPE_MAX_MS = config.typeMax;
 const PAUSE_AFTER_OUTPUT_MS = config.pauseAfterOutput;
@@ -137,48 +132,17 @@ const PAUSE_BEFORE_OUTPUT_MS = config.pauseBeforeOutput;
 const SCHOOL_TRIGGER_SEC = config.schoolTrigger;
 const JOSHUA_TRIGGER_SEC = config.joshuaTrigger;
 
-// ── Load sequences from parsed script ────────────────────────────────────
+// ── Load sequences from parsed script (types imported from terminal-parser) ──
 
-interface BootStep {
-  type: "instant" | "type" | "counter" | "pause" | "clear" | "dots";
-  text?: string;
-  target?: number;
-  prefix?: string;
-  suffix?: string;
-  dotCount?: number;
-  delayAfter?: number;
-}
-
-const BOOT_SEQUENCE: BootStep[] = TERMINAL_SCRIPT.bootSequence as BootStep[];
-
-// ── School Computer Grade Change Sequence ─────────────────────────────
-
-interface SchoolStep {
-  type: "system" | "user" | "inline" | "pause" | "clear";
-  prompt?: string;  // For inline type: the prompt text
-  text?: string;
-  delayAfter?: number;
-}
-
-const SCHOOL_SEQUENCE: SchoolStep[] = TERMINAL_SCRIPT.schoolSequence as SchoolStep[];
-
-// ── Joshua/WOPR Sequence ──────────────────────────────────────────────
-
-interface JoshuaStep {
-  type: "system" | "user" | "pause" | "clear" | "barrage";
-  text?: string;
-  delayAfter?: number;
-}
-
-const JOSHUA_SEQUENCE: JoshuaStep[] = TERMINAL_SCRIPT.joshuaSequence as JoshuaStep[];
+const BOOT_SEQUENCE: BootStep[] = TERMINAL_SCRIPT.bootSequence;
+const SCHOOL_SEQUENCE: SchoolStep[] = TERMINAL_SCRIPT.schoolSequence;
+const JOSHUA_SEQUENCE: JoshuaStep[] = TERMINAL_SCRIPT.joshuaSequence;
 
 // ── Component ─────────────────────────────────────────────────────────
 
 interface TerminalScreenProps {
   /** Whether the terminal is powered on. When false, shows static welcome text. */
   powered: boolean;
-  /** Whether the terminal is in zoomed mode (doubles font size). */
-  zoomed?: boolean;
 }
 
 /**
@@ -197,6 +161,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const linesRef = useRef<{key: number, text: string}[]>([]);
   const lineKeyCounterRef = useRef(0);
+  const lineRefsRef = useRef<(HTMLDivElement | null)[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const sessionTimeRef = useRef<number>(0);
   const schoolPlayedRef = useRef(false);
@@ -288,7 +253,6 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     
     /* Clear terminal state */
     linesRef.current = [];
-    // eslint-disable-next-line react-hooks/immutability
     lineRefsRef.current = [];
     setLines([]);
     schoolPlayedRef.current = false;
@@ -537,9 +501,9 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
 
     const runLoop = async () => {
       try {
-        /* Show only prompt with blinking cursor for 18 seconds */
+        /* Show only prompt with blinking cursor before boot starts. */
         pushLine("> ");
-        await sleep(18000);
+        await sleep(INITIAL_CURSOR_DELAY_MS);
         
         /* Clear and start boot sequence */
         clearScreen();
@@ -601,8 +565,6 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     };
   }, [powered, pickInteraction, pushLine, updateLastLine, clearScreen]);
 
-  const lineRefsRef = useRef<(HTMLDivElement | null)[]>([]);
-
   /**
    * CRT scanline glitch — randomly shifts multiple text lines
    * horizontally in independent directions for a few frames,
@@ -611,10 +573,14 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
    */
   useEffect(() => {
     if (!powered) return;
+    // Skip glitch effect for users who prefer reduced motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     let timeout: ReturnType<typeof setTimeout>;
+    let resetTimeout: ReturnType<typeof setTimeout>;
 
     const triggerGlitch = () => {
-      const lineElements = lineRefsRef.current.filter(Boolean) as HTMLDivElement[];
+      const lineElements = lineRefsRef.current.filter((el): el is HTMLDivElement => el !== null);
       if (lineElements.length === 0) {
         timeout = setTimeout(triggerGlitch, 3000 + Math.random() * 5000);
         return;
@@ -638,7 +604,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
       }
 
       /* Reset after 50–120ms. */
-      setTimeout(() => {
+      resetTimeout = setTimeout(() => {
         for (const element of glitched) {
           element.style.transition = "transform 0.05s";
           element.style.transform = "translateX(0)";
@@ -649,7 +615,10 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     };
 
     timeout = setTimeout(triggerGlitch, 2000 + Math.random() * 3000);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(resetTimeout);
+    };
   }, [powered]);
 
   /* Powered off — no content, just dark glass. */

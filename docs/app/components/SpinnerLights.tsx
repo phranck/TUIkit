@@ -25,6 +25,8 @@ interface SpinnerLight {
   driftX: number;
   /** Vertical drift toward center in viewport percentage (only for "inward"). */
   driftY: number;
+  /** Pre-computed boxShadow string to avoid recalculation on every render. */
+  boxShadow: string;
 }
 
 /** How many lights can be visible simultaneously. */
@@ -45,8 +47,6 @@ const CENTER_Y = 40;
 /** How much of the distance toward center to cover (0–1). */
 const DRIFT_FACTOR = 0.35;
 
-let nextId = 0;
-
 /**
  * Distant spinner lights that appear randomly across the viewport,
  * pulse softly, then fade out and reappear elsewhere.
@@ -59,8 +59,12 @@ export default function SpinnerLights() {
   const [lights, setLights] = useState<SpinnerLight[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const removalTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const nextIdRef = useRef(0);
 
   useEffect(() => {
+    // Skip ambient light spawning for users who prefer reduced motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     /** Spawn a new light at a random position. */
     const spawnLight = () => {
       const xStart = 5 + Math.random() * 90;
@@ -75,16 +79,18 @@ export default function SpinnerLights() {
       const towardCenterX = ((CENTER_X - xStart) / 100) * viewW * DRIFT_FACTOR;
       const towardCenterY = ((CENTER_Y - yStart) / 100) * viewH * DRIFT_FACTOR;
 
+      const size = driftMode === "inward" ? 3 + Math.random() * 3 : 2 + Math.random() * 3;
       const light: SpinnerLight = {
-        id: nextId++,
+        id: nextIdRef.current++,
         xPercent: xStart,
         yPercent: yStart,
         duration: DURATION_MIN_MS + Math.random() * (DURATION_MAX_MS - DURATION_MIN_MS),
-        size: driftMode === "inward" ? 3 + Math.random() * 3 : 2 + Math.random() * 3,
+        size,
         peakOpacity: 0.3 + Math.random() * 0.5,
         driftMode,
         driftX: driftMode === "inward" ? towardCenterX : 0,
         driftY: driftMode === "inward" ? towardCenterY : 0,
+        boxShadow: `0 0 ${size * 2}px ${size}px rgba(var(--accent-glow), 0.4), 0 0 ${size * 6}px ${size * 2}px rgba(var(--accent-glow), 0.12)`,
       };
 
       setLights((prev) => {
@@ -118,7 +124,7 @@ export default function SpinnerLights() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-0 -z-5 overflow-hidden">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-5 overflow-hidden">
       {lights.map((light) => {
         const isInward = light.driftMode === "inward";
 
@@ -132,10 +138,7 @@ export default function SpinnerLights() {
               width: light.size,
               height: light.size,
               background: "rgba(var(--accent-glow), 0.9)",
-              boxShadow: [
-                `0 0 ${light.size * 2}px ${light.size}px rgba(var(--accent-glow), 0.4)`,
-                `0 0 ${light.size * 6}px ${light.size * 2}px rgba(var(--accent-glow), 0.12)`,
-              ].join(", "),
+              boxShadow: light.boxShadow,
               animation: isInward
                 ? `spinner-pulse-inward ${light.duration}ms ease-in-out forwards`
                 : `spinner-pulse ${light.duration}ms ease-in-out forwards`,

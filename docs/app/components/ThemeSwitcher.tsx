@@ -34,8 +34,9 @@ export default function ThemeSwitcher() {
           <button
             key={themeOption}
             onClick={() => setTheme(themeOption)}
-            aria-label={`Switch to ${themeLabels[themeOption]} theme`}
-            className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
+            aria-label={`${themeLabels[themeOption]} theme`}
+            aria-pressed={isActive}
+            className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span
               className={`block h-3 w-3 rounded-full ${isActive ? "animate-[theme-pulse_3s_ease-in-out_infinite]" : "transition-all"}`}
