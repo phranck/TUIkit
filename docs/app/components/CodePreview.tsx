@@ -56,6 +56,16 @@ export default function CodePreview() {
   );
 }
 
+/** Syntax highlight color palette — One Dark inspired. */
+const HIGHLIGHT = {
+  comment: "#6a737d",
+  decorator: "#d19a66",
+  string: "#98c379",
+  modifier: "#61afef",
+  keyword: "#c678dd",
+  type: "#e5c07b",
+} as const;
+
 /** Minimal Swift syntax highlighter — no external dependency. */
 function Highlight({ code }: { code: string }) {
   const lines = code.split("\n");
@@ -80,7 +90,7 @@ function tokenizeLine(line: string) {
     return (
       <>
         {tokenizeSegment(before)}
-        <span className="text-[#6a737d]">{comment}</span>
+        <span style={{ color: HIGHLIGHT.comment }}>{comment}</span>
       </>
     );
   }
@@ -108,21 +118,21 @@ function tokenizeSegment(segment: string) {
     if (match[1]) {
       // Decorator (@main, @State)
       parts.push(
-        <span key={match.index} className="text-[#d19a66]">
+        <span key={match.index} style={{ color: HIGHLIGHT.decorator }}>
           {match[1]}
         </span>
       );
     } else if (match[2]) {
       // String literal
       parts.push(
-        <span key={match.index} className="text-[#98c379]">
+        <span key={match.index} style={{ color: HIGHLIGHT.string }}>
           {match[2]}
         </span>
       );
     } else if (match[3]) {
       // Modifier (.bold, .foregroundColor) — add dot+name, then the ( back
       parts.push(
-        <span key={match.index} className="text-[#61afef]">
+        <span key={match.index} style={{ color: HIGHLIGHT.modifier }}>
           {match[3]}
         </span>
       );
@@ -130,14 +140,14 @@ function tokenizeSegment(segment: string) {
     } else if (match[4]) {
       // Keyword
       parts.push(
-        <span key={match.index} className="text-[#c678dd]">
+        <span key={match.index} style={{ color: HIGHLIGHT.keyword }}>
           {match[4]}
         </span>
       );
     } else if (match[5]) {
       // Type
       parts.push(
-        <span key={match.index} className="text-[#e5c07b]">
+        <span key={match.index} style={{ color: HIGHLIGHT.type }}>
           {match[5]}
         </span>
       );

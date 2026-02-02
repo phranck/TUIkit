@@ -1,14 +1,20 @@
 /**
- * Build script to generate terminal-data.ts from terminal-script.md
- * Run this during build to convert markdown to TypeScript module
+ * Prebuild script — runs before `next build` via the `prebuild` npm script.
+ *
+ * 1. Generates terminal-data.ts from terminal-script.md
+ * 2. Counts Swift @Test and @Suite annotations to produce project-stats.json
+ *    (consumed by next.config.ts as environment variables)
  */
 
 import { parseTerminalScript } from "../lib/terminal-parser";
+import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
+// ── Terminal Data ─────────────────────────────────────────────────────
+
 const script = parseTerminalScript();
-const outputPath = path.join(process.cwd(), "app", "components", "terminal-data.ts");
+const terminalOutputPath = path.join(process.cwd(), "app", "components", "terminal-data.ts");
 
 const tsContent = `/**
  * Auto-generated from terminal-script.md
@@ -20,6 +26,34 @@ import type { TerminalScript } from "../../lib/terminal-parser";
 export const TERMINAL_SCRIPT: TerminalScript = ${JSON.stringify(script, null, 2)};
 `;
 
-fs.writeFileSync(outputPath, tsContent);
-
+fs.writeFileSync(terminalOutputPath, tsContent);
 console.log("✓ Generated terminal-data.ts from terminal-script.md");
+
+// ── Project Stats ─────────────────────────────────────────────────────
+
+const projectRoot = path.resolve(process.cwd(), "..");
+const testsDir = path.join(projectRoot, "Tests");
+
+/**
+ * Count occurrences of a pattern in all .swift files under a directory.
+ * Falls back to 0 if the directory doesn't exist (e.g. CI without Swift source).
+ */
+function countPattern(directory: string, pattern: string): number {
+  if (!fs.existsSync(directory)) return 0;
+  try {
+    const output = execSync(
+      `grep -r '${pattern}' --include='*.swift' "${directory}" | wc -l`,
+      { encoding: "utf-8" }
+    );
+    return parseInt(output.trim(), 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+const testCount = countPattern(testsDir, "@Test\\b");
+const suiteCount = countPattern(testsDir, "@Suite\\b");
+
+const statsPath = path.join(process.cwd(), "project-stats.json");
+fs.writeFileSync(statsPath, JSON.stringify({ testCount, suiteCount }, null, 2));
+console.log(`✓ Generated project-stats.json (${testCount} tests, ${suiteCount} suites)`);
