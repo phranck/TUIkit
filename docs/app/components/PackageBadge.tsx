@@ -1,20 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import Icon from "./Icon";
+import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 
 const VERSION = process.env.TUIKIT_VERSION ?? "0.1.0";
 const PACKAGE_LINE = `.package(url: "https://github.com/phranck/TUIkit.git", from: "${VERSION}")`;
 
 /** SPM package dependency badge with copy-to-clipboard. */
 export default function PackageBadge() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(PACKAGE_LINE);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const { copied, copy } = useCopyToClipboard();
 
   return (
     <div className="inline-flex items-center gap-3 rounded-full border border-border bg-container-body/50 px-6 py-3 text-muted backdrop-blur-sm">
@@ -30,9 +24,9 @@ export default function PackageBadge() {
         {PACKAGE_LINE}
       </code>
       <button
-        onClick={handleCopy}
+        onClick={() => copy(PACKAGE_LINE)}
         aria-label="Copy to clipboard"
-        className="ml-1 rounded-md p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-foreground"
+        className="ml-1 rounded-md p-1.5 text-muted transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {copied ? (
           <Icon name="checkmark" size={18} className="text-accent" />

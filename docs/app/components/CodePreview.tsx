@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 
-/** A Swift code block with copy-to-clipboard and minimal syntax highlighting. */
-export default function CodePreview() {
-  const [copied, setCopied] = useState(false);
-
-  const code = `import TUIkit
+const CODE = `import TUIkit
 
 @main
 struct MyApp: App {
@@ -24,16 +20,13 @@ struct MyApp: App {
     }
 }`;
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+/** A Swift code block with copy-to-clipboard and minimal syntax highlighting. */
+export default function CodePreview() {
+  const { copied, copy } = useCopyToClipboard();
 
   return (
     <div
-      className="group relative w-full overflow-hidden rounded-xl border border-border backdrop-blur-xl"
-      style={{ backgroundColor: "color-mix(in srgb, var(--container-body) 50%, transparent)" }}
+      className="group relative w-full overflow-hidden rounded-xl border border-border bg-frosted-glass backdrop-blur-xl"
     >
       {/* Header bar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
@@ -46,8 +39,8 @@ struct MyApp: App {
           <span className="ml-3 text-xs text-muted">MyApp.swift</span>
         </div>
         <button
-          onClick={handleCopy}
-          className="rounded-md px-2.5 py-1 text-xs text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+          onClick={() => copy(CODE)}
+          className="rounded-md px-2.5 py-1 text-xs text-muted transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           {copied ? "Copied!" : "Copy"}
         </button>
@@ -56,7 +49,7 @@ struct MyApp: App {
       {/* Code content */}
       <pre className="overflow-x-auto p-5 text-base leading-relaxed">
         <code>
-          <Highlight code={code} />
+          <Highlight code={CODE} />
         </code>
       </pre>
     </div>
