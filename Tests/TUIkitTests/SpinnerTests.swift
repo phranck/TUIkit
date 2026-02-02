@@ -81,10 +81,8 @@ struct SpinnerStyleTests {
             color: .red
         )
 
-        // Frame should contain ▇ characters (highlight + trail)
-        #expect(frame.stripped.contains("▇"))
-        // Frame should contain ■ characters (inactive positions)
-        #expect(frame.stripped.contains("■"))
+        // All positions use ● with varying opacity
+        #expect(frame.stripped.contains("●"))
         // Should have ANSI escape codes for coloring
         #expect(frame.contains("\u{1B}["))
     }
@@ -145,10 +143,10 @@ struct SpinnerRenderingTests {
         let buffer = renderToBuffer(spinner, context: context)
 
         let stripped = buffer.lines[0].stripped
-        // Track is always 9 characters wide (mix of ▇ and ■ depending on
+        // Track is always 9 characters wide (mix of ● • and · depending on
         // highlight position — the first frame may be off-screen due to
         // edge overshoot, so we check total character count instead).
-        let trackChars = stripped.filter { $0 == "▇" || $0 == "■" }
+        let trackChars = stripped.filter { $0 == "●" || $0 == "•" || $0 == "·" }
         #expect(trackChars.count == SpinnerStyle.trackWidth)
     }
 
