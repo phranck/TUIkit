@@ -98,6 +98,45 @@ enum RenderNotifier {
     nonisolated(unsafe) static var current = AppState()
 }
 
+// MARK: - Hydration Context
+
+/// The active render context used by `@State` during self-hydration.
+///
+/// Set by ``renderToBuffer(_:context:)`` before evaluating a composite view's `body`,
+/// and cleared immediately after. Provides the view identity and state storage
+/// that `@State.init` needs to retrieve or create persistent state.
+struct HydrationContext {
+    /// The current view's structural identity.
+    let identity: ViewIdentity
+
+    /// The persistent state storage.
+    let storage: StateStorage
+}
+
+// MARK: - State Registration
+
+/// Framework-internal state for `@State` self-hydration during rendering.
+///
+/// When ``renderToBuffer(_:context:)`` is about to evaluate a composite view's `body`,
+/// it sets ``activeContext`` and resets ``counter`` to 0. Each `@State.init` that runs
+/// during `body` evaluation checks ``activeContext``:
+///
+/// - **Non-nil:** Claims the next property index from ``counter`` and retrieves a
+///   persistent ``StateBox`` from ``StateStorage``.
+/// - **Nil:** Creates a local ``StateBox`` (pre-render or outside the render tree).
+///
+/// This is safe because TUIKit runs on a single thread — no concurrent access.
+enum StateRegistration {
+    /// The active hydration context, set during composite view body evaluation.
+    ///
+    /// - Important: Must be set before and cleared after each `body` call.
+    ///   Nested composite views save/restore the previous context.
+    nonisolated(unsafe) static var activeContext: HydrationContext?
+
+    /// The current property index, incremented by each `@State` during hydration.
+    nonisolated(unsafe) static var counter: Int = 0
+}
+
 // MARK: - Binding
 
 /// A two-way connection to a mutable value.
@@ -186,49 +225,68 @@ public struct Binding<Value> {
 ///
 /// # Render Integration
 ///
-/// Internally, `@State` signals re-renders through ``RenderNotifier``,
-/// a framework-internal registry that holds the active ``AppState``.
-/// This keeps the `@State var count = 0` API unchanged while avoiding
-/// global mutable state.
+/// `@State` uses **self-hydrating init**: when `@State.init` runs while a
+/// render context is active (``StateRegistration/activeContext``), it claims
+/// the next property index and retrieves (or creates) a persistent ``StateBox``
+/// from ``StateStorage``.
+///
+/// The render loop sets the active context **before** evaluating `App.body`,
+/// so views constructed inside `WindowGroup { ... }` closures self-hydrate
+/// immediately. For nested composite views, ``renderToBuffer(_:context:)``
+/// saves and restores the context around each `body` evaluation.
+///
+/// State is keyed by ``ViewIdentity`` and property index, ensuring values
+/// survive view reconstruction across render passes.
+///
+/// Mutations signal re-renders through ``RenderNotifier``.
 @propertyWrapper
 public struct State<Value> {
-    /// The storage for the state value.
+    /// The backing storage box for this state value.
     ///
-    /// Uses a reference type so that the `@State` struct can provide
-    /// `nonmutating set`. On value change, signals a re-render through
-    /// ``RenderNotifier/current``.
-    private final class Storage {
-        var value: Value {
-            didSet {
-                RenderNotifier.current.setNeedsRender()
-            }
-        }
+    /// Either a local box (when no render context is active) or a persistent
+    /// box from ``StateStorage`` (during rendering). Since ``StateBox`` is a
+    /// reference type, mutations through `nonmutating set` are visible everywhere.
+    private let box: StateBox<Value>
 
-        init(_ value: Value) {
-            self.value = value
-        }
-    }
-
-    private let storage: Storage
+    /// The default value provided at init time.
+    ///
+    /// Used by ``StateStorage`` to create a new entry when no persistent
+    /// value exists for this property yet.
+    let defaultValue: Value
 
     /// The current state value.
     public var wrappedValue: Value {
-        get { storage.value }
-        nonmutating set { storage.value = newValue }
+        get { box.value }
+        nonmutating set { box.value = newValue }
     }
 
     /// A binding to the state value.
     public var projectedValue: Binding<Value> {
         Binding(
-            get: { self.storage.value },
-            set: { self.storage.value = $0 }
+            get: { self.box.value },
+            set: { self.box.value = $0 }
         )
     }
 
     /// Creates a state with an initial value.
     ///
-    /// - Parameter wrappedValue: The initial value.
+    /// If a render context is active (``StateRegistration/activeContext``),
+    /// the state self-hydrates: it claims a property index and retrieves
+    /// or creates a persistent ``StateBox`` from ``StateStorage``.
+    ///
+    /// Otherwise, a local ``StateBox`` is created with the default value.
+    ///
+    /// - Parameter wrappedValue: The initial/default value.
     public init(wrappedValue: Value) {
-        self.storage = Storage(wrappedValue)
+        self.defaultValue = wrappedValue
+        if let context = StateRegistration.activeContext {
+            let index = StateRegistration.counter
+            StateRegistration.counter += 1
+            let key = StateStorage.StateKey(identity: context.identity, propertyIndex: index)
+            self.box = context.storage.storage(for: key, default: wrappedValue)
+        } else {
+            self.box = StateBox(wrappedValue)
+        }
     }
+
 }
