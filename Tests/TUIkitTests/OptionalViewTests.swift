@@ -55,7 +55,7 @@ struct OptionalViewTests {
     func somePreservesStyling() {
         let optional: Text? = Text("Styled").bold()
         let buffer = renderToBuffer(optional, context: testContext())
-        // Should contain ANSI bold code
-        #expect(buffer.lines[0].contains("\u{1B}["))
+        // Should contain ANSI bold code (1)
+        #expect(buffer.lines[0].contains("\u{1B}[1m"))
     }
 }
