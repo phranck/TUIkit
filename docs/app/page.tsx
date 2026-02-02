@@ -27,7 +27,7 @@ export default function Home() {
       {/* All page content above atmosphere layers */}
       <div className="relative z-10">
       {/* Navigation */}
-      <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <nav aria-label="Main navigation" className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <Image
@@ -66,7 +66,7 @@ export default function Home() {
       </nav>
 
       {/* Main content */}
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
       {/* Hero Section */}
       <section className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-40 pb-24 text-center">
         <div className="mb-10">
@@ -171,8 +171,7 @@ export default function Home() {
       {/* Architecture highlights */}
       <section className="mx-auto max-w-6xl px-6 pb-28">
         <div
-          className="rounded-2xl border border-border p-8 backdrop-blur-xl md:p-12"
-          style={{ backgroundColor: "color-mix(in srgb, var(--container-body) 50%, transparent)" }}
+          className="rounded-2xl border border-border bg-frosted-glass p-8 backdrop-blur-xl md:p-12"
         >
           <h2 className="mb-8 text-center text-4xl font-bold text-foreground">
             Built right

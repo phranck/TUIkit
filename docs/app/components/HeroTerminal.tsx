@@ -30,52 +30,57 @@ export default function HeroTerminal() {
   /** Offset to translate the element from its inline position to viewport center. */
   const [centerOffset, setCenterOffset] = useState({ x: 0, y: 0 });
 
-  /** Audio references for hard drive sounds */
+  /** Audio references for hard drive sounds. */
   const powerOnAudioRef = useRef<Howl | null>(null);
   const bootAudioRef = useRef<Howl | null>(null);
   const spinAudioRef = useRef<Howl | null>(null);
   const powerOffAudioRef = useRef<Howl | null>(null);
-  const seekIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+  /** Reusable seek sound — avoids creating new Howl instances per seek. */
+  const seekAudioRef = useRef<Howl | null>(null);
+  /** Tracks all pending setTimeout handles for cleanup on power-off/unmount. */
+  const pendingTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const seekTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  /** Helper: schedule a timeout and track it for cleanup. */
+  const scheduleTimer = useCallback((callback: () => void, delayMs: number) => {
+    const handle = setTimeout(() => {
+      pendingTimersRef.current.delete(handle);
+      callback();
+    }, delayMs);
+    pendingTimersRef.current.add(handle);
+    return handle;
+  }, []);
+
+  /** Helper: clear all pending timers. */
+  const clearAllTimers = useCallback(() => {
+    for (const handle of pendingTimersRef.current) clearTimeout(handle);
+    pendingTimersRef.current.clear();
+    if (seekTimeoutRef.current) {
+      clearTimeout(seekTimeoutRef.current);
+      seekTimeoutRef.current = undefined;
+    }
+    if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
+    if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
+  }, []);
 
   // Preload audio on mount
   useEffect(() => {
-    // Preload all audio files with Howler.js
-    powerOnAudioRef.current = new Howl({
-      src: ["/sounds/power-on.mp3"],
-      volume: 0.3,
-    });
-    
-    bootAudioRef.current = new Howl({
-      src: ["/sounds/hard-drive-boot.m4a"],
-      volume: 0.6,
-    });
-    
-    // Spin sound with loop enabled for gapless playback
-    spinAudioRef.current = new Howl({
-      src: ["/sounds/hard-drive-spin.m4a"],
-      volume: 0.6,
-      loop: true, // Howler.js handles gapless looping automatically
-    });
-    
-    powerOffAudioRef.current = new Howl({
-      src: ["/sounds/hard-drive-power-off.m4a"],
-      volume: 0.6,
-    });
+    powerOnAudioRef.current = new Howl({ src: ["/sounds/power-on.mp3"], volume: 0.3 });
+    bootAudioRef.current = new Howl({ src: ["/sounds/hard-drive-boot.m4a"], volume: 0.6 });
+    spinAudioRef.current = new Howl({ src: ["/sounds/hard-drive-spin.m4a"], volume: 0.6, loop: true });
+    powerOffAudioRef.current = new Howl({ src: ["/sounds/hard-drive-power-off.m4a"], volume: 0.6 });
+    seekAudioRef.current = new Howl({ src: ["/sounds/hard-drive-seek1.m4a"], volume: 0.4 });
     
     return () => {
-      if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-      if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
-      if (seekIntervalRef.current) clearInterval(seekIntervalRef.current);
-      
-      // Stop all audio
-      [powerOnAudioRef, bootAudioRef, spinAudioRef, powerOffAudioRef].forEach(ref => {
+      clearAllTimers();
+      [powerOnAudioRef, bootAudioRef, spinAudioRef, powerOffAudioRef, seekAudioRef].forEach(ref => {
         if (ref.current) {
           ref.current.stop();
           ref.current.unload();
         }
       });
     };
-  }, []);
+  }, [clearAllTimers]);
 
   // Handle client-side hydration for power button
   useEffect(() => {
@@ -98,75 +103,60 @@ export default function HeroTerminal() {
     };
   }, []);
 
-  /** Power on: play boot sound, start spin loop, add random seeks */
+  /** Power on: play boot sound, start spin loop, add random seeks. */
   const handlePowerOn = useCallback(() => {
     if (powered) return;
     
     setPowered(true);
     setCenterOffset(computeCenterOffset());
     
-    // Play power-on beep first, then boot sound
     if (powerOnAudioRef.current && bootAudioRef.current && spinAudioRef.current) {
       powerOnAudioRef.current.seek(0);
       powerOnAudioRef.current.play();
-      
       bootAudioRef.current.seek(0);
       bootAudioRef.current.play();
       
       // Start gapless spin loop slightly before boot ends for seamless transition
-      setTimeout(() => {
-        if (spinAudioRef.current) {
-          spinAudioRef.current.play(); // Howler.js handles gapless looping with loop: true
-        }
-      }, 19900); // Start 280ms before boot ends (~20.18s) for overlap
+      scheduleTimer(() => {
+        spinAudioRef.current?.play();
+      }, 19900);
       
-      // Random seek sounds every 15-25 seconds (only seek1), sometimes double-seek
-      setTimeout(() => {
-        seekIntervalRef.current = setInterval(() => {
-          const seekSound = new Howl({
-            src: ["/sounds/hard-drive-seek1.m4a"],
-            volume: 0.4, // Quieter than boot/spin
-          });
-          seekSound.play();
+      // Recursive seek scheduling — each invocation picks a fresh random delay
+      const scheduleNextSeek = () => {
+        const delay = 15000 + Math.random() * 10000;
+        seekTimeoutRef.current = setTimeout(() => {
+          seekAudioRef.current?.seek(0);
+          seekAudioRef.current?.play();
           
-          // 30% chance for a second seek shortly after (200-400ms delay)
+          // 30% chance for a second seek shortly after
           if (Math.random() < 0.3) {
-            setTimeout(() => {
-              const seekSound2 = new Howl({
-                src: ["/sounds/hard-drive-seek1.m4a"],
-                volume: 0.4,
-              });
-              seekSound2.play();
-            }, 200 + Math.random() * 200); // 200-400ms delay
+            scheduleTimer(() => {
+              seekAudioRef.current?.seek(0);
+              seekAudioRef.current?.play();
+            }, 200 + Math.random() * 200);
           }
-        }, 15000 + Math.random() * 10000); // 15-25s random interval
-      }, 20300); // Start after boot finishes (~20.18s)
+          
+          scheduleNextSeek();
+        }, delay);
+      };
+      
+      // Start seek loop after boot finishes
+      scheduleTimer(scheduleNextSeek, 20300);
     }
     
     // Zoom after 200ms delay
     zoomTimerRef.current = setTimeout(() => setZoomed(true), 200);
-  }, [powered, computeCenterOffset]);
+  }, [powered, computeCenterOffset, scheduleTimer]);
 
-  /** Power off: stop all sounds, play power-off sound, zoom back */
+  /** Power off: stop all sounds, play power-off sound, zoom back. */
   const handlePowerOff = useCallback(() => {
     setZoomed(false);
-    
-    // Stop seek interval
-    if (seekIntervalRef.current) {
-      clearInterval(seekIntervalRef.current);
-      seekIntervalRef.current = undefined;
-    }
+    clearAllTimers();
     
     // Stop all running sounds
-    if (powerOnAudioRef.current) {
-      powerOnAudioRef.current.stop();
-    }
-    if (bootAudioRef.current) {
-      bootAudioRef.current.stop();
-    }
-    if (spinAudioRef.current) {
-      spinAudioRef.current.stop(); // Howler.js stop() method
-    }
+    powerOnAudioRef.current?.stop();
+    bootAudioRef.current?.stop();
+    spinAudioRef.current?.stop();
     
     // Play power-off sound
     if (powerOffAudioRef.current) {
@@ -176,7 +166,7 @@ export default function HeroTerminal() {
     
     /* Wait for zoom-out animation to finish before killing power. */
     powerOffTimerRef.current = setTimeout(() => setPowered(false), 500);
-  }, []);
+  }, [clearAllTimers]);
 
   /** Close on Escape key. */
   useEffect(() => {
@@ -239,7 +229,7 @@ export default function HeroTerminal() {
             zIndex: 2,
           }}
         >
-          <TerminalScreen powered={powered} zoomed={zoomed} />
+          <TerminalScreen powered={powered} />
         </div>
 
         {/* Layer 3: CRT edge glow + scanline sweep — über dem Content, unter dem Frame.

@@ -26,19 +26,26 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 const STORAGE_KEY = "tuikit-theme";
 
+/** Type guard: validates that a string is a known theme name. */
+function isTheme(value: string | null): value is Theme {
+  return !!value && (themes as readonly string[]).includes(value);
+}
+
 /**
  * Reads the persisted theme from localStorage (set by the blocking script
  * in layout.tsx), then checks the DOM attribute as fallback.
  * Returns "green" on first visit or during SSR.
+ *
+ * NOTE: The valid theme list here must match the blocking script in layout.tsx.
  */
 function getInitialTheme(): Theme {
   if (typeof window !== "undefined") {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-      if (stored && themes.includes(stored)) return stored;
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (isTheme(stored)) return stored;
     } catch { /* localStorage unavailable */ }
-    const attr = document.documentElement.getAttribute("data-theme") as Theme | null;
-    if (attr && themes.includes(attr)) return attr;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (isTheme(attr)) return attr;
   }
   return "green";
 }
@@ -65,17 +72,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
     document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem(STORAGE_KEY, next);
+    try { localStorage.setItem(STORAGE_KEY, next); } catch { /* quota exceeded or blocked */ }
   }, []);
 
   /** Cycle to the next theme when "t" is pressed (skip if user is typing in an input). */
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "t") return;
-      const target = event.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      if (theme === null) return;
+      const target = event.target;
+      if (target instanceof HTMLElement) {
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      }
 
-      const currentIndex = themes.indexOf(theme as Theme);
+      const currentIndex = themes.indexOf(theme);
       const nextIndex = (currentIndex + 1) % themes.length;
       setTheme(themes[nextIndex]);
     }
