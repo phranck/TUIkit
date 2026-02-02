@@ -35,6 +35,7 @@ struct MainMenuPage: View {
                         MenuItem(label: "Overlays & Modals", shortcut: "4"),
                         MenuItem(label: "Layout System", shortcut: "5"),
                         MenuItem(label: "Buttons & Focus", shortcut: "6"),
+                        MenuItem(label: "Spinners", shortcut: "7"),
                     ],
                     selection: $menuSelection,
                     onSelect: { index in
