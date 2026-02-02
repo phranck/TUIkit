@@ -76,6 +76,7 @@ struct MyApp: App {
 - ``Menu``
 - ``Alert``
 - ``Dialog``
+- ``Spinner``
 - ``AnyView``
 
 ### Layout
