@@ -1345,4 +1345,4 @@ export const TERMINAL_SCRIPT = {
       ]
     }
   ]
-} as const;
+};
