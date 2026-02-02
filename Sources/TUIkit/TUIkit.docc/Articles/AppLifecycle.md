@@ -37,7 +37,7 @@ The `AppRunner` creates and wires all subsystems in its initializer. Order matte
 
 @Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance, then AppRunner wires Terminal, StatusBarState, FocusManager, TUIContext (with LifecycleManager, KeyEventDispatcher, PreferenceStorage), two ThemeManagers, InputHandler, and RenderLoop.")
 
-The `AppRunner` is the sole owner of all subsystems. No singletons are involved — dependencies flow through constructor injection and ``RenderContext``.
+The `AppRunner` is the sole owner of all subsystems. Dependencies flow through constructor injection and ``RenderContext``.
 
 ## Terminal Setup
 
@@ -49,7 +49,7 @@ Before the main loop starts, `run()` prepares the terminal:
 | 2 | Enter alternate screen | Preserve the user's existing terminal content |
 | 3 | Hide cursor | Avoid cursor flicker during rendering |
 | 4 | Enable raw mode | Disable line buffering, echo, and signal processing |
-| 5 | Register state observer | ``AppState`` changes trigger re-renders |
+| 5 | Register state observer | ``AppState`` changes trigger re-renders (registered via ``RenderNotifier``) |
 | 6 | Render first frame | Show the initial UI immediately |
 
 ### Raw Mode
@@ -163,7 +163,7 @@ When the main loop exits — via Ctrl+C, the quit key, or programmatic shutdown 
 | 1 | Disable raw mode | Restore original terminal settings |
 | 2 | Show cursor | Make the cursor visible again |
 | 3 | Exit alternate screen | Restore the user's previous terminal content |
-| 4 | Clear state observers | Remove ``AppState`` change callbacks |
+| 4 | Clear state observers | Remove ``AppState`` observer callbacks |
 | 5 | Clear focus | Remove all focus registrations |
 | 6 | Reset TUIContext | Clear lifecycle, key handlers, and preferences |
 

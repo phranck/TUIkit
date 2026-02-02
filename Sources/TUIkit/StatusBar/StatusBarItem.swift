@@ -368,7 +368,7 @@ extension StatusBarItemProtocol {
 ///     save()
 /// }
 /// ```
-public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
+public struct StatusBarItem: StatusBarItemProtocol, Identifiable, @unchecked Sendable {
     /// The unique identifier for this item.
     public let id: String
 
@@ -385,7 +385,7 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
     public let order: StatusBarItemOrder
 
     /// The action to perform when the shortcut is triggered.
-    private let action: (@Sendable () -> Void)?
+    private let action: (() -> Void)?
 
     /// Creates a status bar item with an action.
     ///
@@ -400,7 +400,7 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable {
         label: String,
         key: Key? = nil,
         order: StatusBarItemOrder = .default,
-        action: (@Sendable () -> Void)? = nil
+        action: (() -> Void)? = nil
     ) {
         self.id = "\(shortcut)-\(label)"
         self.shortcut = shortcut
