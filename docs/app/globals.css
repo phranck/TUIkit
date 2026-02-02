@@ -298,58 +298,14 @@ code {
   animation: cursor-blink 1s step-end infinite;
 }
 
-/* CRT Monitor Effects */
-
-/* Subtle flicker like a CRT monitor */
-@keyframes crt-flicker {
+/* CRT scanline - moving element from top to bottom within container only */
+@keyframes crt-scanline-move {
   0% {
-    opacity: 0.08;
-  }
-  2% {
-    opacity: 0.09;
-  }
-  4% {
-    opacity: 0.07;
-  }
-  19% {
-    opacity: 0.08;
-  }
-  21% {
-    opacity: 0.06;
-  }
-  23% {
-    opacity: 0.08;
-  }
-  80% {
-    opacity: 0.08;
-  }
-  83% {
-    opacity: 0.07;
-  }
-  87% {
-    opacity: 0.09;
+    transform: translateY(-150px);
   }
   100% {
-    opacity: 0.08;
+    transform: translateY(calc(100% + 150px));
   }
-}
-
-@utility animate-crt-flicker {
-  animation: crt-flicker 0.15s infinite;
-}
-
-/* Horizontal scanline sweep */
-@keyframes crt-scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
-}
-
-@utility animate-crt-scanline {
-  animation: crt-scanline 30s linear infinite;
 }
 
 @keyframes cloud-drift-slow {
