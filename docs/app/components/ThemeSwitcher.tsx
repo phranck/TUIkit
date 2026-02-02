@@ -28,26 +28,28 @@ export default function ThemeSwitcher() {
 
   return (
     <div className="flex items-center gap-1.5">
-      {themes.map((themeOption) => (
-        <button
-          key={themeOption}
-          onClick={() => setTheme(themeOption)}
-          aria-label={`Switch to ${themeLabels[themeOption]} theme`}
-          className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
-        >
-          <span
-            className="block h-3 w-3 rounded-full transition-all"
-            style={{
-              backgroundColor: themeColors[themeOption],
-              boxShadow:
-                theme === themeOption
-                  ? `0 0 6px ${themeColors[themeOption]}, 0 0 14px ${themeColors[themeOption]}60`
+      {themes.map((themeOption) => {
+        const isActive = theme === themeOption;
+        return (
+          <button
+            key={themeOption}
+            onClick={() => setTheme(themeOption)}
+            aria-label={`Switch to ${themeLabels[themeOption]} theme`}
+            className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
+          >
+            <span
+              className={`block h-3 w-3 rounded-full ${isActive ? "animate-[theme-pulse_3s_ease-in-out_infinite]" : "transition-all"}`}
+              style={{
+                backgroundColor: themeColors[themeOption],
+                boxShadow: isActive
+                  ? `0 0 8px ${themeColors[themeOption]}, 0 0 20px ${themeColors[themeOption]}90, 0 0 36px ${themeColors[themeOption]}40`
                   : "none",
-              opacity: theme === themeOption ? 1 : 0.4,
-            }}
-          />
-        </button>
-      ))}
+                opacity: isActive ? 1 : 0.35,
+              }}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
