@@ -26,9 +26,11 @@
 ///      @State values survive because State.init self-hydrates from StateStorage
 ///   6. Call SceneRenderable.renderScene() → FrameBuffer
 ///   7. Convert FrameBuffer to terminal-ready output lines
-///   8. Diff against previous frame, write only changed lines
-///   9. End lifecycle tracking (fires onDisappear for removed views)
-///  10. Render status bar (with its own diff tracking)
+///   8. Begin buffered frame (terminal.beginFrame())
+///   9. Diff against previous frame, write only changed lines to buffer
+///  10. Render status bar into same buffer (with its own diff tracking)
+///  11. Flush entire frame in one write() syscall (terminal.endFrame())
+///  12. End lifecycle tracking (fires onDisappear for removed views)
 /// ```
 ///
 /// ## Diff-Based Rendering
@@ -36,6 +38,13 @@
 /// `RenderLoop` uses a ``FrameDiffWriter`` to compare each frame's output
 /// with the previous frame. Only lines that actually changed are written
 /// to the terminal, reducing I/O by ~94% for mostly-static UIs.
+///
+/// ## Output Buffering
+///
+/// All diff writes (content + status bar) are collected in ``Terminal``'s
+/// frame buffer and flushed as a single `write()` syscall via
+/// ``Terminal/beginFrame()`` / ``Terminal/endFrame()``. This reduces
+/// per-frame syscalls from ~40+ to exactly 1.
 ///
 /// On terminal resize (SIGWINCH), the diff cache is invalidated to force
 /// a full repaint.
@@ -47,6 +56,7 @@
 /// - Rendering the status bar separately (never dimmed)
 /// - Coordinating lifecycle tracking (appear/disappear)
 /// - Diff-based terminal output via ``FrameDiffWriter``
+/// - Buffered frame output via ``Terminal``
 internal final class RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
     let app: A
@@ -94,13 +104,7 @@ internal final class RenderLoop<A: App> {
 
     /// Performs a full render pass: scene content + status bar.
     ///
-    /// Each call:
-    /// 1. Clears key event handlers and focus state
-    /// 2. Begins lifecycle tracking
-    /// 3. Renders the scene into a ``FrameBuffer``
-    /// 4. Diffs against the previous frame and writes only changed lines
-    /// 5. Ends lifecycle tracking (triggers `onDisappear` for removed views)
-    /// 6. Renders the status bar at the bottom (with its own diff tracking)
+    /// See the class-level documentation for the complete pipeline steps.
     func render() {
         // Clear per-frame state before re-rendering
         tuiContext.keyEventDispatcher.clearHandlers()
@@ -149,7 +153,9 @@ internal final class RenderLoop<A: App> {
 
         let buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
 
-        // Build terminal-ready output lines and write only changes
+        // Build terminal-ready output lines and write only changes.
+        // All terminal writes between beginFrame/endFrame are collected
+        // in an internal buffer and flushed as a single write() syscall.
         let bgColor = environment.palette.background
         let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
         let reset = ANSIRenderer.reset
@@ -161,18 +167,15 @@ internal final class RenderLoop<A: App> {
             bgCode: bgCode,
             reset: reset
         )
+
+        terminal.beginFrame()
         diffWriter.writeContentDiff(
             newLines: outputLines,
             terminal: terminal,
             startRow: 1
         )
 
-        // End lifecycle tracking - triggers onDisappear for removed views.
-        // End state tracking - removes state for views no longer in the tree.
-        tuiContext.lifecycle.endRenderPass()
-        tuiContext.stateStorage.endRenderPass()
-
-        // Render status bar separately (never dimmed, own diff tracking)
+        // Render status bar inside the same frame (flushed together)
         if statusBar.hasItems {
             renderStatusBar(
                 atRow: terminalHeight - statusBarHeight + 1,
@@ -181,6 +184,12 @@ internal final class RenderLoop<A: App> {
                 reset: reset
             )
         }
+        terminal.endFrame()
+
+        // End lifecycle tracking - triggers onDisappear for removed views.
+        // End state tracking - removes state for views no longer in the tree.
+        tuiContext.lifecycle.endRenderPass()
+        tuiContext.stateStorage.endRenderPass()
     }
 
     /// Invalidates the diff cache, forcing a full repaint on the next render.
