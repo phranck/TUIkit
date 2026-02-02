@@ -16,7 +16,7 @@ export const TERMINAL_SCRIPT = {
   "bootSequence": [
     {
       "type": "instant",
-      "text": "BIOS v3.21 (C) 1984",
+      "text": "<b>BIOS</b> v3.21 (C) 1984",
       "delayAfter": 2000
     },
     {
@@ -182,7 +182,7 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "Password: ********",
+      "text": "Password: <b><i></b>**</i>",
       "delayAfter": 1400
     },
     {
@@ -207,7 +207,7 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "*** AUTHORIZED USE ONLY ***",
+      "text": "<b><i> <u>AUTHORIZED USE ONLY</u> </b></i>",
       "delayAfter": 1800
     },
     {

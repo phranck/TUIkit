@@ -2,10 +2,38 @@
  * Parser for terminal-script.md
  * 
  * Converts markdown terminal script into executable sequences.
+ * Supports basic Markdown formatting:
+ * - **bold** → \x1B[1m
+ * - __underline__ → \x1B[4m
+ * - ~~strikethrough~~ → \x1B[9m
+ * - *italic* → \x1B[3m
  */
 
 import fs from "fs";
 import path from "path";
+
+/**
+ * Convert Markdown formatting to HTML-like tags for terminal display.
+ * These will be rendered by TerminalScreen component.
+ * Supports: bold, underline, strikethrough, italic
+ */
+function parseMarkdownFormatting(text: string): string {
+  let result = text;
+  
+  // **bold** → <b>bold</b>
+  result = result.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  
+  // __underline__ → <u>underline</u>
+  result = result.replace(/__(.+?)__/g, '<u>$1</u>');
+  
+  // ~~strikethrough~~ → <s>strikethrough</s>
+  result = result.replace(/~~(.+?)~~/g, '<s>$1</s>');
+  
+  // *italic* (but not ** which is already handled)
+  result = result.replace(/(?<!\*)\*(?!\*)(.+?)\*(?!\*)/g, '<i>$1</i>');
+  
+  return result;
+}
 
 export interface BootStep {
   type: "instant" | "type" | "counter" | "pause" | "clear" | "dots";
@@ -96,11 +124,11 @@ function parseBootSequence(content: string): BootStep[] {
     switch (parsed.type) {
       case "INSTANT":
         step.type = "instant";
-        step.text = parsed.content;
+        step.text = parseMarkdownFormatting(parsed.content);
         break;
       case "TYPE":
         step.type = "type";
-        step.text = parsed.content;
+        step.text = parseMarkdownFormatting(parsed.content);
         break;
       case "COUNTER":
         step.type = "counter";
@@ -108,9 +136,9 @@ function parseBootSequence(content: string): BootStep[] {
         // Keep spacing between prefix and "0"
         const counterMatch = parsed.content.match(/^(.*?\s+)0\s*→\s*(\d+)(.*)$/);
         if (counterMatch) {
-          step.prefix = counterMatch[1];
+          step.prefix = parseMarkdownFormatting(counterMatch[1]);
           step.target = parseInt(counterMatch[2], 10);
-          step.suffix = counterMatch[3];
+          step.suffix = parseMarkdownFormatting(counterMatch[3]);
         }
         break;
       case "DOTS":
@@ -118,10 +146,10 @@ function parseBootSequence(content: string): BootStep[] {
         // Format: "Detecting drives..."
         const dotsMatch = parsed.content.match(/^(.*?)(\.+)$/);
         if (dotsMatch) {
-          step.text = dotsMatch[1];
+          step.text = parseMarkdownFormatting(dotsMatch[1]);
           step.dotCount = dotsMatch[2].length;
         } else {
-          step.text = parsed.content;
+          step.text = parseMarkdownFormatting(parsed.content);
           step.dotCount = 3;
         }
         break;
@@ -167,19 +195,19 @@ function parseSchoolSequence(content: string): SchoolStep[] {
     switch (parsed.type) {
       case "SYSTEM":
         step.type = "system";
-        step.text = parsed.content;
+        step.text = parseMarkdownFormatting(parsed.content);
         break;
       case "USER":
         step.type = "user";
-        step.text = parsed.content;
+        step.text = parseMarkdownFormatting(parsed.content);
         break;
       case "INLINE":
         step.type = "inline";
         // Format: "USER: DABNEY"
         const inlineMatch = parsed.content.match(/^(.*?:\s*)(.*)$/);
         if (inlineMatch) {
-          step.prompt = inlineMatch[1];
-          step.text = inlineMatch[2];
+          step.prompt = parseMarkdownFormatting(inlineMatch[1]);
+          step.text = parseMarkdownFormatting(inlineMatch[2]);
         }
         break;
       case "CLEAR":
@@ -223,12 +251,12 @@ function parseJoshuaSequence(content: string): JoshuaStep[] {
     switch (parsed.type) {
       case "SYSTEM":
         step.type = "system";
-        step.text = parsed.content;
+        step.text = parseMarkdownFormatting(parsed.content);
         break;
       case "USER":
         step.type = "user";
-        // Remove "> " prefix if present
-        step.text = parsed.content.replace(/^>\s*/, "");
+        // Remove "> " prefix if present, then apply formatting
+        step.text = parseMarkdownFormatting(parsed.content.replace(/^>\s*/, ""));
         break;
       case "BARRAGE":
         step.type = "barrage";
@@ -270,8 +298,10 @@ function parseUnixCommands(content: string): TerminalEntry[] {
     if (!promptMatch) continue;
     
     const prompt = promptMatch[1];
-    const command = promptMatch[2];
-    const output = lines.slice(1).filter(line => line.trim() !== "");
+    const command = parseMarkdownFormatting(promptMatch[2]);
+    const output = lines.slice(1)
+      .filter(line => line.trim() !== "")
+      .map(line => parseMarkdownFormatting(line));
     
     commands.push({ prompt, command, output });
   }
