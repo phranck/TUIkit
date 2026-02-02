@@ -456,9 +456,9 @@ struct BackgroundModifierTests {
         let result = modifier.modify(buffer: buffer, context: context)
 
         #expect(result.height == 1)
-        // Should contain ANSI escape codes
+        // Should contain ANSI red background code (41)
         let line = result.lines[0]
-        #expect(line.contains("\u{1B}["))
+        #expect(line.contains("\u{1B}[41m"))
         #expect(line.contains("Hello"))
         // Should end with reset
         #expect(line.hasSuffix(ANSIRenderer.reset))
