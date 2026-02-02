@@ -40,6 +40,11 @@ public enum QuitBehavior: Sendable {
 /// ])
 /// ```
 public final class StatusBarState: @unchecked Sendable {
+    // MARK: - Render Invalidation
+
+    /// The app state used to trigger re-renders when status bar items change.
+    private let appState: AppState
+
     // MARK: - User Items
 
     /// Stack of user contexts with their items.
@@ -92,8 +97,17 @@ public final class StatusBarState: @unchecked Sendable {
     public var labelColor: Color?
 
     /// Creates a new status bar state.
-    public init() {
-        // System items are built dynamically based on flags
+    ///
+    /// - Parameter appState: The app state instance for triggering re-renders.
+    public init(appState: AppState) {
+        self.appState = appState
+    }
+
+    /// Creates a status bar state with a default `AppState` instance.
+    ///
+    /// Used for environment key defaults and testing only.
+    internal convenience init() {
+        self.init(appState: AppState())
     }
 
     // MARK: - System Items Access
@@ -149,7 +163,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter items: The user items to display.
     public func setItems(_ items: [any StatusBarItemProtocol]) {
         userGlobalItems = items
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 
     /// Sets the global user items using a builder.
@@ -159,7 +173,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter builder: A closure that returns items.
     public func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
         userGlobalItems = builder()
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 
     /// Sets the global user items without triggering a re-render.
@@ -195,7 +209,7 @@ public final class StatusBarState: @unchecked Sendable {
     public func push(context: String, items: [any StatusBarItemProtocol]) {
         userContextStack.removeAll { $0.context == context }
         userContextStack.append((context, items))
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 
     /// Pushes a new user context without triggering a re-render.
@@ -228,7 +242,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// - Parameter context: The context identifier to remove.
     public func pop(context: String) {
         userContextStack.removeAll { $0.context == context }
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 
     /// Clears all user contexts (keeps global user items and system items).
@@ -236,7 +250,7 @@ public final class StatusBarState: @unchecked Sendable {
     /// Triggers a re-render.
     public func clearContexts() {
         userContextStack.removeAll()
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 
     /// Clears all user items (global and contexts).
