@@ -9,26 +9,20 @@ import Foundation
 
 // MARK: - App State
 
-/// Global application state that triggers re-renders when modified.
+/// Application state that triggers re-renders when modified.
 ///
 /// Since TUIkit runs in a single-threaded event loop, we use a simple
-/// observable pattern. The AppRunner subscribes to state changes and
+/// observable pattern. The ``AppRunner`` subscribes to state changes and
 /// re-renders when notified.
 ///
-/// `AppRunner` creates and assigns the active instance on startup.
-/// Property wrappers like ``State`` and ``AppStorage`` access it
-/// through ``active``.
+/// `AppRunner` creates the instance and registers it with ``RenderNotifier``
+/// on startup. Property wrappers like ``State`` and ``AppStorage`` access it
+/// through ``RenderNotifier/current``.
+///
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
 public final class AppState: @unchecked Sendable {
-    /// The active app state for the current application.
-    ///
-    /// Set by `AppRunner` during initialization. Property wrappers
-    /// (`@State`, `@AppStorage`, `@SceneStorage`) and services
-    /// (`StatusBarState`, `ThemeManager`) use this to trigger re-renders.
-    public nonisolated(unsafe) static var active = AppState()
-
     /// Callbacks to invoke when state changes.
     private var observers: [() -> Void] = []
 
@@ -62,6 +56,46 @@ public final class AppState: @unchecked Sendable {
     internal func didRender() {
         needsRender = false
     }
+}
+
+// MARK: - Render Notifier
+
+/// Framework-internal registry that connects property wrappers to the active ``AppState``.
+///
+/// Property wrappers (`@State`, `@AppStorage`) use `RenderNotifier.current` to signal
+/// re-renders when values change. `AppRunner` sets ``current`` once at startup before
+/// entering the run loop.
+///
+/// Services like `StatusBarState` and `ThemeManager` receive ``AppState`` directly
+/// via constructor injection. `RenderNotifier` exists specifically for property wrappers
+/// which have no access to `RenderContext` or `TUIContext` at mutation time.
+///
+/// ```
+/// AppRunner (owns AppState)
+///     │
+///     ├─► RenderNotifier.current = appState   (set once at startup)
+///     │
+///     ├─► @State<Value>.Storage.didSet
+///     │       └─► RenderNotifier.current.setNeedsRender()
+///     │
+///     ├─► StatusBarState (injected via init)
+///     │       └─► appState.setNeedsRender()
+///     │
+///     └─► ThemeManager (injected via init)
+///             └─► appState.setNeedsRender()
+/// ```
+///
+/// - Important: This type is framework-internal. User code should never access it directly.
+enum RenderNotifier {
+    /// The active ``AppState`` for the running application.
+    ///
+    /// Set by `AppRunner` before entering the run loop. Property wrappers
+    /// read this to trigger re-renders when values change.
+    ///
+    /// - Precondition: Must be set before any `@State` mutation occurs.
+    ///   This is guaranteed because `AppRunner.run()` sets it before
+    ///   the first render pass.
+    nonisolated(unsafe) static var current = AppState()
 }
 
 // MARK: - Binding
@@ -149,13 +183,24 @@ public struct Binding<Value> {
 /// ```swift
 /// Menu(selection: $selectedIndex)
 /// ```
+///
+/// # Render Integration
+///
+/// Internally, `@State` signals re-renders through ``RenderNotifier``,
+/// a framework-internal registry that holds the active ``AppState``.
+/// This keeps the `@State var count = 0` API unchanged while avoiding
+/// global mutable state.
 @propertyWrapper
 public struct State<Value> {
     /// The storage for the state value.
+    ///
+    /// Uses a reference type so that the `@State` struct can provide
+    /// `nonmutating set`. On value change, signals a re-render through
+    /// ``RenderNotifier/current``.
     private final class Storage {
         var value: Value {
             didSet {
-                AppState.active.setNeedsRender()
+                RenderNotifier.current.setNeedsRender()
             }
         }
 

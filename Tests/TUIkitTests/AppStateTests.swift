@@ -15,7 +15,7 @@ struct AppStateTests {
     /// Creates a fresh AppState instance to isolate tests from shared global state.
     private func isolatedAppState() -> AppState {
         let fresh = AppState()
-        AppState.active = fresh
+        RenderNotifier.current = fresh
         return fresh
     }
 

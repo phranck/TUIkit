@@ -12,9 +12,10 @@ import TUIkit
 /// Displays a centered menu with all available demos and
 /// feature highlight boxes at the bottom.
 struct MainMenuPage: View {
-    var body: some View {
-        let state = ExampleAppState.shared
+    @Binding var currentPage: DemoPage
+    @Binding var menuSelection: Int
 
+    var body: some View {
         VStack(spacing: 1) {
             HeaderView(
                 title: "TUIkit Example App",
@@ -35,11 +36,11 @@ struct MainMenuPage: View {
                         MenuItem(label: "Layout System", shortcut: "5"),
                         MenuItem(label: "Buttons & Focus", shortcut: "6"),
                     ],
-                    selection: state.menuSelectionBinding,
+                    selection: $menuSelection,
                     onSelect: { index in
                         // Navigate to the selected page
                         if let page = DemoPage(rawValue: index + 1) {
-                            state.currentPage = page
+                            currentPage = page
                         }
                     },
                     selectedColor: .palette.accent,

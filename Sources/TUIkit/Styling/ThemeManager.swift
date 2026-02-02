@@ -58,8 +58,8 @@ public protocol Cyclable: Sendable {
 ///
 /// # Render Integration
 ///
-/// On every change the manager triggers a re-render through
-/// `AppState.active.setNeedsRender()`. The `RenderLoop` picks up the
+/// On every change the manager triggers a re-render through the
+/// injected ``AppState`` instance. The `RenderLoop` picks up the
 /// current item via ``currentPalette`` / ``currentAppearance`` when
 /// building the environment for the next frame.
 public final class ThemeManager: @unchecked Sendable {
@@ -69,12 +69,25 @@ public final class ThemeManager: @unchecked Sendable {
     /// All available items in cycling order.
     let items: [any Cyclable]
 
+    /// The app state used to trigger re-renders on theme changes.
+    private let appState: AppState
+
     /// Creates a theme manager with the given items.
     ///
-    /// - Parameter items: The items to cycle through. Must not be empty.
-    init(items: [any Cyclable]) {
+    /// - Parameters:
+    ///   - items: The items to cycle through. Must not be empty.
+    ///   - appState: The app state instance for triggering re-renders.
+    init(items: [any Cyclable], appState: AppState) {
         precondition(!items.isEmpty, "ThemeManager requires at least one item")
         self.items = items
+        self.appState = appState
+    }
+
+    /// Creates a theme manager with a default `AppState` instance.
+    ///
+    /// Used for environment key defaults only.
+    convenience init(items: [any Cyclable]) {
+        self.init(items: items, appState: AppState())
     }
 
     // MARK: - Current Item
@@ -129,7 +142,7 @@ public final class ThemeManager: @unchecked Sendable {
 
     /// Triggers a re-render so the ``RenderLoop`` picks up the new current item.
     private func applyCurrentItem() {
-        AppState.active.setNeedsRender()
+        appState.setNeedsRender()
     }
 }
 

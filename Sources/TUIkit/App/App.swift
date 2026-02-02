@@ -62,6 +62,7 @@ extension App {
 internal final class AppRunner<A: App> {
     let app: A
     let terminal: Terminal
+    let appState: AppState
     let statusBar: StatusBarState
     let focusManager: FocusManager
     let paletteManager: ThemeManager
@@ -75,11 +76,12 @@ internal final class AppRunner<A: App> {
     init(app: A) {
         self.app = app
         self.terminal = Terminal()
-        self.statusBar = StatusBarState()
+        self.appState = AppState()
+        self.statusBar = StatusBarState(appState: appState)
         self.focusManager = FocusManager()
         self.tuiContext = TUIContext()
-        self.paletteManager = ThemeManager(items: PaletteRegistry.all)
-        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all)
+        self.paletteManager = ThemeManager(items: PaletteRegistry.all, appState: appState)
+        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, appState: appState)
 
         // Configure status bar style
         self.statusBar.style = .bordered
@@ -113,8 +115,11 @@ internal final class AppRunner<A: App> {
         terminal.hideCursor()
         terminal.enableRawMode()
 
+        // Register AppState with framework-internal notifier for property wrappers
+        RenderNotifier.current = appState
+
         // Register for state changes
-        AppState.active.observe { [signals] in
+        appState.observe { [signals] in
             signals.requestRerender()
         }
 
@@ -132,8 +137,8 @@ internal final class AppRunner<A: App> {
             }
 
             // Check if terminal was resized or state changed
-            if signals.consumeRerenderFlag() || AppState.active.needsRender {
-                AppState.active.didRender()
+            if signals.consumeRerenderFlag() || appState.needsRender {
+                appState.didRender()
                 renderer.render()
             }
 
@@ -151,7 +156,7 @@ internal final class AppRunner<A: App> {
         terminal.disableRawMode()
         terminal.showCursor()
         terminal.exitAlternateScreen()
-        AppState.active.clearObservers()
+        appState.clearObservers()
         focusManager.clear()
         tuiContext.reset()
     }
