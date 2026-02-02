@@ -12,6 +12,8 @@ import {
   SFArrowLeftArrowRight,
   SFSwift,
   SFCheckmarkCircleFill,
+  SFBookFill,
+  SFChevronLeftForwardslashChevronRight,
 } from "sf-symbols-lib/hierarchical";
 
 /** Maps of icon names to SF Symbol constants for type-safe usage. */
@@ -26,6 +28,8 @@ const icons = {
   arrows: SFArrowLeftArrowRight,
   swift: SFSwift,
   checkmark: SFCheckmarkCircleFill,
+  book: SFBookFill,
+  code: SFChevronLeftForwardslashChevronRight,
 } as const;
 
 export type IconName = keyof typeof icons;
