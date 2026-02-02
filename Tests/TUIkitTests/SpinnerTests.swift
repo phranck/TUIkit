@@ -39,25 +39,25 @@ struct SpinnerStyleTests {
         #expect(frames[3] == "\\")
     }
 
-    @Test("Bouncing positions form a complete bounce cycle")
+    @Test("Bouncing positions form a complete bounce cycle with edge overshoot")
     func bouncingPositions() {
-        let positions = SpinnerStyle.bouncingPositions(trackLength: SpinnerStyle.minimumTrackWidth)
+        let positions = SpinnerStyle.bouncingPositions(trackLength: SpinnerStyle.trackWidth)
+        let overshoot = SpinnerStyle.edgeOvershoot  // 2
 
-        // Forward: 7 positions + backward: 5 positions = 12
-        #expect(positions.count == 12)
+        // Range: -2 → 10 (13 forward) + 10 back positions (9 → -1) = 24
+        let forwardCount = SpinnerStyle.trackWidth + 2 * overshoot  // 13
+        let backwardCount = forwardCount - 2  // 11
+        #expect(positions.count == forwardCount + backwardCount)
 
-        // Forward sweep
-        #expect(positions[0] == 0)
-        #expect(positions[6] == 6)
-
-        // Backward sweep starts at 5, ends at 1
-        #expect(positions[7] == 5)
-        #expect(positions[11] == 1)
+        // Forward sweep starts at -overshoot
+        #expect(positions[0] == -overshoot)
+        // Forward sweep ends at trackWidth - 1 + overshoot
+        #expect(positions[forwardCount - 1] == SpinnerStyle.trackWidth - 1 + overshoot)
     }
 
     @Test("Bouncing positions have no consecutive duplicates")
     func bouncingNoDuplicateEndpoints() {
-        let positions = SpinnerStyle.bouncingPositions(trackLength: SpinnerStyle.minimumTrackWidth)
+        let positions = SpinnerStyle.bouncingPositions(trackLength: SpinnerStyle.trackWidth)
 
         for index in 1..<positions.count {
             #expect(positions[index] != positions[index - 1])
@@ -67,28 +67,18 @@ struct SpinnerStyleTests {
         #expect(positions.last != positions.first)
     }
 
-    @Test("Each style has a positive base interval")
-    func baseIntervals() {
-        #expect(SpinnerStyle.dots.baseInterval > 0)
-        #expect(SpinnerStyle.line.baseInterval > 0)
-        #expect(SpinnerStyle.bouncing.baseInterval > 0)
+    @Test("Each style has a positive animation interval")
+    func styleIntervals() {
+        #expect(SpinnerStyle.dots.interval > 0)
+        #expect(SpinnerStyle.line.interval > 0)
+        #expect(SpinnerStyle.bouncing.interval > 0)
     }
 
-    @Test("Wider track produces more bounce positions")
-    func bouncingTrackWidthVariants() {
-        let narrow = SpinnerStyle.bouncingPositions(trackLength: 7)
-        let wide = SpinnerStyle.bouncingPositions(trackLength: 11)
-
-        #expect(narrow.count < wide.count)
-    }
-
-    @Test("Bouncing frame renders all track positions with ANSI color codes")
+    @Test("Bouncing frame renders highlight and inactive track characters")
     func bouncingFrameRendering() {
         let frame = SpinnerStyle.renderBouncingFrame(
             frameIndex: 3,
-            color: .red,
-            trackWidth: 9,
-            trailLength: .regular
+            color: .red
         )
 
         // Frame should contain ▇ characters (highlight + trail)
@@ -97,33 +87,6 @@ struct SpinnerStyleTests {
         #expect(frame.stripped.contains("■"))
         // Should have ANSI escape codes for coloring
         #expect(frame.contains("\u{1B}["))
-    }
-
-    @Test("BouncingTrailLength opacities are correctly sized")
-    func trailOpacityLevels() {
-        #expect(BouncingTrailLength.short.opacities.count == 2)
-        #expect(BouncingTrailLength.regular.opacities.count == 4)
-        #expect(BouncingTrailLength.long.opacities.count == 6)
-        // All start at full opacity
-        #expect(BouncingTrailLength.short.opacities[0] == 1.0)
-        #expect(BouncingTrailLength.regular.opacities[0] == 1.0)
-        #expect(BouncingTrailLength.long.opacities[0] == 1.0)
-    }
-
-    @Test("Track width is clamped to minimum of 7")
-    func trackWidthMinimum() {
-        let spinner = Spinner(style: .bouncing, trackWidth: 3)
-        // trackWidth is private, but we can verify via rendering — it shouldn't crash
-        let context = testContext()
-        let buffer = renderToBuffer(spinner, context: context)
-        #expect(buffer.lines.count == 1)
-    }
-
-    @Test("SpinnerSpeed multipliers are ordered correctly")
-    func speedMultipliers() {
-        #expect(SpinnerSpeed.fast.multiplier < SpinnerSpeed.regular.multiplier)
-        #expect(SpinnerSpeed.regular.multiplier < SpinnerSpeed.slow.multiplier)
-        // Only three levels: slow, regular, fast
     }
 }
 
@@ -175,15 +138,18 @@ struct SpinnerRenderingTests {
         #expect(buffer.lines[0].stripped == "⠋")
     }
 
-    @Test("Bouncing spinner first frame contains highlight and track characters")
-    func bouncingFirstFrame() {
+    @Test("Bouncing spinner renders track with 9 visible positions")
+    func bouncingRendersTrack() {
         let spinner = Spinner(style: .bouncing)
         let context = testContext()
         let buffer = renderToBuffer(spinner, context: context)
 
         let stripped = buffer.lines[0].stripped
-        #expect(stripped.contains("▇"))
-        #expect(stripped.contains("■"))
+        // Track is always 9 characters wide (mix of ▇ and ■ depending on
+        // highlight position — the first frame may be off-screen due to
+        // edge overshoot, so we check total character count instead).
+        let trackChars = stripped.filter { $0 == "▇" || $0 == "■" }
+        #expect(trackChars.count == SpinnerStyle.trackWidth)
     }
 
     @Test("Spinner frame index is derived from elapsed time")
