@@ -14,7 +14,10 @@ import TUIkit
 /// - Box (simple bordered container)
 /// - Panel (container with title in border)
 /// - ContainerView (with header and footer)
+/// - Collapsible detail section demonstrating `@State` toggle
 struct ContainersPage: View {
+    @State var showDetails: Bool = false
+
     var body: some View {
         VStack(spacing: 1) {
             HeaderView(title: "Container Views Demo")
@@ -83,19 +86,32 @@ struct ContainersPage: View {
                 }
             }
 
-            DemoSection("Padding") {
-                HStack(spacing: 1) {
-                    Box {
-                        Text("h:1 v:0").foregroundColor(.palette.foreground)
-                            .padding(.horizontal, 1)
+            DemoSection("Collapsible Detail (@State)") {
+                VStack(alignment: .leading) {
+                    HStack(spacing: 2) {
+                        Button(showDetails ? "Hide Details" : "Show Details") {
+                            showDetails.toggle()
+                        }
+                        Text(showDetails ? "expanded" : "collapsed")
+                            .dim()
                     }
-                    Box {
-                        Text("h:1 v:1").foregroundColor(.palette.foreground)
-                            .padding(EdgeInsets(horizontal: 1, vertical: 1))
-                    }
-                    Box {
-                        Text("h:1 v:2").foregroundColor(.palette.foreground)
-                            .padding(EdgeInsets(horizontal: 1, vertical: 2))
+                    if showDetails {
+                        Panel("Padding Examples", titleColor: .palette.accent) {
+                            HStack(spacing: 1) {
+                                Box {
+                                    Text("h:1 v:0").foregroundColor(.palette.foreground)
+                                        .padding(.horizontal, 1)
+                                }
+                                Box {
+                                    Text("h:1 v:1").foregroundColor(.palette.foreground)
+                                        .padding(EdgeInsets(horizontal: 1, vertical: 1))
+                                }
+                                Box {
+                                    Text("h:1 v:2").foregroundColor(.palette.foreground)
+                                        .padding(EdgeInsets(horizontal: 1, vertical: 2))
+                                }
+                            }
+                        }
                     }
                 }
             }

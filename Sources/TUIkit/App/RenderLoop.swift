@@ -22,7 +22,8 @@
 ///   2. Begin lifecycle tracking
 ///   3. Build EnvironmentValues from all subsystems
 ///   4. Create RenderContext with layout constraints
-///   5. Resolve App.body → Scene (WindowGroup)
+///   5. Evaluate App.body fresh → Scene (WindowGroup)
+///      @State values survive because State.init self-hydrates from StateStorage
 ///   6. Call SceneRenderable.renderScene() → view tree traversal
 ///      └── renderToBuffer() dispatches each view (Renderable or body)
 ///      └── FrameBuffer lines written to terminal with background fill
@@ -39,14 +40,6 @@
 internal struct RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
     let app: A
-
-    /// The cached scene from the app's body.
-    ///
-    /// Evaluated once at construction time and reused for every frame.
-    /// This ensures that `@State` properties on views inside the scene
-    /// survive across render passes — their `Storage` reference stays alive
-    /// as long as the scene exists.
-    let scene: A.Body
 
     /// The terminal for output and size queries.
     let terminal: Terminal
@@ -82,8 +75,9 @@ internal struct RenderLoop<A: App> {
         tuiContext.preferences.beginRenderPass()
         focusManager.clear()
 
-        // Begin lifecycle tracking for this render pass
+        // Begin lifecycle and state tracking for this render pass
         tuiContext.lifecycle.beginRenderPass()
+        tuiContext.stateStorage.beginRenderPass()
 
         // Calculate available height (reserve space for status bar)
         let statusBarHeight = statusBar.height
@@ -100,11 +94,31 @@ internal struct RenderLoop<A: App> {
             tuiContext: tuiContext
         )
 
-        // Render main content (background fill happens in renderScene)
-        renderScene(scene, context: context)
+        // Render main content (background fill happens in renderScene).
+        // app.body is evaluated fresh each frame. @State values survive
+        // because State.init self-hydrates from StateStorage.
+        //
+        // We set the hydration context BEFORE evaluating app.body so that
+        // views constructed inside WindowGroup { ... } closures (e.g.
+        // ContentView()) get persistent state from the start.
+        let rootIdentity = ViewIdentity(rootType: A.self)
+        StateRegistration.activeContext = HydrationContext(
+            identity: rootIdentity,
+            storage: tuiContext.stateStorage
+        )
+        StateRegistration.counter = 0
 
-        // End lifecycle tracking - triggers onDisappear for removed views
+        let scene = app.body
+
+        StateRegistration.activeContext = nil
+        tuiContext.stateStorage.markActive(rootIdentity)
+
+        renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
+
+        // End lifecycle tracking - triggers onDisappear for removed views.
+        // End state tracking - removes state for views no longer in the tree.
         tuiContext.lifecycle.endRenderPass()
+        tuiContext.stateStorage.endRenderPass()
 
         // Render status bar separately (never dimmed)
         if statusBar.hasItems {
