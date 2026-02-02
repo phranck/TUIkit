@@ -63,7 +63,7 @@ public enum SpinnerStyle: Sendable {
     /// The fixed trail opacities for the bouncing style.
     ///
     /// Index 0 is the highlight itself, followed by 5 fading positions.
-    static let trailOpacities: [Double] = [1.0, 0.75, 0.5, 0.3, 0.15, 0.06]
+    static let trailOpacities: [Double] = [1.0, 0.75, 0.5, 0.35, 0.22, 0.15]
 
     /// How many positions the highlight overshoots beyond each edge of
     /// the visible track. This lets the trail fade out smoothly at the
