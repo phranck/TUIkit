@@ -34,9 +34,9 @@ Three subsystems are reset at the start of every frame:
 
 This ensures that views which disappeared between frames don't leave stale handlers or registrations behind.
 
-### Step 2: Begin Lifecycle Tracking
+### Step 2: Begin Lifecycle and State Tracking
 
-The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. As views render, they add their tokens to this set. After rendering, the manager compares it to the previous frame's tokens to detect which views appeared or disappeared.
+The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. The `StateStorage` clears its active identity set. As views render, they add their tokens/identities to these sets. After rendering, the managers compare current and previous frames to detect which views appeared, disappeared, or had their state removed.
 
 ### Step 3: Build Environment
 
@@ -65,13 +65,16 @@ A ``RenderContext`` bundles everything a view needs to render:
 | `availableWidth` | Terminal width (mutable — containers reduce this for children) |
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
-| `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences) |
+| `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences, state storage) |
+| `identity` | The current view's structural identity (``ViewIdentity``) |
 
-The context is passed down the view tree. Each view can create a modified copy for its children — for example, a border reduces `availableWidth` by 2 before rendering its content.
+The context is passed down the view tree. Each view can create a modified copy for its children — for example, a border reduces `availableWidth` by 2 before rendering its content. Container views extend the `identity` path for each child.
 
 ### Step 5: Evaluate Scene
 
-`app.body` is called, producing a ``WindowGroup`` that wraps the root view. The `WindowGroup` implements `SceneRenderable` and bridges from the scene layer to the view layer.
+`app.body` is evaluated fresh each frame, producing a ``WindowGroup`` that wraps the root view. The `WindowGroup` implements `SceneRenderable` and bridges from the scene layer to the view layer.
+
+> Note: Views are fully reconstructed on every frame. `@State` values survive because `State.init` self-hydrates from `StateStorage` — looking up the persistent value by the view's structural identity.
 
 ### Step 6: Render View Tree
 
@@ -81,12 +84,14 @@ The buffer lines are then written to the terminal row by row — each line padde
 
 > See <doc:RenderCycle#The-Dual-Rendering-System> below for details on how views are dispatched.
 
-### Step 7: End Lifecycle Tracking
+### Step 7: End Lifecycle and State Tracking
 
 The `LifecycleManager` compares the current frame's tokens with the previous frame's:
 
 - **Disappeared views** — tokens present last frame but absent now. Their `onDisappear` callbacks fire, and their tokens are removed from the appeared set (allowing future `onAppear` if they return).
 - **Visible views** — the current token set becomes the baseline for the next frame.
+
+The `StateStorage` performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
 
@@ -129,15 +134,20 @@ This path is used by:
 The free function `renderToBuffer()` is the single entry point for all view rendering:
 
 ```swift
-public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
+func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     // Priority 1: Direct rendering
     if let renderable = view as? Renderable {
         return renderable.renderToBuffer(context: context)
     }
 
-    // Priority 2: Composite — recurse into body
+    // Priority 2: Composite — set up hydration context and recurse into body.
+    // @State.init self-hydrates from StateStorage during body evaluation.
     if V.Body.self != Never.self {
-        return renderToBuffer(view.body, context: context)
+        let childContext = context.withChildIdentity(type: V.Body.self)
+        // ... activate StateRegistration.activeContext ...
+        let body = view.body
+        // ... restore previous context, mark identity active ...
+        return renderToBuffer(body, context: childContext)
     }
 
     // Priority 3: No rendering path — empty buffer
