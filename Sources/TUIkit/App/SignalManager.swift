@@ -25,6 +25,12 @@ import Foundation
 /// module would be cleaner but requires macOS 15+.
 nonisolated(unsafe) private var signalNeedsRerender = false
 
+/// Flag set by the SIGWINCH signal handler to indicate a terminal resize.
+///
+/// Separate from `signalNeedsRerender` because resize requires additional
+/// work (invalidating the frame diff cache) beyond just re-rendering.
+nonisolated(unsafe) private var signalTerminalResized = false
+
 /// Flag set by the SIGINT signal handler to request a graceful shutdown.
 ///
 /// The actual cleanup (disabling raw mode, restoring cursor, exiting
@@ -57,16 +63,29 @@ internal struct SignalManager {
         signalNeedsShutdown
     }
 
-    /// Checks and resets the rerender flag (SIGWINCH).
+    /// Checks and resets the rerender flag (SIGWINCH or state change).
     ///
     /// Returns `true` if a re-render was requested since the last call,
     /// then resets the flag. This consume-on-read pattern prevents
     /// redundant renders.
     ///
-    /// - Returns: `true` if a terminal resize triggered a rerender request.
+    /// - Returns: `true` if a rerender was requested.
     mutating func consumeRerenderFlag() -> Bool {
         guard signalNeedsRerender else { return false }
         signalNeedsRerender = false
+        return true
+    }
+
+    /// Checks and resets the terminal resize flag (SIGWINCH).
+    ///
+    /// Returns `true` if the terminal was resized since the last call,
+    /// then resets the flag. Used by ``AppRunner`` to invalidate the
+    /// frame diff cache on resize.
+    ///
+    /// - Returns: `true` if a terminal resize occurred.
+    mutating func consumeResizeFlag() -> Bool {
+        guard signalTerminalResized else { return false }
+        signalTerminalResized = false
         return true
     }
 
@@ -91,6 +110,7 @@ internal struct SignalManager {
         }
         signal(SIGWINCH) { _ in
             signalNeedsRerender = true
+            signalTerminalResized = true
         }
     }
 }
