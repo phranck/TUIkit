@@ -298,6 +298,10 @@ code {
   animation: cursor-blink 1s step-end infinite;
 }
 
+@utility bg-frosted-glass {
+  background-color: color-mix(in srgb, var(--container-body) 50%, transparent);
+}
+
 @keyframes theme-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.75); }
@@ -345,5 +349,18 @@ code {
   100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.35;
+  }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Animated cloudy background tinted to the active theme color.
  *
@@ -9,7 +7,7 @@
  */
 export default function CloudBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {/* Large cloud — top left */}
       <div
         className="absolute -left-32 -top-32 h-[800px] w-[800px] rounded-full blur-[150px] transition-[background] duration-700"
