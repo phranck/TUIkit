@@ -5,17 +5,23 @@
 //  Renders Views to terminal output via FrameBuffer.
 //
 
-import Foundation
-
-/// Convenience class for standalone view rendering.
+/// Convenience class for standalone one-off view rendering.
 ///
 /// `ViewRenderer` wraps the free function ``renderToBuffer(_:context:)``
 /// with terminal cursor positioning. It is a thin wrapper — the actual
 /// rendering dispatch happens in `renderToBuffer`, not here.
 ///
-/// The main app uses `RenderLoop` instead, which owns the full
-/// pipeline (environment assembly, lifecycle, status bar). Use
-/// `ViewRenderer` for one-off rendering outside the main loop.
+/// This class is **not** part of the main render pipeline. The main
+/// pipeline is:
+///
+/// ```
+/// AppRunner → RenderLoop.render() → renderToBuffer() → FrameDiffWriter → Terminal
+/// ```
+///
+/// `ViewRenderer` is used by the ``renderOnce(_:)`` convenience API
+/// for simple CLI tools that don't need a full ``App``. It bypasses
+/// `RenderLoop`, `FrameDiffWriter`, environment, lifecycle tracking,
+/// and diff-based rendering.
 final class ViewRenderer {
     /// The terminal to render to.
     private let terminal: Terminal
@@ -29,12 +35,19 @@ final class ViewRenderer {
 
     /// Renders a view to the terminal.
     ///
+    /// Queries the terminal size, renders the view into a ``FrameBuffer``,
+    /// and writes the result line-by-line to the terminal.
+    ///
     /// - Parameters:
     ///   - view: The view to render.
     ///   - row: The starting row (1-based, default: 1).
     ///   - column: The starting column (1-based, default: 1).
     func render<V: View>(_ view: V, atRow row: Int = 1, column: Int = 1) {
-        let context = RenderContext(terminal: terminal)
+        let size = terminal.getSize()
+        let context = RenderContext(
+            availableWidth: size.width,
+            availableHeight: size.height
+        )
         let buffer = renderToBuffer(view, context: context)
         flush(buffer, atRow: row, column: column)
     }
@@ -46,58 +59,4 @@ final class ViewRenderer {
             terminal.write(line)
         }
     }
-}
-
-// MARK: - Child Info
-
-/// Describes a child view within a stack for layout purposes.
-struct ChildInfo {
-    /// The rendered buffer of this child (nil for spacers, computed later).
-    let buffer: FrameBuffer?
-
-    /// Whether this child is a Spacer.
-    let isSpacer: Bool
-
-    /// The minimum length of this spacer (only relevant if isSpacer is true).
-    let spacerMinLength: Int?
-}
-
-// MARK: - Child Info Provider
-
-/// Internal protocol that allows stack containers to extract individual
-/// child info from their content (which is typically a TupleView).
-protocol ChildInfoProvider {
-    /// Returns an array of ChildInfo, one per child view.
-    func childInfos(context: RenderContext) -> [ChildInfo]
-}
-
-/// Creates a ChildInfo for a single view.
-func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
-    if let spacer = view as? Spacer {
-        return ChildInfo(buffer: nil, isSpacer: true, spacerMinLength: spacer.minLength)
-    }
-    return ChildInfo(
-        buffer: renderToBuffer(view, context: context),
-        isSpacer: false,
-        spacerMinLength: nil
-    )
-}
-
-// MARK: - Child Info Resolution
-
-/// Resolves child infos from a view's content.
-///
-/// If the content conforms to `ChildInfoProvider` (e.g. TupleViews),
-/// it returns individual child infos. Otherwise it returns the content
-/// as a single-element array.
-///
-/// - Parameters:
-///   - content: The content view.
-///   - context: The rendering context.
-/// - Returns: An array of ChildInfo.
-func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [ChildInfo] {
-    if let provider = content as? ChildInfoProvider {
-        return provider.childInfos(context: context)
-    }
-    return [makeChildInfo(for: content, context: context)]
 }
