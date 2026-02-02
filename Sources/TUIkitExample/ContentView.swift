@@ -7,26 +7,43 @@
 
 import TUIkit
 
+// MARK: - Demo Page Enum
+
+/// The available demo pages in the example app.
+enum DemoPage: Int, CaseIterable {
+    case menu
+    case textStyles
+    case colors
+    case containers
+    case overlays
+    case layout
+    case buttons
+}
+
 // MARK: - Content View (Page Router)
 
 /// The main content view that switches between pages.
 ///
 /// This view acts as a router, displaying the appropriate demo page
-/// based on the current state. It uses the `.statusBarItems()` modifier
-/// to declaratively set context-sensitive status bar items.
+/// based on the current state. It uses `@State` for all reactive
+/// properties — exactly like SwiftUI.
 struct ContentView: View {
+    @State var currentPage: DemoPage = .menu
+    @State var menuSelection: Int = 0
+
     var body: some View {
-        let state = ExampleAppState.shared
+        // Capture bindings for use in closures
+        let pageSetter = $currentPage
 
         // Show current page based on state
         // Note: Background color is set by AppRunner using theme.background
-        pageContent(for: state.currentPage)
+        pageContent(for: currentPage, pageSetter: pageSetter)
             .onKeyPress { event in
                 switch event.key {
                 case .escape:
                     // ESC goes back to menu (or exits if already on menu)
-                    if state.currentPage != .menu {
-                        state.currentPage = .menu
+                    if currentPage != .menu {
+                        pageSetter.wrappedValue = .menu
                         return true  // Consumed
                     }
                     return false  // Let default handler exit the app
@@ -38,10 +55,10 @@ struct ContentView: View {
     }
 
     @ViewBuilder
-    private func pageContent(for page: DemoPage) -> some View {
+    private func pageContent(for page: DemoPage, pageSetter: Binding<DemoPage>) -> some View {
         switch page {
         case .menu:
-            MainMenuPage()
+            MainMenuPage(currentPage: $currentPage, menuSelection: $menuSelection)
                 .statusBarItems {
                     StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
                     StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
@@ -49,30 +66,30 @@ struct ContentView: View {
                 }
         case .textStyles:
             TextStylesPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .colors:
             ColorsPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .containers:
             ContainersPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .overlays:
             OverlaysPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .layout:
             LayoutPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .buttons:
             ButtonsPage()
-                .statusBarItems(subPageItems)
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }
 
     /// Common status bar items for sub-pages.
-    private var subPageItems: [any StatusBarItemProtocol] {
+    private func subPageItems(pageSetter: Binding<DemoPage>) -> [any StatusBarItemProtocol] {
         [
-            StatusBarItem(shortcut: Shortcut.escape, label: "back") {
-                ExampleAppState.shared.currentPage = .menu
+            StatusBarItem(shortcut: Shortcut.escape, label: "back") { [pageSetter] in
+                pageSetter.wrappedValue = .menu
             },
             StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
         ]

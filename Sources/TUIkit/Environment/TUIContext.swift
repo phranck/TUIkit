@@ -2,7 +2,7 @@
 //  TUIContext.swift
 //  TUIkit
 //
-//  Central dependency container replacing scattered singletons.
+//  Central dependency container for framework services.
 //  Owned by AppRunner and threaded through RenderContext.
 //
 
@@ -12,8 +12,8 @@ import Foundation
 
 /// Manages view lifecycle tracking, disappear callbacks, and async tasks.
 ///
-/// Bundles the previously separate `LifecycleTracker`, `DisappearCallbackStorage`,
-/// and `TaskStorage` singletons into a single cohesive manager.
+/// Bundles lifecycle tracking, disappear callbacks, and async task management
+/// into a single cohesive manager.
 /// All mutable state is protected by `NSLock`.
 final class LifecycleManager: @unchecked Sendable {
 
@@ -176,10 +176,9 @@ final class LifecycleManager: @unchecked Sendable {
 
 /// Central dependency container for TUIkit runtime services.
 ///
-/// `TUIContext` replaces the scattered singleton pattern by bundling all
-/// framework-internal services into a single object owned by `AppRunner`.
-/// It is threaded through `RenderContext` so that view modifiers can access
-/// services without relying on global state.
+/// `TUIContext` bundles all framework-internal services into a single
+/// object owned by `AppRunner`. It is threaded through `RenderContext`
+/// so that view modifiers can access services during rendering.
 ///
 /// ## Services
 ///
