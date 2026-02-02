@@ -6,18 +6,34 @@ import { Howl } from "howler";
 import TerminalScreen from "./TerminalScreen";
 
 /**
+ * CRT layer geometry — centralizes the repeated calc() strings used
+ * to position backing, content, glow, and glass layers over the logo.
+ */
+const CRT = {
+  /** Content area (terminal text). */
+  content: { top: "calc(14% + 2px)", left: "21%", width: "58%", height: "45%" },
+  /** Backing surface (black fill behind the transparent logo center). */
+  backing: { top: "calc(14% + 2px - 13px)", left: "calc(21% - 10px)", width: "calc(58% + 20px)", height: "calc(45% + 20px)", borderRadius: "31px" },
+  /** Glow overlay (edge vignette + scanline sweep). */
+  glow: { top: "calc(14% + 2px - 18px)", left: "calc(21% - 15px)", width: "calc(58% + 30px)", height: "calc(45% + 30px)", borderRadius: "31px" },
+} as const;
+
+/** Duration of the zoom-out CSS transition in ms. */
+const ZOOM_OUT_DURATION_MS = 500;
+/** Delay before boot spin loop starts (slightly before boot audio ends). */
+const SPIN_START_DELAY_MS = 19900;
+/** Delay before random seek sounds begin (after boot finishes). */
+const SEEK_START_DELAY_MS = 20300;
+
+/**
  * Interactive hero terminal with power-on animation.
  *
- * Initially shows the CRT logo at 320×320 with a static "Welcome to TUIkit"
- * message. When the user clicks the red power button on the monitor, the logo
- * zooms to center screen at double size, the background dims, and the full
- * terminal boot sequence begins.
+ * Initially shows the CRT logo at 320×320. When the user clicks the red
+ * power button, the logo zooms to center screen at double size, the
+ * background dims, and the full terminal boot sequence begins.
  *
- * Uses CSS `transform: scale()` for the zoom animation so the element animates
- * smoothly from its inline position to viewport center.
- *
- * Clicking outside the zoomed terminal or pressing Escape returns to the
- * normal view.
+ * Uses CSS `transform: scale()` for the zoom animation so the element
+ * animates smoothly from its inline position to viewport center.
  */
 export default function HeroTerminal() {
   const [powered, setPowered] = useState(false);
@@ -113,7 +129,7 @@ export default function HeroTerminal() {
       // Start gapless spin loop slightly before boot ends for seamless transition
       scheduleTimer(() => {
         spinAudioRef.current?.play();
-      }, 19900);
+      }, SPIN_START_DELAY_MS);
       
       // Recursive seek scheduling — each invocation picks a fresh random delay.
       // All timeouts go through scheduleTimer so clearAllTimers catches them.
@@ -135,7 +151,7 @@ export default function HeroTerminal() {
       };
       
       // Start seek loop after boot finishes
-      scheduleTimer(scheduleNextSeek, 20300);
+      scheduleTimer(scheduleNextSeek, SEEK_START_DELAY_MS);
     }
     
     // Zoom after 200ms delay
@@ -160,7 +176,7 @@ export default function HeroTerminal() {
     }
     
     /* Wait for zoom-out animation to finish before killing power. */
-    scheduleTimer(() => setPowered(false), 500);
+    scheduleTimer(() => setPowered(false), ZOOM_OUT_DURATION_MS);
   }, [clearAllTimers, scheduleTimer]);
 
   /** Close on Escape key. */
@@ -196,47 +212,35 @@ export default function HeroTerminal() {
           transform: zoomed
             ? `translate(${centerOffset.x}px, ${centerOffset.y}px) scale(2)`
             : "translate(0, 0) scale(1)",
-
         }}
       >
-        {/* Layer 1: Black backing surface — hinterste Ebene hinter dem transparenten Frame */}
+        {/* Layer 1: Black backing surface — behind the transparent frame center */}
         <div
           className="absolute"
           style={{
-            top: "calc(14% + 2px - 13px)",
-            left: "calc(21% - 10px)",
-            width: "calc(58% + 20px)",
-            height: "calc(45% + 20px)",
-            borderRadius: "31px",
+            ...CRT.backing,
             background: "#000",
             zIndex: 1,
           }}
         />
 
-        {/* Layer 2: Terminal content — über dem Backing, unter dem Glow */}
+        {/* Layer 2: Terminal content — above backing, below glow */}
         <div
           className="pointer-events-none absolute overflow-hidden"
           style={{
-            top: "calc(14% + 2px)",
-            left: "21%",
-            width: "58%",
-            height: "45%",
+            ...CRT.content,
             zIndex: 2,
           }}
         >
           <TerminalScreen powered={powered} />
         </div>
 
-        {/* Layer 3: CRT edge glow + scanline sweep — über dem Content, unter dem Frame.
-            Inner glow simuliert die Randabdunklung eines echten CRT-Monitors. */}
+        {/* Layer 3: CRT edge glow + scanline sweep — above content, below frame.
+            Inner glow simulates the edge darkening of a real CRT monitor. */}
         <div
           className="pointer-events-none absolute"
           style={{
-            top: "calc(14% + 2px - 18px)",
-            left: "calc(21% - 15px)",
-            width: "calc(58% + 30px)",
-            height: "calc(45% + 30px)",
-            borderRadius: "31px",
+            ...CRT.glow,
             boxShadow:
               "inset 0 0 16px 7px rgba(var(--accent-glow), 0.42), inset 0 0 38px 14px rgba(var(--accent-glow), 0.15)",
             overflow: "hidden",
@@ -283,15 +287,11 @@ export default function HeroTerminal() {
           )}
         </div>
 
-        {/* Layer 4: CRT glass sheen — permanent specular highlight on curved glass. */}
+        {/* Layer 4: CRT glass sheen — permanent specular highlight on curved glass */}
         <div
           className="pointer-events-none absolute"
           style={{
-            top: "calc(14% + 2px - 13px)",
-            left: "calc(21% - 10px)",
-            width: "calc(58% + 20px)",
-            height: "calc(45% + 20px)",
-            borderRadius: "31px",
+            ...CRT.backing,
             background: [
               /* Diagonal specular highlight — light reflecting off convex glass with theme tint */
               "linear-gradient(135deg, rgba(var(--accent-glow), 0.15) 0%, rgba(var(--accent-glow), 0.05) 35%, transparent 60%)",
@@ -302,9 +302,7 @@ export default function HeroTerminal() {
           }}
         />
 
-
-
-        {/* CRT Monitor frame — on top of everything, transparent center reveals content behind */}
+        {/* CRT Monitor frame — on top of everything, transparent center reveals content */}
         <Image
           src="/tuikit-logo.png"
           alt="TUIkit Logo"

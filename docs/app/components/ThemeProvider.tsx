@@ -61,10 +61,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   /**
    * After hydration, read the actual theme from DOM/localStorage.
-   * This runs once on mount and sets the React state to match reality.
+   * This is a legitimate hydration-sync pattern: the server cannot know
+   * which theme the user has stored in localStorage, so we must read it
+   * on the client and update React state to match reality.
    */
   useEffect(() => {
     const actual = getInitialTheme();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration sync: server cannot know the persisted theme
     setThemeState(actual);
     document.documentElement.setAttribute("data-theme", actual);
   }, []);

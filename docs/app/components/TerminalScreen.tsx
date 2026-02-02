@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TERMINAL_SCRIPT } from "./terminal-data";
 import type { BootStep, SchoolStep, JoshuaStep, TerminalEntry } from "../../lib/terminal-parser";
 
@@ -11,7 +11,7 @@ import type { BootStep, SchoolStep, JoshuaStep, TerminalEntry } from "../../lib/
 function parseTerminalFormatting(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  let key = 0;
+  let partKey = 0;
   
   // If no tags found, return plain text
   if (!text.includes('<')) {
@@ -36,16 +36,16 @@ function parseTerminalFormatting(text: string): React.ReactNode[] {
     
     switch (tag) {
       case 'b':
-        parts.push(<strong key={key++} className="font-bold">{content}</strong>);
+        parts.push(<strong key={partKey++} className="font-bold">{content}</strong>);
         break;
       case 'u':
-        parts.push(<span key={key++} className="underline">{content}</span>);
+        parts.push(<span key={partKey++} className="underline">{content}</span>);
         break;
       case 's':
-        parts.push(<span key={key++} className="line-through">{content}</span>);
+        parts.push(<span key={partKey++} className="line-through">{content}</span>);
         break;
       case 'i':
-        parts.push(<em key={key++} className="italic">{content}</em>);
+        parts.push(<em key={partKey++} className="italic">{content}</em>);
         break;
     }
     
@@ -121,6 +121,24 @@ const INTERACTIONS: TerminalEntry[] = TERMINAL_SCRIPT.unixCommands;
 /** Maximum visible columns and rows on the CRT screen area. */
 const COLS = 37;
 const ROWS = 9;
+
+/** Cursor blink interval in ms (classic terminal feel). */
+const CURSOR_BLINK_MS = 530;
+/** Per-character delay range for system "typewriter" output (ms). */
+const SYSTEM_TYPE_MIN_MS = 40;
+const SYSTEM_TYPE_MAX_MS = 70;
+/** Fade-in duration when terminal powers on (ms). */
+const FADE_IN_DURATION_MS = 6000;
+/** Delay between output lines during command playback (ms). */
+const OUTPUT_LINE_DELAY_MS = 120;
+/** Glitch scheduling range (ms). */
+const GLITCH_INITIAL_MIN_MS = 2000;
+const GLITCH_INITIAL_MAX_MS = 3000;
+const GLITCH_INTERVAL_MIN_MS = 3000;
+const GLITCH_INTERVAL_MAX_MS = 5000;
+/** Glitch reset delay range (ms). */
+const GLITCH_RESET_MIN_MS = 50;
+const GLITCH_RESET_MAX_MS = 70;
 
 /** Load configuration from parsed script. */
 const { config } = TERMINAL_SCRIPT;
@@ -207,16 +225,17 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCursorVisible((prev) => !prev);
-    }, 530);
+    }, CURSOR_BLINK_MS);
     return () => clearInterval(interval);
   }, []);
 
-  /** Fade in entire terminal over 6 seconds when powered on. */
+  /** Fade in entire terminal over 6 seconds when powered on.
+   *  Cleanup resets opacity to 0 when powered off (avoids setState-in-effect). */
   useEffect(() => {
     if (!powered) return;
     
     const startTime = Date.now();
-    const duration = 6000; // 6 seconds
+    const duration = FADE_IN_DURATION_MS;
     let rafId: number;
     
     const fadeIn = () => {
@@ -233,33 +252,32 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      setTerminalOpacity(0);
     };
   }, [powered]);
 
-  /** Reset opacity when powered off. */
-  useLayoutEffect(() => {
-    if (!powered) {
-      setTerminalOpacity(0);
-    }
-  }, [powered]);
-
-  /** Reset state when powered off. */
+  /** Reset terminal state when powered off.
+   *  Cleanup handles abort + state reset so no setState lives in the effect body. */
   useEffect(() => {
-    if (powered) return;
-    
-    /* Abort any running animation. */
-    if (abortRef.current) {
-      abortRef.current.abort();
-      abortRef.current = null;
-    }
-    
-    /* Clear terminal state */
-    linesRef.current = [];
-    lineRefsRef.current = [];
-    setLines([]);
-    schoolPlayedRef.current = false;
-    joshuaPlayedRef.current = false;
-    usedIndicesRef.current.clear();
+    if (!powered) return;
+
+    // Capture ref values inside effect to satisfy exhaustive-deps rule.
+    const usedIndices = usedIndicesRef.current;
+
+    return () => {
+      /* Abort any running animation. */
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
+      /* Clear terminal state */
+      linesRef.current = [];
+      lineRefsRef.current = [];
+      setLines([]);
+      schoolPlayedRef.current = false;
+      joshuaPlayedRef.current = false;
+      usedIndices.clear();
+    };
   }, [powered]);
 
   /** Main animation loop — only runs when powered. */
@@ -291,7 +309,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
       if (!text.includes('<')) {
         for (let charIdx = 0; charIdx < text.length; charIdx++) {
           updateLastLine(text.slice(0, charIdx + 1));
-          await sleep(40 + Math.random() * 30);
+          await sleep(SYSTEM_TYPE_MIN_MS + Math.random() * (SYSTEM_TYPE_MAX_MS - SYSTEM_TYPE_MIN_MS));
         }
         return;
       }
@@ -321,10 +339,11 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
       for (const segment of segments) {
         if (segment.type === 'plain') {
           // Plain text: type char-by-char
+          const charDelay = () => SYSTEM_TYPE_MIN_MS + Math.random() * (SYSTEM_TYPE_MAX_MS - SYSTEM_TYPE_MIN_MS);
           for (let i = 0; i < segment.content.length; i++) {
             displayText += segment.content[i];
             updateLastLine(displayText);
-            await sleep(40 + Math.random() * 30);
+            await sleep(charDelay());
           }
         } else {
           // Wrapped text: show opening/closing tags instantly, type content char-by-char
@@ -337,10 +356,11 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
           
           // Now type the content character-by-character BETWEEN the tags
           const beforeClose = displayText.slice(0, -closeTag.length);
+          const charDelay = () => SYSTEM_TYPE_MIN_MS + Math.random() * (SYSTEM_TYPE_MAX_MS - SYSTEM_TYPE_MIN_MS);
           for (let i = 0; i < segment.content.length; i++) {
             const typed = beforeClose + segment.content.slice(0, i + 1) + closeTag;
             updateLastLine(typed);
-            await sleep(40 + Math.random() * 30);
+            await sleep(charDelay());
           }
           displayText = beforeClose + segment.content + closeTag;
         }
@@ -549,7 +569,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
 
           for (const outputLine of entry.output) {
             pushLine(outputLine);
-            await sleep(120);
+            await sleep(OUTPUT_LINE_DELAY_MS);
           }
 
           await sleep(PAUSE_AFTER_OUTPUT_MS);
@@ -584,7 +604,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     const triggerGlitch = () => {
       const lineElements = lineRefsRef.current.filter((el): el is HTMLDivElement => el !== null);
       if (lineElements.length === 0) {
-        timeout = setTimeout(triggerGlitch, 3000 + Math.random() * 5000);
+        timeout = setTimeout(triggerGlitch, GLITCH_INTERVAL_MIN_MS + Math.random() * (GLITCH_INTERVAL_MAX_MS - GLITCH_INTERVAL_MIN_MS));
         return;
       }
 
@@ -611,12 +631,12 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
           element.style.transition = "transform 0.05s";
           element.style.transform = "translateX(0)";
         }
-      }, 50 + Math.random() * 70);
+      }, GLITCH_RESET_MIN_MS + Math.random() * (GLITCH_RESET_MAX_MS - GLITCH_RESET_MIN_MS));
 
-      timeout = setTimeout(triggerGlitch, 3000 + Math.random() * 5000);
+      timeout = setTimeout(triggerGlitch, GLITCH_INTERVAL_MIN_MS + Math.random() * (GLITCH_INTERVAL_MAX_MS - GLITCH_INTERVAL_MIN_MS));
     };
 
-    timeout = setTimeout(triggerGlitch, 2000 + Math.random() * 3000);
+    timeout = setTimeout(triggerGlitch, GLITCH_INITIAL_MIN_MS + Math.random() * (GLITCH_INITIAL_MAX_MS - GLITCH_INITIAL_MIN_MS));
     return () => {
       clearTimeout(timeout);
       clearTimeout(resetTimeout);
@@ -638,14 +658,12 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
       }}
     >
       <div
-        className="flex flex-col justify-start items-start"
+        className="flex flex-col justify-start items-start text-glow"
         style={{
           fontFamily: "WarText, monospace",
           fontSize: "13px",
           lineHeight: "1.2",
           color: "var(--foreground)",
-          textShadow:
-            "0 0 4px rgba(var(--accent-glow), 0.6), 0 0 10px rgba(var(--accent-glow), 0.25)",
         }}
       >
         {lines.map((entry, index) => {
