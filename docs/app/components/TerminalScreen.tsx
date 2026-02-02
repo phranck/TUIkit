@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TERMINAL_SCRIPT } from "./terminal-data";
 
 /** A single terminal interaction: command + optional output lines. */
@@ -83,7 +83,7 @@ interface TerminalScreenProps {
  * cycles through terminal interactions, with the Joshua easter egg after
  * 23 seconds.
  */
-export default function TerminalScreen({ powered, zoomed = false }: TerminalScreenProps) {
+export default function TerminalScreen({ powered }: TerminalScreenProps) {
   const [lines, setLines] = useState<string[]>([]);
   const [cursorVisible, setCursorVisible] = useState(true);
   const [terminalOpacity, setTerminalOpacity] = useState(0);
@@ -138,42 +138,55 @@ export default function TerminalScreen({ powered, zoomed = false }: TerminalScre
 
   /** Fade in entire terminal over 6 seconds when powered on. */
   useEffect(() => {
-    if (powered) {
-      setTerminalOpacity(0);
+    if (!powered) return;
+    
+    const startTime = Date.now();
+    const duration = 6000; // 6 seconds
+    let rafId: number;
+    
+    const fadeIn = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setTerminalOpacity(progress);
       
-      const startTime = Date.now();
-      const duration = 6000; // 6 seconds
-      
-      const fadeIn = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        setTerminalOpacity(progress);
-        
-        if (progress < 1) {
-          requestAnimationFrame(fadeIn);
-        }
-      };
-      
-      requestAnimationFrame(fadeIn);
-    } else {
+      if (progress < 1) {
+        rafId = requestAnimationFrame(fadeIn);
+      }
+    };
+    
+    rafId = requestAnimationFrame(fadeIn);
+    
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [powered]);
+
+  /** Reset opacity when powered off. */
+  useLayoutEffect(() => {
+    if (!powered) {
       setTerminalOpacity(0);
     }
   }, [powered]);
 
   /** Reset state when powered off. */
   useEffect(() => {
-    if (!powered) {
-      /* Abort any running animation. */
-      if (abortRef.current) {
-        abortRef.current.abort();
-        abortRef.current = null;
-      }
-      clearScreen();
-      schoolPlayedRef.current = false;
-      joshuaPlayedRef.current = false;
-      usedIndicesRef.current.clear();
+    if (powered) return;
+    
+    /* Abort any running animation. */
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
     }
-  }, [powered, clearScreen]);
+    
+    /* Clear terminal state */
+    linesRef.current = [];
+    // eslint-disable-next-line react-hooks/immutability
+    lineRefsRef.current = [];
+    setLines([]);
+    schoolPlayedRef.current = false;
+    joshuaPlayedRef.current = false;
+    usedIndicesRef.current.clear();
+  }, [powered]);
 
   /** Main animation loop — only runs when powered. */
   useEffect(() => {

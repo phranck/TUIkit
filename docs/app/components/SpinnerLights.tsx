@@ -109,8 +109,11 @@ export default function SpinnerLights() {
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      for (const timer of removalTimersRef.current) clearTimeout(timer);
-      removalTimersRef.current.clear();
+      // Copy ref value to avoid stale closure warning
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const timers = removalTimersRef.current;
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
     };
   }, []);
 
