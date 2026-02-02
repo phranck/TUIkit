@@ -83,7 +83,7 @@ public struct RenderContext {
     /// The central dependency container for framework services.
     ///
     /// Provides access to lifecycle tracking, key event dispatch,
-    /// and preference storage without relying on singletons.
+    /// and preference storage via constructor injection.
     let tuiContext: TUIContext
 
     /// Creates a new RenderContext.
