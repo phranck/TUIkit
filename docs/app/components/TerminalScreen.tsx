@@ -12,8 +12,15 @@ function parseTerminalFormatting(text: string): React.ReactNode[] {
   let lastIndex = 0;
   let key = 0;
   
+  // If no tags found, return plain text
+  if (!text.includes('<')) {
+    return [text];
+  }
+  
   // Match <b>, <u>, <s>, <i> tags
-  const regex = /<(b|u|s|i)>(.+?)<\/\1>/g;
+  // Use [\s\S] instead of . to match any character including newlines
+  // Use non-greedy match to capture content including spaces
+  const regex = /<(b|u|s|i)>([\s\S]+?)<\/\1>/g;
   let match: RegExpExecArray | null;
   
   while ((match = regex.exec(text)) !== null) {
@@ -50,6 +57,56 @@ function parseTerminalFormatting(text: string): React.ReactNode[] {
   }
   
   return parts.length > 0 ? parts : [text];
+}
+
+/**
+ * Truncate a string to a maximum visible length, preserving HTML tags.
+ * Tags like <u>, </u>, <b>, </b> etc. are not counted toward the visible length.
+ * If truncation happens inside a tag pair, the closing tag is appended to keep
+ * the markup well-formed so parseTerminalFormatting can match it.
+ */
+function truncateToVisibleLength(text: string, maxVisible: number): string {
+  // No tags? Simple truncation.
+  if (!text.includes('<')) {
+    return text.length > maxVisible ? text.slice(0, maxVisible) : text;
+  }
+
+  let result = "";
+  let visibleCount = 0;
+  let index = 0;
+  const openTags: string[] = []; // stack of open tag names
+
+  while (index < text.length && visibleCount < maxVisible) {
+    if (text[index] === '<') {
+      // Find end of tag
+      const closeIndex = text.indexOf('>', index);
+      if (closeIndex === -1) break;
+      const tag = text.slice(index, closeIndex + 1);
+      result += tag;
+
+      // Track open/close tags
+      const openMatch = tag.match(/^<([busi])>$/);
+      const closeMatch = tag.match(/^<\/([busi])>$/);
+      if (openMatch) {
+        openTags.push(openMatch[1]);
+      } else if (closeMatch) {
+        openTags.pop();
+      }
+
+      index = closeIndex + 1;
+    } else {
+      result += text[index];
+      visibleCount++;
+      index++;
+    }
+  }
+
+  // Close any open tags that were cut off
+  for (let tagIdx = openTags.length - 1; tagIdx >= 0; tagIdx--) {
+    result += `</${openTags[tagIdx]}>`;
+  }
+
+  return result;
 }
 
 /** A single terminal interaction: command + optional output lines. */
@@ -133,12 +190,13 @@ interface TerminalScreenProps {
  * 23 seconds.
  */
 export default function TerminalScreen({ powered }: TerminalScreenProps) {
-  const [lines, setLines] = useState<string[]>([]);
+  const [lines, setLines] = useState<{key: number, text: string}[]>([]);
   const [cursorVisible, setCursorVisible] = useState(true);
   const [terminalOpacity, setTerminalOpacity] = useState(0);
 
   const usedIndicesRef = useRef<Set<number>>(new Set());
-  const linesRef = useRef<string[]>([]);
+  const linesRef = useRef<{key: number, text: string}[]>([]);
+  const lineKeyCounterRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const sessionTimeRef = useRef<number>(0);
   const schoolPlayedRef = useRef(false);
@@ -157,16 +215,17 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     return INTERACTIONS[index];
   }, []);
 
-  const pushLine = useCallback((line: string) => {
-    const updated = [...linesRef.current, line];
+  const pushLine = useCallback((text: string) => {
+    const entry = { key: lineKeyCounterRef.current++, text };
+    const updated = [...linesRef.current, entry];
     const trimmed = updated.length > ROWS ? updated.slice(updated.length - ROWS) : updated;
     linesRef.current = trimmed;
     setLines(trimmed);
   }, []);
 
-  const updateLastLine = useCallback((line: string) => {
+  const updateLastLine = useCallback((text: string) => {
     const updated = [...linesRef.current];
-    updated[updated.length - 1] = line;
+    updated[updated.length - 1] = { ...updated[updated.length - 1], text };
     linesRef.current = updated;
     setLines([...updated]);
   }, []);
@@ -254,11 +313,71 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
         });
       });
 
+    /**
+     * Types text character-by-character, but handles HTML tags specially:
+     * - Opening and closing tags appear instantly as a pair
+     * - Only the visible text content is typed character-by-character
+     */
     const typeSystem = async (text: string) => {
       pushLine("");
-      for (let charIdx = 0; charIdx < text.length; charIdx++) {
-        updateLastLine(text.slice(0, charIdx + 1));
-        await sleep(40 + Math.random() * 30);
+      
+      // If no HTML tags, just type normally
+      if (!text.includes('<')) {
+        for (let charIdx = 0; charIdx < text.length; charIdx++) {
+          updateLastLine(text.slice(0, charIdx + 1));
+          await sleep(40 + Math.random() * 30);
+        }
+        return;
+      }
+      
+      // Match paired tags with their content: <tag>content</tag>
+      const pairedTagRegex = /<([busi])>([\s\S]*?)<\/\1>/g;
+      const segments: Array<{type: 'plain' | 'wrapped', tag?: string, content: string}> = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      
+      while ((match = pairedTagRegex.exec(text)) !== null) {
+        // Add plain text before this tag pair
+        if (match.index > lastIndex) {
+          segments.push({type: 'plain', content: text.slice(lastIndex, match.index)});
+        }
+        // Add the content inside tags (we'll wrap it during typing)
+        segments.push({type: 'wrapped', tag: match[1], content: match[2]});
+        lastIndex = pairedTagRegex.lastIndex;
+      }
+      // Add remaining plain text
+      if (lastIndex < text.length) {
+        segments.push({type: 'plain', content: text.slice(lastIndex)});
+      }
+      
+      // Type segments
+      let displayText = "";
+      for (const segment of segments) {
+        if (segment.type === 'plain') {
+          // Plain text: type char-by-char
+          for (let i = 0; i < segment.content.length; i++) {
+            displayText += segment.content[i];
+            updateLastLine(displayText);
+            await sleep(40 + Math.random() * 30);
+          }
+        } else {
+          // Wrapped text: show opening/closing tags instantly, type content char-by-char
+          const openTag = `<${segment.tag}>`;
+          const closeTag = `</${segment.tag}>`;
+          
+          // Insert opening and closing tags instantly
+          displayText += openTag + closeTag;
+          updateLastLine(displayText);
+          
+          // Now type the content character-by-character BETWEEN the tags
+          const beforeClose = displayText.slice(0, -closeTag.length);
+          for (let i = 0; i < segment.content.length; i++) {
+            const typed = beforeClose + segment.content.slice(0, i + 1) + closeTag;
+            updateLastLine(typed);
+            await sleep(40 + Math.random() * 30);
+          }
+          displayText = beforeClose + segment.content + closeTag;
+        }
       }
     };
 
@@ -558,15 +677,17 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
             "0 0 4px rgba(var(--accent-glow), 0.6), 0 0 10px rgba(var(--accent-glow), 0.25)",
         }}
       >
-        {lines.map((line, index) => {
-          const displayLine = line.length > COLS ? line.slice(0, COLS) : line;
+        {lines.map((entry, index) => {
+          const displayLine = truncateToVisibleLength(entry.text, COLS);
+          const formatted = parseTerminalFormatting(displayLine);
+          const isEmpty = entry.text === "";
           return (
             <div
-              key={index}
+              key={entry.key}
               ref={(element) => { lineRefsRef.current[index] = element; }}
               className="whitespace-pre overflow-hidden"
             >
-              {parseTerminalFormatting(displayLine)}
+              {isEmpty ? "\u00A0" : formatted}
               {index === lines.length - 1 && cursorVisible && (
                 <span className="opacity-80">_</span>
               )}

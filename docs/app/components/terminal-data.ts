@@ -44,7 +44,7 @@ export const TERMINAL_SCRIPT = {
     {
       "type": "dots",
       "text": "Detecting drives",
-      "dotCount": 12,
+      "dotCount": 17,
       "delayAfter": 1800
     },
     {
@@ -76,7 +76,7 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "UNIX System V Release 3.2",
+      "text": "<b>UNIX System V</b> Release 3.2",
       "delayAfter": 1400
     },
     {
@@ -106,27 +106,27 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "[ok] tty",
+      "text": "<b>[ok]</b> tty",
       "delayAfter": 900
     },
     {
       "type": "instant",
-      "text": "[ok] hd",
+      "text": "<b>[ok]</b> hd",
       "delayAfter": 800
     },
     {
       "type": "instant",
-      "text": "[ok] lp",
+      "text": "<b>[ok]</b> lp",
       "delayAfter": 750
     },
     {
       "type": "instant",
-      "text": "[ok] inet",
+      "text": "<b>[ok]</b> inet",
       "delayAfter": 900
     },
     {
       "type": "instant",
-      "text": "[ok] pty",
+      "text": "<b>[ok]</b> pty",
       "delayAfter": 1600
     },
     {
@@ -142,32 +142,32 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "syslogd        [ok]",
+      "text": "syslogd        <b>[ok]</b>",
       "delayAfter": 1100
     },
     {
       "type": "instant",
-      "text": "inetd          [ok]",
+      "text": "inetd          <b>[ok]</b>",
       "delayAfter": 900
     },
     {
       "type": "instant",
-      "text": "cron           [ok]",
+      "text": "cron           <b>[ok]</b>",
       "delayAfter": 1000
     },
     {
       "type": "instant",
-      "text": "telnetd        [ok]",
+      "text": "telnetd        <b>[ok]</b>",
       "delayAfter": 1800
     },
     {
       "type": "instant",
-      "text": "uucpd          [ok]",
+      "text": "uucpd          <b>[ok]</b>",
       "delayAfter": 700
     },
     {
       "type": "instant",
-      "text": "ftpd           [ok]",
+      "text": "ftpd           <b>[ok]</b>",
       "delayAfter": 900
     },
     {
@@ -182,7 +182,7 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "Password: <b><i></b>**</i>",
+      "text": "Password: ********",
       "delayAfter": 1400
     },
     {
@@ -207,7 +207,7 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "instant",
-      "text": "<b><i> <u>AUTHORIZED USE ONLY</u> </b></i>",
+      "text": "*** <u>AUTHORIZED USE ONLY</u> ***",
       "delayAfter": 1800
     },
     {
@@ -337,37 +337,32 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "system",
-      "text": "SUBJECT         GRADE",
+      "text": "<u>SUBJECT         GRADE          </u>",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "───────────────────────",
+      "text": "BIOLOGY         F",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "BIOLOGY           F",
+      "text": "ENGLISH         D",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "ENGLISH           D",
+      "text": "HISTORY         D",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "HISTORY           D",
+      "text": "PHYS ED         C",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "PHYS ED           C",
-      "delayAfter": 400
-    },
-    {
-      "type": "system",
-      "text": "MATHEMATICS       F",
+      "text": "MATHEMATICS     F",
       "delayAfter": 1800
     },
     {
@@ -431,37 +426,32 @@ export const TERMINAL_SCRIPT = {
     },
     {
       "type": "system",
-      "text": "SUBJECT         GRADE",
+      "text": "<u>SUBJECT         GRADE          </u>",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "───────────────────────",
+      "text": "BIOLOGY         C",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "BIOLOGY           C",
+      "text": "ENGLISH         B",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "ENGLISH           B",
+      "text": "HISTORY         B",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "HISTORY           B",
+      "text": "PHYS ED         A",
       "delayAfter": 400
     },
     {
       "type": "system",
-      "text": "PHYS ED           A",
-      "delayAfter": 400
-    },
-    {
-      "type": "system",
-      "text": "MATHEMATICS       F",
+      "text": "MATHEMATICS     F",
       "delayAfter": 1800
     },
     {
