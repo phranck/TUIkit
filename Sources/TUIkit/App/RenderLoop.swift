@@ -243,8 +243,11 @@ internal final class RenderLoop<A: App> {
         bgCode: String,
         reset: String
     ) {
+        // Build environment once for both palette resolution and render context
+        let environment = buildEnvironment()
+        let palette = environment.palette
+
         // Use palette colors for status bar (if not explicitly overridden)
-        let palette = buildEnvironment().palette
         let highlightColor =
             statusBar.highlightColor == .cyan
             ? palette.accent
@@ -259,9 +262,6 @@ internal final class RenderLoop<A: App> {
             highlightColor: highlightColor,
             labelColor: labelColor
         )
-
-        // Create render context with current environment for palette colors
-        let environment = buildEnvironment()
 
         let context = RenderContext(
             terminal: terminal,

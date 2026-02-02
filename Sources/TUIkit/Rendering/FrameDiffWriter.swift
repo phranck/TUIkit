@@ -25,7 +25,7 @@
 ///
 /// // Each frame:
 /// let outputLines = writer.buildOutputLines(buffer: buffer, ...)
-/// writer.writeDiff(newLines: outputLines, terminal: terminal, startRow: 1)
+/// writer.writeContentDiff(newLines: outputLines, terminal: terminal, startRow: 1)
 ///
 /// // On terminal resize:
 /// writer.invalidate()
@@ -173,7 +173,11 @@ final class FrameDiffWriter {
 
     // MARK: - Private
 
-    /// Compares two line arrays and writes only the differing lines.
+    /// Writes only the lines that differ between two frames.
+    ///
+    /// Uses ``computeChangedRows(newLines:previousLines:)`` to determine
+    /// which rows need updating, then writes only those. Also clears any
+    /// leftover lines if the previous frame was taller.
     ///
     /// - Parameters:
     ///   - newLines: The current frame's lines.
@@ -186,19 +190,17 @@ final class FrameDiffWriter {
         terminal: Terminal,
         startRow: Int
     ) {
-        for row in 0..<newLines.count {
-            let newLine = newLines[row]
+        let changedRows = Self.computeChangedRows(
+            newLines: newLines,
+            previousLines: previousLines
+        )
 
-            // Skip if the line is identical to the previous frame
-            if row < previousLines.count && previousLines[row] == newLine {
-                continue
-            }
-
+        for row in changedRows {
             terminal.moveCursor(toRow: startRow + row, column: 1)
-            terminal.write(newLine)
+            terminal.write(newLines[row])
         }
 
-        // If previous frame had more lines, clear the extra ones
+        // If previous frame had more lines, clear the leftover rows
         // (e.g. after terminal resize to smaller height)
         if previousLines.count > newLines.count {
             for row in newLines.count..<previousLines.count {
