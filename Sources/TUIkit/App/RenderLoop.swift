@@ -40,6 +40,14 @@ internal struct RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
     let app: A
 
+    /// The cached scene from the app's body.
+    ///
+    /// Evaluated once at construction time and reused for every frame.
+    /// This ensures that `@State` properties on views inside the scene
+    /// survive across render passes — their `Storage` reference stays alive
+    /// as long as the scene exists.
+    let scene: A.Body
+
     /// The terminal for output and size queries.
     let terminal: Terminal
 
@@ -93,7 +101,6 @@ internal struct RenderLoop<A: App> {
         )
 
         // Render main content (background fill happens in renderScene)
-        let scene = app.body
         renderScene(scene, context: context)
 
         // End lifecycle tracking - triggers onDisappear for removed views
