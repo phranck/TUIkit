@@ -302,6 +302,12 @@ code {
   background-color: color-mix(in srgb, var(--container-body) 50%, transparent);
 }
 
+@utility text-glow {
+  text-shadow:
+    0 0 4px rgba(var(--accent-glow), 0.55),
+    0 0 11px rgba(var(--accent-glow), 0.22);
+}
+
 @keyframes theme-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.75); }

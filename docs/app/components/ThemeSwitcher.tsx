@@ -2,7 +2,11 @@
 
 import { useTheme, themes, type Theme } from "./ThemeProvider";
 
-/** Color dot for each theme, matching Swift palette foreground colors. */
+/**
+ * Fixed foreground color per theme — used for the color dots so each dot
+ * always shows its own theme color regardless of the currently active theme.
+ * Values mirror the --foreground CSS variables in globals.css.
+ */
 const themeColors: Record<Theme, string> = {
   green: "#33ff33",
   amber: "#ffaa00",
