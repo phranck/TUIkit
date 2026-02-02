@@ -31,6 +31,17 @@ import Foundation
 /// - Terminal size queries
 /// - Raw mode configuration
 /// - Safe input and output
+/// - Frame-buffered output (all writes collected, flushed in one syscall)
+///
+/// ## Output Buffering
+///
+/// During rendering, call ``beginFrame()`` before writing and ``endFrame()``
+/// after. All ``write(_:)`` calls between them are collected in an internal
+/// `[UInt8]` buffer and flushed as a single `write()` syscall, reducing
+/// per-frame syscalls from ~40+ to exactly 1.
+///
+/// Outside of a frame (setup, teardown), ``write(_:)`` writes immediately
+/// as before — safe by default.
 final class Terminal: @unchecked Sendable {
     /// The width of the terminal in characters.
     var width: Int {
@@ -48,8 +59,22 @@ final class Terminal: @unchecked Sendable {
     /// The original terminal settings.
     private var originalTermios: termios?
 
+    /// Whether frame buffering is active.
+    ///
+    /// When `true`, ``write(_:)`` appends to ``frameBuffer`` instead of
+    /// writing to `STDOUT_FILENO` immediately.
+    private var isBuffering = false
+
+    /// Collects all output bytes during a buffered frame.
+    ///
+    /// Starts empty, grows via ``write(_:)`` calls, flushed by ``endFrame()``.
+    /// Initial capacity of 16 KB covers typical frames without reallocation.
+    private var frameBuffer: [UInt8] = []
+
     /// Creates a new terminal instance.
-    init() {}
+    init() {
+        frameBuffer.reserveCapacity(16_384)
+    }
 
     /// Destructor ensures raw mode is disabled.
     deinit {
@@ -140,30 +165,59 @@ final class Terminal: @unchecked Sendable {
         isRawMode = false
     }
 
+    // MARK: - Output Buffering
+
+    /// Begins a buffered frame.
+    ///
+    /// After this call, all ``write(_:)`` calls append to an internal
+    /// `[UInt8]` buffer instead of issuing syscalls. Call ``endFrame()``
+    /// to flush the collected output in a single `write()` syscall.
+    ///
+    /// This reduces per-frame syscalls from ~40+ (one per `moveCursor` +
+    /// `write` pair) to exactly 1.
+    ///
+    /// Calling `beginFrame()` while already buffering is a no-op —
+    /// nested frames are not supported.
+    func beginFrame() {
+        guard !isBuffering else { return }
+        isBuffering = true
+        frameBuffer.removeAll(keepingCapacity: true)
+    }
+
+    /// Ends a buffered frame and flushes all collected output.
+    ///
+    /// Writes the entire frame buffer to `STDOUT_FILENO` in a single
+    /// syscall, then resets the buffer for the next frame.
+    ///
+    /// Calling `endFrame()` without a preceding ``beginFrame()`` is a
+    /// no-op.
+    func endFrame() {
+        guard isBuffering else { return }
+        isBuffering = false
+        flushBuffer()
+    }
+
     // MARK: - Output
 
     /// Writes a string to the terminal.
     ///
-    /// Uses the POSIX `write` syscall to bypass `stdout` entirely.
-    /// On Linux (Glibc), `stdout` is a shared mutable global that
-    /// Swift 6 strict concurrency rejects. Writing directly to
-    /// `STDOUT_FILENO` avoids the issue without `@preconcurrency`
-    /// or `nonisolated(unsafe)` workarounds.
+    /// When frame buffering is active (between ``beginFrame()`` and
+    /// ``endFrame()``), the string's UTF-8 bytes are appended to the
+    /// internal buffer. Otherwise, the bytes are written directly to
+    /// `STDOUT_FILENO` via the POSIX `write` syscall.
+    ///
+    /// Direct writes bypass `stdout` entirely. On Linux (Glibc),
+    /// `stdout` is a shared mutable global that Swift 6 strict
+    /// concurrency rejects. Writing to `STDOUT_FILENO` avoids the
+    /// issue without `@preconcurrency` or `nonisolated(unsafe)`
+    /// workarounds.
     ///
     /// - Parameter string: The string to write.
     func write(_ string: String) {
-        string.utf8CString.withUnsafeBufferPointer { buffer in
-            // buffer includes null terminator — exclude it
-            let count = buffer.count - 1
-            guard count >= 1 else { return }
-            buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
-                var written = 0
-                while written < count {
-                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
-                    if result <= 0 { break }
-                    written += result
-                }
-            }
+        if isBuffering {
+            appendToBuffer(string)
+        } else {
+            writeImmediate(string)
         }
     }
 
@@ -234,6 +288,56 @@ final class Terminal: @unchecked Sendable {
     /// Exits the alternate screen buffer.
     func exitAlternateScreen() {
         write(ANSIRenderer.exitAlternateScreen)
+    }
+
+    // MARK: - Private Output Helpers
+
+    /// Appends a string's UTF-8 bytes to the frame buffer.
+    ///
+    /// - Parameter string: The string to buffer.
+    private func appendToBuffer(_ string: String) {
+        frameBuffer.append(contentsOf: string.utf8)
+    }
+
+    /// Writes all buffered bytes to `STDOUT_FILENO` in a single syscall.
+    ///
+    /// Handles partial writes by looping until all bytes are written.
+    /// Resets the buffer after flushing.
+    private func flushBuffer() {
+        guard !frameBuffer.isEmpty else { return }
+        frameBuffer.withUnsafeBufferPointer { buffer in
+            guard let baseAddress = buffer.baseAddress else { return }
+            let count = buffer.count
+            var written = 0
+            while written < count {
+                let result = Foundation.write(STDOUT_FILENO, baseAddress + written, count - written)
+                if result <= 0 { break }
+                written += result
+            }
+        }
+        frameBuffer.removeAll(keepingCapacity: true)
+    }
+
+    /// Writes a string directly to `STDOUT_FILENO` without buffering.
+    ///
+    /// Used outside of frames (setup, teardown) where immediate
+    /// output is required.
+    ///
+    /// - Parameter string: The string to write immediately.
+    private func writeImmediate(_ string: String) {
+        string.utf8CString.withUnsafeBufferPointer { buffer in
+            // buffer includes null terminator — exclude it
+            let count = buffer.count - 1
+            guard count >= 1 else { return }
+            buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
+                var written = 0
+                while written < count {
+                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
+                    if result <= 0 { break }
+                    written += result
+                }
+            }
+        }
     }
 
     // MARK: - Input
