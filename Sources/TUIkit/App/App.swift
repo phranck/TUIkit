@@ -142,10 +142,14 @@ internal final class AppRunner<A: App> {
                 renderer.render()
             }
 
-            // Read key events
+            // Read key events (non-blocking with VTIME=0)
             if let keyEvent = terminal.readKeyEvent() {
                 inputHandler.handle(keyEvent)
             }
+
+            // Sleep 40ms to yield CPU (replaces VTIME=1 blocking read).
+            // This sets the maximum frame rate to ~25 FPS.
+            usleep(40_000)
         }
 
         // Cleanup

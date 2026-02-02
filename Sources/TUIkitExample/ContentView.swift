@@ -18,6 +18,7 @@ enum DemoPage: Int, CaseIterable {
     case overlays
     case layout
     case buttons
+    case spinners
 }
 
 // MARK: - Content View (Page Router)
@@ -62,7 +63,7 @@ struct ContentView: View {
                 .statusBarItems {
                     StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
                     StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
-                    StatusBarItem(shortcut: Shortcut.range("1", "6"), label: "jump")
+                    StatusBarItem(shortcut: Shortcut.range("1", "7"), label: "jump")
                 }
         case .textStyles:
             TextStylesPage()
@@ -81,6 +82,9 @@ struct ContentView: View {
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .buttons:
             ButtonsPage()
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .spinners:
+            SpinnersPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }
