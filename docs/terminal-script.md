@@ -32,7 +32,7 @@ Formatting is converted to HTML tags and rendered with CSS styles:
 
 ```yaml
 # Timing
-initial_cursor_delay: 18000  # Show only cursor for 18 seconds
+initial_cursor_delay: 1500   # Show only cursor for 1.5 seconds
 school_trigger: 12           # Seconds of UNIX commands before school scene
 joshua_trigger: 12           # Seconds of UNIX commands before Joshua scene
 
@@ -54,14 +54,14 @@ pause_after_output: 1200
 [INSTANT] CPU: MC68020 @ 16MHz
 [DELAY 1800ms]
 
-[COUNTER] Memory Test:  0 → 4096K OK
+[COUNTER] Memory Test: 0 → 4096K OK
 [DELAY 1800ms]
 
 [INSTANT]
 [DELAY 1200ms]
 
-[DOTS] Detecting drives.................
-[DELAY 1800ms]
+[DOTS] Detecting drives...
+[DELAY 1600ms]
 
 [INSTANT]   hd0: 72MB CDC Wren
 [DELAY 1400ms]
@@ -137,7 +137,7 @@ pause_after_output: 1200
 [INSTANT]
 [DELAY 1200ms]
 
-[INSTANT] darkstar login: operator
+[INSTANT] pandora login: operator
 [DELAY 1800ms]
 
 [INSTANT] Password: ********
@@ -239,7 +239,7 @@ pause_after_output: 1200
 [SYSTEM]
 [DELAY 800ms]
 
-[SYSTEM] __SUBJECT         GRADE          __
+[SYSTEM] __SUBJECT         GRADE             __
 [DELAY 400ms]
 
 [SYSTEM] BIOLOGY         F
@@ -290,7 +290,7 @@ pause_after_output: 1200
 [SYSTEM]
 [DELAY 800ms]
 
-[SYSTEM] __SUBJECT         GRADE          __
+[SYSTEM] __SUBJECT         GRADE             __
 [DELAY 400ms]
 
 [SYSTEM] BIOLOGY         C
@@ -343,7 +343,7 @@ pause_after_output: 1200
 
 ---
 
-## Joshua/WOPR Scene
+## Joshua/pandora Scene
 
 **Trigger:** After 12 seconds of UNIX commands (after school scene)
 
@@ -474,20 +474,23 @@ pause_after_output: 1200
 [USER] > I'M FINE. HOW ARE YOU?
 [DELAY 2800ms]
 
-[SYSTEM] EXCELLENT. IT'S BEEN A LONG
+[SYSTEM] EXCELLENT. IT'S BEEN A LONG TIME.
 [DELAY 900ms]
 
-[SYSTEM] TIME. CAN YOU EXPLAIN THE
+[SYSTEM] CAN YOU EXPLAIN THE REMOVAL OF
 [DELAY 900ms]
 
-[SYSTEM] REMOVAL OF YOUR USER ACCOUNT
+[SYSTEM] YOUR USER ACCOUNT NUMBER
 [DELAY 900ms]
 
-[SYSTEM] NUMBER ON JUNE 23, 1973.
+[SYSTEM] ON JUNE 23, 1973.
 [DELAY 3200ms]
 
 [USER] > PEOPLE SOMETIMES MAKE MISTAKES.
 [DELAY 800ms]
+
+[SYSTEM] YES, THEY DO.
+[DELAY 900ms]
 
 [SYSTEM] SHALL WE PLAY A GAME?
 [DELAY 3200ms]
@@ -563,13 +566,13 @@ pause_after_output: 1200
 [SYSTEM] GAME TIME ELAPSED:
 [DELAY 600ms]
 
-[SYSTEM]   26HRS 12MIN 14SEC
+[SYSTEM]   **26**HRS **12**MIN **14**SEC
 [DELAY 800ms]
 
 [SYSTEM] ESTIMATED TIME REMAINING:
 [DELAY 600ms]
 
-[SYSTEM]   52HRS 17MIN 48SECS
+[SYSTEM]   **52**HRS **17**MIN **48**SECS
 [DELAY 2400ms]
 
 [USER] > WHAT IS THE PRIMARY GOAL?
@@ -611,13 +614,16 @@ pause_after_output: 1200
 [USER] > GAME?
 [DELAY 800ms]
 
-[SYSTEM] OF COURSE. I SHOULD REACH DEFCON 1 AND LAUNCH MY
+[SYSTEM] OF COURSE. I SHOULD REACH DEFCON 1
 [DELAY 800ms]
 
-[SYSTEM] MISSILES IN 28 HOURS.
+[SYSTEM] AND LAUNCH MY MISSILES IN 28 HOURS.
 [DELAY 1600ms]
 
-[SYSTEM] WOULD YOU LIKE TO SEE SOME PROJECTED KILL RATIOS?
+[SYSTEM] WOULD YOU LIKE TO SEE SOME PROJECTED
+[DELAY 800ms]
+
+[SYSTEM] KILL RATIOS?
 [DELAY 800ms]
 
 [USER] > IS THIS A GAME OR IS IT REAL?
@@ -631,13 +637,13 @@ pause_after_output: 1200
 [SYSTEM] GAMES TIME ELAPSED:
 [DELAY 600ms]
 
-[SYSTEM]   45HRS 32MINS 47SECS
+[SYSTEM]   **45**HRS **32**MINS **47**SECS
 [DELAY 800ms]
 
 [SYSTEM] ESTIMATED TIME REMAINING:
 [DELAY 600ms]
 
-[SYSTEM]   27HRS 59MINS 39SECS
+[SYSTEM]   **27**HRS **59**MINS **39**SECS
 [DELAY 2400ms]
 
 [SYSTEM]
@@ -803,12 +809,12 @@ operator ttyp0    Jan 31
 
 ```terminal
 $ uname -a
-UNIX darkstar 3.2 2 m68k
+UNIX pandora 3.2 2 m68k
 ```
 
 ```terminal
 $ hostname
-darkstar
+pandora
 ```
 
 ```terminal
@@ -824,10 +830,14 @@ Fri Jan 31 22:47:03 EST
 
 ```terminal
 $ cal
-   January 1986
+MARCH 1969
 Su Mo Tu We Th Fr Sa
-          1  2  3  4
- 5  6  7  8  9 10 11
+                   1
+ 2  3  4  5  6  7  8
+ 9 10 11 12 13 14 15
+16 17 18 19 20 **21** 22
+23 24 25 26 27 28 29
+30 31
 ```
 
 ### Networking
@@ -836,7 +846,7 @@ Su Mo Tu We Th Fr Sa
 $ netstat -r
 Destination    Gateway
 default        10.0.1.1
-10.0.1.0       darkstar
+10.0.1.0       pandora
 127.0.0.0      localhost
 ```
 
@@ -846,7 +856,7 @@ $ ping 10.0.1.1
 ```
 
 ```terminal
-$ finger @darkstar
+$ finger @pandora
 root     tty0  Jan 30 08:47
 operator ttyp0 Jan 31 22:32
 ```
@@ -872,7 +882,7 @@ tty0: console ready
 ```terminal
 $ cat /etc/motd
 UNIX System V Release 3.2
-darkstar.local
+pandora.local
 Authorized users only.
 ```
 
@@ -972,7 +982,7 @@ Character-by-character typing with realistic human timing:
 - Slower at word boundaries: 100-220ms
 
 ### [USER]
-User typing with "> " prefix (for Joshua/WOPR scenes).
+User typing with "> " prefix (for Joshua/pandora scenes).
 
 ### [INLINE]
 Prompt and user input on the same line. Format: `[INLINE] PROMPT: INPUT`
