@@ -7,7 +7,7 @@ import type { TerminalScript } from "../../lib/terminal-parser";
 
 export const TERMINAL_SCRIPT: TerminalScript = {
   "config": {
-    "initialCursorDelay": 18000,
+    "initialCursorDelay": 1500,
     "schoolTrigger": 12,
     "joshuaTrigger": 12,
     "typeMin": 40,
@@ -28,7 +28,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
     },
     {
       "type": "counter",
-      "prefix": "Memory Test:  ",
+      "prefix": "Memory Test: ",
       "target": 4096,
       "suffix": "K OK",
       "delayAfter": 1800
@@ -41,8 +41,8 @@ export const TERMINAL_SCRIPT: TerminalScript = {
     {
       "type": "dots",
       "text": "Detecting drives",
-      "dotCount": 17,
-      "delayAfter": 1800
+      "dotCount": 3,
+      "delayAfter": 1600
     },
     {
       "type": "instant",
@@ -169,7 +169,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
     },
     {
       "type": "instant",
-      "text": "darkstar login: operator",
+      "text": "pandora login: operator",
       "delayAfter": 1800
     },
     {
@@ -503,572 +503,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
       "delayAfter": 2000
     }
   ],
-  "joshuaSequence": [
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "LOG ON",
-      "delayAfter": 1200
-    },
-    {
-      "type": "user",
-      "text": "HELP LOG ON",
-      "delayAfter": 1800
-    },
-    {
-      "type": "system",
-      "text": "HELP NOT AVAILABLE.",
-      "delayAfter": 1400
-    },
-    {
-      "type": "system",
-      "text": "LOG ON",
-      "delayAfter": 1800
-    },
-    {
-      "type": "user",
-      "text": "HELP GAMES",
-      "delayAfter": 1800
-    },
-    {
-      "type": "system",
-      "text": "GAMES REFERS TO MODELS,",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "SIMULATIONS AND GAMES WHICH",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "HAVE TACTICAL AND STRATEGIC",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "APPLICATIONS.",
-      "delayAfter": 2400
-    },
-    {
-      "type": "user",
-      "text": "LIST GAMES",
-      "delayAfter": 1800
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "system",
-      "text": "FALKEN'S MAZE",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "BLACK JACK",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "CHECKERS",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "CHESS",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "FIGHTER COMBAT",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "DESERT WARFARE",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "THEATREWIDE TACTICAL WARFARE",
-      "delayAfter": 300
-    },
-    {
-      "type": "system",
-      "text": "GLOBAL THERMONUCLEAR WAR",
-      "delayAfter": 3000
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "LOG ON",
-      "delayAfter": 1200
-    },
-    {
-      "type": "user",
-      "text": "SYSTEM",
-      "delayAfter": 1800
-    },
-    {
-      "type": "system",
-      "text": "IDENTIFICATION NOT RECOGNIZED",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "BY SYSTEM.",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "YOU HAVE BEEN DISCONNECTED.",
-      "delayAfter": 2400
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "LOG ON",
-      "delayAfter": 1200
-    },
-    {
-      "type": "user",
-      "text": "JOSHUA",
-      "delayAfter": 2000
-    },
-    {
-      "type": "barrage",
-      "delayAfter": 2000
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 1500
-    },
-    {
-      "type": "system",
-      "text": "GREETINGS PROFESSOR FALKEN",
-      "delayAfter": 2400
-    },
-    {
-      "type": "user",
-      "text": "HELLO",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "HOW ARE YOU FEELING TODAY?",
-      "delayAfter": 2800
-    },
-    {
-      "type": "user",
-      "text": "I'M FINE. HOW ARE YOU?",
-      "delayAfter": 2800
-    },
-    {
-      "type": "system",
-      "text": "EXCELLENT. IT'S BEEN A LONG TIME.",
-      "delayAfter": 900
-    },
-    {
-      "type": "system",
-      "text": "CAN YOU EXPLAIN THE REMOVAL OF",
-      "delayAfter": 900
-    },
-    {
-      "type": "system",
-      "text": "YOUR USER ACCOUNT NUMBER",
-      "delayAfter": 900
-    },
-    {
-      "type": "system",
-      "text": "ON JUNE 23, 1973.",
-      "delayAfter": 3200
-    },
-    {
-      "type": "user",
-      "text": "PEOPLE SOMETIMES MAKE MISTAKES.",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "YES, THEY DO.",
-      "delayAfter": 900
-    },
-    {
-      "type": "system",
-      "text": "SHALL WE PLAY A GAME?",
-      "delayAfter": 3200
-    },
-    {
-      "type": "user",
-      "text": "HOW ABOUT GLOBAL",
-      "delayAfter": 800
-    },
-    {
-      "type": "user",
-      "text": "THERMONUCLEAR WAR?",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "WOULDN'T YOU PREFER A GOOD",
-      "delayAfter": 1000
-    },
-    {
-      "type": "system",
-      "text": "GAME OF CHESS?",
-      "delayAfter": 3200
-    },
-    {
-      "type": "user",
-      "text": "LATER. LET'S PLAY GLOBAL",
-      "delayAfter": 800
-    },
-    {
-      "type": "user",
-      "text": "THERMONUCLEAR WAR.",
-      "delayAfter": 3000
-    },
-    {
-      "type": "system",
-      "text": "FINE.",
-      "delayAfter": 1200
-    },
-    {
-      "type": "system",
-      "text": "WHAT SIDE DO YOU WANT?",
-      "delayAfter": 2400
-    },
-    {
-      "type": "user",
-      "text": "I'LL BE THE RUSSIANS.",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "LIST PRIMARY TARGETS.",
-      "delayAfter": 3000
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "GREETINGS PROFESSOR FALKEN",
-      "delayAfter": 2000
-    },
-    {
-      "type": "user",
-      "text": "I AM NOT FALKEN.",
-      "delayAfter": 1000
-    },
-    {
-      "type": "user",
-      "text": "FALKEN IS DEAD.",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "I'M SORRY TO HEAR THAT,",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "PROFESSOR.",
-      "delayAfter": 1200
-    },
-    {
-      "type": "system",
-      "text": "YESTERDAY'S GAME WAS INTERRUPTED.",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "ALTHOUGH PRIMARY GOAL WAS NOT",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "YET ACHIEVED,",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "SOLUTION IS NEAR.",
-      "delayAfter": 2400
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "system",
-      "text": "GAME TIME ELAPSED:",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "<b>26</b>HRS <b>12</b>MIN <b>14</b>SEC",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "ESTIMATED TIME REMAINING:",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "<b>52</b>HRS <b>17</b>MIN <b>48</b>SECS",
-      "delayAfter": 2400
-    },
-    {
-      "type": "user",
-      "text": "WHAT IS THE PRIMARY GOAL?",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "YOU SHOULD KNOW, PROFESSOR.",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "YOU PROGRAMMED ME.",
-      "delayAfter": 2800
-    },
-    {
-      "type": "user",
-      "text": "WHAT IS THE PRIMARY GOAL?",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "TO WIN THE GAME.",
-      "delayAfter": 3200
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "LOG ON",
-      "delayAfter": 1200
-    },
-    {
-      "type": "user",
-      "text": "JOSHUA",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "GREETINGS PROFESSOR FALKEN",
-      "delayAfter": 2000
-    },
-    {
-      "type": "user",
-      "text": "HELLO, ARE YOU STILL PLAYING THE",
-      "delayAfter": 600
-    },
-    {
-      "type": "user",
-      "text": "GAME?",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "OF COURSE. I SHOULD REACH DEFCON 1",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "AND LAUNCH MY MISSILES IN 28 HOURS.",
-      "delayAfter": 1600
-    },
-    {
-      "type": "system",
-      "text": "WOULD YOU LIKE TO SEE SOME PROJECTED",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "KILL RATIOS?",
-      "delayAfter": 800
-    },
-    {
-      "type": "user",
-      "text": "IS THIS A GAME OR IS IT REAL?",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "WHAT'S THE DIFFERENCE?",
-      "delayAfter": 3200
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "system",
-      "text": "GAMES TIME ELAPSED:",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "<b>45</b>HRS <b>32</b>MINS <b>47</b>SECS",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "ESTIMATED TIME REMAINING:",
-      "delayAfter": 600
-    },
-    {
-      "type": "system",
-      "text": "<b>27</b>HRS <b>59</b>MINS <b>39</b>SECS",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "",
-      "delayAfter": 400
-    },
-    {
-      "type": "system",
-      "text": "YOU ARE A HARD MAN TO REACH.",
-      "delayAfter": 1200
-    },
-    {
-      "type": "system",
-      "text": "COULD NOT FIND YOU IN",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "SEATTLE AND NO TERMINAL IS",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "IN OPERATION AT YOUR",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "CLASSIFIED ADDRESS.",
-      "delayAfter": 1200
-    },
-    {
-      "type": "system",
-      "text": "ARE YOU ALIVE OR DEAD TODAY?",
-      "delayAfter": 800
-    },
-    {
-      "type": "user",
-      "text": "STOP. PLAYING. I'M DEAD.",
-      "delayAfter": 2800
-    },
-    {
-      "type": "system",
-      "text": "IMPROBABLE.",
-      "delayAfter": 1600
-    },
-    {
-      "type": "system",
-      "text": "THERE ARE NO DEATH RECORDS ON FILE",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "FOR FALKEN,",
-      "delayAfter": 800
-    },
-    {
-      "type": "system",
-      "text": "STEPHEN W.",
-      "delayAfter": 3000
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 2000
-    },
-    {
-      "type": "system",
-      "text": "GREETINGS PROFESSOR FALKEN",
-      "delayAfter": 2400
-    },
-    {
-      "type": "user",
-      "text": "HELLO",
-      "delayAfter": 2400
-    },
-    {
-      "type": "system",
-      "text": "A STRANGE GAME.",
-      "delayAfter": 2800
-    },
-    {
-      "type": "system",
-      "text": "THE ONLY WINNING MOVE IS",
-      "delayAfter": 1400
-    },
-    {
-      "type": "system",
-      "text": "NOT TO PLAY.",
-      "delayAfter": 3600
-    },
-    {
-      "type": "system",
-      "text": "",
-      "delayAfter": 1200
-    },
-    {
-      "type": "system",
-      "text": "HOW ABOUT A NICE GAME OF",
-      "delayAfter": 1000
-    },
-    {
-      "type": "system",
-      "text": "CHESS?",
-      "delayAfter": 4000
-    },
-    {
-      "type": "clear"
-    },
-    {
-      "type": "pause",
-      "delayAfter": 1000
-    }
-  ],
+  "joshuaSequence": [],
   "unixCommands": [
     {
       "prompt": "$",
@@ -1172,14 +607,14 @@ export const TERMINAL_SCRIPT: TerminalScript = {
       "prompt": "$",
       "command": "uname -a",
       "output": [
-        "UNIX darkstar 3.2 2 m68k"
+        "UNIX pandora 3.2 2 m68k"
       ]
     },
     {
       "prompt": "$",
       "command": "hostname",
       "output": [
-        "darkstar"
+        "pandora"
       ]
     },
     {
@@ -1217,7 +652,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
       "output": [
         "Destination    Gateway",
         "default        10.0.1.1",
-        "10.0.1.0       darkstar",
+        "10.0.1.0       pandora",
         "127.0.0.0      localhost"
       ]
     },
@@ -1230,7 +665,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
     },
     {
       "prompt": "$",
-      "command": "finger @darkstar",
+      "command": "finger @pandora",
       "output": [
         "root     tty0  Jan 30 08:47",
         "operator ttyp0 Jan 31 22:32"
@@ -1259,7 +694,7 @@ export const TERMINAL_SCRIPT: TerminalScript = {
       "command": "cat /etc/motd",
       "output": [
         "UNIX System V Release 3.2",
-        "darkstar.local",
+        "pandora.local",
         "Authorized users only."
       ]
     },

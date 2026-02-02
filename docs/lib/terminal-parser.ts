@@ -344,7 +344,7 @@ export function parseTerminalScript(): TerminalScript {
   
   // Parse config
   const config = {
-    initialCursorDelay: 18000,
+    initialCursorDelay: 1500,
     schoolTrigger: 12,
     joshuaTrigger: 12,
     typeMin: 40,
