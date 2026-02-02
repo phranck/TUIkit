@@ -23,9 +23,9 @@ export default function HeroTerminal() {
   const [powered, setPowered] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  /** Guards against rapid double-clicks bypassing the `powered` state check. */
+  const poweringOnRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const zoomTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const powerOffTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   /** Offset to translate the element from its inline position to viewport center. */
   const [centerOffset, setCenterOffset] = useState({ x: 0, y: 0 });
@@ -39,7 +39,6 @@ export default function HeroTerminal() {
   const seekAudioRef = useRef<Howl | null>(null);
   /** Tracks all pending setTimeout handles for cleanup on power-off/unmount. */
   const pendingTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
-  const seekTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   /** Helper: schedule a timeout and track it for cleanup. */
   const scheduleTimer = useCallback((callback: () => void, delayMs: number) => {
@@ -55,12 +54,6 @@ export default function HeroTerminal() {
   const clearAllTimers = useCallback(() => {
     for (const handle of pendingTimersRef.current) clearTimeout(handle);
     pendingTimersRef.current.clear();
-    if (seekTimeoutRef.current) {
-      clearTimeout(seekTimeoutRef.current);
-      seekTimeoutRef.current = undefined;
-    }
-    if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-    if (powerOffTimerRef.current) clearTimeout(powerOffTimerRef.current);
   }, []);
 
   // Preload audio on mount
@@ -105,7 +98,8 @@ export default function HeroTerminal() {
 
   /** Power on: play boot sound, start spin loop, add random seeks. */
   const handlePowerOn = useCallback(() => {
-    if (powered) return;
+    if (powered || poweringOnRef.current) return;
+    poweringOnRef.current = true;
     
     setPowered(true);
     setCenterOffset(computeCenterOffset());
@@ -121,10 +115,10 @@ export default function HeroTerminal() {
         spinAudioRef.current?.play();
       }, 19900);
       
-      // Recursive seek scheduling — each invocation picks a fresh random delay
+      // Recursive seek scheduling — each invocation picks a fresh random delay.
+      // All timeouts go through scheduleTimer so clearAllTimers catches them.
       const scheduleNextSeek = () => {
-        const delay = 15000 + Math.random() * 10000;
-        seekTimeoutRef.current = setTimeout(() => {
+        scheduleTimer(() => {
           seekAudioRef.current?.seek(0);
           seekAudioRef.current?.play();
           
@@ -137,7 +131,7 @@ export default function HeroTerminal() {
           }
           
           scheduleNextSeek();
-        }, delay);
+        }, 15000 + Math.random() * 10000);
       };
       
       // Start seek loop after boot finishes
@@ -145,13 +139,14 @@ export default function HeroTerminal() {
     }
     
     // Zoom after 200ms delay
-    zoomTimerRef.current = setTimeout(() => setZoomed(true), 200);
+    scheduleTimer(() => setZoomed(true), 200);
   }, [powered, computeCenterOffset, scheduleTimer]);
 
   /** Power off: stop all sounds, play power-off sound, zoom back. */
   const handlePowerOff = useCallback(() => {
     setZoomed(false);
     clearAllTimers();
+    poweringOnRef.current = false;
     
     // Stop all running sounds
     powerOnAudioRef.current?.stop();
@@ -165,8 +160,8 @@ export default function HeroTerminal() {
     }
     
     /* Wait for zoom-out animation to finish before killing power. */
-    powerOffTimerRef.current = setTimeout(() => setPowered(false), 500);
-  }, [clearAllTimers]);
+    scheduleTimer(() => setPowered(false), 500);
+  }, [clearAllTimers, scheduleTimer]);
 
   /** Close on Escape key. */
   useEffect(() => {
