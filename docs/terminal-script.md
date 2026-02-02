@@ -33,13 +33,13 @@ pause_after_output: 1200
 [INSTANT] CPU: MC68020 @ 16MHz
 [DELAY 1800ms]
 
-[COUNTER] Memory Test: 0 → 4096K OK
+[COUNTER] Memory Test:  0 → 4096K OK
 [DELAY 1800ms]
 
 [INSTANT]
 [DELAY 1200ms]
 
-[DOTS] Detecting drives...
+[DOTS] Detecting drives............
 [DELAY 1800ms]
 
 [INSTANT]   hd0: 72MB CDC Wren
@@ -61,9 +61,6 @@ pause_after_output: 1200
 
 [INSTANT] UNIX System V Release 3.2
 [DELAY 1400ms]
-
-[INSTANT] darkstar (runlevel 2)
-[DELAY 1200ms]
 
 [INSTANT]
 [DELAY 800ms]
@@ -113,6 +110,12 @@ pause_after_output: 1200
 [INSTANT]   telnetd        [ok]
 [DELAY 1800ms]
 
+[INSTANT]   uucpd          [ok]
+[DELAY 700ms]
+
+[INSTANT]   ftpd           [ok]
+[DELAY 900ms]
+
 [INSTANT]
 [DELAY 1200ms]
 
@@ -125,10 +128,10 @@ pause_after_output: 1200
 [INSTANT]
 [DELAY 1000ms]
 
-[INSTANT] Last login: Fri Jan 30
+[INSTANT] Last login: Fri Jan 30 on ttyp0
 [DELAY 1200ms]
 
-[INSTANT]   on ttyp0 from 10.0.1.5
+[INSTANT] from 10.0.1.5
 [DELAY 1400ms]
 
 [INSTANT]
