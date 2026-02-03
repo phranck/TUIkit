@@ -347,25 +347,68 @@ public struct Color: Sendable, Equatable {
         }
     }
 
-    /// Adjusts brightness by a signed amount.
+    /// Adjusts a color's lightness by the given amount in HSL space.
     ///
-    /// Positive values lighten, negative values darken. Works with all color types
-    /// (ANSI, 256-palette, RGB) by converting to RGB first. The result is always
-    /// an RGB color.
+    /// Positive values lighten, negative values darken. Converts to HSL first,
+    /// adjusts only the lightness component, then converts back to RGB.
+    /// This preserves hue and saturation, preventing colors from shifting
+    /// toward gray when lightened or darkened.
     ///
-    /// - Parameter amount: The adjustment amount (-1 to 1).
+    /// - Parameter amount: The lightness adjustment (-1 to 1).
     /// - Returns: The adjusted color as RGB, or self if semantic (unresolved).
     private func adjusted(by amount: Double) -> Self {
         guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
-        let shift = 255 * amount
-        let newRed = UInt8(min(255, max(0, Double(red) + shift)))
-        let newGreen = UInt8(min(255, max(0, Double(green) + shift)))
-        let newBlue = UInt8(min(255, max(0, Double(blue) + shift)))
+        let (hue, saturation, lightness) = Self.rgbToHSL(red: red, green: green, blue: blue)
+        let newLightness = min(100, max(0, lightness + amount * 100))
 
-        return .rgb(newRed, newGreen, newBlue)
+        return .hsl(hue, saturation, newLightness)
+    }
+
+    /// Converts RGB components to HSL (hue 0–360, saturation 0–100, lightness 0–100).
+    ///
+    /// - Parameters:
+    ///   - red: Red component (0–255).
+    ///   - green: Green component (0–255).
+    ///   - blue: Blue component (0–255).
+    /// - Returns: A tuple of (hue, saturation, lightness) in their standard ranges.
+    static func rgbToHSL(red: UInt8, green: UInt8, blue: UInt8) -> (hue: Double, saturation: Double, lightness: Double) {
+        let normalizedRed = Double(red) / 255.0
+        let normalizedGreen = Double(green) / 255.0
+        let normalizedBlue = Double(blue) / 255.0
+
+        let maxComponent = max(normalizedRed, normalizedGreen, normalizedBlue)
+        let minComponent = min(normalizedRed, normalizedGreen, normalizedBlue)
+        let delta = maxComponent - minComponent
+
+        let lightness = (maxComponent + minComponent) / 2.0
+
+        guard delta > 0 else {
+            // Achromatic (gray)
+            return (hue: 0, saturation: 0, lightness: lightness * 100)
+        }
+
+        let saturation: Double
+        if lightness < 0.5 {
+            saturation = delta / (maxComponent + minComponent)
+        } else {
+            saturation = delta / (2.0 - maxComponent - minComponent)
+        }
+
+        let hue: Double
+        switch maxComponent {
+        case normalizedRed:
+            let segment = (normalizedGreen - normalizedBlue) / delta
+            hue = 60 * (segment < 0 ? segment + 6 : segment)
+        case normalizedGreen:
+            hue = 60 * ((normalizedBlue - normalizedRed) / delta + 2)
+        default:
+            hue = 60 * ((normalizedRed - normalizedGreen) / delta + 4)
+        }
+
+        return (hue: hue, saturation: saturation * 100, lightness: lightness * 100)
     }
 
     /// Returns a color with adjusted opacity (simulated via color mixing).
