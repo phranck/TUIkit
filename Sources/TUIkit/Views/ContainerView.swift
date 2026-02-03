@@ -288,6 +288,10 @@ extension ContainerView: Renderable {
         var innerContext = context
         innerContext.availableWidth = max(0, context.availableWidth - 2)
 
+        // Consume focus indicator so nested containers don't also show it.
+        let indicatorColor = context.focusIndicatorColor
+        innerContext.focusIndicatorColor = nil
+
         // Render body content first to determine its width.
         let paddedContent = content.padding(padding)
         let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: innerContext)
@@ -328,7 +332,8 @@ extension ContainerView: Renderable {
                 innerWidth: innerWidth,
                 borderStyle: effectiveBorderStyle,
                 borderColor: borderColor,
-                context: context
+                context: context,
+                focusIndicatorColor: indicatorColor
             )
         }
     }
@@ -342,7 +347,8 @@ extension ContainerView: Renderable {
         innerWidth: Int,
         borderStyle: BorderStyle,
         borderColor: Color,
-        context: RenderContext
+        context: RenderContext,
+        focusIndicatorColor: Color? = nil
     ) -> FrameBuffer {
         let palette = context.environment.palette
         var lines: [String] = []
@@ -355,7 +361,8 @@ extension ContainerView: Renderable {
                     innerWidth: innerWidth,
                     color: borderColor,
                     title: titleText,
-                    titleColor: titleColor?.resolve(with: palette) ?? palette.accent
+                    titleColor: titleColor?.resolve(with: palette) ?? palette.accent,
+                    focusIndicatorColor: focusIndicatorColor
                 )
             )
         } else {
@@ -363,7 +370,8 @@ extension ContainerView: Renderable {
                 BorderRenderer.standardTopBorder(
                     style: borderStyle,
                     innerWidth: innerWidth,
-                    color: borderColor
+                    color: borderColor,
+                    focusIndicatorColor: focusIndicatorColor
                 )
             )
         }

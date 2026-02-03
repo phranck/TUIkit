@@ -71,6 +71,7 @@ internal final class AppRunner<A: App> {
     private var signals = SignalManager()
     private var inputHandler: InputHandler!
     private var renderer: RenderLoop<A>!
+    private var pulseTimer: PulseTimer!
     private var isRunning = false
 
     init(app: A) {
@@ -107,6 +108,7 @@ internal final class AppRunner<A: App> {
             appearanceManager: appearanceManager,
             tuiContext: tuiContext
         )
+        self.pulseTimer = PulseTimer(renderNotifier: appState)
     }
 
     func run() {
@@ -126,8 +128,11 @@ internal final class AppRunner<A: App> {
 
         isRunning = true
 
+        // Start the breathing focus indicator animation
+        pulseTimer.start()
+
         // Initial render
-        renderer.render()
+        renderer.render(pulsePhase: pulseTimer.phase)
 
         // Main loop
         while isRunning {
@@ -146,7 +151,7 @@ internal final class AppRunner<A: App> {
             // Check if terminal was resized or state changed
             if signals.consumeRerenderFlag() || appState.needsRender {
                 appState.didRender()
-                renderer.render()
+                renderer.render(pulsePhase: pulseTimer.phase)
             }
 
             // Read key events (non-blocking with VTIME=0)
@@ -158,6 +163,9 @@ internal final class AppRunner<A: App> {
             // This sets the maximum frame rate to ~25 FPS.
             usleep(40_000)
         }
+
+        // Stop pulse timer before cleanup
+        pulseTimer.stop()
 
         // Cleanup
         cleanup()
