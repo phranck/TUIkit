@@ -60,9 +60,13 @@ protocol Renderable {
 
 /// The context for rendering a view.
 ///
-/// Contains layout constraints, terminal information, environment values,
-/// and the central `TUIContext` that views need to determine their size,
-/// content, and access framework services.
+/// Contains layout constraints, environment values, and the central
+/// `TUIContext` that views need to determine their size, content, and
+/// access framework services.
+///
+/// `RenderContext` is a pure data container — it does not hold a reference
+/// to `Terminal`. All terminal I/O happens in ``RenderLoop`` after the
+/// view tree has been rendered into a ``FrameBuffer``.
 ///
 /// - Important: This is framework infrastructure passed to
 ///   ``ViewModifier/modify(buffer:context:)``. Most developers only need
@@ -76,9 +80,6 @@ public struct RenderContext {
 
     /// The environment values for this render pass.
     public var environment: EnvironmentValues
-
-    /// The target terminal.
-    let terminal: Terminal
 
     /// The central dependency container for framework services.
     ///
@@ -96,29 +97,26 @@ public struct RenderContext {
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
-    ///   - terminal: The target terminal.
-    ///   - availableWidth: The available width (defaults to terminal width).
-    ///   - availableHeight: The available height (defaults to terminal height).
+    ///   - availableWidth: The available width in characters.
+    ///   - availableHeight: The available height in lines.
     ///   - environment: The environment values (defaults to empty).
     ///   - tuiContext: The TUI context (defaults to a fresh instance).
     ///   - identity: The view identity path (defaults to root).
     init(
-        terminal: Terminal = Terminal(),
-        availableWidth: Int? = nil,
-        availableHeight: Int? = nil,
+        availableWidth: Int,
+        availableHeight: Int,
         environment: EnvironmentValues = EnvironmentValues(),
         tuiContext: TUIContext = TUIContext(),
         identity: ViewIdentity = ViewIdentity(path: "")
     ) {
-        self.terminal = terminal
-        self.availableWidth = availableWidth ?? terminal.width
-        self.availableHeight = availableHeight ?? terminal.height
+        self.availableWidth = availableWidth
+        self.availableHeight = availableHeight
         self.environment = environment
         self.tuiContext = tuiContext
         self.identity = identity
     }
 
-    /// Creates a new context with the same terminal and size but different environment.
+    /// Creates a new context with the same size but different environment.
     ///
     /// - Parameter environment: The new environment values.
     /// - Returns: A new RenderContext with the updated environment.
