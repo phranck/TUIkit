@@ -133,7 +133,7 @@ extension Alert where Actions == EmptyView {
 // MARK: - Preset Alert Styles
 
 extension Alert {
-    /// Creates a warning-style alert with yellow border.
+    /// Creates a warning-style alert with palette warning colors.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Warning").
@@ -148,13 +148,13 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .yellow,
-            titleColor: .yellow,
+            borderColor: .palette.warning,
+            titleColor: .palette.warning,
             actions: actions
         )
     }
 
-    /// Creates an error-style alert with red border.
+    /// Creates an error-style alert with palette error colors.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Error").
@@ -169,13 +169,13 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .red,
-            titleColor: .red,
+            borderColor: .palette.error,
+            titleColor: .palette.error,
             actions: actions
         )
     }
 
-    /// Creates an info-style alert with cyan border.
+    /// Creates an info-style alert with palette info colors.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Info").
@@ -190,13 +190,13 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .cyan,
-            titleColor: .cyan,
+            borderColor: .palette.info,
+            titleColor: .palette.info,
             actions: actions
         )
     }
 
-    /// Creates a success-style alert with green border.
+    /// Creates a success-style alert with palette success colors.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Success").
@@ -211,8 +211,8 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .green,
-            titleColor: .green,
+            borderColor: .palette.success,
+            titleColor: .palette.success,
             actions: actions
         )
     }
@@ -223,21 +223,33 @@ extension Alert {
 extension Alert where Actions == EmptyView {
     /// Creates a warning-style alert without actions.
     public static func warning(title: String = "Warning", message: String) -> Alert<EmptyView> {
-        Alert.warning(title: title, message: message) { EmptyView() }
+        Alert<EmptyView>(
+            title: title, message: message,
+            borderColor: .palette.warning, titleColor: .palette.warning
+        )
     }
 
     /// Creates an error-style alert without actions.
     public static func error(title: String = "Error", message: String) -> Alert<EmptyView> {
-        Alert.error(title: title, message: message) { EmptyView() }
+        Alert<EmptyView>(
+            title: title, message: message,
+            borderColor: .palette.error, titleColor: .palette.error
+        )
     }
 
     /// Creates an info-style alert without actions.
     public static func info(title: String = "Info", message: String) -> Alert<EmptyView> {
-        Alert.info(title: title, message: message) { EmptyView() }
+        Alert<EmptyView>(
+            title: title, message: message,
+            borderColor: .palette.info, titleColor: .palette.info
+        )
     }
 
     /// Creates a success-style alert without actions.
     public static func success(title: String = "Success", message: String) -> Alert<EmptyView> {
-        Alert.success(title: title, message: message) { EmptyView() }
+        Alert<EmptyView>(
+            title: title, message: message,
+            borderColor: .palette.success, titleColor: .palette.success
+        )
     }
 }

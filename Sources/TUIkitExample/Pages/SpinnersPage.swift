@@ -26,7 +26,7 @@ struct SpinnersPage: View {
             }
 
             DemoSection("Custom Color") {
-                Spinner("Installing...", style: .bouncing, color: .green)
+                Spinner("Installing...", style: .bouncing, color: .palette.success)
             }
 
             Spacer()
