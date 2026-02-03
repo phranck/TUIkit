@@ -103,6 +103,12 @@ enum RenderNotifier {
     ///   This is guaranteed because `AppRunner.run()` sets it before
     ///   the first render pass.
     nonisolated(unsafe) static var current = AppState()
+
+    /// The active render cache for subtree memoization.
+    ///
+    /// Set by `AppRunner` alongside ``current``. Cleared on every
+    /// `@State` mutation to invalidate memoized subtrees.
+    nonisolated(unsafe) static var renderCache: RenderCache?
 }
 
 // MARK: - Hydration Context
