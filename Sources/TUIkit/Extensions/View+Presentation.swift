@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Presentation.swift
-//  TUIkit
 //
-//  SwiftUI-style presentation modifiers for alerts and modals.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Alert Presentation
 

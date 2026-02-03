@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  KeyEventDispatcherTests.swift
-//  TUIkit
 //
-//  Tests for KeyEventDispatcher: handler registration, dispatch order, and cleanup.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

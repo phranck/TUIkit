@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Scene.swift
-//  TUIkit
 //
-//  Scene types for TUIkit applications.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// The base protocol for scenes in TUIkit.
 ///

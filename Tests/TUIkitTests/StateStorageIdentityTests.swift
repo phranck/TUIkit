@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StateStorageIdentityTests.swift
-//  TUIkit
 //
-//  Tests for structural state identity: @State survives view reconstruction,
-//  branch switches invalidate state, and nested views get independent state.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  branch switches invalidate state, and nested views get independent state.
 //
 
 import Testing

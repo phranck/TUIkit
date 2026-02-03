@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TUIContext.swift
-//  TUIkit
 //
-//  Central dependency container for framework services.
-//  Owned by AppRunner and threaded through RenderContext.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  Owned by AppRunner and threaded through RenderContext.
 //
 
 import Foundation

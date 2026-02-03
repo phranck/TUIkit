@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TUIkit.swift
-//  TUIkit
 //
-//  A SwiftUI-like framework for Terminal User Interfaces.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 //  TUIkit enables creating TUI applications with a declarative,
 //  SwiftUI-like syntax - without ncurses or other low-level libraries.
 //

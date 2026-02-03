@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BorderStyle.swift
-//  TUIkit
 //
-//  Border styles and character sets for TUI borders.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Defines the visual style of a border.
 ///

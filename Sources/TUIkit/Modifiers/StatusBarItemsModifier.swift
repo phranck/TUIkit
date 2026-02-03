@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StatusBarItemsModifier.swift
-//  TUIkit
 //
-//  A modifier that declares status bar items for a view.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

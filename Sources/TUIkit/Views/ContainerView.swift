@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ContainerView.swift
-//  TUIkit
 //
-//  A unified container component with Header/Body/Footer architecture.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Container Config
 

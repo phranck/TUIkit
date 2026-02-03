@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ButtonRow.swift
-//  TUIkit
 //
-//  A horizontal row of buttons with consistent spacing and right-alignment.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Button Row Helper
 

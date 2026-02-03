@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StatusBarTests.swift
-//  TUIkit
 //
-//  Tests for Shortcut constants, StatusBarItem, StatusBarManager, and StatusBar.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

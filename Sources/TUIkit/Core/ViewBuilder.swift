@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ViewBuilder.swift
-//  TUIkit
 //
-//  Result builder for declarative view composition.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A result builder for View hierarchies.
 ///

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  main.swift
-//  TUIkitExample
 //
-//  Entry point for the TUIkit example application.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 //  This app demonstrates TUIkit capabilities through various demo pages.
 //  Use the menu to navigate between demos.
 //

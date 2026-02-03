@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Menu.swift
-//  TUIkit
 //
-//  A menu view that displays a list of selectable items.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A menu item representing a single selectable option.
 public struct MenuItem: Identifiable {

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ANSIRenderer.swift
-//  TUIkit
 //
-//  ANSI escape code generation for terminal output.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Generates ANSI escape codes for terminal formatting.
 ///

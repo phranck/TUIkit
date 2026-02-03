@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Stacks.swift
-//  TUIkit
 //
-//  Layout containers for vertical and horizontal arrangement.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - VStack
 

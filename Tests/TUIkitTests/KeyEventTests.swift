@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  KeyEventTests.swift
-//  TUIkit
 //
-//  Tests for Key enum, KeyEvent creation, and KeyEvent.parse() terminal input parsing.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

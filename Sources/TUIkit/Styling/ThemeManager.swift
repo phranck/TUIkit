@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ThemeManager.swift
-//  TUIkit
 //
-//  Generic manager for cycling through items that conform to `Cyclable`.
-//  Replaces the previously duplicated palette manager and appearance manager
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  Replaces the previously duplicated palette manager and appearance manager
 //  with a single, reusable implementation.
 //
 

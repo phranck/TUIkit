@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PaletteDefaultTests.swift
-//  TUIkit
 //
-//  Tests for Palette and BlockPalette protocol default implementations.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

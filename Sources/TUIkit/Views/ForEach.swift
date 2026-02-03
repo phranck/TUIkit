@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ForEach.swift
-//  TUIkit
 //
-//  Iteration over data collections for view generation.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A view that generates views from a collection of data.
 ///

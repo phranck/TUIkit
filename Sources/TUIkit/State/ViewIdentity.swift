@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ViewIdentity.swift
-//  TUIkit
 //
-//  Structural identity for views in the render tree.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - View Identity
 

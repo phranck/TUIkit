@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  InputHandler.swift
-//  TUIkit
 //
-//  Dispatches key events through a 3-layer priority chain.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Input Handler
 

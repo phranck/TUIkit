@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ModifierTests.swift
-//  TUIkit
 //
-//  Tests for Frame, Padding, Border, and Background modifiers.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

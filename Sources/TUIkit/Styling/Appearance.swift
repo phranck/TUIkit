@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Appearance.swift
-//  TUIkit
 //
-//  Appearance system for consistent UI control styling.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 //  Appearance defines the visual style of controls (border style, etc.),
 //  while Theme defines the colors. Together they create a complete look.
 //

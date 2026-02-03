@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BorderRendererTests.swift
-//  TUIkit
 //
-//  Tests for BorderRenderer: standard and block border rendering methods.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

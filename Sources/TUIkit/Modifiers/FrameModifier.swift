@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FrameModifier.swift
-//  TUIkit
 //
-//  The .frame() modifier for setting explicit size constraints.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Frame Dimension
 
