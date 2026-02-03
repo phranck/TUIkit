@@ -38,6 +38,10 @@ extension BorderedView: Renderable {
         var contentContext = context
         contentContext.availableWidth = max(1, context.availableWidth - BorderRenderer.borderWidthOverhead)
 
+        // Consume the focus indicator so nested borders don't also show it.
+        let indicatorColor = context.focusIndicatorColor
+        contentContext.focusIndicatorColor = nil
+
         // Render content with reduced width
         let buffer = TUIkit.renderToBuffer(content, context: contentContext)
 
@@ -49,16 +53,25 @@ extension BorderedView: Renderable {
         if isBlockAppearance {
             return renderBlockStyle(buffer: buffer, innerWidth: innerWidth, palette: palette)
         } else {
-            return renderStandardStyle(buffer: buffer, innerWidth: innerWidth, style: effectiveStyle, palette: palette)
+            return renderStandardStyle(
+                buffer: buffer, innerWidth: innerWidth, style: effectiveStyle,
+                palette: palette, focusIndicatorColor: indicatorColor
+            )
         }
     }
 
     /// Renders with standard box-drawing characters.
-    private func renderStandardStyle(buffer: FrameBuffer, innerWidth: Int, style: BorderStyle, palette: any Palette) -> FrameBuffer {
+    private func renderStandardStyle(
+        buffer: FrameBuffer, innerWidth: Int, style: BorderStyle,
+        palette: any Palette, focusIndicatorColor: Color?
+    ) -> FrameBuffer {
         let borderColor = color?.resolve(with: palette) ?? palette.border
         var lines: [String] = []
 
-        lines.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderColor))
+        lines.append(BorderRenderer.standardTopBorder(
+            style: style, innerWidth: innerWidth, color: borderColor,
+            focusIndicatorColor: focusIndicatorColor
+        ))
         for line in buffer.lines {
             lines.append(
                 BorderRenderer.standardContentLine(
