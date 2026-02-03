@@ -40,13 +40,13 @@ private enum OverlayDemo: Int, CaseIterable {
         case .alertStandard:
             "A standard alert with default theme colors. Uses .alert(isPresented:) modifier."
         case .alertWarning:
-            "A warning-style alert with yellow border and title. Uses Alert.warning() preset."
+            "A warning-style alert with palette warning colors. Uses Alert.warning() preset."
         case .alertError:
-            "An error-style alert with red border and title. Uses Alert.error() preset."
+            "An error-style alert with palette error colors. Uses Alert.error() preset."
         case .alertInfo:
-            "An info-style alert with cyan border and title. Uses Alert.info() preset."
+            "An info-style alert with palette info colors. Uses Alert.info() preset."
         case .alertSuccess:
-            "A success-style alert with green border and title. Uses Alert.success() preset."
+            "A success-style alert with palette success colors. Uses Alert.success() preset."
         case .dialog:
             "A Dialog view with custom content. More flexible than Alert — accepts any views."
         case .dialogWithFooter:
@@ -186,8 +186,8 @@ struct OverlaysPage: View {
             Alert(
                 title: "Warning",
                 message: "Something might go wrong. Please check your input.",
-                borderColor: .yellow,
-                titleColor: .yellow
+                borderColor: .palette.warning,
+                titleColor: .palette.warning
             ) {
                 dismissButton
             }
@@ -197,8 +197,8 @@ struct OverlaysPage: View {
             Alert(
                 title: "Error",
                 message: "An unexpected error occurred. Please try again.",
-                borderColor: .red,
-                titleColor: .red
+                borderColor: .palette.error,
+                titleColor: .palette.error
             ) {
                 dismissButton
             }
@@ -208,8 +208,8 @@ struct OverlaysPage: View {
             Alert(
                 title: "Info",
                 message: "This is an informational message for the user.",
-                borderColor: .cyan,
-                titleColor: .cyan
+                borderColor: .palette.info,
+                titleColor: .palette.info
             ) {
                 dismissButton
             }
@@ -219,8 +219,8 @@ struct OverlaysPage: View {
             Alert(
                 title: "Success",
                 message: "Operation completed successfully!",
-                borderColor: .green,
-                titleColor: .green
+                borderColor: .palette.success,
+                titleColor: .palette.success
             ) {
                 dismissButton
             }
