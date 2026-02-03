@@ -17,12 +17,14 @@
 /// VStack {
 ///     Text("Main content")
 /// }
-/// .alert("Warning", isPresented: $showAlert, message: "Are you sure?") {
+/// .alert("Warning", isPresented: $showAlert) {
 ///     Button("Yes") { showAlert = false }
 ///     Button("No") { showAlert = false }
+/// } message: {
+///     Text("Are you sure?")
 /// }
 /// ```
-public struct AlertPresentationModifier<Content: View, Actions: View>: View {
+public struct AlertPresentationModifier<Content: View, Actions: View, Message: View>: View {
     /// The base content to render.
     let content: Content
 
@@ -32,8 +34,8 @@ public struct AlertPresentationModifier<Content: View, Actions: View>: View {
     /// The alert title.
     let title: String
 
-    /// The alert message (optional).
-    let message: String?
+    /// The alert message content (optional).
+    let message: Message?
 
     /// The alert action buttons.
     let actions: Actions
@@ -61,27 +63,24 @@ extension AlertPresentationModifier: Renderable {
             return TUIkit.renderToBuffer(content, context: context)
         }
 
-        // Build the alert view
-        let alert: Alert<Actions>
+        // Render message content to string if provided
+        let messageString: String
         if let message = message {
-            alert = Alert(
-                title: title,
-                message: message,
-                borderStyle: borderStyle,
-                borderColor: borderColor,
-                titleColor: titleColor,
-                actions: { actions }
-            )
+            let messageBuffer = TUIkit.renderToBuffer(message, context: context)
+            messageString = messageBuffer.lines.joined(separator: "\n").stripped
         } else {
-            alert = Alert(
-                title: title,
-                message: "",
-                borderStyle: borderStyle,
-                borderColor: borderColor,
-                titleColor: titleColor,
-                actions: { actions }
-            )
+            messageString = ""
         }
+
+        // Build the alert view
+        let alert = Alert(
+            title: title,
+            message: messageString,
+            borderStyle: borderStyle,
+            borderColor: borderColor,
+            titleColor: titleColor,
+            actions: { actions }
+        )
 
         // Render dimmed base with centered alert overlay
         let dimmedBase = DimmedModifier(content: content)

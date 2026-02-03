@@ -22,9 +22,11 @@ extension View {
     /// VStack {
     ///     Button("Show Alert") { showAlert = true }
     /// }
-    /// .alert("Warning", isPresented: $showAlert, message: "Are you sure?") {
+    /// .alert("Warning", isPresented: $showAlert) {
     ///     Button("Yes") { showAlert = false }
     ///     Button("Cancel", style: .secondary) { showAlert = false }
+    /// } message: {
+    ///     Text("Are you sure?")
     /// }
     /// ```
     ///
@@ -33,25 +35,29 @@ extension View {
     ///   - isPresented: A binding to a Boolean value that determines whether
     ///     to present the alert.
     ///   - actions: A ViewBuilder returning the alert action buttons.
-    ///   - message: The alert message text.
-    ///   - borderStyle: Optional border style (default: uses theme default).
-    ///   - borderColor: Optional border color (default: uses theme border).
-    ///   - titleColor: Optional title color (default: uses theme foreground).
+    ///   - message: A ViewBuilder returning the alert message content.
     /// - Returns: A view that presents an alert conditionally.
-    public func alert<Actions: View>(
+    ///
+    /// ## TUIKit Extensions
+    ///
+    /// TUIKit adds optional styling parameters not present in SwiftUI:
+    /// - `borderStyle`: Custom border style for the alert
+    /// - `borderColor`: Custom border color
+    /// - `titleColor`: Custom title text color
+    public func alert<Actions: View, Message: View>(
         _ title: String,
         isPresented: Binding<Bool>,
         @ViewBuilder actions: @escaping () -> Actions,
-        message: String,
+        @ViewBuilder message: @escaping () -> Message,
         borderStyle: BorderStyle? = nil,
         borderColor: Color? = nil,
         titleColor: Color? = nil
     ) -> some View {
-        AlertPresentationModifier(
+        AlertPresentationModifier<Self, Actions, Message>(
             content: self,
             isPresented: isPresented,
             title: title,
-            message: message,
+            message: message(),
             actions: actions(),
             borderStyle: borderStyle,
             borderColor: borderColor,
@@ -78,7 +84,7 @@ extension View {
         borderColor: Color? = nil,
         titleColor: Color? = nil
     ) -> some View {
-        AlertPresentationModifier(
+        AlertPresentationModifier<Self, Actions, EmptyView>(
             content: self,
             isPresented: isPresented,
             title: title,
