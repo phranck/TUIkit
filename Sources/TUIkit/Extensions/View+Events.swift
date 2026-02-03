@@ -2,7 +2,7 @@
 //  View+Events.swift
 //  TUIkit
 //
-//  Event handling and lifecycle view modifiers: onKeyPress, onAppear, onDisappear, task, statusBarItems.
+//  Event handling and lifecycle view modifiers: onKeyPress, onAppear, onDisappear, task, statusBarItems, focusSection.
 //
 
 import Foundation
@@ -280,5 +280,41 @@ extension View {
         items: [any StatusBarItemProtocol]
     ) -> some View {
         StatusBarItemsModifier(content: self, items: items, context: context)
+    }
+
+    // MARK: - Focus Sections
+
+    /// Declares this view as a focus section.
+    ///
+    /// A focus section is a named, focusable area of the UI. Interactive children
+    /// (buttons, menus) within this section are grouped together. Users cycle
+    /// between sections with Tab/Shift+Tab.
+    ///
+    /// Focus sections are **declarative** — they are registered during rendering,
+    /// not added/removed imperatively. The ``FocusManager`` tracks which section
+    /// is active and routes focus events accordingly.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// HStack {
+    ///     PlaylistView()
+    ///         .focusSection("playlist")
+    ///         .statusBarItems {
+    ///             StatusBarItem(shortcut: Shortcut.enter, label: "play")
+    ///         }
+    ///
+    ///     TrackListView()
+    ///         .focusSection("tracklist")
+    ///         .statusBarItems {
+    ///             StatusBarItem(shortcut: Shortcut.enter, label: "select")
+    ///         }
+    /// }
+    /// ```
+    ///
+    /// - Parameter id: A unique identifier for this section.
+    /// - Returns: A view that registers a focus section during rendering.
+    public func focusSection(_ id: String) -> some View {
+        FocusSectionModifier(content: self, sectionID: id)
     }
 }

@@ -96,6 +96,13 @@ public struct RenderContext {
     /// Used by ``StateStorage`` to persist `@State` values across render passes.
     var identity: ViewIdentity
 
+    /// The ID of the focus section that child views should register in.
+    ///
+    /// Set by ``FocusSectionModifier`` during rendering. Focusable children
+    /// (buttons, menus) read this to register in the correct section.
+    /// When nil, elements register in the active or default section.
+    var activeFocusSectionID: String?
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
