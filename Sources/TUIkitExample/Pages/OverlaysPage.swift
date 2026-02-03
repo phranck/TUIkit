@@ -27,7 +27,9 @@ struct OverlaysPage: View {
                         showModal = false
                     }
                 },
-                message: "This alert uses the new .alert(isPresented:) API!",
+                message: {
+                    Text("This alert uses the new .alert(isPresented:) API!")
+                },
                 borderColor: .palette.border,
                 titleColor: .palette.accent
             )
