@@ -1,14 +1,18 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  DimmedModifier.swift
-//  TUIkit
 //
-//  A modifier that applies a dimming effect to the entire view content.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
-/// A modifier that applies the ANSI dim effect to the entire content.
+/// A modifier that strips all styling from content and replaces it with
+/// a uniform dimmed appearance using only two colors.
 ///
-/// This is useful for de-emphasizing background content when showing
-/// overlays, alerts, or dialogs.
+/// When showing overlays, alerts, or dialogs, the background content
+/// should visually recede. This modifier removes all ANSI formatting
+/// (borders, backgrounds, colors) and all decorative characters
+/// (box-drawing, block elements, indicators) — then re-renders each line
+/// with a dimmed foreground on `palette.overlayBackground`.
+/// The result is a flat, de-emphasized text layer with no visual ornaments.
 public struct DimmedModifier<Content: View>: View {
     /// The content to dim.
     let content: Content
@@ -16,6 +20,34 @@ public struct DimmedModifier<Content: View>: View {
     public var body: Never {
         fatalError("DimmedModifier renders via Renderable")
     }
+}
+
+// MARK: - Ornament Characters
+
+/// Characters that are purely decorative and should be replaced with spaces
+/// when flattening content for dimmed overlay backgrounds.
+///
+/// Includes box-drawing characters (light, rounded, double, heavy),
+/// block elements (half/full blocks), and UI indicators (▸, ●, ▶).
+private enum DimmedOrnaments {
+    static let characters: Set<Character> = {
+        var chars = Set<Character>()
+
+        // Box-drawing: light
+        chars.formUnion(["┌", "┐", "└", "┘", "─", "│", "├", "┤", "┬", "┴", "┼"])
+        // Box-drawing: rounded
+        chars.formUnion(["╭", "╮", "╰", "╯"])
+        // Box-drawing: double
+        chars.formUnion(["╔", "╗", "╚", "╝", "═", "║", "╠", "╣", "╦", "╩", "╬"])
+        // Box-drawing: heavy
+        chars.formUnion(["┏", "┓", "┗", "┛", "━", "┃", "┣", "┫", "┳", "┻", "╋"])
+        // Block elements
+        chars.formUnion(["▄", "▀", "█", "▌", "▐"])
+        // UI indicators
+        chars.formUnion(["▸", "◂", "▶", "◀", "●", "▪"])
+
+        return chars
+    }()
 }
 
 // MARK: - Renderable
@@ -28,32 +60,45 @@ extension DimmedModifier: Renderable {
             return contentBuffer
         }
 
-        // Apply dim effect to each line
+        let palette = context.environment.palette
+        let foreground = palette.foregroundTertiary
+        let background = palette.overlayBackground
+
+        // Strip all ANSI codes and ornament characters, then re-apply
+        // uniform dimmed styling. This removes borders, block backgrounds,
+        // indicators — leaving only plain text on a flat background.
         let dimmedLines = contentBuffer.lines.map { line -> String in
-            applyDim(to: line)
+            flattenLine(line, foreground: foreground, background: background, width: contentBuffer.width)
         }
 
         return FrameBuffer(lines: dimmedLines)
     }
 
-    /// Applies the ANSI dim effect to a string.
+    /// Strips all ANSI formatting and ornament characters from a line,
+    /// then applies uniform dimmed colors.
     ///
-    /// If the string already contains ANSI codes, this wraps the entire line.
-    /// The dim code (ESC[2m) reduces the intensity of the text.
+    /// The line is padded to the full buffer width so the dimmed background
+    /// covers the entire row without gaps.
     ///
-    /// - Parameter text: The text to dim.
-    /// - Returns: The dimmed text with ANSI codes.
-    private func applyDim(to text: String) -> String {
-        guard !text.isEmpty else { return text }
+    /// - Parameters:
+    ///   - line: The original line with ANSI codes and ornaments.
+    ///   - foreground: The dimmed foreground color.
+    ///   - background: The dimmed background color.
+    ///   - width: The target width to pad to.
+    /// - Returns: The flattened, uniformly styled line.
+    private func flattenLine(_ line: String, foreground: Color, background: Color, width: Int) -> String {
+        let stripped = line.stripped
+        let cleaned = String(stripped.map { DimmedOrnaments.characters.contains($0) ? " " : $0 })
+        let paddedText = cleaned.padding(toLength: width, withPad: " ", startingAt: 0)
 
-        // If the line is empty (just spaces), keep it as is
-        if text.stripped.trimmingCharacters(in: .whitespaces).isEmpty {
-            return text
-        }
+        var style = TextStyle()
+        style.foregroundColor = foreground
+        style.backgroundColor = background
+        style.isDim = true
 
-        // Wrap the entire line in dim codes
-        // Note: This adds dim at the start and reset at the end
-        // Any existing styles will still work, but will be dimmed
-        return ANSIRenderer.dim + text + ANSIRenderer.reset
+        return ANSIRenderer.applyPersistentBackground(
+            ANSIRenderer.render(paddedText, with: style),
+            color: background
+        )
     }
 }
