@@ -8,37 +8,75 @@
 /// Classic green terminal palette (P1 phosphor).
 ///
 /// Inspired by early CRT monitors like the IBM 5151 and Apple II.
-/// Uses a dark background with subtle green tint.
+/// All colors are generated algorithmically from a single base hue (120°)
+/// using HSL transformations.
 public struct GreenPalette: BlockPalette {
     public let id = "green"
     public let name = "Green"
 
+    /// The base hue used to generate all palette colors.
+    private static let baseHue: Double = 120
+
     // Background
-    public let background = Color.hex(0x060A07)
+    public let background: Color
 
     // Green text hierarchy
-    public let foreground = Color.hex(0x33FF33)  // Bright green - primary text
-    public let foregroundSecondary = Color.hex(0x27C227)  // Medium green - secondary text
-    public let foregroundTertiary = Color.hex(0x1F8F1F)  // Dim green - tertiary/muted text
+    public let foreground: Color
+    public let foregroundSecondary: Color
+    public let foregroundTertiary: Color
 
     // Accent
-    public let accent = Color.hex(0x66FF66)  // Lighter green for highlights
+    public let accent: Color
 
-    // Semantic colors (stay in green family)
-    public let success = Color.hex(0x33FF33)
-    public let warning = Color.hex(0xCCFF33)  // Yellow-green
-    public let error = Color.hex(0xFF6633)  // Orange-red (contrast)
-    public let info = Color.hex(0x33FFCC)  // Cyan-green
+    // Semantic colors
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let info: Color
 
     // UI elements
-    public let border = Color.hex(0x2D5A2D)  // Subtle green border
+    public let border: Color
 
     // Additional backgrounds
-    public let statusBarBackground = Color.hex(0x0F2215)
-    public let appHeaderBackground = Color.hex(0x0A1B13)
-    public let overlayBackground = Color.hex(0x060A07)
+    public let statusBarBackground: Color
+    public let appHeaderBackground: Color
+    public let overlayBackground: Color
 
-    public init() {}
+    public init() {
+        let hue = Self.baseHue
+
+        // Background: very dark, subtly tinted
+        self.background = Color.hsl(hue, 30, 3)
+
+        // Foregrounds: bright, saturated text
+        self.foreground = Color.hsl(hue, 100, 60)
+        self.foregroundSecondary = Color.hsl(hue, 67, 46)
+        self.foregroundTertiary = Color.hsl(hue, 64, 34)
+
+        // Accent: lighter/brighter variant
+        self.accent = Color.hsl(hue, 100, 70)
+
+        // Semantic: hue-shifted from base
+        self.success = Color.hsl(hue, 100, 60)
+        self.warning = Color.hsl(Self.wrapHue(hue - 45), 100, 60)
+        self.error = Color.hsl(Self.wrapHue(hue - 105), 100, 60)
+        self.info = Color.hsl(Self.wrapHue(hue + 45), 100, 60)
+
+        // UI elements
+        self.border = Color.hsl(hue, 33, 26)
+
+        // Additional backgrounds
+        self.statusBarBackground = Color.hsl(hue, 35, 10)
+        self.appHeaderBackground = Color.hsl(hue, 35, 7)
+        self.overlayBackground = Color.hsl(hue, 30, 3)
+    }
+
+    /// Wraps a hue value to the 0–360 range.
+    private static func wrapHue(_ hue: Double) -> Double {
+        var wrapped = hue.truncatingRemainder(dividingBy: 360)
+        if wrapped < 0 { wrapped += 360 }
+        return wrapped
+    }
 }
 
 // MARK: - Convenience Accessors

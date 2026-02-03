@@ -65,7 +65,7 @@ public struct VioletPalette: BlockPalette {
         self.border = Color.hsl(hue, 40, 25)
 
         // Additional backgrounds
-        self.statusBarBackground = Color.hsl(hue, 35, 8)
+        self.statusBarBackground = Color.hsl(hue, 35, 10)
         self.appHeaderBackground = Color.hsl(hue, 35, 7)
         self.overlayBackground = Color.hsl(hue, 30, 3)
     }
