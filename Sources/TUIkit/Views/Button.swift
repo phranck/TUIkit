@@ -218,7 +218,7 @@ extension Button: Renderable {
             action: action,
             canBeFocused: !isDisabled
         )
-        focusManager.register(handler)
+        focusManager.register(handler, inSection: context.activeFocusSectionID)
 
         // Determine if focused
         let isFocused = focusManager.isFocused(id: focusID)
