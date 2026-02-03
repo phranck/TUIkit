@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TupleViews.swift
-//  TUIkit
 //
-//  Container type for multiple views in ViewBuilder, using Swift Parameter Packs.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A view that contains multiple child views packed via a parameter pack.
 ///

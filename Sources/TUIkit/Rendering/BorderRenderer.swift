@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BorderRenderer.swift
-//  TUIkit
 //
-//  Centralized border rendering utilities for standard and block styles.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Reusable building blocks for border rendering.
 ///

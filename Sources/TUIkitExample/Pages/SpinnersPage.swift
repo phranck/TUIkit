@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  SpinnersPage.swift
-//  TUIkitExample
 //
-//  Demo page showcasing the Spinner view with all three styles.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 

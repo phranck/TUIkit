@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PreferenceValuesTests.swift
-//  TUIkit
 //
-//  Tests for PreferenceValues: subscript access, defaults, and merge behavior.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

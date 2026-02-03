@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ContainerViewTests.swift
-//  TUIkit
 //
-//  Tests for container views: Alert, Dialog, Menu.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  SpinnerTests.swift
-//  TUIkit
 //
-//  Tests for the Spinner view and SpinnerStyle.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BackgroundModifier.swift
-//  TUIkit
 //
-//  The .background() modifier for adding background colors to views.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that fills the background of a view with a color.
 ///

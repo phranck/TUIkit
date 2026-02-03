@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Panel.swift
-//  TUIkit
 //
-//  A titled container view with optional footer.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A labeled container — always has a title, optionally a footer.
 ///

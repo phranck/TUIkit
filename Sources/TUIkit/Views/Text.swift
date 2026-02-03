@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Text.swift
-//  TUIkit
 //
-//  A view for displaying text in the terminal.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A view that displays text in the terminal.
 ///

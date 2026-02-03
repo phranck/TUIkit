@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ViewModifier.swift
-//  TUIkit
 //
-//  The view modifier system for transforming views.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that transforms a view's rendered output.
 ///

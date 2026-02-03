@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TerminalOutputBufferTests.swift
-//  TUIkit
 //
-//  Tests for Terminal's frame-buffered output system.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

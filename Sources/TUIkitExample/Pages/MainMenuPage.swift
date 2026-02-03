@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  MainMenuPage.swift
-//  TUIkitExample
 //
-//  The main menu page with navigation to all demos.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 

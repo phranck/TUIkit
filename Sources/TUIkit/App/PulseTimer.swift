@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PulseTimer.swift
-//  TUIkit
 //
-//  Framework-level timer for the breathing focus section indicator.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

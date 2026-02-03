@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  AmberPalette.swift
-//  TUIkit
 //
-//  Classic amber terminal palette (P3 phosphor).
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Classic amber terminal palette (P3 phosphor).
 ///

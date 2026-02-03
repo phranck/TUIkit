@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ThemeManagerCyclingTests.swift
-//  TUIkit
 //
-//  Tests for ThemeManager cycling, selection, and typed accessors.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

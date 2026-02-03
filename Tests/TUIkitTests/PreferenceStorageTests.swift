@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PreferenceStorageTests.swift
-//  TUIkit
 //
-//  Tests for PreferenceStorage: stack behavior, setValue with reduce,
-//  callbacks, beginRenderPass, and reset.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  callbacks, beginRenderPass, and reset.
 //
 
 import Testing

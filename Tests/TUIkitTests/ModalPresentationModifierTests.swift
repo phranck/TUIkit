@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ModalPresentationModifierTests.swift
-//  TUIkit
 //
-//  Tests for ModalPresentationModifier: binding-controlled presentation,
-//  dimming, centering, and arbitrary content.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  dimming, centering, and arbitrary content.
 //
 
 import Testing

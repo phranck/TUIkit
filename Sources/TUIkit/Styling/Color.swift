@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Color.swift
-//  TUIkit
 //
-//  Color definitions for terminal output with ANSI escape codes.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A color for use in TUIkit views.
 ///

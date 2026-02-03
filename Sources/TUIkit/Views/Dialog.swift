@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Dialog.swift
-//  TUIkit
 //
-//  A modal dialog view with title, custom content, and optional footer.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modal dialog view with a title, customizable content, and optional footer.
 ///

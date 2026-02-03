@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  HeaderView.swift
-//  TUIkitExample
 //
-//  A reusable header component for demo pages.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 

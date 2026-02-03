@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FocusSection.swift
-//  TUIkit
 //
-//  A named, focusable area of the UI that groups interactive elements.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A named, focusable area of the UI.
 ///

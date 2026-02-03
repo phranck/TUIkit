@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  RenderLoop.swift
-//  TUIkit
 //
-//  Manages the rendering pipeline: scene rendering, environment
-//  assembly, and status bar output.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  assembly, and status bar output.
 //
 
 // MARK: - Render Loop

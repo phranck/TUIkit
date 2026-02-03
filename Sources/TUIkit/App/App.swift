@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  App.swift
-//  TUIkit
 //
-//  The base protocol for TUIkit applications.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

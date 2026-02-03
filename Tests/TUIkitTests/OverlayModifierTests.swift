@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  OverlayModifierTests.swift
-//  TUIkit
 //
-//  Tests for OverlayModifier: alignment positioning, edge cases,
-//  and View extension.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  and View extension.
 //
 
 import Testing

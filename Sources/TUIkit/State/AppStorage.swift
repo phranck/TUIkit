@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  AppStorage.swift
-//  TUIkit
 //
-//  Persistent storage for app settings using @AppStorage property wrapper.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

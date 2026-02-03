@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  KeyPressModifier.swift
-//  TUIkit
 //
-//  A modifier for handling keyboard events.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that adds a key press handler to a view.
 ///
