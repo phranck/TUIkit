@@ -174,7 +174,11 @@ final class ButtonHandler: Focusable {
         self.action = action
         self.canBeFocused = canBeFocused
     }
+}
 
+// MARK: - Key Event Handling
+
+extension ButtonHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         // Trigger action on Enter or Space
         switch event.key {

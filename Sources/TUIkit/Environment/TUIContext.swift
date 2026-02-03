@@ -44,18 +44,20 @@ final class LifecycleManager: @unchecked Sendable {
 
     /// Creates a new lifecycle manager.
     init() {}
+}
 
-    // MARK: - Render Pass Tracking
+// MARK: - Internal API
 
+extension LifecycleManager {
     /// Marks the start of a new render pass.
-    internal func beginRenderPass() {
+    func beginRenderPass() {
         lock.lock()
         defer { lock.unlock() }
         currentRenderTokens.removeAll()
     }
 
     /// Marks the end of a render pass and triggers onDisappear for views that are no longer visible.
-    internal func endRenderPass() {
+    func endRenderPass() {
         lock.lock()
         let disappeared = visibleTokens.subtracting(currentRenderTokens)
         for token in disappeared {
@@ -71,8 +73,6 @@ final class LifecycleManager: @unchecked Sendable {
         }
     }
 
-    // MARK: - Appear Tracking
-
     /// Records that a view with the given token appeared.
     ///
     /// - Parameters:
@@ -80,7 +80,7 @@ final class LifecycleManager: @unchecked Sendable {
     ///   - action: The onAppear action to execute.
     /// - Returns: True if this is the first appearance (action was executed).
     @discardableResult
-    internal func recordAppear(token: String, action: () -> Void) -> Bool {
+    func recordAppear(token: String, action: () -> Void) -> Bool {
         lock.lock()
         currentRenderTokens.insert(token)
 
@@ -95,33 +95,29 @@ final class LifecycleManager: @unchecked Sendable {
     }
 
     /// Checks if a view has appeared before.
-    internal func hasAppeared(token: String) -> Bool {
+    func hasAppeared(token: String) -> Bool {
         lock.lock()
         defer { lock.unlock() }
         return appearedTokens.contains(token)
     }
-
-    // MARK: - Disappear Callbacks
 
     /// Registers a callback for when a view with the given token disappears.
     ///
     /// - Parameters:
     ///   - token: Unique identifier for the view.
     ///   - action: The onDisappear action to execute.
-    internal func registerDisappear(token: String, action: @escaping () -> Void) {
+    func registerDisappear(token: String, action: @escaping () -> Void) {
         lock.lock()
         defer { lock.unlock() }
         disappearCallbacks[token] = action
     }
 
     /// Unregisters the disappear callback for the given token.
-    internal func unregisterDisappear(token: String) {
+    func unregisterDisappear(token: String) {
         lock.lock()
         defer { lock.unlock() }
         disappearCallbacks.removeValue(forKey: token)
     }
-
-    // MARK: - Task Management
 
     /// Starts an async task associated with a lifecycle token.
     ///
@@ -131,7 +127,7 @@ final class LifecycleManager: @unchecked Sendable {
     ///   - token: Unique identifier for the view.
     ///   - priority: The task priority.
     ///   - operation: The async operation to execute.
-    internal func startTask(
+    func startTask(
         token: String,
         priority: TaskPriority,
         operation: @escaping @Sendable () async -> Void
@@ -145,19 +141,17 @@ final class LifecycleManager: @unchecked Sendable {
     }
 
     /// Cancels and removes the task associated with the given token.
-    internal func cancelTask(token: String) {
+    func cancelTask(token: String) {
         lock.lock()
         tasks[token]?.cancel()
         tasks.removeValue(forKey: token)
         lock.unlock()
     }
 
-    // MARK: - Reset
-
     /// Resets all lifecycle state.
     ///
     /// Cancels all running tasks, clears all callbacks and tracking state.
-    internal func reset() {
+    func reset() {
         lock.lock()
         appearedTokens.removeAll()
         visibleTokens.removeAll()
@@ -243,8 +237,13 @@ final class TUIContext: @unchecked Sendable {
         self.stateStorage = stateStorage
     }
 
+}
+
+// MARK: - Internal API
+
+extension TUIContext {
     /// Resets all services to their initial state.
-    internal func reset() {
+    func reset() {
         lifecycle.reset()
         keyEventDispatcher.clearHandlers()
         preferences.reset()

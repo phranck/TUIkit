@@ -26,7 +26,11 @@ final class FocusSection {
     init(id: String) {
         self.id = id
     }
+}
 
+// MARK: - Internal API
+
+extension FocusSection {
     /// Registers a focusable element in this section.
     ///
     /// Duplicate registrations (same `focusID`) are ignored.
