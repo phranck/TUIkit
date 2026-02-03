@@ -16,7 +16,6 @@ import TUIkit
 struct ColorsPage: View {
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Colors Demo")
 
             DemoSection("Standard ANSI Colors") {
                 HStack(spacing: 2) {
@@ -61,6 +60,13 @@ struct ColorsPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Colors Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }

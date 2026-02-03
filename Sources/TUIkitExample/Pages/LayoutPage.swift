@@ -16,7 +16,6 @@ import TUIkit
 struct LayoutPage: View {
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Layout System Demo")
 
             DemoSection("VStack (Vertical)") {
                 // Box uses appearance default borderStyle
@@ -67,6 +66,13 @@ struct LayoutPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Layout System Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }

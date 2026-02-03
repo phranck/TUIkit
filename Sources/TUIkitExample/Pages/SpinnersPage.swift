@@ -10,7 +10,6 @@ import TUIkit
 struct SpinnersPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
-            HeaderView(title: "Spinners")
 
             DemoSection("Dots (Braille Rotation)") {
                 Spinner("Loading data...")
@@ -29,6 +28,13 @@ struct SpinnersPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Spinners").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }

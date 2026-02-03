@@ -66,6 +66,9 @@ internal final class RenderLoop<A: App> {
     /// The status bar state (height, items, appearance).
     let statusBar: StatusBarState
 
+    /// The app header state (content buffer, visibility).
+    let appHeader: AppHeaderState
+
     /// The focus manager (cleared each frame).
     let focusManager: FocusManager
 
@@ -85,6 +88,7 @@ internal final class RenderLoop<A: App> {
         app: A,
         terminal: Terminal,
         statusBar: StatusBarState,
+        appHeader: AppHeaderState,
         focusManager: FocusManager,
         paletteManager: ThemeManager,
         appearanceManager: ThemeManager,
@@ -93,6 +97,7 @@ internal final class RenderLoop<A: App> {
         self.app = app
         self.terminal = terminal
         self.statusBar = statusBar
+        self.appHeader = appHeader
         self.focusManager = focusManager
         self.paletteManager = paletteManager
         self.appearanceManager = appearanceManager
@@ -113,6 +118,7 @@ internal final class RenderLoop<A: App> {
         tuiContext.preferences.beginRenderPass()
         focusManager.beginRenderPass()
         statusBar.clearSectionItems()
+        appHeader.beginRenderPass()
 
         // Provide the focus manager to the status bar for section resolution
         statusBar.focusManager = focusManager
@@ -121,20 +127,25 @@ internal final class RenderLoop<A: App> {
         tuiContext.lifecycle.beginRenderPass()
         tuiContext.stateStorage.beginRenderPass()
 
-        // Calculate available height (reserve space for status bar).
-        // Single getSize() call — avoids 2 ioctl syscalls per frame.
+        // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
         let statusBarHeight = statusBar.height
         let terminalWidth = terminalSize.width
         let terminalHeight = terminalSize.height
-        let contentHeight = terminalHeight - statusBarHeight
+
+        // First pass: render main content with a height estimate from the
+        // previous frame. The AppHeaderModifier inside the view tree will
+        // populate appHeader.contentBuffer during this render. After rendering,
+        // we read the actual height for correct positioning.
+        let estimatedHeaderHeight = appHeader.estimatedHeight
+        let estimatedContentHeight = terminalHeight - statusBarHeight - estimatedHeaderHeight
 
         // Create render context with environment
         let environment = buildEnvironment()
 
         var context = RenderContext(
             availableWidth: terminalWidth,
-            availableHeight: contentHeight,
+            availableHeight: estimatedContentHeight,
             environment: environment,
             tuiContext: tuiContext
         )
@@ -161,6 +172,18 @@ internal final class RenderLoop<A: App> {
 
         let buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
 
+        // Now the AppHeaderModifier has run and populated the header buffer.
+        // Read the actual header height for correct positioning.
+        let appHeaderHeight = appHeader.height
+        let contentHeight = terminalHeight - statusBarHeight - appHeaderHeight
+
+        // If the header height changed (e.g. header appeared, disappeared, or
+        // changed line count), the content start row shifted. The diff cache
+        // still has lines at the old positions, so we must force a full repaint.
+        if appHeaderHeight != estimatedHeaderHeight {
+            diffWriter.invalidate()
+        }
+
         // Validate focus state: if previously active section or focused element
         // is no longer in the tree, fall back to first available.
         focusManager.endRenderPass()
@@ -181,10 +204,22 @@ internal final class RenderLoop<A: App> {
         )
 
         terminal.beginFrame()
+
+        // Render app header at the top (if content was set by modifier)
+        if appHeader.hasContent {
+            renderAppHeader(
+                atRow: 1,
+                terminalWidth: terminalWidth,
+                bgCode: bgCode,
+                reset: reset
+            )
+        }
+
+        // Render main content below the app header
         diffWriter.writeContentDiff(
             newLines: outputLines,
             terminal: terminal,
-            startRow: 1
+            startRow: 1 + appHeaderHeight
         )
 
         // Render status bar inside the same frame (flushed together)
@@ -222,6 +257,7 @@ internal final class RenderLoop<A: App> {
     func buildEnvironment() -> EnvironmentValues {
         var environment = EnvironmentValues()
         environment.statusBar = statusBar
+        environment.appHeader = appHeader
         environment.focusManager = focusManager
         environment.paletteManager = paletteManager
         if let palette = paletteManager.currentPalette {
@@ -245,6 +281,52 @@ internal final class RenderLoop<A: App> {
             return renderable.renderScene(context: context)
         }
         return FrameBuffer()
+    }
+
+    /// Renders the app header at the specified terminal row.
+    ///
+    /// The app header gets its own render context. Its content buffer was
+    /// already populated by ``AppHeaderModifier`` during the main content
+    /// render pass. This method wraps it in an ``AppHeader`` view for
+    /// appearance-aware rendering (standard vs block).
+    ///
+    /// - Parameters:
+    ///   - row: The 1-based terminal row where the header starts.
+    ///   - terminalWidth: The current terminal width.
+    ///   - bgCode: The ANSI background color code.
+    ///   - reset: The ANSI reset code.
+    private func renderAppHeader(
+        atRow row: Int,
+        terminalWidth: Int,
+        bgCode: String,
+        reset: String
+    ) {
+        guard let contentBuffer = appHeader.contentBuffer else { return }
+
+        let environment = buildEnvironment()
+        let headerView = AppHeader(contentBuffer: contentBuffer)
+
+        let context = RenderContext(
+            availableWidth: terminalWidth,
+            availableHeight: appHeader.height,
+            environment: environment,
+            tuiContext: tuiContext
+        )
+
+        let buffer = renderToBuffer(headerView, context: context)
+
+        let outputLines = diffWriter.buildOutputLines(
+            buffer: buffer,
+            terminalWidth: terminalWidth,
+            terminalHeight: buffer.height,
+            bgCode: bgCode,
+            reset: reset
+        )
+        diffWriter.writeAppHeaderDiff(
+            newLines: outputLines,
+            terminal: terminal,
+            startRow: row
+        )
     }
 
     /// Renders the status bar at the specified terminal row.

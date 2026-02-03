@@ -19,7 +19,6 @@ struct ContainersPage: View {
 
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Container Views Demo")
 
             HStack(spacing: 2) {
                 // Card example
@@ -120,6 +119,13 @@ struct ContainersPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Container Views Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }
