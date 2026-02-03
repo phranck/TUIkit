@@ -35,4 +35,50 @@ struct ColorTests {
     func paletteDistinct() {
         #expect(Color.palette(42) != Color.palette(43))
     }
+
+    @Test("lerp at phase 0 returns from color")
+    func lerpAtZero() {
+        let from = Color.rgb(0, 0, 0)
+        let to = Color.rgb(255, 255, 255)
+        let result = Color.lerp(from, to, phase: 0)
+        #expect(result == from)
+    }
+
+    @Test("lerp at phase 1 returns to color")
+    func lerpAtOne() {
+        let from = Color.rgb(0, 0, 0)
+        let to = Color.rgb(255, 255, 255)
+        let result = Color.lerp(from, to, phase: 1)
+        #expect(result == to)
+    }
+
+    @Test("lerp at midpoint produces average")
+    func lerpAtMidpoint() {
+        let from = Color.rgb(0, 100, 200)
+        let to = Color.rgb(100, 200, 50)
+        let result = Color.lerp(from, to, phase: 0.5)
+        let components = result.rgbComponents!
+        #expect(components.red == 50)
+        #expect(components.green == 150)
+        #expect(components.blue == 125)
+    }
+
+    @Test("lerp clamps phase to 0-1 range")
+    func lerpClampsPhase() {
+        let from = Color.rgb(0, 0, 0)
+        let to = Color.rgb(200, 200, 200)
+        let underflow = Color.lerp(from, to, phase: -0.5)
+        let overflow = Color.lerp(from, to, phase: 1.5)
+        #expect(underflow == from)
+        #expect(overflow == to)
+    }
+
+    @Test("lerp with ANSI colors converts to RGB")
+    func lerpWithANSI() {
+        let from = Color.black
+        let to = Color.white
+        let result = Color.lerp(from, to, phase: 0.5)
+        // Should produce an RGB color (not crash)
+        #expect(result.rgbComponents != nil)
+    }
 }
