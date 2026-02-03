@@ -55,7 +55,7 @@ extension View {
     ///
     /// ```swift
     /// ContentView()
-    ///     .palette(GreenPalette())
+    ///     .palette(SystemPalette(.green))
     /// ```
     ///
     /// - Parameter palette: The palette to apply.
