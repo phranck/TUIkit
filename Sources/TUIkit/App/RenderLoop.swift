@@ -109,7 +109,7 @@ internal final class RenderLoop<A: App> {
         // Clear per-frame state before re-rendering
         tuiContext.keyEventDispatcher.clearHandlers()
         tuiContext.preferences.beginRenderPass()
-        focusManager.clear()
+        focusManager.beginRenderPass()
 
         // Begin lifecycle and state tracking for this render pass
         tuiContext.lifecycle.beginRenderPass()
@@ -153,6 +153,10 @@ internal final class RenderLoop<A: App> {
         tuiContext.stateStorage.markActive(rootIdentity)
 
         let buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
+
+        // Validate focus state: if previously active section or focused element
+        // is no longer in the tree, fall back to first available.
+        focusManager.endRenderPass()
 
         // Build terminal-ready output lines and write only changes.
         // All terminal writes between beginFrame/endFrame are collected

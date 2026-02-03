@@ -266,20 +266,59 @@ public final class FocusManager: @unchecked Sendable {
         }
     }
 
-    /// Clears all sections and focusable elements.
+    /// Clears all sections and focusable elements, including selection state.
+    ///
+    /// This is a hard reset. For per-frame clearing that preserves the active
+    /// section and focused element, use ``beginRenderPass()`` instead.
     public func clear() {
         sections.removeAll()
         activeSectionID = nil
         focusedID = nil
     }
 
-    /// Clears all focusable elements from all sections without removing the sections.
+    /// Prepares the focus manager for a new render pass.
     ///
-    /// Used at the start of each render pass to rebuild the focusable list
-    /// from the current view tree.
-    func clearAllFocusables() {
-        for section in sections {
-            section.clearFocusables()
+    /// Clears all sections and focusable elements so they can be re-registered
+    /// from the current view tree. The active section ID and focused element ID
+    /// are **preserved** — if they still exist after the render pass, focus
+    /// continues seamlessly. If they don't, the first available element is
+    /// auto-focused.
+    ///
+    /// Call this at the start of each render pass instead of ``clear()``.
+    func beginRenderPass() {
+        sections.removeAll()
+        // activeSectionID and focusedID are intentionally preserved.
+        // They will be validated after the render pass re-registers sections.
+    }
+
+    /// Validates focus state after a render pass.
+    ///
+    /// If the previously active section no longer exists, the first
+    /// registered section is activated. If the previously focused element
+    /// no longer exists, the first focusable in the active section is focused.
+    func endRenderPass() {
+        // Validate active section
+        if let activeID = activeSectionID,
+            !sections.contains(where: { $0.id == activeID })
+        {
+            activeSectionID = sections.first?.id
+        }
+
+        // Validate focused element
+        if let focusID = focusedID, let section = activeSection {
+            if !section.focusables.contains(where: { $0.focusID == focusID }) {
+                // Previously focused element is gone — auto-focus first available
+                self.focusedID = nil
+                if let firstFocusable = section.focusables.first(where: { $0.canBeFocused }) {
+                    self.focusedID = firstFocusable.focusID
+                    firstFocusable.onFocusReceived()
+                }
+            }
+        } else if focusedID == nil, let section = activeSection,
+            let firstFocusable = section.focusables.first(where: { $0.canBeFocused })
+        {
+            self.focusedID = firstFocusable.focusID
+            firstFocusable.onFocusReceived()
         }
     }
 
