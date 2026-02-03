@@ -61,40 +61,43 @@ struct ButtonTests {
         #expect(button1.focusID.contains("-"))
     }
 
-    @Test("Button renders to buffer")
-    func buttonRenders() {
+    @Test("Default button renders as single-line bracket style")
+    func defaultButtonRendersBrackets() {
         let context = createTestContext()
 
         let button = Button("OK") {}
         let buffer = renderToBuffer(button, context: context)
 
-        #expect(buffer.height >= 3) // border + content + border
-        // Should contain the label and border
+        // Bracket-style buttons are single line: [ OK ]
+        #expect(buffer.height == 1)
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("OK"))
-        #expect(allContent.contains("╭")) // rounded border
+        #expect(allContent.contains("["))
+        #expect(allContent.contains("]"))
     }
 
-    @Test("Button with border has proper height")
-    func buttonWithBorderHeight() {
+    @Test("Default button is single line height")
+    func defaultButtonSingleLine() {
         let context = createTestContext()
 
         let button = Button("Test", style: .default) {}
         let buffer = renderToBuffer(button, context: context)
 
-        // With rounded border: top + content + bottom = 3 lines
-        #expect(buffer.height == 3)
+        #expect(buffer.height == 1)
     }
 
-    @Test("Plain button has single line")
+    @Test("Plain button has single line without brackets")
     func plainButtonSingleLine() {
         let context = createTestContext()
 
         let button = Button("Test", style: .plain) {}
         let buffer = renderToBuffer(button, context: context)
 
-        // Plain style: no border, just the label
         #expect(buffer.height == 1)
+        // Check visible text (stripped of ANSI codes) has no brackets
+        let visibleContent = buffer.lines.joined().stripped
+        #expect(!visibleContent.contains("["))
+        #expect(!visibleContent.contains("]"))
     }
 
     @Test("Focused button is rendered bold without arrow indicator")
@@ -111,6 +114,30 @@ struct ButtonTests {
         #expect(!allContent.contains("▸"), "Focused bold button should not have ▸ indicator")
     }
 
+    @Test("Destructive button uses palette error color, not hardcoded red")
+    func destructiveButtonUsesPaletteColor() {
+        let context = createTestContext()
+
+        let button = Button("Delete", style: .destructive) {}
+        let buffer = renderToBuffer(button, context: context)
+
+        let allContent = buffer.lines.joined()
+        #expect(allContent.contains("Delete"))
+        // Should contain ANSI color codes (resolved from palette.error)
+        #expect(allContent.contains("\u{1b}["))
+    }
+
+    @Test("Primary button is bold")
+    func primaryButtonIsBold() {
+        let context = createTestContext()
+
+        let button = Button("Submit", style: .primary) {}
+        let buffer = renderToBuffer(button, context: context)
+
+        let allContent = buffer.lines.joined()
+        // Primary style sets isBold = true, rendered as bold ANSI
+        #expect(allContent.contains("\u{1b}[1;"))
+    }
 }
 
 // MARK: - Button Handler Tests
@@ -183,7 +210,8 @@ struct ButtonRowTests {
 
         let buffer = renderToBuffer(row, context: context)
 
-        #expect(buffer.height >= 3) // bordered buttons
+        // Bracket-style buttons are single line
+        #expect(buffer.height == 1)
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("Cancel"))
         #expect(allContent.contains("OK"))
@@ -233,19 +261,19 @@ struct ButtonRowTests {
         #expect(buffer.height == 1)
     }
 
-    @Test("ButtonRow normalizes button heights")
-    func buttonRowNormalizesHeights() {
+    @Test("ButtonRow with mixed styles has uniform height")
+    func buttonRowUniformHeight() {
         let context = createTestContext()
 
         let row = ButtonRow {
-            Button("Border", style: .default) {}  // 3 lines with border
-            Button("Plain", style: .plain) {}  // 1 line without border
+            Button("Default") {}
+            Button("Plain", style: .plain) {}
         }
 
         let buffer = renderToBuffer(row, context: context)
 
-        // Should use the maximum height (3 lines from bordered button)
-        #expect(buffer.height == 3)
+        // Both are now single line (brackets and plain)
+        #expect(buffer.height == 1)
     }
 }
 
