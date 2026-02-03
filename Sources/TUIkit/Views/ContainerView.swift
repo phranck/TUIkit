@@ -282,24 +282,35 @@ extension ContainerView: Renderable {
         let palette = context.environment.palette
         let borderColor = style.borderColor?.resolve(with: palette) ?? palette.border
 
-        // Render body content
-        let paddedContent = content.padding(padding)
-        let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: context)
+        // Context with reduced width for content inside borders.
+        // Subtract 2 for the left and right border characters so that
+        // Spacer() and other layout views calculate available space correctly.
+        var innerContext = context
+        innerContext.availableWidth = max(0, context.availableWidth - 2)
 
-        // Render footer if present
+        // Render body content first to determine its width.
+        let paddedContent = content.padding(padding)
+        let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: innerContext)
+
+        // Calculate inner width from body and title (footer adapts to this).
+        let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
+        let innerWidth = max(titleWidth, bodyBuffer.width)
+
+        // Render footer constrained to the actual inner width.
+        // PaddingModifier is post-processing (doesn't reduce availableWidth for
+        // its child), so we subtract the footer padding from the context width
+        // manually. This ensures Spacer() in the footer fills exactly the
+        // container's inner width.
+        let footerPadding = EdgeInsets(horizontal: 1, vertical: 0)
         let footerBuffer: FrameBuffer?
         if let footerView = footer {
-            let paddedFooter = footerView.padding(EdgeInsets(horizontal: 1, vertical: 0))
-            footerBuffer = TUIkit.renderToBuffer(paddedFooter, context: context)
+            var footerContext = innerContext
+            footerContext.availableWidth = innerWidth - footerPadding.leading - footerPadding.trailing
+            let paddedFooter = footerView.padding(footerPadding)
+            footerBuffer = TUIkit.renderToBuffer(paddedFooter, context: footerContext)
         } else {
             footerBuffer = nil
         }
-
-        // Calculate inner width
-        let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
-        let bodyWidth = bodyBuffer.width
-        let footerWidth = footerBuffer?.width ?? 0
-        let innerWidth = max(titleWidth, bodyWidth, footerWidth)
 
         if isBlockAppearance {
             return renderBlockStyle(
@@ -357,16 +368,14 @@ extension ContainerView: Renderable {
             )
         }
 
-        // Body lines with theme background
-        let bodyBg = context.environment.palette.blockSurfaceBackground
+        // Body lines (no background — only block style uses distinct section colors)
         for line in bodyBuffer.lines {
             lines.append(
                 BorderRenderer.standardContentLine(
                     content: line,
                     innerWidth: innerWidth,
                     style: borderStyle,
-                    color: borderColor,
-                    backgroundColor: bodyBg
+                    color: borderColor
                 )
             )
         }

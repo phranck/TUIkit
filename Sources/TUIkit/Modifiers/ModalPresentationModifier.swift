@@ -48,9 +48,17 @@ extension ModalPresentationModifier: Renderable {
             return TUIkit.renderToBuffer(content, context: context)
         }
 
-        // Render dimmed base with centered modal overlay
+        // Render dimmed base with an isolated context.
+        // The base content's buttons and key handlers register into a
+        // throwaway FocusManager and KeyEventDispatcher so they don't
+        // interfere with the modal's interactive elements.
         let dimmedBase = DimmedModifier(content: content)
-        let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: context)
+        let isolatedContext = context.isolatedForBackground()
+        let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: isolatedContext)
+
+        // Clear the real focus manager so the modal's buttons become
+        // the only registered focusables (auto-focus picks the first one).
+        context.environment.focusManager.clear()
 
         let modalBuffer = TUIkit.renderToBuffer(modal, context: context)
 

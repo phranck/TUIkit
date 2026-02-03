@@ -91,6 +91,7 @@ internal final class AppRunner<A: App> {
         self.inputHandler = InputHandler(
             statusBar: statusBar,
             keyEventDispatcher: tuiContext.keyEventDispatcher,
+            focusManager: focusManager,
             paletteManager: paletteManager,
             appearanceManager: appearanceManager,
             onQuit: { [weak self] in
