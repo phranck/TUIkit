@@ -19,12 +19,18 @@
 ///   with this type directly.
 public struct FrameBuffer {
     /// The lines of rendered content (may contain ANSI escape codes).
-    public var lines: [String]
+    ///
+    /// Mutating `lines` directly recomputes the cached ``width``.
+    public var lines: [String] {
+        didSet { recomputeWidth() }
+    }
 
     /// The width of the buffer (the length of the longest line in visible characters).
-    public var width: Int {
-        lines.map { $0.strippedLength }.max() ?? 0
-    }
+    ///
+    /// This is a stored property, recomputed automatically whenever
+    /// ``lines`` is mutated. Accessing `width` is O(1) — the expensive
+    /// ANSI-stripping regex runs only once per mutation, not per access.
+    public private(set) var width: Int
 
     /// The height of the buffer (number of lines).
     public var height: Int {
@@ -39,6 +45,7 @@ public struct FrameBuffer {
     /// Creates an empty buffer.
     public init() {
         self.lines = []
+        self.width = 0
     }
 
     /// Creates a buffer from an array of lines.
@@ -46,6 +53,7 @@ public struct FrameBuffer {
     /// - Parameter lines: The text lines.
     public init(lines: [String]) {
         self.lines = lines
+        self.width = Self.computeWidth(lines)
     }
 
     /// Creates a buffer containing a single line.
@@ -53,6 +61,7 @@ public struct FrameBuffer {
     /// - Parameter text: The text content.
     public init(text: String) {
         self.lines = [text]
+        self.width = text.strippedLength
     }
 
     /// Creates an empty buffer with the specified height.
@@ -60,6 +69,24 @@ public struct FrameBuffer {
     /// - Parameter height: The number of empty lines.
     public init(emptyWithHeight height: Int) {
         self.lines = Array(repeating: "", count: height)
+        self.width = 0
+    }
+
+    // MARK: - Width Computation
+
+    /// Recomputes the cached ``width`` from the current ``lines``.
+    ///
+    /// Called automatically by the `didSet` observer on ``lines``.
+    private mutating func recomputeWidth() {
+        width = Self.computeWidth(lines)
+    }
+
+    /// Computes the visible width of a set of lines.
+    ///
+    /// - Parameter lines: The lines to measure.
+    /// - Returns: The length of the longest line in visible characters.
+    private static func computeWidth(_ lines: [String]) -> Int {
+        lines.map { $0.strippedLength }.max() ?? 0
     }
 
     // MARK: - Combining Buffers
@@ -70,10 +97,13 @@ public struct FrameBuffer {
     ///   - other: The buffer to append below.
     ///   - spacing: Number of empty lines between the two buffers.
     public mutating func appendVertically(_ other: Self, spacing: Int = 0) {
-        if !lines.isEmpty && !other.isEmpty && spacing > 0 {
-            lines.append(contentsOf: Array(repeating: "", count: spacing))
+        // Build combined array and assign once to trigger didSet only once.
+        var combined = lines
+        if !combined.isEmpty && !other.isEmpty && spacing > 0 {
+            combined.append(contentsOf: Array(repeating: "", count: spacing))
         }
-        lines.append(contentsOf: other.lines)
+        combined.append(contentsOf: other.lines)
+        lines = combined
     }
 
     /// Places another buffer to the right of this one with optional spacing.
