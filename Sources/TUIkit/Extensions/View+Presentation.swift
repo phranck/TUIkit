@@ -96,6 +96,39 @@ extension View {
     }
 }
 
+// MARK: - App Header
+
+extension View {
+    /// Declares the app header content for this view.
+    ///
+    /// The header is rendered at the top of the terminal, outside the view tree,
+    /// similar to the status bar at the bottom. When no `.appHeader` modifier is
+    /// present, the header is hidden and no vertical space is reserved.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// VStack {
+    ///     Text("Page content")
+    /// }
+    /// .appHeader {
+    ///     HStack {
+    ///         Text("My App").bold().foregroundColor(.palette.accent)
+    ///         Spacer()
+    ///         Text("v1.0").foregroundColor(.palette.foregroundTertiary)
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameter content: A ViewBuilder returning the header content.
+    /// - Returns: A view that declares the app header content.
+    public func appHeader<Header: View>(
+        @ViewBuilder content: () -> Header
+    ) -> some View {
+        AppHeaderModifier(content: self, header: content())
+    }
+}
+
 // MARK: - Modal Presentation
 
 extension View {
