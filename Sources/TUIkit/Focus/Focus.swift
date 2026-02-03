@@ -442,8 +442,11 @@ public final class FocusManager: @unchecked Sendable {
 
     /// Dispatches a key event through the focus system.
     ///
+    /// Navigation model:
     /// - **Tab / Shift+Tab**: Cycles between sections (or within a single section).
-    /// - **Other keys**: Dispatched to the currently focused element.
+    /// - **Up / Down arrows**: Cycles between focusable elements within the active section.
+    /// - **Enter / Space**: Dispatched to the focused element for activation.
+    /// - **Other keys**: Dispatched to the focused element.
     ///
     /// - Parameter event: The key event to dispatch.
     /// - Returns: True if the event was handled.
@@ -459,7 +462,17 @@ public final class FocusManager: @unchecked Sendable {
             return true
         }
 
-        // Dispatch to focused element
+        // Up/Down arrows: navigate within the active section
+        if event.key == .up {
+            focusPreviousInSection()
+            return true
+        }
+        if event.key == .down {
+            focusNextInSection()
+            return true
+        }
+
+        // Dispatch to focused element (Enter, Space, other keys)
         if let focused = currentFocused {
             return focused.handleKeyEvent(event)
         }
