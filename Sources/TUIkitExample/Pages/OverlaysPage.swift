@@ -90,6 +90,9 @@ struct OverlaysPage: View {
     @State var menuSelection: Int = 0
     @State var showOverlay: Bool = false
 
+    /// Callback to navigate back to the main menu.
+    let onBack: () -> Void
+
     /// The currently selected demo variant.
     private var selectedDemo: OverlayDemo {
         OverlayDemo.allCases[menuSelection]
@@ -100,6 +103,28 @@ struct OverlaysPage: View {
             .modal(isPresented: $showOverlay) {
                 overlayContent(for: selectedDemo)
             }
+            .statusBarItems(statusBarItems)
+    }
+
+    /// Status bar items change depending on whether a modal is open.
+    /// When a modal is presented, ESC closes the modal instead of navigating back.
+    private var statusBarItems: [any StatusBarItemProtocol] {
+        if showOverlay {
+            return [
+                StatusBarItem(shortcut: Shortcut.escape, label: "close") {
+                    showOverlay = false
+                },
+                StatusBarItem(shortcut: Shortcut.enter, label: "dismiss"),
+            ]
+        } else {
+            return [
+                StatusBarItem(shortcut: Shortcut.escape, label: "back") {
+                    onBack()
+                },
+                StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav"),
+                StatusBarItem(shortcut: Shortcut.enter, label: "show"),
+            ]
+        }
     }
 
     // MARK: - Background Content
