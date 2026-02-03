@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  OverlaysPage.swift
-//  TUIkitExample
 //
-//  Demonstrates overlay and modal capabilities with an interactive menu.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 
@@ -211,7 +210,6 @@ struct OverlaysPage: View {
             Alert(
                 title: "Warning",
                 message: "Something might go wrong. Please check your input.",
-                borderColor: .palette.warning,
                 titleColor: .palette.warning
             ) {
                 dismissButton
@@ -222,7 +220,6 @@ struct OverlaysPage: View {
             Alert(
                 title: "Error",
                 message: "An unexpected error occurred. Please try again.",
-                borderColor: .palette.error,
                 titleColor: .palette.error
             ) {
                 dismissButton
@@ -233,7 +230,6 @@ struct OverlaysPage: View {
             Alert(
                 title: "Info",
                 message: "This is an informational message for the user.",
-                borderColor: .palette.info,
                 titleColor: .palette.info
             ) {
                 dismissButton
@@ -244,7 +240,6 @@ struct OverlaysPage: View {
             Alert(
                 title: "Success",
                 message: "Operation completed successfully!",
-                borderColor: .palette.success,
                 titleColor: .palette.success
             ) {
                 dismissButton

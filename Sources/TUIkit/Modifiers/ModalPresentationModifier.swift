@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ModalPresentationModifier.swift
-//  TUIkit
 //
-//  A modifier that presents arbitrary content as a modal overlay.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that presents content as a centered modal overlay when a binding is true.
 ///
@@ -84,14 +83,14 @@ extension ModalPresentationModifier: Renderable {
             return dimmedBuffer
         }
 
-        // Calculate center position
-        let baseWidth = dimmedBuffer.width
-        let baseHeight = dimmedBuffer.height
+        // Center relative to the full terminal area, not the content size.
+        let screenWidth = context.availableWidth
+        let screenHeight = context.availableHeight
         let modalWidth = modalBuffer.width
         let modalHeight = modalBuffer.height
 
-        let horizontalOffset = max(0, (baseWidth - modalWidth) / 2)
-        let verticalOffset = max(0, (baseHeight - modalHeight) / 2)
+        let horizontalOffset = max(0, (screenWidth - modalWidth) / 2)
+        let verticalOffset = max(0, (screenHeight - modalHeight) / 2 - 2)
 
         return dimmedBuffer.composited(
             with: modalBuffer,
