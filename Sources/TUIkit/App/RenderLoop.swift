@@ -115,10 +115,12 @@ internal final class RenderLoop<A: App> {
         tuiContext.lifecycle.beginRenderPass()
         tuiContext.stateStorage.beginRenderPass()
 
-        // Calculate available height (reserve space for status bar)
+        // Calculate available height (reserve space for status bar).
+        // Single getSize() call — avoids 2 ioctl syscalls per frame.
+        let terminalSize = terminal.getSize()
         let statusBarHeight = statusBar.height
-        let terminalWidth = terminal.width
-        let terminalHeight = terminal.height
+        let terminalWidth = terminalSize.width
+        let terminalHeight = terminalSize.height
         let contentHeight = terminalHeight - statusBarHeight
 
         // Create render context with environment
