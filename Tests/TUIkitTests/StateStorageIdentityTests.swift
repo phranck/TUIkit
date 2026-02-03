@@ -208,7 +208,12 @@ struct StateStorageIdentityTests {
     func stateSurvivesRenderToBuffer() {
         let (_, _) = testEnvironment()
         let tuiContext = TUIContext()
-        let context = RenderContext(tuiContext: tuiContext, identity: ViewIdentity(path: ""))
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            tuiContext: tuiContext,
+            identity: ViewIdentity(path: "")
+        )
 
         // First render: creates state with default 0, body sets it to 42
         let buffer1 = renderToBuffer(CounterView(), context: context)
@@ -223,7 +228,12 @@ struct StateStorageIdentityTests {
     func nestedViewsIndependentState() {
         let (_, _) = testEnvironment()
         let tuiContext = TUIContext()
-        let context = RenderContext(tuiContext: tuiContext, identity: ViewIdentity(path: ""))
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            tuiContext: tuiContext,
+            identity: ViewIdentity(path: "")
+        )
 
         // Render a parent with two child views that each have @State
         let buffer = renderToBuffer(ParentWithTwoCounters(), context: context)
