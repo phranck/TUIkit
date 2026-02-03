@@ -183,26 +183,46 @@ struct OverlaysPage: View {
             .frame(width: 50)
 
         case .alertWarning:
-            Alert<Button>.warning(message: "Something might go wrong. Please check your input.") {
-                Button("Dismiss", style: .primary) { showOverlay = false }
+            Alert(
+                title: "Warning",
+                message: "Something might go wrong. Please check your input.",
+                borderColor: .yellow,
+                titleColor: .yellow
+            ) {
+                dismissButton
             }
             .frame(width: 50)
 
         case .alertError:
-            Alert<Button>.error(message: "An unexpected error occurred. Please try again.") {
-                Button("Dismiss", style: .primary) { showOverlay = false }
+            Alert(
+                title: "Error",
+                message: "An unexpected error occurred. Please try again.",
+                borderColor: .red,
+                titleColor: .red
+            ) {
+                dismissButton
             }
             .frame(width: 50)
 
         case .alertInfo:
-            Alert<Button>.info(message: "This is an informational message for the user.") {
-                Button("Dismiss", style: .primary) { showOverlay = false }
+            Alert(
+                title: "Info",
+                message: "This is an informational message for the user.",
+                borderColor: .cyan,
+                titleColor: .cyan
+            ) {
+                dismissButton
             }
             .frame(width: 50)
 
         case .alertSuccess:
-            Alert<Button>.success(message: "Operation completed successfully!") {
-                Button("Dismiss", style: .primary) { showOverlay = false }
+            Alert(
+                title: "Success",
+                message: "Operation completed successfully!",
+                borderColor: .green,
+                titleColor: .green
+            ) {
+                dismissButton
             }
             .frame(width: 50)
 
@@ -256,10 +276,13 @@ struct OverlaysPage: View {
         }
     }
 
-    /// Reusable dismiss button for all overlay variants.
-    private var dismissButton: Button {
-        Button("Dismiss", style: .primary) {
-            showOverlay = false
+    /// Reusable right-aligned dismiss button for all overlay variants.
+    private var dismissButton: some View {
+        HStack {
+            Spacer()
+            Button("Dismiss", style: .primary) {
+                showOverlay = false
+            }
         }
     }
 }
