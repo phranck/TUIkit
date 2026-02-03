@@ -125,9 +125,10 @@ extension RenderLoop {
         // Provide the focus manager to the status bar for section resolution
         statusBar.focusManager = focusManager
 
-        // Begin lifecycle and state tracking for this render pass
+        // Begin lifecycle, state, and cache tracking for this render pass
         tuiContext.lifecycle.beginRenderPass()
         tuiContext.stateStorage.beginRenderPass()
+        tuiContext.renderCache.beginRenderPass()
 
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
@@ -236,9 +237,10 @@ extension RenderLoop {
         terminal.endFrame()
 
         // End lifecycle tracking - triggers onDisappear for removed views.
-        // End state tracking - removes state for views no longer in the tree.
+        // End state/cache tracking - removes entries for views no longer in the tree.
         tuiContext.lifecycle.endRenderPass()
         tuiContext.stateStorage.endRenderPass()
+        tuiContext.renderCache.removeInactive()
     }
 
     /// Invalidates the diff cache, forcing a full repaint on the next render.

@@ -18,7 +18,7 @@
 ///     EmptyView()
 /// }
 /// ```
-public struct EmptyView: View {
+public struct EmptyView: View, Equatable {
     /// Creates an empty view.
     public init() {}
 
