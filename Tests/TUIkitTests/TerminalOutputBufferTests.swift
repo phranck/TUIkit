@@ -102,26 +102,19 @@ struct TerminalOutputBufferTests {
         #expect(output == "FirstSecond")
     }
 
-    @Test("Multiple frames flush independently")
-    func multipleFramesFlushIndependently() {
-        var outputs: [String] = []
-
-        outputs.append(captureStdout {
+    @Test("Sequential frames on same terminal flush independently")
+    func sequentialFramesFlushIndependently() {
+        let output = captureStdout {
             let terminal = Terminal()
             terminal.beginFrame()
             terminal.write("Frame1")
             terminal.endFrame()
-        })
-
-        outputs.append(captureStdout {
-            let terminal = Terminal()
             terminal.beginFrame()
             terminal.write("Frame2")
             terminal.endFrame()
-        })
+        }
 
-        #expect(outputs[0] == "Frame1")
-        #expect(outputs[1] == "Frame2")
+        #expect(output == "Frame1Frame2")
     }
 
     @Test("Empty frame produces no output")

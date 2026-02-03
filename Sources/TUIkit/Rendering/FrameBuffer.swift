@@ -97,10 +97,11 @@ public struct FrameBuffer {
     ///   - other: The buffer to append below.
     ///   - spacing: Number of empty lines between the two buffers.
     public mutating func appendVertically(_ other: Self, spacing: Int = 0) {
+        guard !other.isEmpty else { return }
         // Build combined array and assign once to trigger didSet only once.
         var combined = lines
-        if !combined.isEmpty && !other.isEmpty && spacing > 0 {
-            combined.append(contentsOf: Array(repeating: "", count: spacing))
+        if !combined.isEmpty && spacing > 0 {
+            combined.append(contentsOf: repeatElement("", count: spacing))
         }
         combined.append(contentsOf: other.lines)
         lines = combined
