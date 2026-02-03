@@ -215,69 +215,11 @@ enum ANSIRenderer {
         "\(csi)\(row);\(column)H"
     }
 
-    /// Moves the cursor up by the specified number of lines.
-    ///
-    /// - Parameter lines: Number of lines.
-    /// - Returns: The ANSI escape sequence.
-    static func cursorUp(_ lines: Int = 1) -> String {
-        "\(csi)\(lines)A"
-    }
-
-    /// Moves the cursor down by the specified number of lines.
-    ///
-    /// - Parameter lines: Number of lines.
-    /// - Returns: The ANSI escape sequence.
-    static func cursorDown(_ lines: Int = 1) -> String {
-        "\(csi)\(lines)B"
-    }
-
-    /// Moves the cursor forward by the specified number of columns.
-    ///
-    /// - Parameter columns: Number of columns.
-    /// - Returns: The ANSI escape sequence.
-    static func cursorForward(_ columns: Int = 1) -> String {
-        "\(csi)\(columns)C"
-    }
-
-    /// Moves the cursor back by the specified number of columns.
-    ///
-    /// - Parameter columns: Number of columns.
-    /// - Returns: The ANSI escape sequence.
-    static func cursorBack(_ columns: Int = 1) -> String {
-        "\(csi)\(columns)D"
-    }
-
     /// Hides the cursor.
     static let hideCursor = "\(csi)?25l"
 
     /// Shows the cursor.
     static let showCursor = "\(csi)?25h"
-
-    /// Saves the current cursor position.
-    static let saveCursor = "\(csi)s"
-
-    /// Restores the saved cursor position.
-    static let restoreCursor = "\(csi)u"
-
-    // MARK: - Screen Control
-
-    /// Clears the entire screen.
-    static let clearScreen = "\(csi)2J"
-
-    /// Clears from cursor to end of screen.
-    static let clearToEnd = "\(csi)0J"
-
-    /// Clears from cursor to beginning of screen.
-    static let clearToBeginning = "\(csi)1J"
-
-    /// Clears the current line.
-    static let clearLine = "\(csi)2K"
-
-    /// Clears from cursor to end of line.
-    static let clearLineToEnd = "\(csi)0K"
-
-    /// Clears from cursor to beginning of line.
-    static let clearLineToBeginning = "\(csi)1K"
 
     // MARK: - Alternate Screen Buffer
 

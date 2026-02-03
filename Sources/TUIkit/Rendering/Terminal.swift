@@ -43,16 +43,6 @@ import Foundation
 /// Outside of a frame (setup, teardown), ``write(_:)`` writes immediately
 /// as before — safe by default.
 final class Terminal: @unchecked Sendable {
-    /// The width of the terminal in characters.
-    var width: Int {
-        getSize().width
-    }
-
-    /// The height of the terminal in lines.
-    var height: Int {
-        getSize().height
-    }
-
     /// Whether raw mode is active.
     private var isRawMode = false
 
@@ -221,41 +211,6 @@ final class Terminal: @unchecked Sendable {
         }
     }
 
-    /// Writes a string and moves to a new line.
-    ///
-    /// - Parameter string: The string to write.
-    func writeLine(_ string: String = "") {
-        write(string + "\n")
-    }
-
-    /// Clears the screen and moves cursor to position (1,1).
-    func clear() {
-        write(ANSIRenderer.clearScreen + ANSIRenderer.moveCursor(toRow: 1, column: 1))
-    }
-
-    /// Fills the entire screen with a background color.
-    ///
-    /// This clears the screen and fills every cell with the specified color.
-    /// Use this to set a consistent background before rendering content.
-    ///
-    /// - Parameter color: The background color to fill.
-    func fillBackground(_ color: Color) {
-        let size = getSize()
-        let bgCode = ANSIRenderer.backgroundCode(for: color)
-
-        // Move to top-left and fill each line
-        var output = ANSIRenderer.moveCursor(toRow: 1, column: 1)
-        let emptyLine = bgCode + String(repeating: " ", count: size.width) + ANSIRenderer.reset
-
-        for _ in 0..<size.height {
-            output += emptyLine
-        }
-
-        // Move cursor back to top-left
-        output += ANSIRenderer.moveCursor(toRow: 1, column: 1)
-        write(output)
-    }
-
     /// Moves the cursor to the specified position.
     ///
     /// - Parameters:
@@ -342,22 +297,6 @@ final class Terminal: @unchecked Sendable {
 
     // MARK: - Input
 
-    /// Reads a single character from the terminal.
-    ///
-    /// Blocks until a character is available (if raw mode is active,
-    /// for a maximum of 100ms).
-    ///
-    /// - Returns: The read character or nil on timeout/error.
-    func readChar() -> Character? {
-        var byte: UInt8 = 0
-        let bytesRead = read(STDIN_FILENO, &byte, 1)
-
-        if bytesRead == 1 {
-            return Character(UnicodeScalar(byte))
-        }
-        return nil
-    }
-
     /// Reads raw bytes from the terminal, handling escape sequences.
     ///
     /// This method reads up to `maxBytes` bytes, which is needed for
@@ -397,10 +336,4 @@ final class Terminal: @unchecked Sendable {
         return KeyEvent.parse(bytes)
     }
 
-    /// Reads a complete line from the terminal.
-    ///
-    /// - Returns: The input line without newline.
-    func readLine() -> String? {
-        Swift.readLine()
-    }
 }

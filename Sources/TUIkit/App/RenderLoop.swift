@@ -286,7 +286,7 @@ internal final class RenderLoop<A: App> {
         let outputLines = diffWriter.buildOutputLines(
             buffer: buffer,
             terminalWidth: terminalWidth,
-            terminalHeight: buffer.lines.count,
+            terminalHeight: buffer.height,
             bgCode: bgCode,
             reset: reset
         )
