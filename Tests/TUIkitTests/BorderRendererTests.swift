@@ -277,3 +277,66 @@ struct BorderRendererBlockTests {
         #expect(stripped.allSatisfy { $0 == "▄" })
     }
 }
+
+// MARK: - Focus Indicator Tests
+
+@Suite("BorderRenderer Focus Indicator Tests")
+struct BorderRendererFocusIndicatorTests {
+
+    @Test("Top border with focus indicator contains dot character")
+    func topBorderWithIndicator() {
+        let result = BorderRenderer.standardTopBorder(
+            style: .rounded,
+            innerWidth: 10,
+            color: .white,
+            focusIndicatorColor: .cyan
+        )
+        let stripped = result.stripped
+        #expect(stripped.contains("●"), "Should contain focus indicator character")
+        #expect(stripped.hasPrefix("╭"), "Should start with corner")
+        #expect(stripped.hasSuffix("╮"), "Should end with corner")
+    }
+
+    @Test("Top border without indicator has no dot")
+    func topBorderWithoutIndicator() {
+        let result = BorderRenderer.standardTopBorder(
+            style: .rounded,
+            innerWidth: 10,
+            color: .white
+        )
+        let stripped = result.stripped
+        #expect(!stripped.contains("●"), "Should not contain focus indicator")
+    }
+
+    @Test("Focus indicator preserves total visual width")
+    func indicatorPreservesWidth() {
+        let withIndicator = BorderRenderer.standardTopBorder(
+            style: .line,
+            innerWidth: 10,
+            color: .white,
+            focusIndicatorColor: .cyan
+        )
+        let without = BorderRenderer.standardTopBorder(
+            style: .line,
+            innerWidth: 10,
+            color: .white
+        )
+        // Both should have the same visual width (● replaces one ─)
+        #expect(withIndicator.stripped.count == without.stripped.count)
+    }
+
+    @Test("Title border with focus indicator contains both")
+    func titleBorderWithIndicator() {
+        let result = BorderRenderer.standardTopBorder(
+            style: .rounded,
+            innerWidth: 20,
+            color: .white,
+            title: "Panel",
+            titleColor: .cyan,
+            focusIndicatorColor: .green
+        )
+        let stripped = result.stripped
+        #expect(stripped.contains("●"), "Should contain focus indicator")
+        #expect(stripped.contains("Panel"), "Should contain title")
+    }
+}

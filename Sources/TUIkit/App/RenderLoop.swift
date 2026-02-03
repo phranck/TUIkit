@@ -105,11 +105,18 @@ internal final class RenderLoop<A: App> {
     /// Performs a full render pass: scene content + status bar.
     ///
     /// See the class-level documentation for the complete pipeline steps.
-    func render() {
+    ///
+    /// - Parameter pulsePhase: The current breathing indicator phase (0–1).
+    ///   Passed from ``PulseTimer`` via ``AppRunner``.
+    func render(pulsePhase: Double = 0) {
         // Clear per-frame state before re-rendering
         tuiContext.keyEventDispatcher.clearHandlers()
         tuiContext.preferences.beginRenderPass()
-        focusManager.clear()
+        focusManager.beginRenderPass()
+        statusBar.clearSectionItems()
+
+        // Provide the focus manager to the status bar for section resolution
+        statusBar.focusManager = focusManager
 
         // Begin lifecycle and state tracking for this render pass
         tuiContext.lifecycle.beginRenderPass()
@@ -126,12 +133,13 @@ internal final class RenderLoop<A: App> {
         // Create render context with environment
         let environment = buildEnvironment()
 
-        let context = RenderContext(
+        var context = RenderContext(
             availableWidth: terminalWidth,
             availableHeight: contentHeight,
             environment: environment,
             tuiContext: tuiContext
         )
+        context.pulsePhase = pulsePhase
 
         // Render main content into a FrameBuffer.
         // app.body is evaluated fresh each frame. @State values survive
@@ -153,6 +161,10 @@ internal final class RenderLoop<A: App> {
         tuiContext.stateStorage.markActive(rootIdentity)
 
         let buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
+
+        // Validate focus state: if previously active section or focused element
+        // is no longer in the tree, fall back to first available.
+        focusManager.endRenderPass()
 
         // Build terminal-ready output lines and write only changes.
         // All terminal writes between beginFrame/endFrame are collected

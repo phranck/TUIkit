@@ -42,11 +42,16 @@ public struct ModalPresentationModifier<Content: View, Modal: View>: View {
 // MARK: - Renderable
 
 extension ModalPresentationModifier: Renderable {
+    /// A stable section ID for modal focus sections.
+    private static var modalSectionID: String { "__modal__" }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // If not presented, just return base content
         guard isPresented.wrappedValue else {
             return TUIkit.renderToBuffer(content, context: context)
         }
+
+        let focusManager = context.environment.focusManager
 
         // Render dimmed base with an isolated context.
         // The base content's buttons and key handlers register into a
@@ -56,11 +61,20 @@ extension ModalPresentationModifier: Renderable {
         let isolatedContext = context.isolatedForBackground()
         let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: isolatedContext)
 
-        // Clear the real focus manager so the modal's buttons become
-        // the only registered focusables (auto-focus picks the first one).
-        context.environment.focusManager.clear()
+        // Register a modal focus section and activate it.
+        // This replaces the previous focusManager.clear() approach.
+        // The modal section becomes the active section, so Tab/arrows
+        // only navigate within the modal's focusable elements.
+        let sectionID = Self.modalSectionID
+        focusManager.registerSection(id: sectionID)
+        focusManager.activateSection(id: sectionID)
 
-        let modalBuffer = TUIkit.renderToBuffer(modal, context: context)
+        // Set the modal section in the context so child focusables
+        // (buttons in the modal) register in the modal section.
+        var modalContext = context
+        modalContext.activeFocusSectionID = sectionID
+
+        let modalBuffer = TUIkit.renderToBuffer(modal, context: modalContext)
 
         guard !dimmedBuffer.isEmpty else {
             return modalBuffer
