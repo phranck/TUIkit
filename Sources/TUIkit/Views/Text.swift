@@ -170,7 +170,11 @@ public struct TextStyle: Sendable {
 
     /// Creates a default TextStyle with no formatting.
     public init() {}
+}
 
+// MARK: - Public API
+
+extension TextStyle {
     /// Resolves any semantic colors in this style against the given palette.
     ///
     /// Non-semantic colors are left unchanged. Call this before passing

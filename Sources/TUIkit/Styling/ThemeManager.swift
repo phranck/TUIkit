@@ -100,14 +100,16 @@ public final class ThemeManager: @unchecked Sendable {
     public var currentName: String {
         current.name
     }
+}
 
-    // MARK: - Cycling
+// MARK: - Public API
 
+public extension ThemeManager {
     /// Cycles to the next item.
     ///
     /// Wraps around to the first item after the last.
     /// Updates the environment and triggers a re-render.
-    public func cycleNext() {
+    func cycleNext() {
         currentIndex = (currentIndex + 1) % items.count
         applyCurrentItem()
     }
@@ -116,12 +118,10 @@ public final class ThemeManager: @unchecked Sendable {
     ///
     /// Wraps around to the last item before the first.
     /// Updates the environment and triggers a re-render.
-    public func cyclePrevious() {
+    func cyclePrevious() {
         currentIndex = (currentIndex - 1 + items.count) % items.count
         applyCurrentItem()
     }
-
-    // MARK: - Direct Selection
 
     /// Sets a specific item as the current selection.
     ///
@@ -130,17 +130,19 @@ public final class ThemeManager: @unchecked Sendable {
     /// Updates the environment and triggers a re-render.
     ///
     /// - Parameter item: The item to select.
-    public func setCurrent(_ item: any Cyclable) {
+    func setCurrent(_ item: any Cyclable) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
             currentIndex = index
         }
         applyCurrentItem()
     }
+}
 
-    // MARK: - Apply
+// MARK: - Private Helpers
 
+private extension ThemeManager {
     /// Triggers a re-render so the ``RenderLoop`` picks up the new current item.
-    private func applyCurrentItem() {
+    func applyCurrentItem() {
         appState.setNeedsRender()
     }
 }

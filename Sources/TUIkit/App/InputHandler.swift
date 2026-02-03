@@ -33,7 +33,11 @@ internal struct InputHandler {
 
     /// Called when the user requests to quit the application.
     let onQuit: () -> Void
+}
 
+// MARK: - Internal API
+
+extension InputHandler {
     /// Dispatches a key event through the 4-layer priority chain.
     ///
     /// - Parameter event: The key event to handle.

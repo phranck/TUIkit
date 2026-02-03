@@ -199,6 +199,11 @@ public enum Shortcut {
 
     // MARK: - Combining Helpers
 
+}
+
+// MARK: - Public API
+
+public extension Shortcut {
     /// Combines multiple shortcuts with a separator.
     ///
     /// - Parameters:
@@ -212,7 +217,7 @@ public enum Shortcut {
     /// Shortcut.combine(.control, "c") // "⌃c"
     /// Shortcut.combine(.shift, .tab)   // "⇧⇥"
     /// ```
-    public static func combine(_ shortcuts: String..., separator: String = "") -> String {
+    static func combine(_ shortcuts: String..., separator: String = "") -> String {
         shortcuts.joined(separator: separator)
     }
 
@@ -220,7 +225,7 @@ public enum Shortcut {
     ///
     /// - Parameter key: The key character.
     /// - Returns: The formatted shortcut (e.g., "^c").
-    public static func ctrl(_ key: Character) -> String {
+    static func ctrl(_ key: Character) -> String {
         "^\(key)"
     }
 
@@ -230,7 +235,7 @@ public enum Shortcut {
     ///   - start: The start of the range.
     ///   - end: The end of the range.
     /// - Returns: The formatted range (e.g., "1-9").
-    public static func range(_ start: String, _ end: String) -> String {
+    static func range(_ start: String, _ end: String) -> String {
         "\(start)-\(end)"
     }
 }
@@ -435,14 +440,44 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable, @unchecked Sen
     public var hasAction: Bool {
         action != nil
     }
+}
 
+// MARK: - Public API
+
+public extension StatusBarItem {
     /// Executes the item's action.
-    public func execute() {
+    func execute() {
         action?()
     }
 
+    /// Override matching for special cases.
+    func matches(_ event: KeyEvent) -> Bool {
+        // Handle arrow key combinations like "↑↓"
+        if shortcut.contains("↑") && event.key == .up { return true }
+        if shortcut.contains("↓") && event.key == .down { return true }
+        if shortcut.contains("←") && event.key == .left { return true }
+        if shortcut.contains("→") && event.key == .right { return true }
+
+        // Standard matching
+        guard let trigger = triggerKey else { return false }
+
+        // For character keys, do case-sensitive matching
+        // "n" only matches 'n', "N" only matches 'N' (Shift+n)
+        if case .character(let triggerChar) = trigger,
+            case .character(let eventChar) = event.key
+        {
+            return triggerChar == eventChar
+        }
+
+        return event.key == trigger
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension StatusBarItem {
     /// Maps common shortcut symbols to Key values.
-    private static func keyFromShortcut(_ shortcut: String) -> Key? {
+    static func keyFromShortcut(_ shortcut: String) -> Key? {
         switch shortcut.lowercased() {
         case "⎋", "esc", "escape":
             return .escape
@@ -463,28 +498,6 @@ public struct StatusBarItem: StatusBarItemProtocol, Identifiable, @unchecked Sen
         default:
             return nil
         }
-    }
-
-    /// Override matching for special cases.
-    public func matches(_ event: KeyEvent) -> Bool {
-        // Handle arrow key combinations like "↑↓"
-        if shortcut.contains("↑") && event.key == .up { return true }
-        if shortcut.contains("↓") && event.key == .down { return true }
-        if shortcut.contains("←") && event.key == .left { return true }
-        if shortcut.contains("→") && event.key == .right { return true }
-
-        // Standard matching
-        guard let trigger = triggerKey else { return false }
-
-        // For character keys, do case-sensitive matching
-        // "n" only matches 'n', "N" only matches 'N' (Shift+n)
-        if case .character(let triggerChar) = trigger,
-            case .character(let eventChar) = event.key
-        {
-            return triggerChar == eventChar
-        }
-
-        return event.key == trigger
     }
 }
 
@@ -532,7 +545,11 @@ public enum SystemStatusBarItem {
     public static var all: [StatusBarItem] {
         [quit, appearance, theme]
     }
+}
 
+// MARK: - Public API
+
+public extension SystemStatusBarItem {
     /// Creates system items with custom actions.
     ///
     /// - Parameters:
@@ -540,7 +557,7 @@ public enum SystemStatusBarItem {
     ///   - onAppearance: Action for appearance cycling (optional).
     ///   - onTheme: Action for theme cycling (optional).
     /// - Returns: Array of configured system items.
-    public static func items(
+    static func items(
         onQuit: (@Sendable () -> Void)? = nil,
         onAppearance: (@Sendable () -> Void)? = nil,
         onTheme: (@Sendable () -> Void)? = nil
@@ -590,33 +607,38 @@ public enum SystemStatusBarItem {
 /// Result builder for creating status bar items.
 @resultBuilder
 public struct StatusBarItemBuilder {
+}
+
+// MARK: - Public API
+
+public extension StatusBarItemBuilder {
     /// Combines multiple item arrays into a single flat array.
-    public static func buildBlock(_ components: [any StatusBarItemProtocol]...) -> [any StatusBarItemProtocol] {
+    static func buildBlock(_ components: [any StatusBarItemProtocol]...) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
     /// Combines an array of item arrays (from `for` loops).
-    public static func buildArray(_ components: [[any StatusBarItemProtocol]]) -> [any StatusBarItemProtocol] {
+    static func buildArray(_ components: [[any StatusBarItemProtocol]]) -> [any StatusBarItemProtocol] {
         components.flatMap { $0 }
     }
 
     /// Handles optional item arrays (from `if` without `else`).
-    public static func buildOptional(_ component: [any StatusBarItemProtocol]?) -> [any StatusBarItemProtocol] {
+    static func buildOptional(_ component: [any StatusBarItemProtocol]?) -> [any StatusBarItemProtocol] {
         component ?? []
     }
 
     /// Handles the first branch of an `if`/`else`.
-    public static func buildEither(first component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
+    static func buildEither(first component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
     /// Handles the second branch of an `if`/`else`.
-    public static func buildEither(second component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
+    static func buildEither(second component: [any StatusBarItemProtocol]) -> [any StatusBarItemProtocol] {
         component
     }
 
     /// Wraps a single item into an array.
-    public static func buildExpression(_ expression: any StatusBarItemProtocol) -> [any StatusBarItemProtocol] {
+    static func buildExpression(_ expression: any StatusBarItemProtocol) -> [any StatusBarItemProtocol] {
         [expression]
     }
 }

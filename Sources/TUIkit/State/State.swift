@@ -30,29 +30,37 @@ public final class AppState: @unchecked Sendable {
 
     /// Creates a new app state instance.
     public init() {}
+}
 
-    /// Registers an observer to be notified of state changes.
-    ///
-    /// - Parameter callback: The callback to invoke on state change.
-    internal func observe(_ callback: @escaping () -> Void) {
-        observers.append(callback)
-    }
+// MARK: - Public API
 
-    /// Clears all observers.
-    internal func clearObservers() {
-        observers.removeAll()
-    }
-
+public extension AppState {
     /// Marks state as changed and notifies observers.
-    public func setNeedsRender() {
+    func setNeedsRender() {
         needsRender = true
         for observer in observers {
             observer()
         }
     }
+}
+
+// MARK: - Internal API
+
+extension AppState {
+    /// Registers an observer to be notified of state changes.
+    ///
+    /// - Parameter callback: The callback to invoke on state change.
+    func observe(_ callback: @escaping () -> Void) {
+        observers.append(callback)
+    }
+
+    /// Clears all observers.
+    func clearObservers() {
+        observers.removeAll()
+    }
 
     /// Resets the needs render flag.
-    internal func didRender() {
+    func didRender() {
         needsRender = false
     }
 }
