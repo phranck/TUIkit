@@ -29,7 +29,7 @@
 ///     Text("Bottom")
 /// }
 /// ```
-public struct Spacer: View {
+public struct Spacer: View, Equatable {
     /// The minimum length of the spacer (in characters/lines).
     let minLength: Int?
 
@@ -66,7 +66,7 @@ public struct Spacer: View {
 /// // ─────────────
 /// // Section 2
 /// ```
-public struct Divider: View {
+public struct Divider: View, Equatable {
     /// The character used for the line.
     var character: Character
 
