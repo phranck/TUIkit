@@ -15,8 +15,6 @@ import TUIkit
 struct TextStylesPage: View {
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Text Styles Demo")
-
             DemoSection("Basic Styles") {
                 Text("Normal text - no styling applied")
                 Text("Bold text").bold()
@@ -40,6 +38,13 @@ struct TextStylesPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Text Styles Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }

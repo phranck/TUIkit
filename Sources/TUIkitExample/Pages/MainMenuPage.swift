@@ -16,11 +16,6 @@ struct MainMenuPage: View {
 
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(
-                title: "TUIkit Example App",
-                subtitle: "A SwiftUI-like framework for Terminal User Interfaces"
-            )
-
             Spacer(minLength: 1)
 
             HStack {
@@ -65,6 +60,18 @@ struct MainMenuPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            VStack {
+                HStack {
+                    Text("TUIkit Example App").bold().foregroundColor(.palette.accent)
+                    Spacer()
+                    Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                }
+                Text("A SwiftUI-like framework for Terminal User Interfaces")
+                    .foregroundColor(.palette.foregroundSecondary)
+                    .italic()
+            }
         }
     }
 

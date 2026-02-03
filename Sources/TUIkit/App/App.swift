@@ -63,6 +63,7 @@ internal final class AppRunner<A: App> {
     let terminal: Terminal
     let appState: AppState
     let statusBar: StatusBarState
+    let appHeader: AppHeaderState
     let focusManager: FocusManager
     let paletteManager: ThemeManager
     let appearanceManager: ThemeManager
@@ -78,6 +79,7 @@ internal final class AppRunner<A: App> {
         self.terminal = Terminal()
         self.appState = AppState()
         self.statusBar = StatusBarState(appState: appState)
+        self.appHeader = AppHeaderState()
         self.focusManager = FocusManager()
         self.tuiContext = TUIContext()
         self.paletteManager = ThemeManager(items: PaletteRegistry.all, appState: appState)
@@ -102,6 +104,7 @@ internal final class AppRunner<A: App> {
             app: app,
             terminal: terminal,
             statusBar: statusBar,
+            appHeader: appHeader,
             focusManager: focusManager,
             paletteManager: paletteManager,
             appearanceManager: appearanceManager,
