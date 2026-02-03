@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FrameBuffer.swift
-//  TUIkit
 //
-//  A 2D text buffer for off-screen rendering before terminal output.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A 2D text buffer that views render into before flushing to the terminal.
 ///
@@ -168,10 +167,13 @@ public struct FrameBuffer {
         var result: [String] = []
 
         for row in 0..<resultHeight {
-            // Get the base line (padded to result width)
+            // Keep the original (unpadded) line for ANSI state extraction.
+            // padToVisibleWidth appends unstyled spaces that lose the base's
+            // ANSI state, so insertOverlay needs the original to restore it.
+            let originalLine: String? = row < lines.count ? lines[row] : nil
             var baseLine: String
-            if row < lines.count {
-                baseLine = lines[row].padToVisibleWidth(resultWidth)
+            if let original = originalLine {
+                baseLine = original.padToVisibleWidth(resultWidth)
             } else {
                 baseLine = String(repeating: " ", count: resultWidth)
             }
@@ -185,7 +187,8 @@ public struct FrameBuffer {
                     baseLine = insertOverlay(
                         base: baseLine,
                         overlay: overlayLine,
-                        atColumn: position.x
+                        atColumn: position.x,
+                        originalBase: originalLine
                     )
                 }
             }
@@ -198,38 +201,50 @@ public struct FrameBuffer {
 
     /// Inserts overlay text into base text at the specified column position.
     ///
+    /// Splits the base line at visible-character boundaries (ignoring ANSI codes)
+    /// and preserves the base's ANSI styling in the prefix and suffix regions.
+    /// The overlay replaces the base in its column range, with its own styling intact.
+    ///
+    /// After the overlay, the base's active ANSI state is restored before the
+    /// suffix so the dimmed background (or any other base styling) continues
+    /// seamlessly to the right of the overlay.
+    ///
     /// - Parameters:
-    ///   - base: The base text line.
-    ///   - overlay: The overlay text to insert.
-    ///   - column: The column position (0-based).
-    /// - Returns: The composited line.
-    private func insertOverlay(base: String, overlay: String, atColumn column: Int) -> String {
-        // Strip ANSI codes from the base to get accurate column positions.
-        // Without stripping, escape sequences would shift character offsets.
-        // The overlay keeps its ANSI codes intact so its styling is preserved.
-        let baseChars = Array(base.stripped)
-        let overlayStripped = overlay.stripped
+    ///   - base: The base text line (may contain ANSI codes).
+    ///   - overlay: The overlay text to insert (may contain ANSI codes).
+    ///   - column: The column position (0-based, in visible characters).
+    ///   - originalBase: The original base line before padding, used to extract
+    ///     the active ANSI state. If `nil`, the state is extracted from `base`.
+    /// - Returns: The composited line with base styling preserved around the overlay.
+    private func insertOverlay(
+        base: String,
+        overlay: String,
+        atColumn column: Int,
+        originalBase: String? = nil
+    ) -> String {
+        let overlayVisibleWidth = overlay.strippedLength
+        let afterOverlayColumn = column + overlayVisibleWidth
 
-        // Build: [base prefix] + [overlay with ANSI] + [base suffix]
-        var result = ""
+        // Split the base into prefix (before overlay) and suffix (after overlay),
+        // preserving all ANSI codes in both segments.
+        let prefix = base.ansiAwarePrefix(visibleCount: column)
+        let suffix = base.ansiAwareSuffix(droppingVisible: afterOverlayColumn)
 
-        // Base characters before the overlay insertion point
-        if column > 0 {
-            let prefixEnd = min(column, baseChars.count)
-            result += String(baseChars[0..<prefixEnd])
-            if prefixEnd < column {
-                result += String(repeating: " ", count: column - prefixEnd)
-            }
-        }
+        // Extract the leading ANSI state from the original (unpadded) base line.
+        // The leading sequences contain the full styling setup (BG + FG + dim)
+        // before any visible text. This is more reliable than scanning the whole
+        // string, because applyPersistentBackground appends a lone BG code after
+        // the final reset that doesn't represent the full styling state.
+        let styleSource = originalBase ?? base
+        let baseStyle = styleSource.leadingANSISequences()
 
-        // Overlay with its ANSI styling intact
+        // Build: [prefix] + [reset] + [overlay] + [reset + base style restore] + [suffix]
+        var result = prefix
+        result += ANSIRenderer.reset
         result += overlay
-
-        // Remaining base characters after the overlay region
-        let afterOverlayColumn = column + overlayStripped.count
-        if afterOverlayColumn < baseChars.count {
-            result += String(baseChars[afterOverlayColumn...])
-        }
+        result += ANSIRenderer.reset
+        result += baseStyle
+        result += suffix
 
         return result
     }

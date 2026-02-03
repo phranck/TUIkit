@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  DimmedModifierTests.swift
-//  TUIkit
 //
-//  Tests for DimmedModifier: dim effect application, edge cases, multi-line.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 
@@ -26,13 +25,17 @@ struct DimmedModifierTests {
         renderToBuffer(view, context: testContext())
     }
 
-    @Test("Dimmed text contains ANSI dim code")
-    func dimCodePresent() {
+    @Test("Dimmed text strips original styling and applies uniform colors")
+    func dimmedStripsAndRecolors() {
         let view = Text("Hello").dimmed()
         let buffer = render(view)
         #expect(buffer.lines.count == 1)
-        // ESC[2m is the ANSI dim code
-        #expect(buffer.lines[0].contains("\u{1B}[2m"))
+        // Should NOT contain the old ANSI dim code — we use palette colors now
+        #expect(!buffer.lines[0].contains("\u{1B}[2m"))
+        // Visible text must survive the stripping
+        #expect(buffer.lines[0].stripped.contains("Hello"))
+        // Must contain RGB color codes (from palette foregroundTertiary/overlayBackground)
+        #expect(buffer.lines[0].contains("\u{1B}["))
     }
 
     @Test("Dimmed empty view returns empty buffer")
@@ -42,7 +45,7 @@ struct DimmedModifierTests {
         #expect(buffer.isEmpty)
     }
 
-    @Test("Dimmed multi-line view dims each line")
+    @Test("Dimmed multi-line view flattens each line uniformly")
     func dimmedMultiLine() {
         let view = VStack {
             Text("Line 1")
@@ -51,10 +54,19 @@ struct DimmedModifierTests {
         }.dimmed()
         let buffer = render(view)
         #expect(buffer.height == 3)
-        // Each line should have the dim code
+        // Each line should have the visible text and uniform palette-based styling
         for line in buffer.lines {
-            #expect(line.contains("\u{1B}[2m"))
+            #expect(!line.contains("\u{1B}[2m"))
+            #expect(line.stripped.trimmingCharacters(in: .whitespaces).count > 0)
         }
     }
 
+    @Test("Dimmed lines are padded to full buffer width")
+    func dimmedPadsToFullWidth() {
+        let view = Text("Short").dimmed()
+        let buffer = render(view)
+        let visibleWidth = buffer.lines[0].strippedLength
+        // The dimmed line should be padded to the buffer width
+        #expect(visibleWidth == buffer.width)
+    }
 }
