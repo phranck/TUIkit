@@ -18,11 +18,13 @@ enum BorderRenderer {
     /// The total width consumed by left + right border characters (1 + 1 = 2).
     static let borderWidthOverhead = 2
 
-    // MARK: - Standard Style (Box-Drawing Characters)
-
     /// The breathing focus indicator character.
     static let focusIndicator: Character = "●"
+}
 
+// MARK: - Standard Style (Box-Drawing Characters)
+
+extension BorderRenderer {
     /// Renders a plain top border line.
     ///
     ///     ┌──────────────┐
@@ -182,9 +184,11 @@ enum BorderRenderer {
         let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: color)
         return vertical + styledContent + ANSIRenderer.reset + vertical
     }
+}
 
-    // MARK: - Block Style (Half-Block Characters)
+// MARK: - Block Style (Half-Block Characters)
 
+extension BorderRenderer {
     /// Renders a block-style top border.
     ///
     ///     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄

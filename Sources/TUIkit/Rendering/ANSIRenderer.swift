@@ -43,8 +43,26 @@ enum ANSIRenderer {
         static let strikethrough = "9"
     }
 
-    // MARK: - Style Rendering
+    // MARK: - Cursor Control
 
+    /// Hides the cursor.
+    static let hideCursor = "\(csi)?25l"
+
+    /// Shows the cursor.
+    static let showCursor = "\(csi)?25h"
+
+    // MARK: - Alternate Screen Buffer
+
+    /// Enters the alternate screen buffer.
+    static let enterAlternateScreen = "\(csi)?1049h"
+
+    /// Exits the alternate screen buffer.
+    static let exitAlternateScreen = "\(csi)?1049l"
+}
+
+// MARK: - Internal API
+
+extension ANSIRenderer {
     /// Renders text with the specified style.
     ///
     /// - Parameters:
@@ -62,89 +80,6 @@ enum ANSIRenderer {
         return "\(styleSequence)\(text)\(reset)"
     }
 
-    /// Builds the ANSI codes for a TextStyle.
-    ///
-    /// - Parameter style: The TextStyle to convert.
-    /// - Returns: An array of ANSI code strings.
-    private static func buildStyleCodes(_ style: TextStyle) -> [String] {
-        var codes: [String] = []
-
-        // Text attributes
-        if style.isBold {
-            codes.append(StyleCode.bold)
-        }
-        if style.isDim {
-            codes.append(StyleCode.dim)
-        }
-        if style.isItalic {
-            codes.append(StyleCode.italic)
-        }
-        if style.isUnderlined {
-            codes.append(StyleCode.underline)
-        }
-        if style.isBlink {
-            codes.append(StyleCode.blink)
-        }
-        if style.isInverted {
-            codes.append(StyleCode.inverse)
-        }
-        if style.isStrikethrough {
-            codes.append(StyleCode.strikethrough)
-        }
-
-        // Foreground color
-        if let fgColor = style.foregroundColor {
-            codes.append(contentsOf: foregroundCodes(for: fgColor))
-        }
-
-        // Background color
-        if let bgColor = style.backgroundColor {
-            codes.append(contentsOf: backgroundCodes(for: bgColor))
-        }
-
-        return codes
-    }
-
-    // MARK: - Color Codes
-
-    /// Generates the ANSI codes for a foreground color.
-    ///
-    /// - Parameter color: The color.
-    /// - Returns: The ANSI code strings.
-    private static func foregroundCodes(for color: Color) -> [String] {
-        switch color.value {
-        case .standard(let ansi):
-            return ["\(ansi.foregroundCode)"]
-        case .bright(let ansi):
-            return ["\(ansi.brightForegroundCode)"]
-        case .palette256(let index):
-            return ["38", "5", "\(index)"]
-        case .rgb(let red, let green, let blue):
-            return ["38", "2", "\(red)", "\(green)", "\(blue)"]
-        case .semantic:
-            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
-        }
-    }
-
-    /// Generates the ANSI codes for a background color.
-    ///
-    /// - Parameter color: The color.
-    /// - Returns: The ANSI code strings.
-    private static func backgroundCodes(for color: Color) -> [String] {
-        switch color.value {
-        case .standard(let ansi):
-            return ["\(ansi.backgroundCode)"]
-        case .bright(let ansi):
-            return ["\(ansi.brightBackgroundCode)"]
-        case .palette256(let index):
-            return ["48", "5", "\(index)"]
-        case .rgb(let red, let green, let blue):
-            return ["48", "2", "\(red)", "\(green)", "\(blue)"]
-        case .semantic:
-            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
-        }
-    }
-
     /// Generates the ANSI escape sequence for a background color.
     ///
     /// Use this to set only the background color without other styles.
@@ -155,8 +90,6 @@ enum ANSIRenderer {
         let codes = backgroundCodes(for: color)
         return "\(csi)\(codes.joined(separator: ";"))m"
     }
-
-    // MARK: - Convenience Colorize
 
     /// Applies foreground color to a string using `TextStyle` + `render()`.
     ///
@@ -202,8 +135,6 @@ enum ANSIRenderer {
         return bgCode + stringWithPersistentBg
     }
 
-    // MARK: - Cursor Control
-
     /// Moves the cursor to the specified position.
     ///
     /// - Parameters:
@@ -213,18 +144,89 @@ enum ANSIRenderer {
     static func moveCursor(toRow row: Int, column: Int) -> String {
         "\(csi)\(row);\(column)H"
     }
+}
 
-    /// Hides the cursor.
-    static let hideCursor = "\(csi)?25l"
+// MARK: - Private Helpers
 
-    /// Shows the cursor.
-    static let showCursor = "\(csi)?25h"
+private extension ANSIRenderer {
+    /// Builds the ANSI codes for a TextStyle.
+    ///
+    /// - Parameter style: The TextStyle to convert.
+    /// - Returns: An array of ANSI code strings.
+    static func buildStyleCodes(_ style: TextStyle) -> [String] {
+        var codes: [String] = []
 
-    // MARK: - Alternate Screen Buffer
+        // Text attributes
+        if style.isBold {
+            codes.append(StyleCode.bold)
+        }
+        if style.isDim {
+            codes.append(StyleCode.dim)
+        }
+        if style.isItalic {
+            codes.append(StyleCode.italic)
+        }
+        if style.isUnderlined {
+            codes.append(StyleCode.underline)
+        }
+        if style.isBlink {
+            codes.append(StyleCode.blink)
+        }
+        if style.isInverted {
+            codes.append(StyleCode.inverse)
+        }
+        if style.isStrikethrough {
+            codes.append(StyleCode.strikethrough)
+        }
 
-    /// Enters the alternate screen buffer.
-    static let enterAlternateScreen = "\(csi)?1049h"
+        // Foreground color
+        if let fgColor = style.foregroundColor {
+            codes.append(contentsOf: foregroundCodes(for: fgColor))
+        }
 
-    /// Exits the alternate screen buffer.
-    static let exitAlternateScreen = "\(csi)?1049l"
+        // Background color
+        if let bgColor = style.backgroundColor {
+            codes.append(contentsOf: backgroundCodes(for: bgColor))
+        }
+
+        return codes
+    }
+
+    /// Generates the ANSI codes for a foreground color.
+    ///
+    /// - Parameter color: The color.
+    /// - Returns: The ANSI code strings.
+    static func foregroundCodes(for color: Color) -> [String] {
+        switch color.value {
+        case .standard(let ansi):
+            return ["\(ansi.foregroundCode)"]
+        case .bright(let ansi):
+            return ["\(ansi.brightForegroundCode)"]
+        case .palette256(let index):
+            return ["38", "5", "\(index)"]
+        case .rgb(let red, let green, let blue):
+            return ["38", "2", "\(red)", "\(green)", "\(blue)"]
+        case .semantic:
+            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
+        }
+    }
+
+    /// Generates the ANSI codes for a background color.
+    ///
+    /// - Parameter color: The color.
+    /// - Returns: The ANSI code strings.
+    static func backgroundCodes(for color: Color) -> [String] {
+        switch color.value {
+        case .standard(let ansi):
+            return ["\(ansi.backgroundCode)"]
+        case .bright(let ansi):
+            return ["\(ansi.brightBackgroundCode)"]
+        case .palette256(let index):
+            return ["48", "5", "\(index)"]
+        case .rgb(let red, let green, let blue):
+            return ["48", "2", "\(red)", "\(green)", "\(blue)"]
+        case .semantic:
+            fatalError("Semantic color must be resolved before rendering. Call Color.resolve(with:) first.")
+        }
+    }
 }

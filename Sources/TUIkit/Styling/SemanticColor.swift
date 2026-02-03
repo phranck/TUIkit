@@ -44,7 +44,11 @@ enum SemanticColor: String, Sendable, Equatable {
 
     // UI Elements
     case border
+}
 
+// MARK: - Color Resolution
+
+extension SemanticColor {
     /// Resolves this token to a concrete color using the given palette.
     ///
     /// For ``BlockPalette``-specific tokens (`surfaceBackground`,

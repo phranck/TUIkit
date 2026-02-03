@@ -54,7 +54,11 @@ struct ViewIdentity: Hashable, CustomStringConvertible {
     }
 
     var description: String { path }
+}
 
+// MARK: - Internal API
+
+extension ViewIdentity {
     /// Returns a child identity by appending a type name and child index.
     ///
     /// Used by container views (`TupleView`, `ViewArray`) to assign

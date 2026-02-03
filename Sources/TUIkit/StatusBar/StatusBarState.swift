@@ -127,8 +127,6 @@ public final class StatusBarState: @unchecked Sendable {
         self.init(appState: AppState())
     }
 
-    // MARK: - System Items Access
-
     /// Whether we are at the root level (no context pushed).
     public var isAtRoot: Bool {
         userContextStack.isEmpty
@@ -137,260 +135,46 @@ public final class StatusBarState: @unchecked Sendable {
     /// Whether quit is currently allowed based on `quitBehavior`.
     public var isQuitAllowed: Bool {
         switch quitBehavior {
-        case .always:
-            return true
-        case .rootOnly:
-            return isAtRoot
+        case .always: return true
+        case .rootOnly: return isAtRoot
         }
     }
 
     /// The current system items based on configuration flags.
-    ///
-    /// Returns items filtered by `showSystemItems`, `showAppearanceItem`, `showThemeItem`,
-    /// and `quitBehavior`. The quit item is only included when quit is allowed.
     public var currentSystemItems: [StatusBarItem] {
         guard showSystemItems else { return [] }
 
         var items: [StatusBarItem] = []
-
-        // Quit item respects quitBehavior
-        if isQuitAllowed {
-            items.append(SystemStatusBarItem.quit)
-        }
-
-        if showAppearanceItem {
-            items.append(SystemStatusBarItem.appearance)
-        }
-
-        if showThemeItem {
-            items.append(SystemStatusBarItem.theme)
-        }
-
+        if isQuitAllowed { items.append(SystemStatusBarItem.quit) }
+        if showAppearanceItem { items.append(SystemStatusBarItem.appearance) }
+        if showThemeItem { items.append(SystemStatusBarItem.theme) }
         return items
     }
 
-    // MARK: - User Items Management
-
-    /// Sets the global user items.
-    ///
-    /// These items are shown when no context is active.
-    /// System items are always shown in addition to these (unless disabled).
-    /// Triggers a re-render.
-    ///
-    /// - Parameter items: The user items to display.
-    public func setItems(_ items: [any StatusBarItemProtocol]) {
-        userGlobalItems = items
-        appState.setNeedsRender()
-    }
-
-    /// Sets the global user items using a builder.
-    ///
-    /// Triggers a re-render.
-    ///
-    /// - Parameter builder: A closure that returns items.
-    public func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
-        userGlobalItems = builder()
-        appState.setNeedsRender()
-    }
-
-    /// Sets the global user items without triggering a re-render.
-    ///
-    /// Use this during rendering (e.g., from modifiers) to avoid render loops.
-    ///
-    /// - Parameter items: The items to display.
-    internal func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
-        userGlobalItems = items
-    }
-
     /// The current user items resolved from focus sections, context stack, or global items.
-    ///
-    /// Resolution order:
-    /// 1. If section items are registered for the active section, resolve via composition.
-    /// 2. Else if a context stack entry exists, use the topmost context.
-    /// 3. Else use global user items.
-    ///
-    /// Does not include system items.
     public var currentUserItems: [any StatusBarItemProtocol] {
-        // Priority 1: Section-based resolution (new declarative API)
         if !sectionItems.isEmpty, let activeSectionID = activeFocusSectionID {
             return resolvedSectionItems(for: activeSectionID)
         }
-
-        // Priority 2: Legacy context stack
-        if let topContext = userContextStack.last {
-            return topContext.items
-        }
-
-        // Priority 3: Global items
+        if let topContext = userContextStack.last { return topContext.items }
         return userGlobalItems
     }
 
-    // MARK: - Section Items Registration
-
-    /// Registers status bar items for a focus section.
-    ///
-    /// Called by ``StatusBarItemsModifier`` during rendering. Items are
-    /// associated with the section and resolved declaratively based on
-    /// which section is active.
-    ///
-    /// - Parameters:
-    ///   - sectionID: The focus section that owns these items.
-    ///   - items: The status bar items to display.
-    ///   - composition: How to compose with parent items.
-    func registerSectionItems(
-        sectionID: String,
-        items: [any StatusBarItemProtocol],
-        composition: StatusBarItemComposition
-    ) {
-        // Replace existing entry for the same section (idempotent per render pass)
-        sectionItems.removeAll { $0.sectionID == sectionID }
-        sectionItems.append((sectionID, items, composition))
-    }
-
-    /// Clears all section items at the start of a render pass.
-    ///
-    /// Section items are rebuilt each frame by ``StatusBarItemsModifier``.
-    func clearSectionItems() {
-        sectionItems.removeAll()
-    }
-
-    /// Resolves items for a given section using its composition strategy.
-    ///
-    /// - `.replace`: Only the section's own items are returned.
-    /// - `.merge`: The section's items are combined with global items.
-    ///   Section items win on shortcut conflict.
-    ///
-    /// - Parameter sectionID: The active section to resolve for.
-    /// - Returns: The resolved list of user items.
-    private func resolvedSectionItems(for sectionID: String) -> [any StatusBarItemProtocol] {
-        guard let entry = sectionItems.first(where: { $0.sectionID == sectionID }) else {
-            // Section has no items declared — fall through to global
-            return userGlobalItems
-        }
-
-        switch entry.composition {
-        case .replace:
-            // Cascade barrier — only this section's items
-            return entry.items
-
-        case .merge:
-            // Merge: section items + global items (section wins on conflict)
-            let sectionShortcuts = Set(entry.items.map { $0.shortcut })
-            let filteredGlobal = userGlobalItems.filter { !sectionShortcuts.contains($0.shortcut) }
-            return entry.items + filteredGlobal
-        }
-    }
-
-    // MARK: - User Context Stack
-
-    /// Pushes a new user context with its items onto the stack.
-    ///
-    /// Items from the most recent context are displayed instead of global user items.
-    /// System items are always shown in addition to context items.
-    /// Triggers a re-render.
-    ///
-    /// - Parameters:
-    ///   - context: A unique identifier for this context.
-    ///   - items: The user items to display for this context.
-    public func push(context: String, items: [any StatusBarItemProtocol]) {
-        userContextStack.removeAll { $0.context == context }
-        userContextStack.append((context, items))
-        appState.setNeedsRender()
-    }
-
-    /// Pushes a new user context without triggering a re-render.
-    ///
-    /// Use this during rendering (e.g., from modifiers) to avoid render loops.
-    ///
-    /// - Parameters:
-    ///   - context: A unique identifier for this context.
-    ///   - items: The items to display for this context.
-    internal func pushSilently(context: String, items: [any StatusBarItemProtocol]) {
-        userContextStack.removeAll { $0.context == context }
-        userContextStack.append((context, items))
-    }
-
-    /// Pushes a new user context using a builder.
-    ///
-    /// Triggers a re-render.
-    ///
-    /// - Parameters:
-    ///   - context: A unique identifier for this context.
-    ///   - builder: A closure that returns items.
-    public func push(context: String, @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
-        push(context: context, items: builder())
-    }
-
-    /// Pops a user context from the stack.
-    ///
-    /// Triggers a re-render.
-    ///
-    /// - Parameter context: The context identifier to remove.
-    public func pop(context: String) {
-        userContextStack.removeAll { $0.context == context }
-        appState.setNeedsRender()
-    }
-
-    /// Clears all user contexts (keeps global user items and system items).
-    ///
-    /// Triggers a re-render.
-    public func clearContexts() {
-        userContextStack.removeAll()
-        appState.setNeedsRender()
-    }
-
-    /// Clears all user items (global and contexts).
-    ///
-    /// System items remain visible unless `showSystemItems` is set to false.
-    public func clearUserItems() {
-        userContextStack.removeAll()
-        userGlobalItems.removeAll()
-    }
-
-    /// Clears everything including user items and hides system items.
-    ///
-    /// After calling this, the status bar will be empty until new items are set
-    /// or `showSystemItems` is set back to `true`.
-    public func clear() {
-        userContextStack.removeAll()
-        userGlobalItems.removeAll()
-        showSystemItems = false
-    }
-
-    // MARK: - Combined Items
-
     /// All currently active items for rendering and event handling.
-    ///
-    /// Layout: `[sorted user items] + [system items with fixed order]`
-    ///
-    /// If a user item has the same shortcut as a system item, the user item
-    /// replaces the system item (user items take priority).
     public var currentItems: [any StatusBarItemProtocol] {
-        // Get shortcuts used by user items (for deduplication)
         let userShortcuts = Set(currentUserItems.map { $0.shortcut })
-
-        // Filter out system items that are overridden by user items
         let filteredSystemItems = currentSystemItems.filter { !userShortcuts.contains($0.shortcut) }
-
-        // Sort user items by order, then append system items (fixed order)
         let sortedUserItems = currentUserItems.sorted { $0.order < $1.order }
-
         return sortedUserItems + filteredSystemItems
     }
 
     /// Whether the status bar has any items to display.
-    public var hasItems: Bool {
-        !currentItems.isEmpty
-    }
+    public var hasItems: Bool { !currentItems.isEmpty }
 
     /// Whether there are any user items (ignoring system items).
-    public var hasUserItems: Bool {
-        !currentUserItems.isEmpty
-    }
+    public var hasUserItems: Bool { !currentUserItems.isEmpty }
 
     /// The height of the status bar in lines.
-    ///
-    /// Returns 0 only if no items are present.
     public var height: Int {
         guard hasItems else { return 0 }
         switch style {
@@ -398,22 +182,65 @@ public final class StatusBarState: @unchecked Sendable {
         case .bordered: return 3
         }
     }
+}
 
-    // MARK: - Event Handling
+// MARK: - Public API
+
+public extension StatusBarState {
+    /// Sets the global user items. Triggers a re-render.
+    func setItems(_ items: [any StatusBarItemProtocol]) {
+        userGlobalItems = items
+        appState.setNeedsRender()
+    }
+
+    /// Sets the global user items using a builder. Triggers a re-render.
+    func setItems(@StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
+        userGlobalItems = builder()
+        appState.setNeedsRender()
+    }
+
+    /// Pushes a new user context with its items onto the stack. Triggers a re-render.
+    func push(context: String, items: [any StatusBarItemProtocol]) {
+        userContextStack.removeAll { $0.context == context }
+        userContextStack.append((context, items))
+        appState.setNeedsRender()
+    }
+
+    /// Pushes a new user context using a builder. Triggers a re-render.
+    func push(context: String, @StatusBarItemBuilder _ builder: () -> [any StatusBarItemProtocol]) {
+        push(context: context, items: builder())
+    }
+
+    /// Pops a user context from the stack. Triggers a re-render.
+    func pop(context: String) {
+        userContextStack.removeAll { $0.context == context }
+        appState.setNeedsRender()
+    }
+
+    /// Clears all user contexts (keeps global user items and system items). Triggers a re-render.
+    func clearContexts() {
+        userContextStack.removeAll()
+        appState.setNeedsRender()
+    }
+
+    /// Clears all user items (global and contexts). System items remain.
+    func clearUserItems() {
+        userContextStack.removeAll()
+        userGlobalItems.removeAll()
+    }
+
+    /// Clears everything including user items and hides system items.
+    func clear() {
+        userContextStack.removeAll()
+        userGlobalItems.removeAll()
+        showSystemItems = false
+    }
 
     /// Handles a key event, checking if any current item matches.
-    ///
-    /// Only returns true if the item has an action to execute.
-    /// Items without actions (informational items) don't consume the event,
-    /// allowing default handlers to process it.
-    ///
-    /// - Parameter event: The key event to handle.
-    /// - Returns: True if an item with an action handled the event.
     @discardableResult
-    public func handleKeyEvent(_ event: KeyEvent) -> Bool {
+    func handleKeyEvent(_ event: KeyEvent) -> Bool {
         for item in currentItems where item.matches(event) {
             if let statusBarItem = item as? StatusBarItem {
-                // Only consume the event if the item has an action
                 if statusBarItem.hasAction {
                     statusBarItem.execute()
                     return true
@@ -421,6 +248,56 @@ public final class StatusBarState: @unchecked Sendable {
             }
         }
         return false
+    }
+}
+
+// MARK: - Internal API
+
+extension StatusBarState {
+    /// Sets the global user items without triggering a re-render.
+    func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
+        userGlobalItems = items
+    }
+
+    /// Registers status bar items for a focus section.
+    func registerSectionItems(
+        sectionID: String,
+        items: [any StatusBarItemProtocol],
+        composition: StatusBarItemComposition
+    ) {
+        sectionItems.removeAll { $0.sectionID == sectionID }
+        sectionItems.append((sectionID, items, composition))
+    }
+
+    /// Clears all section items at the start of a render pass.
+    func clearSectionItems() {
+        sectionItems.removeAll()
+    }
+
+    /// Pushes a new user context without triggering a re-render.
+    func pushSilently(context: String, items: [any StatusBarItemProtocol]) {
+        userContextStack.removeAll { $0.context == context }
+        userContextStack.append((context, items))
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension StatusBarState {
+    /// Resolves items for a given section using its composition strategy.
+    func resolvedSectionItems(for sectionID: String) -> [any StatusBarItemProtocol] {
+        guard let entry = sectionItems.first(where: { $0.sectionID == sectionID }) else {
+            return userGlobalItems
+        }
+
+        switch entry.composition {
+        case .replace:
+            return entry.items
+        case .merge:
+            let sectionShortcuts = Set(entry.items.map { $0.shortcut })
+            let filteredGlobal = userGlobalItems.filter { !sectionShortcuts.contains($0.shortcut) }
+            return entry.items + filteredGlobal
+        }
     }
 }
 

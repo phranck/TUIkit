@@ -79,8 +79,12 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         self.fileURL = fileURL
         loadFromDisk()
     }
+}
 
-    public func value<T: Codable>(forKey key: String) -> T? {
+// MARK: - Public API
+
+public extension JSONFileStorage {
+    func value<T: Codable>(forKey key: String) -> T? {
         lock.lock()
         defer { lock.unlock() }
 
@@ -93,7 +97,7 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         }
     }
 
-    public func setValue<T: Codable>(_ value: T, forKey key: String) {
+    func setValue<T: Codable>(_ value: T, forKey key: String) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -106,7 +110,7 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         }
     }
 
-    public func removeValue(forKey key: String) {
+    func removeValue(forKey key: String) {
         lock.lock()
         defer { lock.unlock() }
 
@@ -114,16 +118,18 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         saveToDiskAsync()
     }
 
-    public func synchronize() {
+    func synchronize() {
         lock.lock()
         defer { lock.unlock() }
 
         saveToDiskSync()
     }
+}
 
-    // MARK: - Private
+// MARK: - Private Helpers
 
-    private func loadFromDisk() {
+private extension JSONFileStorage {
+    func loadFromDisk() {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
 
         do {
@@ -141,13 +147,13 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         }
     }
 
-    private func saveToDiskAsync() {
+    func saveToDiskAsync() {
         Task.detached(priority: .utility) { [weak self] in
             self?.saveToDiskSync()
         }
     }
 
-    private func saveToDiskSync() {
+    func saveToDiskSync() {
         // Convert Data values to base64 strings for JSON compatibility
         var serializable: [String: String] = [:]
         for (key, data) in cache {

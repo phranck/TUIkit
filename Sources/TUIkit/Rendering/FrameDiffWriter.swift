@@ -38,21 +38,16 @@ final class FrameDiffWriter {
 
     /// The previous frame's app header lines.
     private var previousAppHeaderLines: [String] = []
+}
 
-    // MARK: - Output Line Building
+// MARK: - Internal API
 
+extension FrameDiffWriter {
     /// Converts a ``FrameBuffer`` into terminal-ready output lines.
     ///
-    /// Each output line includes:
-    /// - Background color applied through ANSI reset codes
-    /// - Padding to fill the terminal width
-    /// - Reset code at the end
-    ///
-    /// Lines beyond the buffer's content are filled with background-colored
-    /// spaces. The returned array always has exactly `terminalHeight` entries.
-    ///
-    /// This is a **pure function** — it has no side effects and produces
-    /// the same output for the same inputs.
+    /// Each output line includes background color, padding, and reset codes.
+    /// Lines beyond the buffer's content are filled with background-colored spaces.
+    /// This is a **pure function** — no side effects.
     ///
     /// - Parameters:
     ///   - buffer: The rendered frame buffer.
@@ -89,103 +84,35 @@ final class FrameDiffWriter {
         return lines
     }
 
-    // MARK: - Diff Writing
-
-    /// Compares new content lines with the previous frame and writes only
-    /// the lines that changed.
-    ///
-    /// On the first call (or after ``invalidate()``), all lines are written.
-    /// On subsequent calls, only lines that differ from the previous frame
-    /// are written to the terminal, significantly reducing I/O overhead.
-    ///
-    /// - Parameters:
-    ///   - newLines: The current frame's terminal-ready output lines.
-    ///   - terminal: The terminal to write to.
-    ///   - startRow: The 1-based terminal row where output begins.
-    func writeContentDiff(
-        newLines: [String],
-        terminal: Terminal,
-        startRow: Int
-    ) {
-        writeDiff(
-            newLines: newLines,
-            previousLines: previousContentLines,
-            terminal: terminal,
-            startRow: startRow
-        )
+    /// Compares new content lines with the previous frame and writes only changed lines.
+    func writeContentDiff(newLines: [String], terminal: Terminal, startRow: Int) {
+        writeDiff(newLines: newLines, previousLines: previousContentLines, terminal: terminal, startRow: startRow)
         previousContentLines = newLines
     }
 
-    /// Compares new status bar lines with the previous frame and writes
-    /// only the lines that changed.
-    ///
-    /// - Parameters:
-    ///   - newLines: The current frame's status bar output lines.
-    ///   - terminal: The terminal to write to.
-    ///   - startRow: The 1-based terminal row where the status bar begins.
-    func writeStatusBarDiff(
-        newLines: [String],
-        terminal: Terminal,
-        startRow: Int
-    ) {
-        writeDiff(
-            newLines: newLines,
-            previousLines: previousStatusBarLines,
-            terminal: terminal,
-            startRow: startRow
-        )
+    /// Compares new status bar lines with the previous frame and writes only changed lines.
+    func writeStatusBarDiff(newLines: [String], terminal: Terminal, startRow: Int) {
+        writeDiff(newLines: newLines, previousLines: previousStatusBarLines, terminal: terminal, startRow: startRow)
         previousStatusBarLines = newLines
     }
 
-    /// Compares new app header lines with the previous frame and writes
-    /// only the lines that changed.
-    ///
-    /// - Parameters:
-    ///   - newLines: The current frame's app header output lines.
-    ///   - terminal: The terminal to write to.
-    ///   - startRow: The 1-based terminal row where the app header begins.
-    func writeAppHeaderDiff(
-        newLines: [String],
-        terminal: Terminal,
-        startRow: Int
-    ) {
-        writeDiff(
-            newLines: newLines,
-            previousLines: previousAppHeaderLines,
-            terminal: terminal,
-            startRow: startRow
-        )
+    /// Compares new app header lines with the previous frame and writes only changed lines.
+    func writeAppHeaderDiff(newLines: [String], terminal: Terminal, startRow: Int) {
+        writeDiff(newLines: newLines, previousLines: previousAppHeaderLines, terminal: terminal, startRow: startRow)
         previousAppHeaderLines = newLines
     }
 
-    /// Invalidates all cached previous frames, forcing a full repaint
-    /// on the next render.
-    ///
-    /// Call this when the terminal is resized (SIGWINCH) to ensure every
-    /// line is rewritten with the new dimensions.
+    /// Invalidates all cached previous frames, forcing a full repaint on the next render.
     func invalidate() {
         previousContentLines = []
         previousStatusBarLines = []
         previousAppHeaderLines = []
     }
 
-    // MARK: - Diff Computation
-
     /// Computes which row indices have changed between two frames.
     ///
-    /// This is the core diff algorithm, extracted as a static pure function
-    /// for testability. Returns the indices of all rows in `newLines` that
-    /// differ from `previousLines` (or that are new because `newLines`
-    /// is longer).
-    ///
-    /// - Parameters:
-    ///   - newLines: The current frame's lines.
-    ///   - previousLines: The previous frame's lines.
-    /// - Returns: An array of 0-based row indices that need to be rewritten.
-    static func computeChangedRows(
-        newLines: [String],
-        previousLines: [String]
-    ) -> [Int] {
+    /// Core diff algorithm, extracted as a static pure function for testability.
+    static func computeChangedRows(newLines: [String], previousLines: [String]) -> [Int] {
         var changedRows: [Int] = []
         for row in 0..<newLines.count {
             if row >= previousLines.count || previousLines[row] != newLines[row] {
@@ -194,38 +121,20 @@ final class FrameDiffWriter {
         }
         return changedRows
     }
+}
 
-    // MARK: - Private
+// MARK: - Private Helpers
 
+private extension FrameDiffWriter {
     /// Writes only the lines that differ between two frames.
-    ///
-    /// Uses ``computeChangedRows(newLines:previousLines:)`` to determine
-    /// which rows need updating, then writes only those. Also clears any
-    /// leftover lines if the previous frame was taller.
-    ///
-    /// - Parameters:
-    ///   - newLines: The current frame's lines.
-    ///   - previousLines: The previous frame's lines.
-    ///   - terminal: The terminal to write to.
-    ///   - startRow: The 1-based terminal row offset.
-    private func writeDiff(
-        newLines: [String],
-        previousLines: [String],
-        terminal: Terminal,
-        startRow: Int
-    ) {
-        let changedRows = Self.computeChangedRows(
-            newLines: newLines,
-            previousLines: previousLines
-        )
+    func writeDiff(newLines: [String], previousLines: [String], terminal: Terminal, startRow: Int) {
+        let changedRows = Self.computeChangedRows(newLines: newLines, previousLines: previousLines)
 
         for row in changedRows {
             terminal.moveCursor(toRow: startRow + row, column: 1)
             terminal.write(newLines[row])
         }
 
-        // If previous frame had more lines, clear the leftover rows
-        // (e.g. after terminal resize to smaller height)
         if previousLines.count > newLines.count {
             for row in newLines.count..<previousLines.count {
                 terminal.moveCursor(toRow: startRow + row, column: 1)
