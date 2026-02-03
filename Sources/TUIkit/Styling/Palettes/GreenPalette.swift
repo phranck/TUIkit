@@ -70,8 +70,13 @@ public struct GreenPalette: BlockPalette {
         self.overlayBackground = Color.hsl(hue, 30, 3)
     }
 
+}
+
+// MARK: - Private Helpers
+
+private extension GreenPalette {
     /// Wraps a hue value to the 0–360 range.
-    private static func wrapHue(_ hue: Double) -> Double {
+    static func wrapHue(_ hue: Double) -> Double {
         var wrapped = hue.truncatingRemainder(dividingBy: 360)
         if wrapped < 0 { wrapped += 360 }
         return wrapped

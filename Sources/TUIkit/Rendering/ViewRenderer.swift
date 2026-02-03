@@ -31,7 +31,11 @@ final class ViewRenderer {
     init(terminal: Terminal = Terminal()) {
         self.terminal = terminal
     }
+}
 
+// MARK: - Internal API
+
+extension ViewRenderer {
     /// Renders a view to the terminal.
     ///
     /// Queries the terminal size, renders the view into a ``FrameBuffer``,
@@ -50,9 +54,13 @@ final class ViewRenderer {
         let buffer = renderToBuffer(view, context: context)
         flush(buffer, atRow: row, column: column)
     }
+}
 
+// MARK: - Private Helpers
+
+private extension ViewRenderer {
     /// Flushes a FrameBuffer to the terminal at the specified position.
-    private func flush(_ buffer: FrameBuffer, atRow row: Int, column: Int) {
+    func flush(_ buffer: FrameBuffer, atRow row: Int, column: Int) {
         for (index, line) in buffer.lines.enumerated() {
             terminal.moveCursor(toRow: row + index, column: column)
             terminal.write(line)

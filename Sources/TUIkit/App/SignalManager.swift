@@ -61,7 +61,11 @@ internal struct SignalManager {
     var shouldShutdown: Bool {
         signalNeedsShutdown
     }
+}
 
+// MARK: - Internal API
+
+extension SignalManager {
     /// Checks and resets the rerender flag (SIGWINCH or state change).
     ///
     /// Returns `true` if a re-render was requested since the last call,

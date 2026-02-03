@@ -254,7 +254,11 @@ final class KeyEventDispatcher: @unchecked Sendable {
 
     /// Creates a new key event dispatcher.
     init() {}
+}
 
+// MARK: - Internal API
+
+extension KeyEventDispatcher {
     /// Registers a key handler.
     ///
     /// - Parameter handler: A closure that returns true if the key was handled.
