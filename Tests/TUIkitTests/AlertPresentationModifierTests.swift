@@ -31,7 +31,7 @@ struct AlertPresentationModifierTests {
     func notPresentedShowsBase() {
         let isPresented = Binding.constant(false)
         let view = Text("Base Content")
-            .alert("Title", isPresented: isPresented, actions: { EmptyView() }, message: "Message")
+            .alert("Title", isPresented: isPresented, actions: { EmptyView() }, message: { Text("Message") })
 
         let buffer = render(view)
         let content = buffer.lines.joined(separator: "\n").stripped
@@ -48,7 +48,7 @@ struct AlertPresentationModifierTests {
             Text("Base Content")
             Text("More base text")
         }
-        .alert("Alert Title", isPresented: isPresented, actions: { EmptyView() }, message: "Alert Message")
+        .alert("Alert Title", isPresented: isPresented, actions: { EmptyView() }, message: { Text("Alert Message") })
 
         let buffer = render(view)
 
@@ -72,7 +72,7 @@ struct AlertPresentationModifierTests {
                     Text("Yes")
                     Text("No")
                 }
-            }, message: "Are you sure?")
+            }, message: { Text("Are you sure?") })
 
         let buffer = render(view)
         let content = buffer.lines.joined(separator: "\n").stripped
@@ -106,7 +106,7 @@ struct AlertPresentationModifierTests {
                 "Custom",
                 isPresented: isPresented,
                 actions: { EmptyView() },
-                message: "Message",
+                message: { Text("Message") },
                 borderColor: .red,
                 titleColor: .yellow
             )
@@ -124,7 +124,7 @@ struct AlertPresentationModifierTests {
         @State var showAlert = false
 
         let view1 = Text("Content")
-            .alert("Alert", isPresented: $showAlert, actions: { EmptyView() }, message: "Test")
+            .alert("Alert", isPresented: $showAlert, actions: { EmptyView() }, message: { Text("Test") })
 
         let buffer1 = render(view1)
         let content1 = buffer1.lines.joined(separator: "\n").stripped
@@ -135,7 +135,7 @@ struct AlertPresentationModifierTests {
         // Toggle to show
         showAlert = true
         let view2 = Text("Content")
-            .alert("Alert", isPresented: $showAlert, actions: { EmptyView() }, message: "Test")
+            .alert("Alert", isPresented: $showAlert, actions: { EmptyView() }, message: { Text("Test") })
 
         let buffer2 = render(view2)
         let content2 = buffer2.lines.joined(separator: "\n").stripped
