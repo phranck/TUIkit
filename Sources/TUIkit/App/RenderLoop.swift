@@ -113,6 +113,10 @@ internal final class RenderLoop<A: App> {
         tuiContext.keyEventDispatcher.clearHandlers()
         tuiContext.preferences.beginRenderPass()
         focusManager.beginRenderPass()
+        statusBar.clearSectionItems()
+
+        // Provide the focus manager to the status bar for section resolution
+        statusBar.focusManager = focusManager
 
         // Begin lifecycle and state tracking for this render pass
         tuiContext.lifecycle.beginRenderPass()

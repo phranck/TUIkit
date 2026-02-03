@@ -47,11 +47,29 @@ public final class StatusBarState: @unchecked Sendable {
 
     // MARK: - User Items
 
-    /// Stack of user contexts with their items.
+    /// Stack of user contexts with their items (legacy push/pop API).
     private var userContextStack: [(context: String, items: [any StatusBarItemProtocol])] = []
 
     /// Global user items that are always shown (lowest priority).
     private var userGlobalItems: [any StatusBarItemProtocol] = []
+
+    // MARK: - Section Items (Declarative API)
+
+    /// Items registered per focus section during rendering.
+    ///
+    /// Each entry maps a section ID to its declared items and composition strategy.
+    /// Rebuilt every render pass by ``StatusBarItemsModifier``.
+    private var sectionItems: [(sectionID: String, items: [any StatusBarItemProtocol], composition: StatusBarItemComposition)] = []
+
+    /// The focus manager used to determine the active section.
+    ///
+    /// Set by ``RenderLoop`` at the start of each render pass.
+    weak var focusManager: FocusManager?
+
+    /// The ID of the currently active focus section, read from the FocusManager.
+    private var activeFocusSectionID: String? {
+        focusManager?.activeSectionIdentifier
+    }
 
     // MARK: - System Items Configuration
 
@@ -185,14 +203,83 @@ public final class StatusBarState: @unchecked Sendable {
         userGlobalItems = items
     }
 
-    /// The current user items (topmost context or global user items).
+    /// The current user items resolved from focus sections, context stack, or global items.
+    ///
+    /// Resolution order:
+    /// 1. If section items are registered for the active section, resolve via composition.
+    /// 2. Else if a context stack entry exists, use the topmost context.
+    /// 3. Else use global user items.
     ///
     /// Does not include system items.
     public var currentUserItems: [any StatusBarItemProtocol] {
+        // Priority 1: Section-based resolution (new declarative API)
+        if !sectionItems.isEmpty, let activeSectionID = activeFocusSectionID {
+            return resolvedSectionItems(for: activeSectionID)
+        }
+
+        // Priority 2: Legacy context stack
         if let topContext = userContextStack.last {
             return topContext.items
         }
+
+        // Priority 3: Global items
         return userGlobalItems
+    }
+
+    // MARK: - Section Items Registration
+
+    /// Registers status bar items for a focus section.
+    ///
+    /// Called by ``StatusBarItemsModifier`` during rendering. Items are
+    /// associated with the section and resolved declaratively based on
+    /// which section is active.
+    ///
+    /// - Parameters:
+    ///   - sectionID: The focus section that owns these items.
+    ///   - items: The status bar items to display.
+    ///   - composition: How to compose with parent items.
+    func registerSectionItems(
+        sectionID: String,
+        items: [any StatusBarItemProtocol],
+        composition: StatusBarItemComposition
+    ) {
+        // Replace existing entry for the same section (idempotent per render pass)
+        sectionItems.removeAll { $0.sectionID == sectionID }
+        sectionItems.append((sectionID, items, composition))
+    }
+
+    /// Clears all section items at the start of a render pass.
+    ///
+    /// Section items are rebuilt each frame by ``StatusBarItemsModifier``.
+    func clearSectionItems() {
+        sectionItems.removeAll()
+    }
+
+    /// Resolves items for a given section using its composition strategy.
+    ///
+    /// - `.replace`: Only the section's own items are returned.
+    /// - `.merge`: The section's items are combined with global items.
+    ///   Section items win on shortcut conflict.
+    ///
+    /// - Parameter sectionID: The active section to resolve for.
+    /// - Returns: The resolved list of user items.
+    private func resolvedSectionItems(for sectionID: String) -> [any StatusBarItemProtocol] {
+        guard let entry = sectionItems.first(where: { $0.sectionID == sectionID }) else {
+            // Section has no items declared — fall through to global
+            return userGlobalItems
+        }
+
+        switch entry.composition {
+        case .replace:
+            // Cascade barrier — only this section's items
+            return entry.items
+
+        case .merge:
+            // Merge: section items + global items (section wins on conflict)
+            let sectionShortcuts = Set(entry.items.map { $0.shortcut })
+            let filteredGlobal = userGlobalItems.filter { !sectionShortcuts.contains($0.shortcut) }
+            return entry.items + filteredGlobal
+        }
     }
 
     // MARK: - User Context Stack
