@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FrameBufferTests.swift
-//  TUIkit
 //
-//  Tests for FrameBuffer operations and compositing.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 
@@ -98,14 +97,16 @@ struct OverlayTests {
         #expect(allContent.contains("Top"))
     }
 
-    @Test("Dimmed modifier applies dim effect")
+    @Test("Dimmed modifier strips styling and applies uniform palette colors")
     func dimmedRendering() {
         let view = Text("Dimmed text").dimmed()
         let context = RenderContext(availableWidth: 80, availableHeight: 24)
         let buffer = renderToBuffer(view, context: context)
         #expect(buffer.height == 1)
-        // Check that the ANSI dim code is present
-        #expect(buffer.lines[0].contains("\u{1B}[2m"))
+        // Should not use ANSI dim — uses palette-based flat coloring now
+        #expect(!buffer.lines[0].contains("\u{1B}[2m"))
+        // Visible text must be preserved
+        #expect(buffer.lines[0].stripped.contains("Dimmed text"))
     }
 
     @Test("Modal helper combines dimmed and overlay")

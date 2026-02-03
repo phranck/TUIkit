@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  AlertPresentationModifier.swift
-//  TUIkit
 //
-//  A modifier that presents an alert dialog conditionally based on a binding.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that presents an alert dialog when a binding is true.
 ///
@@ -117,14 +116,14 @@ extension AlertPresentationModifier: Renderable {
             return dimmedBuffer
         }
 
-        // Calculate center position
-        let baseWidth = dimmedBuffer.width
-        let baseHeight = dimmedBuffer.height
+        // Center relative to the full terminal area, not the content size.
+        let screenWidth = context.availableWidth
+        let screenHeight = context.availableHeight
         let alertWidth = alertBuffer.width
         let alertHeight = alertBuffer.height
 
-        let horizontalOffset = max(0, (baseWidth - alertWidth) / 2)
-        let verticalOffset = max(0, (baseHeight - alertHeight) / 2)
+        let horizontalOffset = max(0, (screenWidth - alertWidth) / 2)
+        let verticalOffset = max(0, (screenHeight - alertHeight) / 2 - 2)
 
         return dimmedBuffer.composited(
             with: alertBuffer,

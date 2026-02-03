@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Alert.swift
-//  TUIkit
 //
-//  A modal alert view with title, message, and optional action buttons.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modal alert view that displays a title, message, and optional action buttons.
 ///
@@ -148,13 +147,12 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .palette.warning,
             titleColor: .palette.warning,
             actions: actions
         )
     }
 
-    /// Creates an error-style alert with palette error colors.
+    /// Creates an error-style alert with palette error title color.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Error").
@@ -169,13 +167,12 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .palette.error,
             titleColor: .palette.error,
             actions: actions
         )
     }
 
-    /// Creates an info-style alert with palette info colors.
+    /// Creates an info-style alert with palette info title color.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Info").
@@ -190,13 +187,12 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .palette.info,
             titleColor: .palette.info,
             actions: actions
         )
     }
 
-    /// Creates a success-style alert with palette success colors.
+    /// Creates a success-style alert with palette success title color.
     ///
     /// - Parameters:
     ///   - title: The alert title (default: "Success").
@@ -211,7 +207,6 @@ extension Alert {
         Alert<A>(
             title: title,
             message: message,
-            borderColor: .palette.success,
             titleColor: .palette.success,
             actions: actions
         )
@@ -223,33 +218,21 @@ extension Alert {
 extension Alert where Actions == EmptyView {
     /// Creates a warning-style alert without actions.
     public static func warning(title: String = "Warning", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title, message: message,
-            borderColor: .palette.warning, titleColor: .palette.warning
-        )
+        Alert<EmptyView>(title: title, message: message, titleColor: .palette.warning)
     }
 
     /// Creates an error-style alert without actions.
     public static func error(title: String = "Error", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title, message: message,
-            borderColor: .palette.error, titleColor: .palette.error
-        )
+        Alert<EmptyView>(title: title, message: message, titleColor: .palette.error)
     }
 
     /// Creates an info-style alert without actions.
     public static func info(title: String = "Info", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title, message: message,
-            borderColor: .palette.info, titleColor: .palette.info
-        )
+        Alert<EmptyView>(title: title, message: message, titleColor: .palette.info)
     }
 
     /// Creates a success-style alert without actions.
     public static func success(title: String = "Success", message: String) -> Alert<EmptyView> {
-        Alert<EmptyView>(
-            title: title, message: message,
-            borderColor: .palette.success, titleColor: .palette.success
-        )
+        Alert<EmptyView>(title: title, message: message, titleColor: .palette.success)
     }
 }
