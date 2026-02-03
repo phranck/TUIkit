@@ -21,6 +21,9 @@ enum BorderRenderer {
 
     // MARK: - Standard Style (Box-Drawing Characters)
 
+    /// The breathing focus indicator character.
+    static let focusIndicator: Character = "●"
+
     /// Renders a plain top border line.
     ///
     ///     ┌──────────────┐
@@ -29,12 +32,28 @@ enum BorderRenderer {
     ///   - style: The border style providing corner and edge characters.
     ///   - innerWidth: The width of the content area (excluding borders).
     ///   - color: The foreground color for the border.
+    ///   - focusIndicatorColor: If non-nil, renders a ● after the top-left corner
+    ///     in this color. Used for the breathing focus section indicator.
     /// - Returns: A colorized top border string.
     static func standardTopBorder(
         style: BorderStyle,
         innerWidth: Int,
-        color: Color
+        color: Color,
+        focusIndicatorColor: Color? = nil
     ) -> String {
+        if let indicatorColor = focusIndicatorColor, innerWidth > 1 {
+            // ╭●──────────────╮
+            let leftCorner = ANSIRenderer.colorize(String(style.topLeft), foreground: color)
+            let indicator = ANSIRenderer.colorize(String(focusIndicator), foreground: indicatorColor)
+            let remainingWidth = innerWidth - 1  // -1 for the ● character
+            let rest = ANSIRenderer.colorize(
+                String(repeating: style.horizontal, count: remainingWidth)
+                    + String(style.topRight),
+                foreground: color
+            )
+            return leftCorner + indicator + rest
+        }
+
         let line =
             String(style.topLeft)
             + String(repeating: style.horizontal, count: innerWidth)
@@ -44,7 +63,8 @@ enum BorderRenderer {
 
     /// Renders a top border line with an inline title.
     ///
-    ///     ┌─ Title ──────┐
+    ///     ┌─ Title ──────┐   (without focus indicator)
+    ///     ┌● Title ──────┐   (with focus indicator)
     ///
     /// - Parameters:
     ///   - style: The border style.
@@ -52,20 +72,37 @@ enum BorderRenderer {
     ///   - color: The border color.
     ///   - title: The title text.
     ///   - titleColor: The title foreground color.
+    ///   - focusIndicatorColor: If non-nil, renders a ● between the corner
+    ///     and the title. Used for the breathing focus section indicator.
     /// - Returns: A colorized top border string with embedded title.
     static func standardTopBorder(
         style: BorderStyle,
         innerWidth: Int,
         color: Color,
         title: String,
-        titleColor: Color
+        titleColor: Color,
+        focusIndicatorColor: Color? = nil
     ) -> String {
         let titleStyled = ANSIRenderer.colorize(" \(title) ", foreground: titleColor, bold: true)
-        let leftPart = ANSIRenderer.colorize(
-            String(style.topLeft) + String(style.horizontal),
-            foreground: color
-        )
-        let rightPartLength = max(0, innerWidth - 1 - title.count - 2)
+
+        let leftPart: String
+        let usedLeftWidth: Int
+        if let indicatorColor = focusIndicatorColor {
+            // ╭● Title
+            let corner = ANSIRenderer.colorize(String(style.topLeft), foreground: color)
+            let indicator = ANSIRenderer.colorize(String(focusIndicator), foreground: indicatorColor)
+            leftPart = corner + indicator
+            usedLeftWidth = 1  // only the ● (corner is outside innerWidth)
+        } else {
+            // ╭─ Title
+            leftPart = ANSIRenderer.colorize(
+                String(style.topLeft) + String(style.horizontal),
+                foreground: color
+            )
+            usedLeftWidth = 1  // only the ─ after corner
+        }
+
+        let rightPartLength = max(0, innerWidth - usedLeftWidth - title.count - 2)
         let rightPart = ANSIRenderer.colorize(
             String(repeating: style.horizontal, count: rightPartLength) + String(style.topRight),
             foreground: color

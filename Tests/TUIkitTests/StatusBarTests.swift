@@ -876,3 +876,155 @@ struct SystemStatusBarItemsTests {
         #expect(lateIndex < quitIndex)
     }
 }
+
+// MARK: - StatusBar Section Cascading Tests
+
+@Suite("StatusBar Section Cascading Tests")
+struct StatusBarSectionCascadingTests {
+
+    @Test("Section items with merge include global items")
+    func mergeIncludesGlobal() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+
+        // Set global items
+        state.setItemsSilently([
+            StatusBarItem(shortcut: Shortcut.escape, label: "back")
+        ])
+
+        // Register section items with .merge
+        state.registerSectionItems(
+            sectionID: "panel",
+            items: [StatusBarItem(shortcut: Shortcut.enter, label: "select")],
+            composition: .merge
+        )
+
+        // Wire up a focus manager with the section active
+        let focusManager = FocusManager()
+        focusManager.registerSection(id: "panel")
+        state.focusManager = focusManager
+
+        let items = state.currentUserItems
+        let labels = items.map { $0.label }
+
+        // Both section item and global item should be present
+        #expect(labels.contains("select"), "Section item should be present")
+        #expect(labels.contains("back"), "Global item should be merged in")
+    }
+
+    @Test("Section items with replace exclude global items")
+    func replaceExcludesGlobal() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+
+        // Set global items
+        state.setItemsSilently([
+            StatusBarItem(shortcut: Shortcut.escape, label: "back")
+        ])
+
+        // Register section items with .replace
+        state.registerSectionItems(
+            sectionID: "modal",
+            items: [StatusBarItem(shortcut: Shortcut.escape, label: "close")],
+            composition: .replace
+        )
+
+        // Wire up focus manager
+        let focusManager = FocusManager()
+        focusManager.registerSection(id: "modal")
+        state.focusManager = focusManager
+
+        let items = state.currentUserItems
+        let labels = items.map { $0.label }
+
+        // Only section item, not global
+        #expect(labels.contains("close"), "Section item should be present")
+        #expect(!labels.contains("back"), "Global item should be replaced")
+    }
+
+    @Test("Merge: section item wins on shortcut conflict")
+    func mergeChildWinsOnConflict() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+
+        // Global ESC → "back"
+        state.setItemsSilently([
+            StatusBarItem(shortcut: Shortcut.escape, label: "back")
+        ])
+
+        // Section ESC → "close" (same shortcut, different label)
+        state.registerSectionItems(
+            sectionID: "dialog",
+            items: [StatusBarItem(shortcut: Shortcut.escape, label: "close")],
+            composition: .merge
+        )
+
+        let focusManager = FocusManager()
+        focusManager.registerSection(id: "dialog")
+        state.focusManager = focusManager
+
+        let items = state.currentUserItems
+        let escItems = items.filter { $0.shortcut == Shortcut.escape }
+
+        // Only one ESC item, and it's the section's
+        #expect(escItems.count == 1)
+        #expect(escItems[0].label == "close")
+    }
+
+    @Test("clearSectionItems resets section items")
+    func clearSectionItemsResets() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+
+        state.registerSectionItems(
+            sectionID: "panel",
+            items: [StatusBarItem(shortcut: "x", label: "action")],
+            composition: .merge
+        )
+
+        state.clearSectionItems()
+
+        // Set global items so we have something to compare
+        state.setItemsSilently([
+            StatusBarItem(shortcut: "g", label: "global")
+        ])
+
+        let items = state.currentUserItems
+        let labels = items.map { $0.label }
+
+        // Only global items, no section items
+        #expect(!labels.contains("action"))
+        #expect(labels.contains("global"))
+    }
+
+    @Test("Section without items falls through to global")
+    func sectionWithoutItemsFallsThrough() {
+        let state = StatusBarState()
+        state.showSystemItems = false
+
+        // Global items set
+        state.setItemsSilently([
+            StatusBarItem(shortcut: "g", label: "global")
+        ])
+
+        // Register section for a different panel (not the active one)
+        state.registerSectionItems(
+            sectionID: "other",
+            items: [StatusBarItem(shortcut: "o", label: "other")],
+            composition: .merge
+        )
+
+        // Active section is "sidebar" which has no items registered
+        let focusManager = FocusManager()
+        focusManager.registerSection(id: "sidebar")
+        focusManager.registerSection(id: "other")
+        state.focusManager = focusManager
+
+        let items = state.currentUserItems
+        let labels = items.map { $0.label }
+
+        // Active section "sidebar" has no items → falls through to global
+        #expect(labels.contains("global"))
+        #expect(!labels.contains("other"))
+    }
+}

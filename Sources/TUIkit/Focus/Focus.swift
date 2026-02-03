@@ -45,8 +45,16 @@ extension Focusable {
 
 /// Manages focus state across the application.
 ///
-/// The focus manager tracks which element currently has focus and
-/// provides methods to move focus between elements.
+/// The focus manager organizes interactive elements into **focus sections**.
+/// Each section is a named, focusable area (e.g. a sidebar, a content panel,
+/// a modal) that contains its own list of focusable elements.
+///
+/// - **Tab / Shift+Tab** cycles between sections.
+/// - **Up/Down arrows** navigate within the active section's focusable elements.
+/// - **Enter/Space** activates the focused element.
+///
+/// Elements registered without an explicit section go into a default section.
+/// When only one section exists, Tab cycles elements within it (legacy behavior).
 ///
 /// `FocusManager` is injected via the Environment system.
 /// Each app instance gets its own `FocusManager`, ensuring test isolation.
@@ -57,12 +65,16 @@ extension Focusable {
 /// // Access via Environment in views
 /// let focusManager = context.environment.focusManager
 ///
-/// // Register a focusable element
-/// focusManager.register(button)
+/// // Register a section (done by .focusSection() modifier)
+/// focusManager.registerSection(id: "playlist")
+///
+/// // Register a focusable element in a section
+/// focusManager.register(button, inSection: "playlist")
 ///
 /// // Move focus
-/// focusManager.focusNext()
-/// focusManager.focusPrevious()
+/// focusManager.focusNextInSection()     // within active section
+/// focusManager.focusPreviousInSection() // within active section
+/// focusManager.activateNextSection()    // switch to next section
 ///
 /// // Check focus
 /// if focusManager.isFocused(button) {
@@ -70,52 +82,244 @@ extension Focusable {
 /// }
 /// ```
 public final class FocusManager: @unchecked Sendable {
-    /// Registered focusable elements in order.
-    private var focusables: [Focusable] = []
+    /// The default section ID for elements registered without an explicit section.
+    static let defaultSectionID = "__default__"
 
-    /// The currently focused element's ID.
+    /// Registered focus sections in render order.
+    private var sections: [FocusSection] = []
+
+    /// The ID of the currently active section.
+    private var activeSectionID: String?
+
+    /// The currently focused element's ID within the active section.
     private var focusedID: String?
 
-    /// Callback triggered when focus changes.
+    /// Callback triggered when focus changes (element or section).
     public var onFocusChange: (() -> Void)?
 
     /// Creates a new focus manager instance.
     public init() {}
 
-    // MARK: - Registration
+    // MARK: - Section Management
 
-    /// Registers a focusable element.
+    /// Registers a focus section.
     ///
-    /// - Parameter element: The element to register.
-    public func register(_ element: Focusable) {
-        // Avoid duplicates
-        if !focusables.contains(where: { $0.focusID == element.focusID }) {
-            focusables.append(element)
+    /// If a section with the same ID already exists, it is reused (not duplicated).
+    /// The first registered section becomes the active section automatically.
+    ///
+    /// - Parameter id: The unique section identifier.
+    func registerSection(id: String) {
+        guard !sections.contains(where: { $0.id == id }) else { return }
+        let section = FocusSection(id: id)
+        sections.append(section)
 
-            // Auto-focus first element if nothing is focused
-            if focusedID == nil && element.canBeFocused {
-                focus(element)
-            }
+        // Auto-activate first section
+        if activeSectionID == nil {
+            activeSectionID = id
         }
     }
 
-    /// Unregisters a focusable element.
+    /// Returns the section with the given ID, or nil if not found.
+    ///
+    /// - Parameter id: The section identifier.
+    /// - Returns: The focus section, or nil.
+    func section(id: String) -> FocusSection? {
+        sections.first { $0.id == id }
+    }
+
+    /// The currently active focus section.
+    var activeSection: FocusSection? {
+        guard let activeID = activeSectionID else { return nil }
+        return section(id: activeID)
+    }
+
+    /// The ID of the currently active section, if any.
+    var activeSectionIdentifier: String? {
+        activeSectionID
+    }
+
+    /// All registered section IDs in render order.
+    var sectionIDs: [String] {
+        sections.map(\.id)
+    }
+
+    /// Whether any sections are registered (besides potentially the default).
+    var hasSections: Bool {
+        !sections.isEmpty
+    }
+
+    // MARK: - Section Navigation
+
+    /// Activates the next section (wrapping around).
+    ///
+    /// When switching sections, the first focusable element in the new
+    /// section receives focus automatically.
+    func activateNextSection() {
+        cycleSection(direction: .forward)
+    }
+
+    /// Activates the previous section (wrapping around).
+    ///
+    /// When switching sections, the first focusable element in the new
+    /// section receives focus automatically.
+    func activatePreviousSection() {
+        cycleSection(direction: .backward)
+    }
+
+    /// Activates a specific section by ID.
+    ///
+    /// The first focusable element in the section receives focus.
+    ///
+    /// - Parameter id: The section identifier to activate.
+    func activateSection(id: String) {
+        guard sections.contains(where: { $0.id == id }) else { return }
+
+        // Notify current focused element
+        notifyFocusLost()
+
+        activeSectionID = id
+        focusedID = nil
+
+        // Auto-focus first element in the new section
+        if let section = activeSection,
+            let firstFocusable = section.focusables.first(where: { $0.canBeFocused })
+        {
+            focusedID = firstFocusable.focusID
+            firstFocusable.onFocusReceived()
+        }
+
+        onFocusChange?()
+    }
+
+    /// Cycles the active section in the given direction.
+    private func cycleSection(direction: FocusDirection) {
+        guard sections.count > 1 else { return }
+
+        let sectionIndex: Int
+        if let activeID = activeSectionID,
+            let currentIndex = sections.firstIndex(where: { $0.id == activeID })
+        {
+            switch direction {
+            case .forward:
+                sectionIndex = (currentIndex + 1) % sections.count
+            case .backward:
+                sectionIndex = currentIndex == 0 ? sections.count - 1 : currentIndex - 1
+            }
+        } else {
+            sectionIndex = direction == .forward ? 0 : sections.count - 1
+        }
+
+        activateSection(id: sections[sectionIndex].id)
+    }
+
+    // MARK: - Element Registration
+
+    /// Registers a focusable element in a specific section.
+    ///
+    /// If the section doesn't exist, it is created automatically.
+    /// If no element is focused yet in the active section, the element
+    /// is auto-focused.
+    ///
+    /// - Parameters:
+    ///   - element: The element to register.
+    ///   - sectionID: The section to register in. Defaults to the active section
+    ///     or the default section if no section is active.
+    public func register(_ element: Focusable, inSection sectionID: String? = nil) {
+        let targetID = sectionID ?? activeSectionID ?? Self.defaultSectionID
+
+        // Ensure section exists
+        if !sections.contains(where: { $0.id == targetID }) {
+            registerSection(id: targetID)
+        }
+
+        guard let section = section(id: targetID) else { return }
+        section.register(element)
+
+        // Auto-focus first element in the active section
+        if targetID == activeSectionID && focusedID == nil && element.canBeFocused {
+            focus(element)
+        }
+    }
+
+    /// Registers a focusable element (legacy API, uses active or default section).
+    ///
+    /// This overload exists for backward compatibility. New code should use
+    /// ``register(_:inSection:)`` to explicitly assign sections.
+    ///
+    /// - Parameter element: The element to register.
+    public func register(_ element: Focusable) {
+        register(element, inSection: nil)
+    }
+
+    /// Unregisters a focusable element from all sections.
     ///
     /// - Parameter element: The element to unregister.
     public func unregister(_ element: Focusable) {
-        focusables.removeAll { $0.focusID == element.focusID }
+        for section in sections {
+            section.unregister(element)
+        }
 
         // If the removed element was focused, focus the next available
         if focusedID == element.focusID {
             focusedID = nil
-            focusNext()
+            focusNextInSection()
         }
     }
 
-    /// Clears all registered focusables.
+    /// Clears all sections and focusable elements, including selection state.
+    ///
+    /// This is a hard reset. For per-frame clearing that preserves the active
+    /// section and focused element, use ``beginRenderPass()`` instead.
     public func clear() {
-        focusables.removeAll()
+        sections.removeAll()
+        activeSectionID = nil
         focusedID = nil
+    }
+
+    /// Prepares the focus manager for a new render pass.
+    ///
+    /// Clears all sections and focusable elements so they can be re-registered
+    /// from the current view tree. The active section ID and focused element ID
+    /// are **preserved** — if they still exist after the render pass, focus
+    /// continues seamlessly. If they don't, the first available element is
+    /// auto-focused.
+    ///
+    /// Call this at the start of each render pass instead of ``clear()``.
+    func beginRenderPass() {
+        sections.removeAll()
+        // activeSectionID and focusedID are intentionally preserved.
+        // They will be validated after the render pass re-registers sections.
+    }
+
+    /// Validates focus state after a render pass.
+    ///
+    /// If the previously active section no longer exists, the first
+    /// registered section is activated. If the previously focused element
+    /// no longer exists, the first focusable in the active section is focused.
+    func endRenderPass() {
+        // Validate active section
+        if let activeID = activeSectionID,
+            !sections.contains(where: { $0.id == activeID })
+        {
+            activeSectionID = sections.first?.id
+        }
+
+        // Validate focused element
+        if let focusID = focusedID, let section = activeSection {
+            if !section.focusables.contains(where: { $0.focusID == focusID }) {
+                // Previously focused element is gone — auto-focus first available
+                self.focusedID = nil
+                if let firstFocusable = section.focusables.first(where: { $0.canBeFocused }) {
+                    self.focusedID = firstFocusable.focusID
+                    firstFocusable.onFocusReceived()
+                }
+            }
+        } else if focusedID == nil, let section = activeSection,
+            let firstFocusable = section.focusables.first(where: { $0.canBeFocused })
+        {
+            self.focusedID = firstFocusable.focusID
+            firstFocusable.onFocusReceived()
+        }
     }
 
     // MARK: - Focus Control
@@ -126,35 +330,63 @@ public final class FocusManager: @unchecked Sendable {
     public func focus(_ element: Focusable) {
         guard element.canBeFocused else { return }
 
-        // Notify previous focused element
-        if let currentID = focusedID,
-            let current = focusables.first(where: { $0.focusID == currentID })
-        {
-            current.onFocusLost()
-        }
+        notifyFocusLost()
 
         focusedID = element.focusID
         element.onFocusReceived()
         onFocusChange?()
     }
 
-    /// Focuses an element by ID.
+    /// Focuses an element by ID (searches all sections).
     ///
     /// - Parameter id: The focus ID of the element to focus.
     public func focus(id: String) {
-        if let element = focusables.first(where: { $0.focusID == id && $0.canBeFocused }) {
-            focus(element)
+        for section in sections {
+            if let element = section.focusables.first(where: { $0.focusID == id && $0.canBeFocused }) {
+                // Also activate the section containing this element
+                if activeSectionID != section.id {
+                    activeSectionID = section.id
+                }
+                focus(element)
+                return
+            }
         }
     }
 
+    /// Moves focus to the next element within the active section.
+    public func focusNextInSection() {
+        moveFocusInSection(direction: .forward)
+    }
+
+    /// Moves focus to the previous element within the active section.
+    public func focusPreviousInSection() {
+        moveFocusInSection(direction: .backward)
+    }
+
+    // MARK: - Legacy Navigation
+
     /// Moves focus to the next focusable element.
+    ///
+    /// When multiple sections exist, this cycles between sections.
+    /// When only one section exists, this cycles within it.
     public func focusNext() {
-        moveFocus(direction: .forward)
+        if sections.count > 1 {
+            activateNextSection()
+        } else {
+            moveFocusInSection(direction: .forward)
+        }
     }
 
     /// Moves focus to the previous focusable element.
+    ///
+    /// When multiple sections exist, this cycles between sections.
+    /// When only one section exists, this cycles within it.
     public func focusPrevious() {
-        moveFocus(direction: .backward)
+        if sections.count > 1 {
+            activatePreviousSection()
+        } else {
+            moveFocusInSection(direction: .backward)
+        }
     }
 
     /// The direction in which focus moves.
@@ -162,30 +394,38 @@ public final class FocusManager: @unchecked Sendable {
         case forward, backward
     }
 
-    /// Moves focus in the specified direction (wrapping around).
-    ///
-    /// - Parameter direction: The direction to move focus.
-    private func moveFocus(direction: FocusDirection) {
-        guard !focusables.isEmpty else { return }
+    /// Moves focus within the active section.
+    private func moveFocusInSection(direction: FocusDirection) {
+        guard let section = activeSection else { return }
 
-        let availableFocusables = focusables.filter { $0.canBeFocused }
-        guard !availableFocusables.isEmpty else { return }
+        let available = section.focusables.filter { $0.canBeFocused }
+        guard !available.isEmpty else { return }
 
         if let currentID = focusedID,
-            let currentIndex = availableFocusables.firstIndex(where: { $0.focusID == currentID })
+            let currentIndex = available.firstIndex(where: { $0.focusID == currentID })
         {
             let targetIndex: Int
             switch direction {
             case .forward:
-                targetIndex = (currentIndex + 1) % availableFocusables.count
+                targetIndex = (currentIndex + 1) % available.count
             case .backward:
-                targetIndex = currentIndex == 0 ? availableFocusables.count - 1 : currentIndex - 1
+                targetIndex = currentIndex == 0 ? available.count - 1 : currentIndex - 1
             }
-            focus(availableFocusables[targetIndex])
+            focus(available[targetIndex])
         } else {
-            // No current focus: forward → first, backward → last
-            let fallbackIndex = direction == .forward ? 0 : availableFocusables.count - 1
-            focus(availableFocusables[fallbackIndex])
+            let fallbackIndex = direction == .forward ? 0 : available.count - 1
+            focus(available[fallbackIndex])
+        }
+    }
+
+    /// Notifies the currently focused element that it lost focus.
+    private func notifyFocusLost() {
+        guard let currentID = focusedID else { return }
+        for section in sections {
+            if let current = section.focusables.first(where: { $0.focusID == currentID }) {
+                current.onFocusLost()
+                return
+            }
         }
     }
 
@@ -207,10 +447,29 @@ public final class FocusManager: @unchecked Sendable {
         focusedID == id
     }
 
+    /// Returns whether the given section is currently active.
+    ///
+    /// - Parameter sectionID: The section identifier to check.
+    /// - Returns: True if the section is active.
+    public func isActiveSection(_ sectionID: String) -> Bool {
+        activeSectionID == sectionID
+    }
+
     /// The currently focused element, if any.
     public var currentFocused: Focusable? {
         guard let focusedIdentifier = focusedID else { return nil }
-        return focusables.first { $0.focusID == focusedIdentifier }
+        // Search in active section first, then all sections
+        if let section = activeSection,
+            let element = section.focusables.first(where: { $0.focusID == focusedIdentifier })
+        {
+            return element
+        }
+        for section in sections where section.id != activeSectionID {
+            if let element = section.focusables.first(where: { $0.focusID == focusedIdentifier }) {
+                return element
+            }
+        }
+        return nil
     }
 
     /// The ID of the currently focused element, if any.
@@ -220,16 +479,19 @@ public final class FocusManager: @unchecked Sendable {
 
     // MARK: - Event Dispatch
 
-    /// Dispatches a key event to the currently focused element.
+    /// Dispatches a key event through the focus system.
     ///
-    /// If Tab is pressed, focus moves to the next element.
-    /// If Shift+Tab is pressed, focus moves to the previous element.
+    /// Navigation model:
+    /// - **Tab / Shift+Tab**: Cycles between sections (or within a single section).
+    /// - **Up / Down arrows**: Cycles between focusable elements within the active section.
+    /// - **Enter / Space**: Dispatched to the focused element for activation.
+    /// - **Other keys**: Dispatched to the focused element.
     ///
     /// - Parameter event: The key event to dispatch.
     /// - Returns: True if the event was handled.
     @discardableResult
     public func dispatchKeyEvent(_ event: KeyEvent) -> Bool {
-        // Tab navigation
+        // Tab navigation: cycle sections (or elements within single section)
         if event.key == .tab {
             if event.shift {
                 focusPrevious()
@@ -239,7 +501,17 @@ public final class FocusManager: @unchecked Sendable {
             return true
         }
 
-        // Dispatch to focused element
+        // Up/Down arrows: navigate within the active section
+        if event.key == .up {
+            focusPreviousInSection()
+            return true
+        }
+        if event.key == .down {
+            focusNextInSection()
+            return true
+        }
+
+        // Dispatch to focused element (Enter, Space, other keys)
         if let focused = currentFocused {
             return focused.handleKeyEvent(event)
         }

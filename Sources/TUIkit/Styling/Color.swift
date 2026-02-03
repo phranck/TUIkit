@@ -387,6 +387,36 @@ public struct Color: Sendable, Equatable {
 
         return .rgb(newRed, newGreen, newBlue)
     }
+
+    /// Linearly interpolates between two colors.
+    ///
+    /// Both colors are converted to RGB before interpolation. If either
+    /// color is semantic (unresolved), the `from` color is returned unchanged.
+    ///
+    /// Used by the breathing focus indicator to smoothly fade between
+    /// a dimmed and a full-brightness accent color.
+    ///
+    /// - Parameters:
+    ///   - from: The start color (returned when `phase` is 0).
+    ///   - to: The end color (returned when `phase` is 1).
+    ///   - phase: The interpolation factor (0–1, clamped).
+    /// - Returns: The interpolated RGB color.
+    public static func lerp(_ from: Color, _ to: Color, phase: Double) -> Color {
+        guard let fromRGB = from.rgbComponents,
+            let toRGB = to.rgbComponents
+        else {
+            return from
+        }
+
+        let clamped = min(1, max(0, phase))
+        let red = UInt8(Double(fromRGB.red) + (Double(toRGB.red) - Double(fromRGB.red)) * clamped)
+        let green = UInt8(
+            Double(fromRGB.green) + (Double(toRGB.green) - Double(fromRGB.green)) * clamped)
+        let blue = UInt8(
+            Double(fromRGB.blue) + (Double(toRGB.blue) - Double(fromRGB.blue)) * clamped)
+
+        return .rgb(red, green, blue)
+    }
 }
 
 // MARK: - ANSIColor

@@ -96,6 +96,28 @@ public struct RenderContext {
     /// Used by ``StateStorage`` to persist `@State` values across render passes.
     var identity: ViewIdentity
 
+    /// The ID of the focus section that child views should register in.
+    ///
+    /// Set by ``FocusSectionModifier`` during rendering. Focusable children
+    /// (buttons, menus) read this to register in the correct section.
+    /// When nil, elements register in the active or default section.
+    var activeFocusSectionID: String?
+
+    /// The current breathing animation phase (0–1) for the focus indicator.
+    ///
+    /// Set by ``RenderLoop`` from the ``PulseTimer`` at the start of each frame.
+    /// Read by ``BorderRenderer`` to interpolate the ● indicator color.
+    /// A value of 0 means dimmest, 1 means brightest.
+    var pulsePhase: Double = 0
+
+    /// The focus indicator color for the first border encountered in this subtree.
+    ///
+    /// Set by ``FocusSectionModifier`` when the section is active.
+    /// The first view that renders a border (Panel, Box, `.border()`) reads
+    /// this color, renders the ● indicator, and sets it to nil so that
+    /// nested borders don't also show the indicator.
+    var focusIndicatorColor: Color?
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
