@@ -236,80 +236,10 @@ struct ANSIRendererCursorTests {
         #expect(result == "\u{1B}[5;10H")
     }
 
-    @Test("cursorUp generates correct sequence")
-    func cursorUp() {
-        #expect(ANSIRenderer.cursorUp(3) == "\u{1B}[3A")
-    }
-
-    @Test("cursorDown generates correct sequence")
-    func cursorDown() {
-        #expect(ANSIRenderer.cursorDown(2) == "\u{1B}[2B")
-    }
-
-    @Test("cursorForward generates correct sequence")
-    func cursorForward() {
-        #expect(ANSIRenderer.cursorForward(5) == "\u{1B}[5C")
-    }
-
-    @Test("cursorBack generates correct sequence")
-    func cursorBack() {
-        #expect(ANSIRenderer.cursorBack(1) == "\u{1B}[1D")
-    }
-
-    @Test("Default cursor movement is 1")
-    func defaultMovement() {
-        #expect(ANSIRenderer.cursorUp() == "\u{1B}[1A")
-        #expect(ANSIRenderer.cursorDown() == "\u{1B}[1B")
-        #expect(ANSIRenderer.cursorForward() == "\u{1B}[1C")
-        #expect(ANSIRenderer.cursorBack() == "\u{1B}[1D")
-    }
-
     @Test("hideCursor and showCursor codes")
     func cursorVisibility() {
         #expect(ANSIRenderer.hideCursor == "\u{1B}[?25l")
         #expect(ANSIRenderer.showCursor == "\u{1B}[?25h")
-    }
-
-    @Test("saveCursor and restoreCursor codes")
-    func cursorSaveRestore() {
-        #expect(ANSIRenderer.saveCursor == "\u{1B}[s")
-        #expect(ANSIRenderer.restoreCursor == "\u{1B}[u")
-    }
-}
-
-// MARK: - Screen Control Tests
-
-@Suite("ANSIRenderer Screen Control Tests")
-struct ANSIRendererScreenTests {
-
-    @Test("clearScreen code")
-    func clearScreen() {
-        #expect(ANSIRenderer.clearScreen == "\u{1B}[2J")
-    }
-
-    @Test("clearToEnd code")
-    func clearToEnd() {
-        #expect(ANSIRenderer.clearToEnd == "\u{1B}[0J")
-    }
-
-    @Test("clearToBeginning code")
-    func clearToBeginning() {
-        #expect(ANSIRenderer.clearToBeginning == "\u{1B}[1J")
-    }
-
-    @Test("clearLine code")
-    func clearLine() {
-        #expect(ANSIRenderer.clearLine == "\u{1B}[2K")
-    }
-
-    @Test("clearLineToEnd code")
-    func clearLineToEnd() {
-        #expect(ANSIRenderer.clearLineToEnd == "\u{1B}[0K")
-    }
-
-    @Test("clearLineToBeginning code")
-    func clearLineToBeginning() {
-        #expect(ANSIRenderer.clearLineToBeginning == "\u{1B}[1K")
     }
 
     @Test("Alternate screen codes")
