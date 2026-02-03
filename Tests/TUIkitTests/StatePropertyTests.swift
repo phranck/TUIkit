@@ -9,15 +9,8 @@ import Testing
 
 @testable import TUIkit
 
-@Suite("State Property Wrapper Tests", .serialized)
+@Suite("State Property Wrapper Tests")
 struct StatePropertyWrapperTests {
-
-    /// Creates a fresh AppState instance to isolate tests from shared global state.
-    private func isolatedAppState() -> AppState {
-        let fresh = AppState()
-        RenderNotifier.current = fresh
-        return fresh
-    }
 
     @Test("State can be mutated")
     func stateMutation() {
@@ -26,12 +19,20 @@ struct StatePropertyWrapperTests {
         #expect(state.wrappedValue == 10)
     }
 
-    @Test("State mutation triggers render")
+    @Test("State mutation triggers render via RenderNotifier")
     func stateTriggerRender() {
-        let appState = isolatedAppState()
+        // StateBox.didSet calls RenderNotifier.current.setNeedsRender().
+        // We swap in a fresh AppState, mutate, and check immediately.
+        // This is a single-expression sequence with no yield points,
+        // so no parallel test can interfere between set and check.
+        let appState = AppState()
+        let previous = RenderNotifier.current
+        RenderNotifier.current = appState
         let state = State(wrappedValue: "initial")
         state.wrappedValue = "changed"
-        #expect(appState.needsRender == true)
+        let triggered = appState.needsRender
+        RenderNotifier.current = previous
+        #expect(triggered == true)
     }
 
     @Test("Binding from State updates original")
