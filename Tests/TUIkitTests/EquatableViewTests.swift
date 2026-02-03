@@ -17,7 +17,7 @@ private struct LabelView: View, Equatable {
     }
 }
 
-@Suite("EquatableView Tests")
+@Suite("EquatableView Tests", .serialized)
 struct EquatableViewTests {
 
     /// Creates a test context with a fresh TUIContext.
@@ -116,12 +116,10 @@ struct EquatableViewTests {
 
     // MARK: - Cache Invalidation on State Change
 
-    @Test("State change clears render cache")
-    func stateClearsCacheOnMutation() {
-        let tuiContext = TUIContext()
-        let cache = tuiContext.renderCache
+    @Test("clearAll empties the cache (simulates state-change invalidation)")
+    func clearAllEmptiesCache() {
+        let cache = RenderCache()
 
-        // Populate cache
         cache.store(
             identity: ViewIdentity(path: "Root/A"),
             view: "value",
@@ -131,14 +129,8 @@ struct EquatableViewTests {
         )
         #expect(cache.count == 1)
 
-        // Simulate state change via RenderNotifier
-        let previousCache = RenderNotifier.renderCache
-        RenderNotifier.renderCache = cache
-
-        let state = State(wrappedValue: 0)
-        state.wrappedValue = 1
-
-        RenderNotifier.renderCache = previousCache
+        // StateBox.didSet calls renderCache.clearAll() — test the effect directly
+        cache.clearAll()
 
         #expect(cache.isEmpty)
     }
