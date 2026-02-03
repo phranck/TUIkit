@@ -4,40 +4,9 @@
 //  Created by LAYERED.work
 //  CC BY-NC-SA 4.0
 
-// MARK: - Palette Preset
+// MARK: - System Palette
 
-/// Built-in palette presets inspired by classic terminal phosphors.
-///
-/// Each preset defines a complete color scheme generated algorithmically
-/// from a base hue and hand-tuned HSL parameters.
-///
-/// | Preset   | Hue  | Inspiration                                |
-/// |----------|------|--------------------------------------------|
-/// | `green`  | 120° | IBM 5151, Apple II (P1 phosphor)           |
-/// | `amber`  |  40° | IBM 3278, Wyse 50 (P3 phosphor)            |
-/// | `red`    |   0° | Military/specialized, night-vision          |
-/// | `violet` | 270° | Retro computing, sci-fi terminals           |
-/// | `blue`   | 200° | Vacuum fluorescent displays (VFDs)          |
-/// | `white`  | 225° | DEC VT100/VT220 (P4 phosphor)              |
-///
-/// # Usage
-///
-/// ```swift
-/// let palette = SystemPalette(.amber)
-/// paletteManager.setCurrent(SystemPalette(.green))
-/// ```
-public enum PalettePreset: String, CaseIterable, Sendable {
-    case green
-    case amber
-    case red
-    case violet
-    case blue
-    case white
-}
-
-// MARK: - Built-In Palette
-
-/// A palette generated from a ``PalettePreset``.
+/// A palette generated from a built-in ``Preset``.
 ///
 /// All colors are derived algorithmically from the preset's base hue
 /// and hand-tuned HSL parameters. This single type replaces the six
@@ -45,7 +14,35 @@ public enum PalettePreset: String, CaseIterable, Sendable {
 ///
 /// Custom palettes should conform to ``Palette`` or ``BlockPalette`` directly
 /// instead of using this type.
+///
+/// # Usage
+///
+/// ```swift
+/// let palette = SystemPalette(.amber)
+/// paletteManager.setCurrent(SystemPalette(.green))
+/// ```
 public struct SystemPalette: BlockPalette {
+    // MARK: - Preset
+
+    /// Built-in palette presets inspired by classic terminal phosphors.
+    ///
+    /// | Preset   | Hue  | Inspiration                                |
+    /// |----------|------|--------------------------------------------|
+    /// | `green`  | 120° | IBM 5151, Apple II (P1 phosphor)           |
+    /// | `amber`  |  40° | IBM 3278, Wyse 50 (P3 phosphor)            |
+    /// | `red`    |   0° | Military/specialized, night-vision         |
+    /// | `violet` | 270° | Retro computing, sci-fi terminals          |
+    /// | `blue`   | 200° | Vacuum fluorescent displays (VFDs)         |
+    /// | `white`  | 225° | DEC VT100/VT220 (P4 phosphor)              |
+    public enum Preset: String, CaseIterable, Sendable {
+        case green
+        case amber
+        case red
+        case violet
+        case blue
+        case white
+    }
+
     public let id: String
     public let name: String
 
@@ -77,7 +74,7 @@ public struct SystemPalette: BlockPalette {
     /// Creates a palette from a preset.
     ///
     /// - Parameter preset: The built-in preset to use.
-    public init(_ preset: PalettePreset) {
+    public init(_ preset: Preset) {
         let tuning = Tuning.for(preset)
         let hue = tuning.baseHue
 
@@ -157,7 +154,7 @@ private extension SystemPalette {
 
 private extension SystemPalette.Tuning {
     /// Returns the tuning parameters for a given preset.
-    static func `for`(_ preset: PalettePreset) -> SystemPalette.Tuning {
+    static func `for`(_ preset: SystemPalette.Preset) -> SystemPalette.Tuning {
         switch preset {
         case .green:
             SystemPalette.Tuning(
