@@ -196,10 +196,10 @@ extension EnvironmentValues {
 
 /// Registry of available palettes.
 struct PaletteRegistry {
-    /// All available palettes in cycling order, built from ``PalettePreset``.
+    /// All available palettes in cycling order, built from ``SystemPalette/Preset``.
     ///
     /// Order: Green → Amber → Red → Violet → Blue → White
-    static let all: [any Palette] = PalettePreset.allCases.map { SystemPalette($0) }
+    static let all: [any Palette] = SystemPalette.Preset.allCases.map { SystemPalette($0) }
 
     /// Finds a palette by ID.
     static func palette(withId id: String) -> (any Palette)? {
