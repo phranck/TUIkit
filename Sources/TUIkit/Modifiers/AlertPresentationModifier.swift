@@ -57,6 +57,9 @@ public struct AlertPresentationModifier<Content: View, Actions: View, Message: V
 // MARK: - Renderable
 
 extension AlertPresentationModifier: Renderable {
+    /// A stable section ID for alert focus sections.
+    private static var alertSectionID: String { "__alert__" }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // If not presented, just return base content
         guard isPresented.wrappedValue else {
@@ -82,6 +85,8 @@ extension AlertPresentationModifier: Renderable {
             actions: { actions }
         )
 
+        let focusManager = context.environment.focusManager
+
         // Render dimmed base with an isolated context.
         // The base content's buttons and key handlers register into a
         // throwaway FocusManager and KeyEventDispatcher so they don't
@@ -90,11 +95,19 @@ extension AlertPresentationModifier: Renderable {
         let isolatedContext = context.isolatedForBackground()
         let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: isolatedContext)
 
-        // Clear the real focus manager so the alert's buttons become
-        // the only registered focusables (auto-focus picks the first one).
-        context.environment.focusManager.clear()
+        // Register an alert focus section and activate it.
+        // The alert section becomes the active section, so Tab/arrows
+        // only navigate within the alert's focusable elements (buttons).
+        let sectionID = Self.alertSectionID
+        focusManager.registerSection(id: sectionID)
+        focusManager.activateSection(id: sectionID)
 
-        let alertBuffer = TUIkit.renderToBuffer(alert, context: context)
+        // Set the alert section in the context so child focusables
+        // (buttons in the alert) register in the alert section.
+        var alertContext = context
+        alertContext.activeFocusSectionID = sectionID
+
+        let alertBuffer = TUIkit.renderToBuffer(alert, context: alertContext)
 
         guard !dimmedBuffer.isEmpty else {
             return alertBuffer
