@@ -52,6 +52,16 @@ extension FocusSectionModifier: Renderable {
         var sectionContext = context
         sectionContext.activeFocusSectionID = sectionID
 
+        // If this section is active, compute the breathing indicator color.
+        // The first border view in the subtree will consume this and render ●.
+        if focusManager.isActiveSection(sectionID) {
+            let accentColor = context.environment.palette.accent
+            let dimColor = accentColor.opacity(0.20)
+            sectionContext.focusIndicatorColor = Color.lerp(dimColor, accentColor, phase: context.pulsePhase)
+        } else {
+            sectionContext.focusIndicatorColor = nil
+        }
+
         return TUIkit.renderToBuffer(content, context: sectionContext)
     }
 }
