@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Button.swift
-//  TUIkit
 //
-//  An interactive button view that responds to keyboard input.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Modifier.swift
-//  TUIkit
 //
-//  Generic modifier application extension for View.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - View Modifier Extension
 

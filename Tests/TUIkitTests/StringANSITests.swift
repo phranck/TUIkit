@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StringANSITests.swift
-//  TUIkit
 //
-//  Tests for String+ANSI extensions: stripped, strippedLength, padToVisibleWidth.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

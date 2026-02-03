@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  WhitePalette.swift
-//  TUIkit
 //
-//  Classic white terminal palette (P4 phosphor).
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Classic white terminal palette (P4 phosphor).
 ///

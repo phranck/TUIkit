@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Events.swift
-//  TUIkit
 //
-//  Event handling and lifecycle view modifiers: onKeyPress, onAppear, onDisappear, task, statusBarItems, focusSection.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

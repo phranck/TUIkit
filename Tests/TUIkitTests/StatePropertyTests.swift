@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StatePropertyTests.swift
-//  TUIkit
 //
-//  Tests for State property wrapper: initial value, mutation, render trigger, projected binding.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

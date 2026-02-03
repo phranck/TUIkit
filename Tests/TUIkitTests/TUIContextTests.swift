@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TUIContextTests.swift
-//  TUIkit
 //
-//  Tests for TUIContext: initialization, service access, and reset.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

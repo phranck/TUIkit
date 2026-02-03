@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ButtonsPage.swift
-//  TUIkitExample
 //
-//  Demonstrates button and focus system capabilities.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 

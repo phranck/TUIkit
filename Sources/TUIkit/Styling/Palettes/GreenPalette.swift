@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  GreenPalette.swift
-//  TUIkit
 //
-//  Classic green terminal palette (P1 phosphor).
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Classic green terminal palette (P1 phosphor).
 ///

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PredefinedPaletteTests.swift
-//  TUIkit
 //
-//  Tests for all predefined palette structs: Green, Amber, Red, Violet, Blue, White.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PrimitiveTypes+Extensions.swift
-//  TUIkit
 //
-//  Protocol conformances for standard types (Never, Optional).
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Never as View
 

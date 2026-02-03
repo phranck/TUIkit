@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ViewRenderer.swift
-//  TUIkit
 //
-//  Renders Views to terminal output via FrameBuffer.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Convenience class for standalone one-off view rendering.
 ///

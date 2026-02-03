@@ -1,5 +1,5 @@
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BluePalette.swift
-//  TUIkit — Terminal UI Framework for Swift
 //
 //  Created by LAYERED.work
 //  CC BY-NC-SA 4.0

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ButtonTests.swift
-//  TUIkit
 //
-//  Tests for Button, ButtonStyle, and ButtonRow views.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

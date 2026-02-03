@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Theme.swift
-//  TUIkit
 //
-//  Palette protocol, default implementations, environment integration,
-//  and palette registry.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  and palette registry.
 //
 
 import Foundation

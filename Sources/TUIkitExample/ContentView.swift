@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ContentView.swift
-//  TUIkitExample
 //
-//  The main content view that routes between demo pages.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import TUIkit
 

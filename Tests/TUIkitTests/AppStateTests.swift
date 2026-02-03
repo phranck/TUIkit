@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  AppStateTests.swift
-//  TUIkit
 //
-//  Tests for AppState: render flag management and observer notification.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

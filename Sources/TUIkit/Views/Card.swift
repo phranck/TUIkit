@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Card.swift
-//  TUIkit
 //
-//  A styled container view with optional header, content, and footer.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A padded, optionally titled container with background support.
 ///

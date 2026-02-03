@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  EnvironmentTests.swift
-//  TUIkit
 //
-//  Tests for EnvironmentValues and EnvironmentModifier.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

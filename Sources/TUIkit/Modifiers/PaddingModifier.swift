@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PaddingModifier.swift
-//  TUIkit
 //
-//  The .padding() modifier for adding space around a view.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Edge insets defining padding on each side.
 public struct EdgeInsets: Sendable, Equatable {

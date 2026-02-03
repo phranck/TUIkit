@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Convenience.swift
-//  TUIkit
 //
-//  Convenience view extensions: modal, asAnyView.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Modal
 

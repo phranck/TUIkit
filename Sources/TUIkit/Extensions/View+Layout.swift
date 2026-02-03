@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Layout.swift
-//  TUIkit
 //
-//  Layout and styling view modifiers: border, dimmed, background, frame, overlay, padding.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Border
 
