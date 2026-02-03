@@ -85,7 +85,9 @@ public struct RenderContext {
     ///
     /// Provides access to lifecycle tracking, key event dispatch,
     /// and preference storage via constructor injection.
-    let tuiContext: TUIContext
+    /// Mutable to allow modal presentation to substitute an isolated
+    /// context for background content rendering.
+    var tuiContext: TUIContext
 
     /// The current view's structural identity in the render tree.
     ///
@@ -163,6 +165,25 @@ public struct RenderContext {
     func withBranchIdentity(_ label: String) -> Self {
         var copy = self
         copy.identity = identity.branch(label)
+        return copy
+    }
+
+    /// Creates a context isolated from the real focus and key event systems.
+    ///
+    /// Used by modal presentation modifiers to render background content
+    /// visually without letting its buttons and key handlers interfere
+    /// with the modal's interactive elements. The returned context has a
+    /// throwaway ``FocusManager`` and ``KeyEventDispatcher`` while sharing
+    /// lifecycle, preferences, and state storage with the real context.
+    func isolatedForBackground() -> RenderContext {
+        var copy = self
+        copy.environment.focusManager = FocusManager()
+        copy.tuiContext = TUIContext(
+            lifecycle: tuiContext.lifecycle,
+            keyEventDispatcher: KeyEventDispatcher(),
+            preferences: tuiContext.preferences,
+            stateStorage: tuiContext.stateStorage
+        )
         return copy
     }
 }
