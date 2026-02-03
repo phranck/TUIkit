@@ -43,11 +43,9 @@ public struct ModalPresentationModifier<Content: View, Modal: View>: View {
 
 extension ModalPresentationModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let baseBuffer = TUIkit.renderToBuffer(content, context: context)
-
         // If not presented, just return base content
         guard isPresented.wrappedValue else {
-            return baseBuffer
+            return TUIkit.renderToBuffer(content, context: context)
         }
 
         // Render dimmed base with centered modal overlay

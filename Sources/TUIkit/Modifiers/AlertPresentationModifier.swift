@@ -56,11 +56,9 @@ public struct AlertPresentationModifier<Content: View, Actions: View>: View {
 
 extension AlertPresentationModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let baseBuffer = TUIkit.renderToBuffer(content, context: context)
-
         // If not presented, just return base content
         guard isPresented.wrappedValue else {
-            return baseBuffer
+            return TUIkit.renderToBuffer(content, context: context)
         }
 
         // Build the alert view
