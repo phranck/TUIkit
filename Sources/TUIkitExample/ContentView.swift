@@ -75,8 +75,7 @@ struct ContentView: View {
             ContainersPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .overlays:
-            OverlaysPage()
-                .statusBarItems(subPageItems(pageSetter: pageSetter))
+            OverlaysPage(onBack: { pageSetter.wrappedValue = .menu })
         case .layout:
             LayoutPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))

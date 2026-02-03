@@ -60,16 +60,6 @@ extension ModalPresentationModifier: Renderable {
         // the only registered focusables (auto-focus picks the first one).
         context.environment.focusManager.clear()
 
-        // Register ESC handler to dismiss the modal.
-        // Uses the real dispatcher so it takes priority over base content.
-        context.tuiContext.keyEventDispatcher.addHandler { [isPresented] event in
-            if event.key == .escape {
-                isPresented.wrappedValue = false
-                return true
-            }
-            return false
-        }
-
         let modalBuffer = TUIkit.renderToBuffer(modal, context: context)
 
         guard !dimmedBuffer.isEmpty else {
