@@ -71,31 +71,31 @@ public struct FrameBuffer {
         self.width = 0
     }
 
-    // MARK: - Width Computation
+    // MARK: - Combining Arrays
 
-    /// Recomputes the cached ``width`` from the current ``lines``.
+    /// Creates a vertically stacked buffer from an array of buffers.
     ///
-    /// Called automatically by the `didSet` observer on ``lines``.
-    private mutating func recomputeWidth() {
-        width = Self.computeWidth(lines)
-    }
-
-    /// Computes the visible width of a set of lines.
+    /// TupleViews use this to combine their children vertically by default
+    /// (the parent stack then decides the actual layout direction).
     ///
-    /// - Parameter lines: The lines to measure.
-    /// - Returns: The length of the longest line in visible characters.
-    private static func computeWidth(_ lines: [String]) -> Int {
-        lines.map { $0.strippedLength }.max() ?? 0
+    /// - Parameter buffers: The buffers to stack vertically.
+    public init(verticallyStacking buffers: [Self]) {
+        self.init()
+        for buffer in buffers {
+            appendVertically(buffer)
+        }
     }
+}
 
-    // MARK: - Combining Buffers
+// MARK: - Public API
 
+public extension FrameBuffer {
     /// Stacks another buffer below this one with optional spacing.
     ///
     /// - Parameters:
     ///   - other: The buffer to append below.
     ///   - spacing: Number of empty lines between the two buffers.
-    public mutating func appendVertically(_ other: Self, spacing: Int = 0) {
+    mutating func appendVertically(_ other: Self, spacing: Int = 0) {
         guard !other.isEmpty else { return }
         // Build combined array and assign once to trigger didSet only once.
         var combined = lines
@@ -111,7 +111,7 @@ public struct FrameBuffer {
     /// - Parameters:
     ///   - other: The buffer to append to the right.
     ///   - spacing: Number of space characters between the two buffers.
-    public mutating func appendHorizontally(_ other: Self, spacing: Int = 0) {
+    mutating func appendHorizontally(_ other: Self, spacing: Int = 0) {
         let maxHeight = max(height, other.height)
         let myWidth = width
         let spacer = String(repeating: " ", count: spacing)
@@ -134,7 +134,7 @@ public struct FrameBuffer {
     /// For simplicity, this just overlays line by line.
     ///
     /// - Parameter overlay: The buffer to overlay on top.
-    public mutating func overlay(_ overlay: Self) {
+    mutating func overlay(_ overlay: Self) {
         let maxHeight = max(height, overlay.height)
         var result: [String] = []
         for row in 0..<maxHeight {
@@ -158,7 +158,7 @@ public struct FrameBuffer {
     ///   - overlay: The buffer to composite on top.
     ///   - position: The (x, y) offset where the overlay should be placed.
     /// - Returns: A new buffer with the overlay composited.
-    public func composited(with overlay: Self, at position: (x: Int, y: Int)) -> Self {
+    func composited(with overlay: Self, at position: (x: Int, y: Int)) -> Self {
         guard !overlay.isEmpty else { return self }
 
         let resultWidth = max(width, position.x + overlay.width)
@@ -198,6 +198,25 @@ public struct FrameBuffer {
 
         return Self(lines: result)
     }
+}
+
+// MARK: - Private Helpers
+
+private extension FrameBuffer {
+    /// Recomputes the cached ``width`` from the current ``lines``.
+    ///
+    /// Called automatically by the `didSet` observer on ``lines``.
+    mutating func recomputeWidth() {
+        width = Self.computeWidth(lines)
+    }
+
+    /// Computes the visible width of a set of lines.
+    ///
+    /// - Parameter lines: The lines to measure.
+    /// - Returns: The length of the longest line in visible characters.
+    static func computeWidth(_ lines: [String]) -> Int {
+        lines.map { $0.strippedLength }.max() ?? 0
+    }
 
     /// Inserts overlay text into base text at the specified column position.
     ///
@@ -216,7 +235,7 @@ public struct FrameBuffer {
     ///   - originalBase: The original base line before padding, used to extract
     ///     the active ANSI state. If `nil`, the state is extracted from `base`.
     /// - Returns: The composited line with base styling preserved around the overlay.
-    private func insertOverlay(
+    func insertOverlay(
         base: String,
         overlay: String,
         atColumn column: Int,
@@ -247,20 +266,5 @@ public struct FrameBuffer {
         result += suffix
 
         return result
-    }
-
-    // MARK: - Combining Arrays
-
-    /// Creates a vertically stacked buffer from an array of buffers.
-    ///
-    /// TupleViews use this to combine their children vertically by default
-    /// (the parent stack then decides the actual layout direction).
-    ///
-    /// - Parameter buffers: The buffers to stack vertically.
-    public init(verticallyStacking buffers: [Self]) {
-        self.init()
-        for buffer in buffers {
-            appendVertically(buffer)
-        }
     }
 }

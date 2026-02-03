@@ -112,7 +112,11 @@ internal final class AppRunner<A: App> {
         )
         self.pulseTimer = PulseTimer(renderNotifier: appState)
     }
+}
 
+// MARK: - Internal API
+
+extension AppRunner {
     func run() {
         // Setup
         signals.install()
@@ -172,8 +176,12 @@ internal final class AppRunner<A: App> {
         // Cleanup
         cleanup()
     }
+}
 
-    private func cleanup() {
+// MARK: - Private Helpers
+
+private extension AppRunner {
+    func cleanup() {
         terminal.disableRawMode()
         terminal.showCursor()
         terminal.exitAlternateScreen()
@@ -181,7 +189,6 @@ internal final class AppRunner<A: App> {
         focusManager.clear()
         tuiContext.reset()
     }
-
 }
 
 // MARK: - Scene Rendering Protocol

@@ -62,7 +62,11 @@ final class AppHeaderState: @unchecked Sendable {
     var estimatedHeight: Int {
         previousHeight
     }
+}
 
+// MARK: - Render Pass
+
+extension AppHeaderState {
     /// Clears the content buffer at the start of each render pass.
     ///
     /// Saves the current height as ``estimatedHeight`` before clearing,

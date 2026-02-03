@@ -161,8 +161,32 @@ public struct Color: Sendable, Equatable {
     /// ```
     public static var palette: Semantic.Type { Semantic.self }
 
-    // MARK: - Semantic Resolution
+    /// The RGB components of this color.
+    ///
+    /// Converts any color type to its RGB representation:
+    /// - `.rgb` — returned directly
+    /// - `.standard` / `.bright` — mapped to xterm standard RGB values
+    /// - `.palette256` — mapped to xterm 256-color palette RGB values
+    /// - `.semantic` — returns nil (must be resolved first via ``resolve(with:)``)
+    public var rgbComponents: (red: UInt8, green: UInt8, blue: UInt8)? {
+        switch value {
+        case .rgb(let red, let green, let blue):
+            return (red, green, blue)
+        case .standard(let ansi):
+            return ansi.rgbValues
+        case .bright(let ansi):
+            return ansi.brightRGBValues
+        case .palette256(let index):
+            return Self.palette256ToRGB(index)
+        case .semantic:
+            return nil
+        }
+    }
+}
 
+// MARK: - Public API
+
+public extension Color {
     /// Resolves this color against a palette.
     ///
     /// Non-semantic colors are returned unchanged. Semantic colors
@@ -170,18 +194,16 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter palette: The palette to resolve against.
     /// - Returns: A concrete (non-semantic) color.
-    public func resolve(with palette: any Palette) -> Color {
+    func resolve(with palette: any Palette) -> Color {
         guard case .semantic(let token) = value else { return self }
         return token.resolve(with: palette)
     }
-
-    // MARK: - Custom Colors
 
     /// Creates a color from the 256-color palette.
     ///
     /// - Parameter index: The palette index (0-255).
     /// - Returns: The corresponding color.
-    public static func palette(_ index: UInt8) -> Self {
+    static func palette(_ index: UInt8) -> Self {
         Self(value: .palette256(index))
     }
 
@@ -192,7 +214,7 @@ public struct Color: Sendable, Equatable {
     ///   - green: The green component (0-255).
     ///   - blue: The blue component (0-255).
     /// - Returns: The RGB color.
-    public static func rgb(_ red: UInt8, _ green: UInt8, _ blue: UInt8) -> Self {
+    static func rgb(_ red: UInt8, _ green: UInt8, _ blue: UInt8) -> Self {
         Self(value: .rgb(red: red, green: green, blue: blue))
     }
 
@@ -200,7 +222,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter hex: The hex value (e.g., 0xFF5500).
     /// - Returns: The corresponding RGB color.
-    public static func hex(_ hex: UInt32) -> Self {
+    static func hex(_ hex: UInt32) -> Self {
         let red = UInt8((hex >> 16) & 0xFF)
         let green = UInt8((hex >> 8) & 0xFF)
         let blue = UInt8(hex & 0xFF)
@@ -213,7 +235,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter hex: The hex string (e.g., "#FF5500", "F50", "#abc").
     /// - Returns: The corresponding RGB color, or nil if invalid.
-    public static func hex(_ hex: String) -> Self? {
+    static func hex(_ hex: String) -> Self? {
         var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Remove # prefix if present
@@ -243,7 +265,7 @@ public struct Color: Sendable, Equatable {
     ///   - saturation: The saturation component (0-100).
     ///   - lightness: The lightness component (0-100).
     /// - Returns: The corresponding RGB color.
-    public static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Self {
+    static func hsl(_ hue: Double, _ saturation: Double, _ lightness: Double) -> Self {
         let normalizedHue = hue / 360.0
         let normalizedSaturation = saturation / 100.0
         let normalizedLightness = lightness / 100.0
@@ -281,7 +303,7 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter amount: The amount to lighten (0-1, default 0.2).
     /// - Returns: A lighter color.
-    public func lighter(by amount: Double = 0.2) -> Self {
+    func lighter(by amount: Double = 0.2) -> Self {
         adjusted(by: amount)
     }
 
@@ -289,83 +311,64 @@ public struct Color: Sendable, Equatable {
     ///
     /// - Parameter amount: The amount to darken (0-1, default 0.2).
     /// - Returns: A darker color.
-    public func darker(by amount: Double = 0.2) -> Self {
+    func darker(by amount: Double = 0.2) -> Self {
         adjusted(by: -amount)
     }
 
-    // MARK: - RGB Conversion
-
-    /// The RGB components of this color.
+    /// Returns a color with adjusted opacity (simulated via color mixing).
     ///
-    /// Converts any color type to its RGB representation:
-    /// - `.rgb` — returned directly
-    /// - `.standard` / `.bright` — mapped to xterm standard RGB values
-    /// - `.palette256` — mapped to xterm 256-color palette RGB values
-    /// - `.semantic` — returns nil (must be resolved first via ``resolve(with:)``)
-    public var rgbComponents: (red: UInt8, green: UInt8, blue: UInt8)? {
-        switch value {
-        case .rgb(let red, let green, let blue):
-            return (red, green, blue)
-        case .standard(let ansi):
-            return ansi.rgbValues
-        case .bright(let ansi):
-            return ansi.brightRGBValues
-        case .palette256(let index):
-            return Self.palette256ToRGB(index)
-        case .semantic:
-            return nil
-        }
-    }
-
-    /// Converts a 256-color palette index to RGB values.
+    /// Since terminals don't support true transparency, this mixes
+    /// the color with black to simulate opacity. Works with all color types
+    /// by converting to RGB first.
     ///
-    /// - Indices 0–7: standard ANSI colors
-    /// - Indices 8–15: bright ANSI colors
-    /// - Indices 16–231: 6×6×6 color cube
-    /// - Indices 232–255: grayscale ramp
-    private static func palette256ToRGB(_ index: UInt8) -> (red: UInt8, green: UInt8, blue: UInt8) {
-        switch index {
-        case 0...7:
-            guard let ansi = ANSIColor(rawValue: index) else { return (0, 0, 0) }
-            return ansi.rgbValues
-        case 8...15:
-            guard let ansi = ANSIColor(rawValue: index - 8) else { return (0, 0, 0) }
-            return ansi.brightRGBValues
-        case 16...231:
-            // 6×6×6 color cube: index = 16 + 36*r + 6*g + b (each 0–5)
-            let cubeIndex = index - 16
-            let cubeRed = cubeIndex / 36
-            let cubeGreen = (cubeIndex % 36) / 6
-            let cubeBlue = cubeIndex % 6
-            let channelMap: [UInt8] = [0, 95, 135, 175, 215, 255]
-            return (channelMap[Int(cubeRed)], channelMap[Int(cubeGreen)], channelMap[Int(cubeBlue)])
-        default:
-            // Grayscale ramp: 232–255 → 8, 18, 28, ..., 238
-            let gray = UInt8(8 + Int(index - 232) * 10)
-            return (gray, gray, gray)
-        }
-    }
-
-    /// Adjusts a color's lightness by the given amount in HSL space.
-    ///
-    /// Positive values lighten, negative values darken. Converts to HSL first,
-    /// adjusts only the lightness component, then converts back to RGB.
-    /// This preserves hue and saturation, preventing colors from shifting
-    /// toward gray when lightened or darkened.
-    ///
-    /// - Parameter amount: The lightness adjustment (-1 to 1).
-    /// - Returns: The adjusted color as RGB, or self if semantic (unresolved).
-    private func adjusted(by amount: Double) -> Self {
+    /// - Parameter opacity: The opacity (0-1).
+    /// - Returns: A color simulating the given opacity, or self if semantic.
+    func opacity(_ opacity: Double) -> Self {
         guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
-        let (hue, saturation, lightness) = Self.rgbToHSL(red: red, green: green, blue: blue)
-        let newLightness = min(100, max(0, lightness + amount * 100))
+        let newRed = UInt8(Double(red) * opacity)
+        let newGreen = UInt8(Double(green) * opacity)
+        let newBlue = UInt8(Double(blue) * opacity)
 
-        return .hsl(hue, saturation, newLightness)
+        return .rgb(newRed, newGreen, newBlue)
     }
 
+    /// Linearly interpolates between two colors.
+    ///
+    /// Both colors are converted to RGB before interpolation. If either
+    /// color is semantic (unresolved), the `from` color is returned unchanged.
+    ///
+    /// Used by the breathing focus indicator to smoothly fade between
+    /// a dimmed and a full-brightness accent color.
+    ///
+    /// - Parameters:
+    ///   - from: The start color (returned when `phase` is 0).
+    ///   - to: The end color (returned when `phase` is 1).
+    ///   - phase: The interpolation factor (0–1, clamped).
+    /// - Returns: The interpolated RGB color.
+    static func lerp(_ from: Color, _ to: Color, phase: Double) -> Color {
+        guard let fromRGB = from.rgbComponents,
+            let toRGB = to.rgbComponents
+        else {
+            return from
+        }
+
+        let clamped = min(1, max(0, phase))
+        let red = UInt8(Double(fromRGB.red) + (Double(toRGB.red) - Double(fromRGB.red)) * clamped)
+        let green = UInt8(
+            Double(fromRGB.green) + (Double(toRGB.green) - Double(fromRGB.green)) * clamped)
+        let blue = UInt8(
+            Double(fromRGB.blue) + (Double(toRGB.blue) - Double(fromRGB.blue)) * clamped)
+
+        return .rgb(red, green, blue)
+    }
+}
+
+// MARK: - Internal API
+
+extension Color {
     /// Converts RGB components to HSL (hue 0–360, saturation 0–100, lightness 0–100).
     ///
     /// - Parameters:
@@ -409,55 +412,58 @@ public struct Color: Sendable, Equatable {
 
         return (hue: hue, saturation: saturation * 100, lightness: lightness * 100)
     }
+}
 
-    /// Returns a color with adjusted opacity (simulated via color mixing).
+// MARK: - Private Helpers
+
+private extension Color {
+    /// Converts a 256-color palette index to RGB values.
     ///
-    /// Since terminals don't support true transparency, this mixes
-    /// the color with black to simulate opacity. Works with all color types
-    /// by converting to RGB first.
+    /// - Indices 0–7: standard ANSI colors
+    /// - Indices 8–15: bright ANSI colors
+    /// - Indices 16–231: 6×6×6 color cube
+    /// - Indices 232–255: grayscale ramp
+    static func palette256ToRGB(_ index: UInt8) -> (red: UInt8, green: UInt8, blue: UInt8) {
+        switch index {
+        case 0...7:
+            guard let ansi = ANSIColor(rawValue: index) else { return (0, 0, 0) }
+            return ansi.rgbValues
+        case 8...15:
+            guard let ansi = ANSIColor(rawValue: index - 8) else { return (0, 0, 0) }
+            return ansi.brightRGBValues
+        case 16...231:
+            // 6×6×6 color cube: index = 16 + 36*r + 6*g + b (each 0–5)
+            let cubeIndex = index - 16
+            let cubeRed = cubeIndex / 36
+            let cubeGreen = (cubeIndex % 36) / 6
+            let cubeBlue = cubeIndex % 6
+            let channelMap: [UInt8] = [0, 95, 135, 175, 215, 255]
+            return (channelMap[Int(cubeRed)], channelMap[Int(cubeGreen)], channelMap[Int(cubeBlue)])
+        default:
+            // Grayscale ramp: 232–255 → 8, 18, 28, ..., 238
+            let gray = UInt8(8 + Int(index - 232) * 10)
+            return (gray, gray, gray)
+        }
+    }
+
+    /// Adjusts a color's lightness by the given amount in HSL space.
     ///
-    /// - Parameter opacity: The opacity (0-1).
-    /// - Returns: A color simulating the given opacity, or self if semantic.
-    public func opacity(_ opacity: Double) -> Self {
+    /// Positive values lighten, negative values darken. Converts to HSL first,
+    /// adjusts only the lightness component, then converts back to RGB.
+    /// This preserves hue and saturation, preventing colors from shifting
+    /// toward gray when lightened or darkened.
+    ///
+    /// - Parameter amount: The lightness adjustment (-1 to 1).
+    /// - Returns: The adjusted color as RGB, or self if semantic (unresolved).
+    func adjusted(by amount: Double) -> Self {
         guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
-        let newRed = UInt8(Double(red) * opacity)
-        let newGreen = UInt8(Double(green) * opacity)
-        let newBlue = UInt8(Double(blue) * opacity)
+        let (hue, saturation, lightness) = Self.rgbToHSL(red: red, green: green, blue: blue)
+        let newLightness = min(100, max(0, lightness + amount * 100))
 
-        return .rgb(newRed, newGreen, newBlue)
-    }
-
-    /// Linearly interpolates between two colors.
-    ///
-    /// Both colors are converted to RGB before interpolation. If either
-    /// color is semantic (unresolved), the `from` color is returned unchanged.
-    ///
-    /// Used by the breathing focus indicator to smoothly fade between
-    /// a dimmed and a full-brightness accent color.
-    ///
-    /// - Parameters:
-    ///   - from: The start color (returned when `phase` is 0).
-    ///   - to: The end color (returned when `phase` is 1).
-    ///   - phase: The interpolation factor (0–1, clamped).
-    /// - Returns: The interpolated RGB color.
-    public static func lerp(_ from: Color, _ to: Color, phase: Double) -> Color {
-        guard let fromRGB = from.rgbComponents,
-            let toRGB = to.rgbComponents
-        else {
-            return from
-        }
-
-        let clamped = min(1, max(0, phase))
-        let red = UInt8(Double(fromRGB.red) + (Double(toRGB.red) - Double(fromRGB.red)) * clamped)
-        let green = UInt8(
-            Double(fromRGB.green) + (Double(toRGB.green) - Double(fromRGB.green)) * clamped)
-        let blue = UInt8(
-            Double(fromRGB.blue) + (Double(toRGB.blue) - Double(fromRGB.blue)) * clamped)
-
-        return .rgb(red, green, blue)
+        return .hsl(hue, saturation, newLightness)
     }
 }
 
