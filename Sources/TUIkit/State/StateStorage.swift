@@ -51,8 +51,13 @@ final class StateStorage: @unchecked Sendable {
     /// Creates an empty state storage.
     init() {}
 
-    // MARK: - Lookup & Create
+    /// The number of stored state entries (for testing/debugging).
+    var count: Int { values.count }
+}
 
+// MARK: - Internal API
+
+extension StateStorage {
     /// Returns the persistent storage for a `@State` property, creating it if needed.
     ///
     /// If a storage object already exists for the given key, it is returned as-is
@@ -71,8 +76,6 @@ final class StateStorage: @unchecked Sendable {
         values[key] = fresh
         return fresh
     }
-
-    // MARK: - Identity Tracking
 
     /// Marks an identity as active during the current render pass.
     ///
@@ -101,8 +104,6 @@ final class StateStorage: @unchecked Sendable {
         }
     }
 
-    // MARK: - Branch Invalidation
-
     /// Removes all state for descendants of the given identity.
     ///
     /// Called by ``ConditionalView`` when switching branches to clean up
@@ -116,16 +117,11 @@ final class StateStorage: @unchecked Sendable {
         }
     }
 
-    // MARK: - Reset
-
     /// Removes all stored state. Used during app cleanup.
     func reset() {
         values.removeAll()
         activeIdentities.removeAll()
     }
-
-    /// The number of stored state entries (for testing/debugging).
-    var count: Int { values.count }
 }
 
 // MARK: - State Box

@@ -68,7 +68,11 @@ public enum SpinnerStyle: Sendable {
     /// the visible track. This lets the trail fade out smoothly at the
     /// edges instead of being cut off abruptly.
     static let edgeOvershoot = 2
+}
 
+// MARK: - Internal API
+
+extension SpinnerStyle {
     /// Generates the bounce position sequence for the given track length.
     ///
     /// The highlight travels from `-edgeOvershoot` to
@@ -137,7 +141,11 @@ public enum SpinnerStyle: Sendable {
 
         return result
     }
+}
 
+// MARK: - Private Helpers
+
+private extension SpinnerStyle {
     /// Calculates the trail distance from the highlight to a track position.
     ///
     /// Returns `nil` if the position is not in the trail (ahead of the highlight
@@ -148,7 +156,7 @@ public enum SpinnerStyle: Sendable {
     ///   - target: The track position to check.
     ///   - movingForward: Whether the highlight is moving left→right.
     /// - Returns: The trail distance, or `nil` if not in the trail.
-    private static func trailDistance(
+    static func trailDistance(
         from highlight: Int,
         to target: Int,
         movingForward: Bool
