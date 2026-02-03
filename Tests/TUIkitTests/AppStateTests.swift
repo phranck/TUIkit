@@ -9,34 +9,25 @@ import Testing
 
 @testable import TUIkit
 
-@Suite("AppState Tests", .serialized)
+@Suite("AppState Tests")
 struct AppStateTests {
-
-    /// Creates a fresh AppState instance to isolate tests from shared global state.
-    private func isolatedAppState() -> AppState {
-        let fresh = AppState()
-        RenderNotifier.current = fresh
-        return fresh
-    }
 
     @Test("AppState initially does not need render")
     func initialState() {
-        let appState = isolatedAppState()
-        appState.didRender()
+        let appState = AppState()
         #expect(appState.needsRender == false)
     }
 
     @Test("setNeedsRender marks state as dirty")
     func setNeedsRender() {
-        let appState = isolatedAppState()
-        appState.didRender()
+        let appState = AppState()
         appState.setNeedsRender()
         #expect(appState.needsRender == true)
     }
 
     @Test("didRender resets needsRender flag")
     func didRenderResets() {
-        let appState = isolatedAppState()
+        let appState = AppState()
         appState.setNeedsRender()
         #expect(appState.needsRender == true)
         appState.didRender()
@@ -45,31 +36,29 @@ struct AppStateTests {
 
     @Test("setNeedsRender notifies observers")
     func observerNotified() {
-        let appState = isolatedAppState()
+        let appState = AppState()
         nonisolated(unsafe) var notified = false
         appState.observe {
             notified = true
         }
         appState.setNeedsRender()
         #expect(notified == true)
-        appState.clearObservers()
     }
 
     @Test("Multiple observers all get notified")
     func multipleObservers() {
-        let appState = isolatedAppState()
+        let appState = AppState()
         nonisolated(unsafe) var count = 0
         appState.observe { count += 1 }
         appState.observe { count += 1 }
         appState.observe { count += 1 }
         appState.setNeedsRender()
         #expect(count == 3)
-        appState.clearObservers()
     }
 
     @Test("clearObservers removes all observers")
     func clearObservers() {
-        let appState = isolatedAppState()
+        let appState = AppState()
         nonisolated(unsafe) var notified = false
         appState.observe { notified = true }
         appState.clearObservers()

@@ -13,19 +13,20 @@ import Testing
 @Suite("State Storage Identity Tests", .serialized)
 struct StateStorageIdentityTests {
 
-    /// Creates an isolated test environment with fresh AppState and StateStorage.
-    private func testEnvironment() -> (AppState, StateStorage) {
-        let appState = AppState()
-        RenderNotifier.current = appState
-        let storage = StateStorage()
-        return (appState, storage)
+    /// Creates a fresh StateStorage for test isolation.
+    ///
+    /// Does NOT touch `RenderNotifier.current`. State mutations during
+    /// tests call `setNeedsRender()` on the default global AppState —
+    /// that's harmless and avoids race conditions with parallel suites.
+    private func testStorage() -> StateStorage {
+        StateStorage()
     }
 
     // MARK: - Self-Hydrating State
 
     @Test("State self-hydrates from StateStorage when active context is set")
     func selfHydrationFromStorage() {
-        let (_, storage) = testEnvironment()
+        let storage = testStorage()
         let identity = ViewIdentity(path: "TestView")
 
         // First construction: creates new entry in storage
@@ -48,7 +49,6 @@ struct StateStorageIdentityTests {
 
     @Test("State uses local box when no active context is set")
     func localBoxWithoutContext() {
-        let (_, _) = testEnvironment()
         StateRegistration.activeContext = nil
 
         let state = State(wrappedValue: "hello")
@@ -60,7 +60,7 @@ struct StateStorageIdentityTests {
 
     @Test("Multiple @State properties get distinct indices")
     func multipleStateDistinctIndices() {
-        let (_, storage) = testEnvironment()
+        let storage = testStorage()
         let identity = ViewIdentity(path: "MultiStateView")
 
         // Simulate a view with two @State properties
@@ -117,7 +117,7 @@ struct StateStorageIdentityTests {
 
     @Test("StateStorage returns same box for same key")
     func storageSameKey() {
-        let storage = StateStorage()
+        let storage = testStorage()
         let key = StateStorage.StateKey(
             identity: ViewIdentity(path: "V"),
             propertyIndex: 0
@@ -133,7 +133,7 @@ struct StateStorageIdentityTests {
 
     @Test("StateStorage returns different boxes for different keys")
     func storageDifferentKeys() {
-        let storage = StateStorage()
+        let storage = testStorage()
         let key1 = StateStorage.StateKey(
             identity: ViewIdentity(path: "V"),
             propertyIndex: 0
@@ -155,7 +155,7 @@ struct StateStorageIdentityTests {
 
     @Test("invalidateDescendants removes state under a branch")
     func branchInvalidation() {
-        let (_, storage) = testEnvironment()
+        let storage = testStorage()
         let branchIdentity = ViewIdentity(path: "Root#true")
         let childIdentity = ViewIdentity(path: "Root#true/Child")
 
@@ -177,7 +177,7 @@ struct StateStorageIdentityTests {
 
     @Test("endRenderPass removes state for views not marked active")
     func renderPassGarbageCollection() {
-        let storage = StateStorage()
+        let storage = testStorage()
         let activeIdentity = ViewIdentity(path: "Active")
         let staleIdentity = ViewIdentity(path: "Stale")
 
@@ -206,7 +206,6 @@ struct StateStorageIdentityTests {
 
     @Test("State survives reconstruction through renderToBuffer")
     func stateSurvivesRenderToBuffer() {
-        let (_, _) = testEnvironment()
         let tuiContext = TUIContext()
         let context = RenderContext(
             availableWidth: 80,
@@ -226,7 +225,6 @@ struct StateStorageIdentityTests {
 
     @Test("Nested views get independent state identities")
     func nestedViewsIndependentState() {
-        let (_, _) = testEnvironment()
         let tuiContext = TUIContext()
         let context = RenderContext(
             availableWidth: 80,

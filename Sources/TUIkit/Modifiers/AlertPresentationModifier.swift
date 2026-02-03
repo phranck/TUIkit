@@ -82,9 +82,17 @@ extension AlertPresentationModifier: Renderable {
             actions: { actions }
         )
 
-        // Render dimmed base with centered alert overlay
+        // Render dimmed base with an isolated context.
+        // The base content's buttons and key handlers register into a
+        // throwaway FocusManager and KeyEventDispatcher so they don't
+        // interfere with the alert's interactive elements.
         let dimmedBase = DimmedModifier(content: content)
-        let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: context)
+        let isolatedContext = context.isolatedForBackground()
+        let dimmedBuffer = TUIkit.renderToBuffer(dimmedBase, context: isolatedContext)
+
+        // Clear the real focus manager so the alert's buttons become
+        // the only registered focusables (auto-focus picks the first one).
+        context.environment.focusManager.clear()
 
         let alertBuffer = TUIkit.renderToBuffer(alert, context: context)
 
