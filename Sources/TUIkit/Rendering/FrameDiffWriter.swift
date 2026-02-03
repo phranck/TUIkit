@@ -36,6 +36,9 @@ final class FrameDiffWriter {
     /// The previous frame's status bar lines.
     private var previousStatusBarLines: [String] = []
 
+    /// The previous frame's app header lines.
+    private var previousAppHeaderLines: [String] = []
+
     // MARK: - Output Line Building
 
     /// Converts a ``FrameBuffer`` into terminal-ready output lines.
@@ -134,6 +137,27 @@ final class FrameDiffWriter {
         previousStatusBarLines = newLines
     }
 
+    /// Compares new app header lines with the previous frame and writes
+    /// only the lines that changed.
+    ///
+    /// - Parameters:
+    ///   - newLines: The current frame's app header output lines.
+    ///   - terminal: The terminal to write to.
+    ///   - startRow: The 1-based terminal row where the app header begins.
+    func writeAppHeaderDiff(
+        newLines: [String],
+        terminal: Terminal,
+        startRow: Int
+    ) {
+        writeDiff(
+            newLines: newLines,
+            previousLines: previousAppHeaderLines,
+            terminal: terminal,
+            startRow: startRow
+        )
+        previousAppHeaderLines = newLines
+    }
+
     /// Invalidates all cached previous frames, forcing a full repaint
     /// on the next render.
     ///
@@ -142,6 +166,7 @@ final class FrameDiffWriter {
     func invalidate() {
         previousContentLines = []
         previousStatusBarLines = []
+        previousAppHeaderLines = []
     }
 
     // MARK: - Diff Computation

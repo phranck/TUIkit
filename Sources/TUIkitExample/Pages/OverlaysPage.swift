@@ -131,8 +131,6 @@ struct OverlaysPage: View {
     /// The main background content with menu and description.
     private var backgroundContent: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Overlays & Modals Demo")
-
             HStack(spacing: 3) {
                 // Left: Demo menu
                 Menu(
@@ -165,6 +163,13 @@ struct OverlaysPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Overlays & Modals Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 

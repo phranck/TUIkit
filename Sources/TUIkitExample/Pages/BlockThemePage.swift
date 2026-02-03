@@ -15,7 +15,6 @@ import TUIkit
 struct BlockThemePage: View {
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Block Theme Colors")
 
             Text("Switch to block appearance (press 'a') and violet theme (press 't').")
                 .foregroundColor(.palette.foregroundSecondary)
@@ -75,6 +74,13 @@ struct BlockThemePage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Block Theme Colors").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }

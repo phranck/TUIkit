@@ -20,7 +20,6 @@ struct ButtonsPage: View {
 
     var body: some View {
         VStack(spacing: 1) {
-            HeaderView(title: "Buttons & Focus Demo")
 
             DemoSection("Interactive Counter (@State)") {
                 HStack(spacing: 2) {
@@ -87,6 +86,13 @@ struct ButtonsPage: View {
             }
 
             Spacer()
+        }
+        .appHeader {
+            HStack {
+                Text("Buttons & Focus Demo").bold().foregroundColor(.palette.accent)
+                Spacer()
+                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+            }
         }
     }
 }
