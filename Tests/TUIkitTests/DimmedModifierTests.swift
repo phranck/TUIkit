@@ -57,7 +57,7 @@ struct DimmedModifierTests {
         // Each line should have the visible text and uniform palette-based styling
         for line in buffer.lines {
             #expect(!line.contains("\u{1B}[2m"))
-            #expect(line.stripped.trimmingCharacters(in: .whitespaces).count > 0)
+            #expect(!line.stripped.trimmingCharacters(in: .whitespaces).isEmpty)
         }
     }
 

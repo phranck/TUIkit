@@ -74,7 +74,11 @@ final class PulseTimer {
     deinit {
         stop()
     }
+}
 
+// MARK: - Internal API
+
+extension PulseTimer {
     /// Starts the breathing animation.
     ///
     /// If the timer is already running, this is a no-op.
