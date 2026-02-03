@@ -129,7 +129,7 @@ extension FlexibleFrameView: Renderable {
         for row in 0..<targetHeight {
             let contentRow = row - verticalOffset
             let line: String
-            if contentRow >= 0 && contentRow < buffer.lines.count {
+            if contentRow >= 0 && contentRow < buffer.height {
                 line = buffer.lines[contentRow]
             } else {
                 line = ""

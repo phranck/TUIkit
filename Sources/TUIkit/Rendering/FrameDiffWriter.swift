@@ -72,7 +72,7 @@ final class FrameDiffWriter {
         let emptyLine = bgCode + String(repeating: " ", count: terminalWidth) + reset
 
         for row in 0..<terminalHeight {
-            if row < buffer.lines.count {
+            if row < buffer.height {
                 let line = buffer.lines[row]
                 let visibleWidth = line.strippedLength
                 let padding = max(0, terminalWidth - visibleWidth)
