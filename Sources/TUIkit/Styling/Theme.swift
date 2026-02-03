@@ -138,8 +138,8 @@ public protocol BlockPalette: Palette {
 // MARK: - Default BlockPalette Implementation
 
 extension BlockPalette {
-    public var surfaceBackground: Color { background.lighter(by: 0.08) }
-    public var surfaceHeaderBackground: Color { background.lighter(by: 0.05) }
+    public var surfaceBackground: Color { background.lighter(by: 0.10) }
+    public var surfaceHeaderBackground: Color { background.lighter(by: 0.07) }
     public var elevatedBackground: Color { surfaceHeaderBackground.lighter(by: 0.05) }
 }
 
