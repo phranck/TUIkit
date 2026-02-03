@@ -292,20 +292,30 @@ extension ContainerView: Renderable {
         let indicatorColor = context.focusIndicatorColor
         innerContext.focusIndicatorColor = nil
 
-        // Render body content first to determine its width.
+        // Render body content first to determine its natural width.
         let paddedContent = content.padding(padding)
         let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: innerContext)
 
-        // Calculate inner width from body and title (footer adapts to this).
-        let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
-        let innerWidth = max(titleWidth, bodyBuffer.width)
-
-        // Render footer constrained to the actual inner width.
-        // PaddingModifier is post-processing (doesn't reduce availableWidth for
-        // its child), so we subtract the footer padding from the context width
-        // manually. This ensures Spacer() in the footer fills exactly the
-        // container's inner width.
+        // Render footer with full available width for initial measurement.
+        // This ensures the footer's natural width is included in the
+        // innerWidth calculation, preventing truncation when footer content
+        // (e.g. HStack with Spacer + Button) is wider than the body.
         let footerPadding = EdgeInsets(horizontal: 1, vertical: 0)
+        let initialFooterBuffer: FrameBuffer?
+        if let footerView = footer {
+            let paddedFooter = footerView.padding(footerPadding)
+            initialFooterBuffer = TUIkit.renderToBuffer(paddedFooter, context: innerContext)
+        } else {
+            initialFooterBuffer = nil
+        }
+
+        // Calculate inner width from title, body, AND footer.
+        let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
+        let footerNaturalWidth = initialFooterBuffer?.width ?? 0
+        let innerWidth = max(titleWidth, bodyBuffer.width, footerNaturalWidth)
+
+        // Re-render footer constrained to the final innerWidth so that
+        // Spacer() fills exactly the container's inner width.
         let footerBuffer: FrameBuffer?
         if let footerView = footer {
             var footerContext = innerContext

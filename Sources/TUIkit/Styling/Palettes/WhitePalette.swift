@@ -8,37 +8,69 @@
 /// Classic white terminal palette (P4 phosphor).
 ///
 /// Inspired by terminals like the DEC VT100 and VT220.
-/// Uses a dark background with subtle cool/blue tint.
+/// Near-achromatic palette with a subtle cool blue tint (225°) in
+/// backgrounds. Foregrounds are neutral gray. All colors are generated
+/// algorithmically using HSL transformations.
 public struct WhitePalette: BlockPalette {
     public let id = "white"
     public let name = "White"
 
+    /// The base hue used for the subtle cool tint in backgrounds.
+    private static let baseHue: Double = 225
+
     // Background
-    public let background = Color.hex(0x06070A)
+    public let background: Color
 
     // White/gray text hierarchy
-    public let foreground = Color.hex(0xE8E8E8)  // Bright white - primary text
-    public let foregroundSecondary = Color.hex(0xB0B0B0)  // Medium gray - secondary text
-    public let foregroundTertiary = Color.hex(0x787878)  // Dim gray - tertiary/muted text
+    public let foreground: Color
+    public let foregroundSecondary: Color
+    public let foregroundTertiary: Color
 
     // Accent
-    public let accent = Color.hex(0xFFFFFF)  // Pure white for highlights
+    public let accent: Color
 
-    // Semantic colors (subtle tints)
-    public let success = Color.hex(0xC0FFC0)  // Slight green tint
-    public let warning = Color.hex(0xFFE0A0)  // Slight amber tint
-    public let error = Color.hex(0xFFA0A0)  // Slight red tint
-    public let info = Color.hex(0xA0D0FF)  // Slight blue tint
+    // Semantic colors
+    public let success: Color
+    public let warning: Color
+    public let error: Color
+    public let info: Color
 
     // UI elements
-    public let border = Color.hex(0x484848)  // Subtle gray border
+    public let border: Color
 
     // Additional backgrounds
-    public let statusBarBackground = Color.hex(0x131619)
-    public let appHeaderBackground = Color.hex(0x0D131D)
-    public let overlayBackground = Color.hex(0x06070A)
+    public let statusBarBackground: Color
+    public let appHeaderBackground: Color
+    public let overlayBackground: Color
 
-    public init() {}
+    public init() {
+        let hue = Self.baseHue
+
+        // Background: very dark, subtle cool tint
+        self.background = Color.hsl(hue, 25, 3)
+
+        // Foregrounds: near-neutral gray (very low saturation)
+        self.foreground = Color.hsl(0, 0, 91)
+        self.foregroundSecondary = Color.hsl(0, 0, 69)
+        self.foregroundTertiary = Color.hsl(0, 0, 47)
+
+        // Accent: pure white
+        self.accent = Color.hsl(0, 0, 100)
+
+        // Semantic colors: subtle tints on neutral base
+        self.success = Color.hsl(120, 50, 75)
+        self.warning = Color.hsl(40, 60, 75)
+        self.error = Color.hsl(0, 60, 75)
+        self.info = Color.hsl(210, 60, 75)
+
+        // UI elements: neutral gray
+        self.border = Color.hsl(0, 0, 28)
+
+        // Additional backgrounds: subtle cool tint
+        self.statusBarBackground = Color.hsl(hue, 20, 10)
+        self.appHeaderBackground = Color.hsl(hue, 20, 7)
+        self.overlayBackground = Color.hsl(hue, 25, 3)
+    }
 }
 
 // MARK: - Convenience Accessors
