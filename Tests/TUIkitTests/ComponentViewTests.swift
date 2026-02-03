@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ComponentViewTests.swift
-//  TUIkit
 //
-//  Tests for Box, Card, Panel, ContainerConfig, ContainerView, and ForEach views.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

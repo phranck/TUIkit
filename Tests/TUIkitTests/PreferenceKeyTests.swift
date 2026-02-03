@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PreferenceKeyTests.swift
-//  TUIkit
 //
-//  Tests for PreferenceKey protocol: default reduce and custom reduce implementations.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

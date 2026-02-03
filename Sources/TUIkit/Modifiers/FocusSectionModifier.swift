@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FocusSectionModifier.swift
-//  TUIkit
 //
-//  A modifier that declares a focus section for a view subtree.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A modifier that declares a focus section for a view subtree.
 ///

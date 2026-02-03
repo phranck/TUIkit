@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BlockThemePage.swift
-//  TUIkitExample
 //
-//  Visual test page for Block appearance background colors.
-//  Shows all background roles side by side for color tuning.
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0  Shows all background roles side by side for color tuning.
 //
 
 import TUIkit

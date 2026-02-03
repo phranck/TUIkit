@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PrimitiveViews.swift
-//  TUIkit
 //
-//  Primitive view types that serve as leaves in the view tree.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - EmptyView
 

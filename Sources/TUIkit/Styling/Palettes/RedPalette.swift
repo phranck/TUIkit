@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  RedPalette.swift
-//  TUIkit
 //
-//  Red terminal palette.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Red terminal palette.
 ///

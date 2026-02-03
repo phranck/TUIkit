@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Renderable.swift
-//  TUIkit
 //
-//  Protocol for views that can render themselves directly.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A protocol for views that produce terminal output directly.
 ///

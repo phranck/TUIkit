@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StatusBarState.swift
-//  TUIkit
 //
-//  Manages the status bar state for the running application.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Quit Behavior
 

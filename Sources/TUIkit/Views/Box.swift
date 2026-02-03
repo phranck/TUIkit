@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  Box.swift
-//  TUIkit
 //
-//  A simple bordered container view.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A minimal bordered container — just a border, nothing else.
 ///

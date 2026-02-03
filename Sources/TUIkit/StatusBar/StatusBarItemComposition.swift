@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  StatusBarItemComposition.swift
-//  TUIkit
 //
-//  Defines how a focus section's StatusBar items relate to parent items.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Defines how a focus section's StatusBar items compose with parent items.
 ///

@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  OverlayModifier.swift
-//  TUIkit
 //
-//  A modifier that renders an overlay on top of the base view.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// Internal modifier that layers an overlay view on top of the base content.
 ///

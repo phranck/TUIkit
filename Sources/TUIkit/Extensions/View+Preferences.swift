@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Preferences.swift
-//  TUIkit
 //
-//  Preference system view modifiers: preference, onPreferenceChange, navigationTitle.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Preference
 

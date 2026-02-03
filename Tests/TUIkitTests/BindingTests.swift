@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  BindingTests.swift
-//  TUIkit
 //
-//  Tests for Binding property wrapper: get/set, projectedValue, constant.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

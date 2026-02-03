@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  PaletteRegistryTests.swift
-//  TUIkit
 //
-//  Tests for PaletteRegistry: palette lookup and cycling order.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

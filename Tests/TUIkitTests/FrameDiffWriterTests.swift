@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  FrameDiffWriterTests.swift
-//  TUIkit
 //
-//  Tests for the FrameDiffWriter line-level diffing system.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

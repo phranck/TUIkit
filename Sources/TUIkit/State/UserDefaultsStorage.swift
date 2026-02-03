@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  UserDefaultsStorage.swift
-//  TUIkit
 //
-//  UserDefaults-compatible storage backend for all platforms.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 

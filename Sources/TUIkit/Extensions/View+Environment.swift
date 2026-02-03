@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  View+Environment.swift
-//  TUIkit
 //
-//  Environment injection view modifiers: environment, appearance, theme.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Environment
 

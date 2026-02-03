@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  ChildInfo.swift
-//  TUIkit
 //
-//  Layout metadata for child views within stack containers.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 // MARK: - Child Info
 

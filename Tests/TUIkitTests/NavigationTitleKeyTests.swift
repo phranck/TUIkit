@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  NavigationTitleKeyTests.swift
-//  TUIkit
 //
-//  Tests for the built-in NavigationTitleKey preference.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Testing
 

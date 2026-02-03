@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  SemanticColor.swift
-//  TUIkit
 //
-//  Palette-relative color tokens resolved at render time.
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 /// A token that names a palette property.
 ///

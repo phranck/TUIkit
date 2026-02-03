@@ -1,9 +1,8 @@
-//
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  LifecycleModifier.swift
-//  TUIkit
 //
-//  Lifecycle modifiers: .onAppear(), .onDisappear(), .task()
-//
+//  Created by LAYERED.work
+//  CC BY-NC-SA 4.0
 
 import Foundation
 
