@@ -114,45 +114,26 @@ Built-in key bindings that apply when no handler consumed the event:
 
 ## Render Pipeline
 
-Each frame follows 8 steps inside `RenderLoop.render()`:
+Each frame follows 12 steps inside `RenderLoop.render()`:
 
-### Step 1: Clear Per-Frame State
+| Step | What |
+|------|------|
+| 1 | Clear per-frame state (key handlers, preferences, focus) |
+| 2 | Begin lifecycle and state tracking |
+| 3 | Build ``EnvironmentValues`` from subsystem state |
+| 4 | Create ``RenderContext`` with layout constraints |
+| 5 | Evaluate `app.body` → ``WindowGroup`` |
+| 6 | Render view tree → ``FrameBuffer`` |
+| 7 | Build terminal-ready output lines |
+| 8 | Begin buffered frame (`Terminal.beginFrame()`) |
+| 9 | Diff against previous frame, write only changed lines |
+| 10 | Render status bar into same buffer |
+| 11 | Flush entire frame in one `write()` syscall (`Terminal.endFrame()`) |
+| 12 | End lifecycle tracking (fires `onDisappear` for removed views) |
 
-Key handlers, preference callbacks, and focus registrations are cleared. Views re-register them during the render pass.
+Steps 8–11 are the output optimization layer: line-level diffing reduces writes by ~94% for static UIs, and frame buffering reduces syscalls from ~40+ to exactly 1.
 
-### Step 2: Begin Lifecycle Tracking
-
-The `LifecycleManager` prepares to track which views appear in this frame by clearing its current-frame token set.
-
-### Step 3: Build Environment
-
-``EnvironmentValues`` are assembled from the current subsystem state — palette, appearance, focus manager, status bar, and both theme managers.
-
-### Step 4: Create Render Context
-
-A ``RenderContext`` is created with the environment, terminal dimensions (minus status bar height), and the `TUIContext`. This context threads through the entire view tree.
-
-### Step 5: Evaluate Scene
-
-`app.body` is called, producing a ``WindowGroup`` that wraps the root view.
-
-### Step 6: Render View Tree
-
-The ``WindowGroup`` calls the free function `renderToBuffer()` on its content. This triggers the dual rendering dispatch:
-
-1. If the view conforms to `Renderable` → call `renderToBuffer(context:)` directly
-2. If the view has a `body` → recursively render the body
-3. Otherwise → return an empty ``FrameBuffer``
-
-The resulting buffer lines are written to the terminal with ANSI escape codes.
-
-### Step 7: End Lifecycle Tracking
-
-Views that were visible last frame but not this frame have their `onDisappear` callbacks fired.
-
-### Step 8: Render Status Bar
-
-The status bar renders separately with its own ``RenderContext`` (full terminal width, own height). It is never affected by view dimming or overlays.
+> For full details on each step, see <doc:RenderCycle>.
 
 ## Cleanup
 

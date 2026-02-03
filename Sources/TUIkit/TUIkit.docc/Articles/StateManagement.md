@@ -136,5 +136,4 @@ Views that disappear from the tree (e.g., a conditional branch switches) have th
 automatically cleaned up at the end of each render pass. `ConditionalView` also immediately
 invalidates the inactive branch's state to prevent stale values.
 
-This is simple and predictable — no diffing, no virtual DOM, just full re-renders with
-persistent state.
+This is simple and predictable — the view tree is fully re-evaluated each frame (no virtual DOM), with persistent state. Terminal output is then diffed at the line level — only changed lines are written. See <doc:RenderCycle> for details on the output optimization pipeline.
