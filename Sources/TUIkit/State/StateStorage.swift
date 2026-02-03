@@ -137,6 +137,7 @@ final class StateBox<Value>: @unchecked Sendable {
     /// The current value.
     var value: Value {
         didSet {
+            RenderNotifier.renderCache?.clearAll()
             RenderNotifier.current.setNeedsRender()
         }
     }

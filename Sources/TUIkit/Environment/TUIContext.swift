@@ -208,12 +208,20 @@ final class TUIContext: @unchecked Sendable {
     /// Persistent `@State` value storage indexed by ``ViewIdentity``.
     let stateStorage: StateStorage
 
+    /// Cache for memoized subtree rendering results.
+    ///
+    /// Stores rendered ``FrameBuffer`` output for ``EquatableView`` instances,
+    /// keyed by ``ViewIdentity``. Cleared on every `@State` change; entries
+    /// for removed views are garbage-collected at the end of each render pass.
+    let renderCache: RenderCache
+
     /// Creates a new TUI context with fresh instances of all services.
     init() {
         self.lifecycle = LifecycleManager()
         self.keyEventDispatcher = KeyEventDispatcher()
         self.preferences = PreferenceStorage()
         self.stateStorage = StateStorage()
+        self.renderCache = RenderCache()
     }
 
     /// Creates a new TUI context with the given services.
@@ -229,12 +237,14 @@ final class TUIContext: @unchecked Sendable {
         lifecycle: LifecycleManager,
         keyEventDispatcher: KeyEventDispatcher,
         preferences: PreferenceStorage,
-        stateStorage: StateStorage = StateStorage()
+        stateStorage: StateStorage = StateStorage(),
+        renderCache: RenderCache = RenderCache()
     ) {
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
         self.stateStorage = stateStorage
+        self.renderCache = renderCache
     }
 
 }
@@ -248,5 +258,6 @@ extension TUIContext {
         keyEventDispatcher.clearHandlers()
         preferences.reset()
         stateStorage.reset()
+        renderCache.reset()
     }
 }
