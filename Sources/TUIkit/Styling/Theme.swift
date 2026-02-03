@@ -23,7 +23,7 @@ import Foundation
 ///
 /// ```swift
 /// // Set the app palette
-/// paletteManager.setCurrent(AmberPalette())
+/// paletteManager.setCurrent(SystemPalette(.amber))
 ///
 /// // Use palette colors in views
 /// Text("Hello").foregroundColor(.palette.foreground)
@@ -165,7 +165,7 @@ extension Palette {
 
 /// Environment key for the current palette.
 private struct PaletteKey: EnvironmentKey {
-    static let defaultValue: any Palette = GreenPalette()
+    static let defaultValue: any Palette = SystemPalette(.green)
 }
 
 extension EnvironmentValues {
@@ -177,7 +177,7 @@ extension EnvironmentValues {
     /// WindowGroup {
     ///     ContentView()
     /// }
-     /// .environment(\.palette, GreenPalette())
+     /// .environment(\.palette, SystemPalette(.green))
     /// ```
     ///
     /// Access the palette in `renderToBuffer(context:)`:
@@ -196,17 +196,10 @@ extension EnvironmentValues {
 
 /// Registry of available palettes.
 struct PaletteRegistry {
-    /// All available palettes in cycling order.
+    /// All available palettes in cycling order, built from ``PalettePreset``.
     ///
     /// Order: Green → Amber → Red → Violet → Blue → White
-    static let all: [any Palette] = [
-        GreenPalette(),
-        AmberPalette(),
-        RedPalette(),
-        VioletPalette(),
-        BluePalette(),
-        WhitePalette(),
-    ]
+    static let all: [any Palette] = PalettePreset.allCases.map { SystemPalette($0) }
 
     /// Finds a palette by ID.
     static func palette(withId id: String) -> (any Palette)? {
@@ -232,7 +225,7 @@ extension EnvironmentValues {
     /// ```swift
     /// let paletteManager = context.environment.paletteManager
     /// paletteManager.cycleNext()
-    /// paletteManager.setCurrent(AmberPalette())
+    /// paletteManager.setCurrent(SystemPalette(.amber))
     /// ```
     public var paletteManager: ThemeManager {
         get { self[PaletteManagerKey.self] }

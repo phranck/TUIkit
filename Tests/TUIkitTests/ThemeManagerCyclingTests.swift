@@ -99,8 +99,8 @@ struct ThemeManagerCyclingTests {
     @Test("ThemeManager with palette items returns currentPalette")
     func paletteManagerReturnsPalette() {
         let palettes: [any Cyclable] = [
-            GreenPalette(),
-            AmberPalette(),
+            SystemPalette(.green),
+            SystemPalette(.amber),
         ]
         let manager = ThemeManager(items: palettes)
         #expect(manager.currentPalette != nil)

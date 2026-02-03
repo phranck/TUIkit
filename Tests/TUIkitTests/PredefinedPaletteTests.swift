@@ -31,7 +31,7 @@ struct GreenPaletteTests {
 
     @Test("Green palette block surfaces get progressively brighter")
     func greenBlockSurfaceLuminanceOrder() throws {
-        let palette = GreenPalette()
+        let palette = SystemPalette(.green)
         let bgLum = try #require(relativeLuminance(of: palette.background))
         let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
         let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
@@ -44,7 +44,7 @@ struct GreenPaletteTests {
 
     @Test("Green palette foregrounds get progressively dimmer")
     func greenForegroundLuminanceOrder() throws {
-        let palette = GreenPalette()
+        let palette = SystemPalette(.green)
         let fgLum = try #require(relativeLuminance(of: palette.foreground))
         let fgSecLum = try #require(relativeLuminance(of: palette.foregroundSecondary))
         let fgTerLum = try #require(relativeLuminance(of: palette.foregroundTertiary))
@@ -55,8 +55,6 @@ struct GreenPaletteTests {
 
 }
 
-
-
 // MARK: - Violet Palette Tests
 
 @Suite("Violet Palette Tests")
@@ -64,7 +62,7 @@ struct VioletPaletteTests {
 
     @Test("Violet palette block surfaces get progressively brighter")
     func violetBlockSurfaceLuminanceOrder() throws {
-        let palette = VioletPalette()
+        let palette = SystemPalette(.violet)
         let bgLum = try #require(relativeLuminance(of: palette.background))
         let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
         let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
@@ -84,7 +82,7 @@ struct BluePaletteTests {
 
     @Test("Blue palette block surfaces get progressively brighter")
     func blueBlockSurfaceLuminanceOrder() throws {
-        let palette = BluePalette()
+        let palette = SystemPalette(.blue)
         let bgLum = try #require(relativeLuminance(of: palette.background))
         let headerLum = try #require(relativeLuminance(of: palette.surfaceHeaderBackground))
         let surfaceLum = try #require(relativeLuminance(of: palette.surfaceBackground))
