@@ -12,16 +12,14 @@ import Foundation
 /// Defines the visual style of a button.
 public struct ButtonStyle: Sendable {
     /// The foreground color for the label.
+    ///
+    /// Uses a semantic color reference so the actual value is resolved
+    /// at render time from the active palette. Set to `nil` to use the
+    /// palette's accent color.
     public var foregroundColor: Color?
 
-    /// The background color.
+    /// The background color (used in block appearance).
     public var backgroundColor: Color?
-
-    /// The border style.
-    public var borderStyle: BorderStyle?
-
-    /// The border color.
-    public var borderColor: Color?
 
     /// Whether the label is bold.
     public var isBold: Bool
@@ -34,53 +32,42 @@ public struct ButtonStyle: Sendable {
     /// - Parameters:
     ///   - foregroundColor: The label color (default: theme accent).
     ///   - backgroundColor: The background color.
-    ///   - borderStyle: The border style (default: appearance borderStyle).
-    ///   - borderColor: The border color (default: theme border).
     ///   - isBold: Whether the label is bold.
     ///   - horizontalPadding: Horizontal padding inside the button.
     public init(
         foregroundColor: Color? = nil,
         backgroundColor: Color? = nil,
-        borderStyle: BorderStyle? = nil,
-        borderColor: Color? = nil,
         isBold: Bool = false,
-        horizontalPadding: Int = 2
+        horizontalPadding: Int = 1
     ) {
         self.foregroundColor = foregroundColor
         self.backgroundColor = backgroundColor
-        self.borderStyle = borderStyle
-        self.borderColor = borderColor
         self.isBold = isBold
         self.horizontalPadding = horizontalPadding
     }
 
     // MARK: - Preset Styles
 
-    /// Default button style with border.
+    /// Default button style — palette border/accent, not bold.
     public static let `default` = Self()
 
-    /// Primary button style (cyan, bold).
+    /// Primary button style — bold, uses palette accent.
     public static let primary = Self(
-        foregroundColor: .cyan,
-        borderColor: .cyan,
         isBold: true
     )
 
-    /// Destructive button style (red).
+    /// Destructive button style — uses palette error color.
     public static let destructive = Self(
-        foregroundColor: .red,
-        borderColor: .red
+        foregroundColor: .palette.error
     )
 
-    /// Success button style (green).
+    /// Success button style — uses palette success color.
     public static let success = Self(
-        foregroundColor: .green,
-        borderColor: .green
+        foregroundColor: .palette.success
     )
 
-    /// Plain button style (no border).
+    /// Plain button style — no brackets, no border, no padding.
     public static let plain = Self(
-        borderStyle: BorderStyle.none,
         horizontalPadding: 0
     )
 }
@@ -91,6 +78,16 @@ public struct ButtonStyle: Sendable {
 ///
 /// Buttons can receive focus and respond to keyboard input (Enter or Space).
 /// They display differently when focused to indicate the current selection.
+///
+/// ## Rendering
+///
+/// - **Standard appearances** (line, rounded, doubleLine, heavy):
+///   Rendered as single-line `[ Label ]` with bracket delimiters.
+///
+/// - **Block appearance**:
+///   Rendered as single-line with elevated background color, no brackets.
+///
+/// - **Plain style**: No brackets, no background — just the label text.
 ///
 /// # Basic Example
 ///
@@ -105,14 +102,6 @@ public struct ButtonStyle: Sendable {
 /// ```swift
 /// Button("Delete", style: .destructive) {
 ///     handleDelete()
-/// }
-/// ```
-///
-/// # Custom Focus ID
-///
-/// ```swift
-/// Button("OK", focusID: "okButton") {
-///     dismiss()
 /// }
 /// ```
 public struct Button: View {
@@ -139,7 +128,7 @@ public struct Button: View {
     /// - Parameters:
     ///   - label: The button's label text.
     ///   - style: The button style (default: `.default`).
-    ///   - focusedStyle: The style when focused (default: inverted colors).
+    ///   - focusedStyle: The style when focused (default: bold variant).
     ///   - focusID: The unique focus identifier (default: auto-generated).
     ///   - isDisabled: Whether the button is disabled (default: false).
     ///   - action: The action to perform when pressed.
@@ -157,15 +146,12 @@ public struct Button: View {
         self.focusID = focusID
         self.isDisabled = isDisabled
 
-        // Default focused style: use theme accent color, bold
-        // Note: Palette colors are resolved at render time via context.environment.palette
+        // Default focused style: bold version of the normal style
         self.focusedStyle =
             focusedStyle
             ?? ButtonStyle(
-                foregroundColor: nil,  // Will use theme.accent at render time
+                foregroundColor: style.foregroundColor,
                 backgroundColor: style.backgroundColor,
-                borderStyle: style.borderStyle,
-                borderColor: nil,  // Will use palette.accent at render time
                 isBold: true,
                 horizontalPadding: style.horizontalPadding
             )
@@ -223,129 +209,80 @@ extension Button: Renderable {
         // Determine if focused
         let isFocused = focusManager.isFocused(id: focusID)
         let currentStyle = isFocused ? focusedStyle : style
+        let palette = context.environment.palette
+        let isBlockAppearance = context.environment.appearance.rawId == .block
+        let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold
 
         // Build the label with padding
         let padding = String(repeating: " ", count: currentStyle.horizontalPadding)
         let paddedLabel = padding + label + padding
 
-        // Apply text styling
-        var textStyle = TextStyle()
-        let palette = context.environment.palette
+        // Resolve foreground color
+        let foregroundColor: Color
         if isDisabled {
-            textStyle.foregroundColor = palette.foregroundTertiary
+            foregroundColor = palette.foregroundTertiary
         } else {
-            // Use palette accent if no explicit color is set
-            textStyle.foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
+            foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
         }
-        textStyle.backgroundColor = currentStyle.backgroundColor?.resolve(with: palette)
+
+        // Build text style
+        var textStyle = TextStyle()
+        textStyle.foregroundColor = foregroundColor
         textStyle.isBold = currentStyle.isBold && !isDisabled
 
-        // In block appearance, add elevated background to button
-        let isBlockAppearance = context.environment.appearance.rawId == .block
-        if isBlockAppearance && textStyle.backgroundColor == nil {
-            textStyle.backgroundColor = context.environment.palette.blockElevatedBackground
-        }
-
-        let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
-
-        // Create content buffer
-        var buffer = FrameBuffer(lines: [styledLabel])
-
-        // Apply border if specified
-        // Note: ButtonStyle.plain explicitly sets borderStyle to .none for no border
-        if let borderStyle = currentStyle.borderStyle {
-            // Skip if it's the "none" style (invisible border)
-            if borderStyle != .none {
-                let borderColor: Color
-                if isDisabled {
-                    borderColor = palette.foregroundTertiary
-                } else {
-                    borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
-                }
-                buffer = applyBorder(
-                    to: buffer,
-                    style: borderStyle,
-                    color: borderColor,
-                    context: context
-                )
-            }
+        // Determine rendering mode
+        if isPlainStyle {
+            // Plain: just the label, no decoration
+            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
+            return FrameBuffer(lines: [styledLabel])
+        } else if isBlockAppearance {
+            // Block: elevated background, no brackets
+            textStyle.backgroundColor = currentStyle.backgroundColor?.resolve(with: palette)
+                ?? palette.blockElevatedBackground
+            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
+            return FrameBuffer(lines: [styledLabel])
         } else {
-            // nil means use appearance default, but skip border for block appearance
-            if !isBlockAppearance {
-                let effectiveBorderStyle = context.environment.appearance.borderStyle
-                let borderColor: Color
-                if isDisabled {
-                    borderColor = palette.foregroundTertiary
-                } else {
-                    borderColor = currentStyle.borderColor?.resolve(with: palette) ?? palette.border
-                }
-                buffer = applyBorder(
-                    to: buffer,
-                    style: effectiveBorderStyle,
-                    color: borderColor,
-                    context: context
-                )
+            // Standard appearances: single-line brackets [ Label ]
+            let bracketColor: Color
+            if isDisabled {
+                bracketColor = palette.foregroundTertiary
+            } else {
+                bracketColor = palette.border
             }
+
+            let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor)
+            let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor)
+            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
+
+            let line = openBracket + styledLabel + closeBracket
+
+            var buffer = FrameBuffer(lines: [line])
+
+            // Add focus indicator if focused (but not for bold/primary buttons)
+            if isFocused && !isDisabled && !currentStyle.isBold {
+                buffer = addFocusIndicator(to: buffer, palette: palette)
+            }
+
+            return buffer
         }
-
-        // Add focus indicator if focused (but not for primary/bold buttons)
-        if isFocused && !isDisabled && !currentStyle.isBold {
-            buffer = addFocusIndicator(to: buffer, palette: palette)
-        }
-
-        return buffer
-    }
-
-    /// Applies a border to the buffer.
-    private func applyBorder(to buffer: FrameBuffer, style: BorderStyle, color: Color, context: RenderContext) -> FrameBuffer {
-        guard !buffer.isEmpty else { return buffer }
-
-        let innerWidth = buffer.width
-        var result: [String] = []
-
-        result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: color))
-        for line in buffer.lines {
-            result.append(
-                BorderRenderer.standardContentLine(
-                    content: line,
-                    innerWidth: innerWidth,
-                    style: style,
-                    color: color
-                )
-            )
-        }
-        result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: color))
-
-        return FrameBuffer(lines: result)
     }
 
     /// Adds a focus indicator (▸) to the left of the button.
     private func addFocusIndicator(to buffer: FrameBuffer, palette: any Palette) -> FrameBuffer {
         guard buffer.height > 0 else { return buffer }
 
-        var lines = buffer.lines
-
-        // Add indicator on the middle line (or first line if single line)
-        let middleIndex = buffer.height / 2
         let indicator = ANSIRenderer.render(
             "▸ ",
             with: {
-                var style = TextStyle()
-                style.foregroundColor = palette.accent
-                style.isBold = true
-                return style
+                var indicatorStyle = TextStyle()
+                indicatorStyle.foregroundColor = palette.accent
+                indicatorStyle.isBold = true
+                return indicatorStyle
             }()
         )
 
-        // Prepend indicator to the middle line, pad other lines
-        for index in 0..<lines.count {
-            if index == middleIndex {
-                lines[index] = indicator + lines[index]
-            } else {
-                lines[index] = "  " + lines[index]
-            }
-        }
-
+        var lines = buffer.lines
+        lines[0] = indicator + lines[0]
         return FrameBuffer(lines: lines)
     }
 }
@@ -368,5 +305,3 @@ extension Button {
         )
     }
 }
-
-
