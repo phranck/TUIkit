@@ -103,9 +103,11 @@ internal final class RenderLoop<A: App> {
         self.appearanceManager = appearanceManager
         self.tuiContext = tuiContext
     }
+}
 
-    // MARK: - Rendering
+// MARK: - Internal API
 
+extension RenderLoop {
     /// Performs a full render pass: scene content + status bar.
     ///
     /// See the class-level documentation for the complete pipeline steps.
@@ -246,12 +248,7 @@ internal final class RenderLoop<A: App> {
         diffWriter.invalidate()
     }
 
-    // MARK: - Environment Assembly
-
     /// Builds a complete ``EnvironmentValues`` with all managed subsystems.
-    ///
-    /// Called once per render pass for the scene, and again for the status bar
-    /// (which needs its own render context with different available height).
     ///
     /// - Returns: A fully populated environment.
     func buildEnvironment() -> EnvironmentValues {
@@ -269,14 +266,13 @@ internal final class RenderLoop<A: App> {
         }
         return environment
     }
+}
 
-    // MARK: - Private Helpers
+// MARK: - Private Helpers
 
+private extension RenderLoop {
     /// Renders a scene by delegating to ``SceneRenderable``.
-    ///
-    /// - Returns: The rendered ``FrameBuffer``, or an empty buffer if the
-    ///   scene does not conform to ``SceneRenderable``.
-    private func renderScene<S: Scene>(_ scene: S, context: RenderContext) -> FrameBuffer {
+    func renderScene<S: Scene>(_ scene: S, context: RenderContext) -> FrameBuffer {
         if let renderable = scene as? SceneRenderable {
             return renderable.renderScene(context: context)
         }
@@ -284,23 +280,7 @@ internal final class RenderLoop<A: App> {
     }
 
     /// Renders the app header at the specified terminal row.
-    ///
-    /// The app header gets its own render context. Its content buffer was
-    /// already populated by ``AppHeaderModifier`` during the main content
-    /// render pass. This method wraps it in an ``AppHeader`` view for
-    /// appearance-aware rendering (standard vs block).
-    ///
-    /// - Parameters:
-    ///   - row: The 1-based terminal row where the header starts.
-    ///   - terminalWidth: The current terminal width.
-    ///   - bgCode: The ANSI background color code.
-    ///   - reset: The ANSI reset code.
-    private func renderAppHeader(
-        atRow row: Int,
-        terminalWidth: Int,
-        bgCode: String,
-        reset: String
-    ) {
+    func renderAppHeader(atRow row: Int, terminalWidth: Int, bgCode: String, reset: String) {
         guard let contentBuffer = appHeader.contentBuffer else { return }
 
         let environment = buildEnvironment()
@@ -322,35 +302,14 @@ internal final class RenderLoop<A: App> {
             bgCode: bgCode,
             reset: reset
         )
-        diffWriter.writeAppHeaderDiff(
-            newLines: outputLines,
-            terminal: terminal,
-            startRow: row
-        )
+        diffWriter.writeAppHeaderDiff(newLines: outputLines, terminal: terminal, startRow: row)
     }
 
     /// Renders the status bar at the specified terminal row.
-    ///
-    /// The status bar gets its own render context because its available
-    /// height differs from the main content area. Output is diffed
-    /// independently from the main content via ``FrameDiffWriter``.
-    ///
-    /// - Parameters:
-    ///   - row: The 1-based terminal row where the status bar starts.
-    ///   - terminalWidth: The current terminal width.
-    ///   - bgCode: The ANSI background color code.
-    ///   - reset: The ANSI reset code.
-    private func renderStatusBar(
-        atRow row: Int,
-        terminalWidth: Int,
-        bgCode: String,
-        reset: String
-    ) {
-        // Build environment once for both palette resolution and render context
+    func renderStatusBar(atRow row: Int, terminalWidth: Int, bgCode: String, reset: String) {
         let environment = buildEnvironment()
         let palette = environment.palette
 
-        // Use palette colors for status bar (if not explicitly overridden)
         let highlightColor =
             statusBar.highlightColor == .cyan
             ? palette.accent
@@ -375,7 +334,6 @@ internal final class RenderLoop<A: App> {
 
         let buffer = renderToBuffer(statusBarView, context: context)
 
-        // Build terminal-ready output lines and write only changes
         let outputLines = diffWriter.buildOutputLines(
             buffer: buffer,
             terminalWidth: terminalWidth,
@@ -383,10 +341,6 @@ internal final class RenderLoop<A: App> {
             bgCode: bgCode,
             reset: reset
         )
-        diffWriter.writeStatusBarDiff(
-            newLines: outputLines,
-            terminal: terminal,
-            startRow: row
-        )
+        diffWriter.writeStatusBarDiff(newLines: outputLines, terminal: terminal, startRow: row)
     }
 }

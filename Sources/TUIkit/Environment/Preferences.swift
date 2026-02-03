@@ -79,7 +79,11 @@ public struct PreferenceValues: @unchecked Sendable {
             storage[ObjectIdentifier(key)] = newValue
         }
     }
+}
 
+// MARK: - Internal API
+
+extension PreferenceValues {
     /// Merges another set of preference values into this one.
     ///
     /// - Parameter other: The other preference values to merge.
@@ -114,7 +118,11 @@ final class PreferenceStorage: @unchecked Sendable {
             }
         }
     }
+}
 
+// MARK: - Internal API
+
+extension PreferenceStorage {
     /// Pushes a new preference context.
     func push() {
         stack.append(PreferenceValues())
