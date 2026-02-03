@@ -127,7 +127,6 @@ internal final class RenderLoop<A: App> {
         let environment = buildEnvironment()
 
         let context = RenderContext(
-            terminal: terminal,
             availableWidth: terminalWidth,
             availableHeight: contentHeight,
             environment: environment,
@@ -275,7 +274,6 @@ internal final class RenderLoop<A: App> {
         )
 
         let context = RenderContext(
-            terminal: terminal,
             availableWidth: terminalWidth,
             availableHeight: statusBarView.height,
             environment: environment,
