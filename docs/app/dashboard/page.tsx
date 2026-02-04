@@ -39,10 +39,10 @@ export default function DashboardPage() {
         Skip to main content
       </a>
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex min-h-screen flex-col">
         <SiteNav activePage="dashboard" />
 
-        <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-6 pt-28 pb-20">
+        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-6 pt-28 pb-20">
           {/* Header with refresh */}
           <div className="mb-10 flex items-center justify-between">
             <div>
