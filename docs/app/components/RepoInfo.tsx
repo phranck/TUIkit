@@ -1,6 +1,6 @@
 "use client";
 
-import Icon from "./Icon";
+import IconBadge from "./IconBadge";
 
 interface RepoInfoProps {
   createdAt: string;
@@ -82,7 +82,7 @@ export default function RepoInfo({
     return (
       <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
         <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="serverRack" size={22} className="text-muted" />
+          <IconBadge name="serverRack" size={22} variant="md" className="!bg-transparent" />
           Repository
         </h3>
         <div className="flex flex-col gap-2">
@@ -97,7 +97,7 @@ export default function RepoInfo({
   return (
     <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
       <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-        <Icon name="serverRack" size={22} className="text-muted" />
+        <IconBadge name="serverRack" size={22} variant="md" className="!bg-transparent" />
         Repository
       </h3>
       <div className="flex flex-col">
