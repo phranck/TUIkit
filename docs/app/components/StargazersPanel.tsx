@@ -29,7 +29,7 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
   const contentRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const { hover, popover, show: showPopover, hide: hidePopover } = useHoverPopover<string>();
+  const { hover, popover, show: showPopover, hide: hidePopover, cancelHide } = useHoverPopover<Stargazer>();
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -52,7 +52,7 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
     }
   }, [open]);
 
-  function handleMouseEnter(event: React.MouseEvent<HTMLAnchorElement>, login: string) {
+  function handleMouseEnter(event: React.MouseEvent<HTMLAnchorElement>, user: Stargazer) {
     const target = event.currentTarget;
     const grid = gridRef.current;
     if (!grid) return;
@@ -61,7 +61,7 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
     const targetRect = target.getBoundingClientRect();
 
     showPopover(
-      login,
+      user,
       targetRect.left - gridRect.left + targetRect.width / 2,
       targetRect.top - gridRect.top,
     );
@@ -70,8 +70,8 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
   return (
     <div
       ref={wrapperRef}
-      className="overflow-hidden transition-[height,opacity] duration-300 ease-in-out"
-      style={{ height: 0, opacity: open ? 1 : 0 }}
+      className="transition-[height,opacity] duration-300 ease-in-out"
+      style={{ height: 0, opacity: open ? 1 : 0, overflow: open ? "visible" : "hidden" }}
     >
       <div ref={contentRef} className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
         <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -94,8 +94,8 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
                   href={user.profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex aspect-square items-center justify-center rounded-2xl p-4 transition-colors hover:bg-accent/10"
-                  onMouseEnter={(event) => handleMouseEnter(event, user.login)}
+                  className="group flex aspect-square items-center justify-center rounded-2xl p-4 transition-all duration-200 ease-out hover:bg-accent/10"
+                  onMouseEnter={(event) => handleMouseEnter(event, user)}
                   onMouseLeave={hidePopover}
                 >
                   <img
@@ -103,7 +103,7 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
                     alt={user.login}
                     width={100}
                     height={100}
-                    className="avatar-tinted rounded-full ring-1 ring-border transition-all duration-300 group-hover:ring-accent/50 group-hover:scale-110"
+                    className="avatar-tinted rounded-full ring-1 ring-border transition-all duration-200 ease-out group-hover:ring-2 group-hover:ring-accent/60 group-hover:scale-110 group-hover:-translate-y-1"
                     loading={index < EAGER_AVATAR_COUNT ? "eager" : "lazy"}
                     fetchPriority={index < EAGER_AVATAR_COUNT ? "high" : "auto"}
                   />
@@ -115,10 +115,58 @@ export default function StargazersPanel({ stargazers, totalStars, open }: Starga
               visible={!!hover}
               x={popover?.x ?? 0}
               y={popover?.y ?? 0}
+              minWidth="140px"
+              onMouseEnter={cancelHide}
+              onMouseLeave={hidePopover}
             >
-              <p className="whitespace-nowrap text-center text-sm font-medium text-foreground">
-                {popover?.data}
-              </p>
+              <div className="flex flex-col items-center gap-1.5">
+                <p className="whitespace-nowrap text-center text-sm font-medium text-foreground">
+                  {popover?.data?.login}
+                </p>
+                {(popover?.data?.mastodon || popover?.data?.twitter || popover?.data?.bluesky) && (
+                  <div className="flex flex-col items-start gap-1">
+                    {popover?.data?.mastodon && (
+                      <a
+                        href={popover.data.mastodon.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pointer-events-auto flex items-center gap-1.5 text-muted hover:text-accent transition-colors text-xs"
+                        onClick={(e) => e.stopPropagation()}
+                        title={popover.data.mastodon.handle}
+                      >
+                        <Icon name="mastodon" size={14} />
+                        <span>Mastodon</span>
+                      </a>
+                    )}
+                    {popover?.data?.bluesky && (
+                      <a
+                        href={popover.data.bluesky.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pointer-events-auto flex items-center gap-1.5 text-muted hover:text-accent transition-colors text-xs"
+                        onClick={(e) => e.stopPropagation()}
+                        title={popover.data.bluesky.handle}
+                      >
+                        <Icon name="bluesky" size={14} />
+                        <span>Bluesky</span>
+                      </a>
+                    )}
+                    {popover?.data?.twitter && (
+                      <a
+                        href={popover.data.twitter.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pointer-events-auto flex items-center gap-1.5 text-muted hover:text-accent transition-colors text-xs"
+                        onClick={(e) => e.stopPropagation()}
+                        title={popover.data.twitter.handle}
+                      >
+                        <Icon name="twitter" size={14} />
+                        <span>Twitter</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
             </HoverPopover>
           </div>
         )}
