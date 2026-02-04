@@ -15,6 +15,10 @@ interface HoverPopoverProps {
   minWidth?: string;
   /** Content rendered inside the popover bubble. */
   children: ReactNode;
+  /** Called when mouse enters the popover (to cancel hide). */
+  onMouseEnter?: () => void;
+  /** Called when mouse leaves the popover. */
+  onMouseLeave?: () => void;
 }
 
 /**
@@ -23,24 +27,49 @@ interface HoverPopoverProps {
  * Must be placed inside a `position: relative` container.
  * Centers horizontally on `x` and positions above `y` by default.
  */
-export default function HoverPopover({ visible, x, y, offsetY = -10, minWidth, children }: HoverPopoverProps) {
+export default function HoverPopover({
+  visible,
+  x,
+  y,
+  offsetY = -10,
+  minWidth,
+  children,
+  onMouseEnter,
+  onMouseLeave,
+}: HoverPopoverProps) {
   return (
     <div
-      className="pointer-events-none absolute z-20 rounded-lg border border-border px-4 py-2 shadow-lg shadow-black/30 transition-opacity duration-150"
+      className="absolute z-20"
       style={{
         left: x,
         top: y + offsetY,
         transform: "translateX(-50%) translateY(-100%)",
-        minWidth,
-        backgroundColor: "var(--container-body)",
-        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? "auto" : "none",
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {children}
+      {/* Invisible bridge area to help mouse travel from avatar to popover */}
       <div
-        className="absolute left-1/2 -bottom-[7px] h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-border"
-        style={{ backgroundColor: "var(--container-body)" }}
+        className="absolute left-1/2 -translate-x-1/2 w-16"
+        style={{ height: Math.abs(offsetY) + 20, bottom: -Math.abs(offsetY) - 10 }}
       />
+      <div
+        className="rounded-lg border border-border px-4 py-2 shadow-lg shadow-black/30"
+        style={{
+          minWidth,
+          backgroundColor: "var(--container-body)",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(15%)",
+          transition: "opacity 200ms ease-out, transform 200ms ease-out",
+        }}
+      >
+        {children}
+        <div
+          className="absolute left-1/2 -bottom-[7px] h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-border"
+          style={{ backgroundColor: "var(--container-body)" }}
+        />
+      </div>
     </div>
   );
 }
