@@ -28,6 +28,48 @@ export interface Stargazer {
   login: string;
   avatarUrl: string;
   profileUrl: string;
+  mastodon?: {
+    handle: string;
+    url: string;
+  };
+  twitter?: {
+    handle: string;
+    url: string;
+  };
+  bluesky?: {
+    handle: string;
+    url: string;
+  };
+}
+
+/** Social account cache entry from the pre-generated JSON. */
+interface SocialCacheEntry {
+  login: string;
+  mastodon?: {
+    handle: string;
+    url: string;
+    source: string;
+    verified: boolean;
+  };
+  twitter?: {
+    handle: string;
+    url: string;
+    source: string;
+    verified: boolean;
+  };
+  bluesky?: {
+    handle: string;
+    url: string;
+    source: string;
+    verified: boolean;
+  };
+  updatedAt: string;
+}
+
+/** Structure of the social-cache.json file. */
+interface SocialCache {
+  generatedAt: string | null;
+  entries: Record<string, SocialCacheEntry>;
 }
 
 /** Weekly commit activity (52 weeks). */
@@ -299,6 +341,17 @@ export function useGitHubStats(): UseGitHubStatsReturn {
           /* search API can be rate-limited separately */
         }
 
+        // Fetch social cache to merge with stargazers
+        let socialCache: SocialCache = { generatedAt: null, entries: {} };
+        try {
+          const cacheResponse = await fetch("/social-cache.json", { signal });
+          if (cacheResponse.ok) {
+            socialCache = await cacheResponse.json();
+          }
+        } catch {
+          /* Cache not available, continue without social info */
+        }
+
         const repo = repoResult.data;
 
         const recentCommits: CommitEntry[] = commitsResult.data.map((commit) => {
@@ -338,11 +391,23 @@ export function useGitHubStats(): UseGitHubStatsReturn {
           weeklyActivity: Array.isArray(activityResult.data)
             ? activityResult.data
             : [],
-          stargazers: stargazersResult.data.map((user) => ({
-            login: user.login,
-            avatarUrl: user.avatar_url,
-            profileUrl: user.html_url,
-          })),
+          stargazers: stargazersResult.data.map((user) => {
+            const cacheEntry = socialCache.entries[user.login];
+            return {
+              login: user.login,
+              avatarUrl: user.avatar_url,
+              profileUrl: user.html_url,
+              mastodon: cacheEntry?.mastodon
+                ? { handle: cacheEntry.mastodon.handle, url: cacheEntry.mastodon.url }
+                : undefined,
+              twitter: cacheEntry?.twitter
+                ? { handle: cacheEntry.twitter.handle, url: cacheEntry.twitter.url }
+                : undefined,
+              bluesky: cacheEntry?.bluesky
+                ? { handle: cacheEntry.bluesky.handle, url: cacheEntry.bluesky.url }
+                : undefined,
+            };
+          }),
           loading: false,
           error: null,
           rateLimit: {

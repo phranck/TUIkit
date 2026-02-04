@@ -1,0 +1,5 @@
+{
+  "$schema": "./social-overrides.schema.json",
+  "description": "Manual social account mappings for stargazers. These take priority over auto-detected accounts.",
+  "overrides": {}
+}

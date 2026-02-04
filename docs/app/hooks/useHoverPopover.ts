@@ -16,22 +16,54 @@ export interface PopoverState<T> {
  * popover can fade out in place instead of jumping to (0, 0).
  *
  * @returns `hover` (current state or null), `popover` (last known state for rendering),
- *          `show` (set new hover), `hide` (clear hover).
+ *          `show` (set new hover), `hide` (clear hover), `cancelHide` (cancel pending hide).
  */
-export function useHoverPopover<T>() {
+export function useHoverPopover<T>(showDelay = 300, hideDelay = 150) {
   const [hover, setHover] = useState<PopoverState<T> | null>(null);
   const lastRef = useRef<PopoverState<T> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (hover) lastRef.current = hover;
   }, [hover]);
 
-  const show = useCallback((data: T, x: number, y: number) => {
-    setHover({ data, x, y });
+  const cancelShow = useCallback(() => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
   }, []);
 
+  const cancelHide = useCallback(() => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  }, []);
+
+  const show = useCallback((data: T, x: number, y: number) => {
+    cancelHide();
+    cancelShow();
+    showTimeoutRef.current = setTimeout(() => {
+      setHover({ data, x, y });
+    }, showDelay);
+  }, [cancelHide, cancelShow, showDelay]);
+
   const hide = useCallback(() => {
-    setHover(null);
+    cancelShow();
+    cancelHide();
+    hideTimeoutRef.current = setTimeout(() => {
+      setHover(null);
+    }, hideDelay);
+  }, [cancelShow, cancelHide, hideDelay]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    };
   }, []);
 
   return {
@@ -41,5 +73,7 @@ export function useHoverPopover<T>() {
     popover: hover ?? lastRef.current,
     show,
     hide,
+    /** Cancel a pending hide (call when mouse enters popover). */
+    cancelHide,
   };
 }
