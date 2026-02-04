@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import type { IconName } from "./components/Icon";
 import CloudBackground from "./components/CloudBackground";
@@ -9,7 +8,8 @@ import FeatureCard from "./components/FeatureCard";
 import HeroTerminal from "./components/HeroTerminal";
 import Icon from "./components/Icon";
 import PackageBadge from "./components/PackageBadge";
-import ThemeSwitcher from "./components/ThemeSwitcher";
+import SiteNav from "./components/SiteNav";
+import SiteFooter from "./components/SiteFooter";
 
 /** Shared button class strings to avoid duplication across Hero and CTA sections. */
 const BTN_PRIMARY =
@@ -52,44 +52,7 @@ export default function Home() {
 
       {/* All page content above atmosphere layers */}
       <div className="relative z-10">
-        {/* Navigation */}
-        <nav aria-label="Main navigation" className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/tuikit-logo.png"
-                alt="TUIkit Logo"
-                width={32}
-                height={32}
-                className="rounded-lg"
-              />
-              <span className="text-2xl font-semibold text-foreground">
-                TUIkit
-              </span>
-            </div>
-            <div className="flex items-center gap-6">
-              <a
-                href="/documentation/tuikit"
-                className="flex items-center gap-1.5 text-lg text-muted transition-colors hover:text-foreground"
-              >
-                <Icon name="book" size={16} className="text-current" />
-                Documentation
-              </a>
-              <a
-                href="https://github.com/phranck/TUIkit"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-lg text-muted transition-colors hover:text-foreground"
-              >
-                <Icon name="code" size={16} className="text-current" />
-                GitHub
-              </a>
-              <div className="ml-2 border-l border-border pl-4">
-                <ThemeSwitcher />
-              </div>
-            </div>
-          </div>
-        </nav>
+        <SiteNav activePage="home" />
 
         {/* Main content */}
         <main id="main-content" tabIndex={-1}>
@@ -240,28 +203,7 @@ export default function Home() {
           </section>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-border bg-container-body/30 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-0.5 px-6 py-8 text-center">
-            <span className="text-base text-muted">
-              Made with ❤️ in Bregenz
-            </span>
-            <span className="text-base text-muted">
-              at Lake Constance
-            </span>
-            <span className="text-base text-muted">
-              Austria
-            </span>
-            <a
-              href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 text-xs text-muted/70 transition-colors hover:text-foreground"
-            >
-              CC BY-NC-SA 4.0
-            </a>
-          </div>
-        </footer>
+        <SiteFooter />
       </div>
     </div>
   );
