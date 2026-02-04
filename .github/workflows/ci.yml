@@ -144,6 +144,7 @@ jobs:
         working-directory: docs
         env:
           TUIKIT_VERSION: ${{ steps.version.outputs.version }}
+          NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.DASHBOARD_GITHUB_TOKEN }}
         run: |
           npm ci
           npm run build

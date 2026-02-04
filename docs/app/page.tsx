@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { IconName } from "./components/Icon";
+import IconBadge from "./components/IconBadge";
 import CloudBackground from "./components/CloudBackground";
 import RainOverlay from "./components/RainOverlay";
 import SpinnerLights from "./components/SpinnerLights";
@@ -24,9 +25,7 @@ const TEST_COUNT = process.env.TUIKIT_TEST_COUNT ?? "0";
 function ArchHighlight({ icon, title, children }: { icon: IconName; title: string; children: ReactNode }) {
   return (
     <div className="flex gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-        <Icon name={icon} size={24} />
-      </div>
+      <IconBadge name={icon} size={24} variant="sm" className="!bg-accent/10" />
       <div>
         <h3 className="mb-1 text-xl font-semibold text-foreground">{title}</h3>
         <p className="text-xl leading-relaxed text-muted">{children}</p>
@@ -122,32 +121,32 @@ export default function Home() {
 
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               <FeatureCard
-                icon={<Icon name="terminal" size={28} />}
+                icon="terminal"
                 title="Declarative Syntax"
                 description="Build UIs with VStack, HStack, Text, Button, and more — the same patterns you know from SwiftUI."
               />
               <FeatureCard
-                icon={<Icon name="paintbrush" size={28} />}
+                icon="paintbrush"
                 title="Theming System"
                 description="Multiple built-in phosphor themes with full RGB color support. Cycle at runtime or create custom palettes."
               />
               <FeatureCard
-                icon={<Icon name="keyboard" size={28} />}
+                icon="keyboard"
                 title="Keyboard-Driven"
                 description="Focus management, key event handlers, customizable status bar with shortcut display."
               />
               <FeatureCard
-                icon={<Icon name="stack" size={28} />}
+                icon="stack"
                 title="Rich Components"
                 description="Panel, Card, Dialog, Alert, Menu, Button, ForEach — container and interactive views out of the box."
               />
               <FeatureCard
-                icon={<Icon name="bolt" size={28} />}
+                icon="bolt"
                 title="Zero Dependencies"
                 description="Pure Swift. No ncurses, no C libraries. Just add the Swift package and go."
               />
               <FeatureCard
-                icon={<Icon name="arrows" size={28} />}
+                icon="arrows"
                 title="Cross-Platform"
                 description="Runs on macOS and Linux. Same code, same API, same results."
               />
