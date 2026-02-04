@@ -16,6 +16,8 @@ interface StatCardProps {
   onClick?: () => void;
   /** Whether this card is currently in active/expanded state. */
   active?: boolean;
+  /** Optional ID for targeting (e.g., for arrow positioning). */
+  id?: string;
 }
 
 /**
@@ -24,7 +26,7 @@ interface StatCardProps {
  * When `onClick` is provided, renders as a `<button>` with native keyboard
  * and focus support. Otherwise renders as a static `<div>`.
  */
-export default function StatCard({ label, value, icon, loading = false, onClick, active = false }: StatCardProps) {
+export default function StatCard({ label, value, icon, loading = false, onClick, active = false, id }: StatCardProps) {
   const interactive = !!onClick;
 
   const baseClasses = "flex w-full items-center justify-between rounded-xl border p-5 backdrop-blur-xl transition-all duration-300";
@@ -58,11 +60,11 @@ export default function StatCard({ label, value, icon, loading = false, onClick,
 
   if (interactive) {
     return (
-      <button type="button" onClick={onClick} className={className}>
+      <button type="button" id={id} onClick={onClick} className={className}>
         {content}
       </button>
     );
   }
 
-  return <div className={className}>{content}</div>;
+  return <div id={id} className={className}>{content}</div>;
 }

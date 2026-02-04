@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useGitHubStats } from "../hooks/useGitHubStats";
 import CloudBackground from "../components/CloudBackground";
 import RainOverlay from "../components/RainOverlay";
@@ -24,6 +24,9 @@ import RepoInfo from "../components/RepoInfo";
 export default function DashboardPage() {
   const { refresh, ...stats } = useGitHubStats();
   const [showStargazers, setShowStargazers] = useState(false);
+
+  const toggleStargazers = useCallback(() => setShowStargazers((prev) => !prev), []);
+  const closeStargazers = useCallback(() => setShowStargazers(false), []);
 
   return (
     <div className="relative min-h-screen">
@@ -54,7 +57,7 @@ export default function DashboardPage() {
             <button
               onClick={refresh}
               disabled={stats.loading}
-              className="flex items-center gap-2 rounded-full border border-border px-5 py-2 text-base font-medium text-foreground transition-all hover:border-accent/40 hover:bg-white/5 disabled:opacity-50"
+              className="flex cursor-pointer items-center gap-2 rounded-full border border-border px-5 py-2 text-base font-medium text-foreground transition-all hover:border-accent/40 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Refresh data"
             >
               <span className={stats.loading ? "animate-spin-slow" : ""}>
@@ -75,24 +78,29 @@ export default function DashboardPage() {
           )}
 
           {/* Stat cards — row 1 */}
-          <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard label="Commits" value={stats.totalCommits} icon="numberCircle" loading={stats.loading} />
-            <StatCard label="Stars" value={stats.stars} icon="star" loading={stats.loading} onClick={() => setShowStargazers((prev) => !prev)} active={showStargazers} />
-            <StatCard label="Open PRs" value={stats.openPRs} icon="pullRequest" loading={stats.loading} />
-            <StatCard label="Merged PRs" value={stats.mergedPRs} icon="merge" loading={stats.loading} />
+          <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+            <StatCard id="stat-card-stars" label="Stars" value={stats.stars} icon="star" loading={stats.loading} onClick={toggleStargazers} active={showStargazers} />
+            <StatCard id="stat-card-contributors" label="Contributors" value={stats.contributors} icon="person2" loading={stats.loading} />
+            <StatCard label="Forks" value={stats.forks} icon="branch" loading={stats.loading} />
+            <StatCard label="Releases" value={stats.releases} icon="shippingbox" loading={stats.loading} />
           </div>
 
           {/* Stargazers panel — expands between the two rows */}
-          <div className="mb-5">
-            <StargazersPanel stargazers={stats.stargazers} totalStars={stats.stars} open={showStargazers} />
+          <div className={showStargazers ? "mb-4" : ""}>
+            <StargazersPanel
+              stargazers={stats.stargazers}
+              totalStars={stats.stars}
+              open={showStargazers}
+              onClose={closeStargazers}
+            />
           </div>
 
           {/* Stat cards — row 2 */}
           <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+            <StatCard label="Commits" value={stats.totalCommits} icon="numberCircle" loading={stats.loading} />
             <StatCard label="Branches" value={stats.branches} icon="branch" loading={stats.loading} />
-            <StatCard label="Tags" value={stats.tags} icon="tag" loading={stats.loading} />
-            <StatCard label="Contributors" value={stats.contributors} icon="person2" loading={stats.loading} />
-            <StatCard label="Releases" value={stats.releases} icon="shippingbox" loading={stats.loading} />
+            <StatCard label="Open PRs" value={stats.openPRs} icon="pullRequest" loading={stats.loading} />
+            <StatCard label="Merged PRs" value={stats.mergedPRs} icon="merge" loading={stats.loading} />
           </div>
 
           {/* Activity heatmap */}
