@@ -176,8 +176,6 @@ export default function AvatarMarquee<T>({
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-    
-    targetSpeedRef.current = 0; // Brake
 
     const target = event.currentTarget;
     const container = containerRef.current;
@@ -197,6 +195,9 @@ export default function AvatarMarquee<T>({
       return; // Don't show popover at extreme edges
     }
 
+    // Brake auto-scroll only when showing a popover for a visible avatar
+    targetSpeedRef.current = 0; // Brake
+
     setHover({
       item,
       x: relativeX,
@@ -204,7 +205,16 @@ export default function AvatarMarquee<T>({
     });
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = useCallback((event?: React.MouseEvent) => {
+    // If leaving to a child (popover), do nothing here — the popover handlers manage hide.
+    if (event) {
+      const related = event.relatedTarget as Node | null;
+      const popoverRoot = wrapperRef.current?.querySelector('.hover-popover-root') as Node | null;
+      if (related && popoverRoot && popoverRoot.contains(related)) {
+        return;
+      }
+    }
+
     // Delay hiding to allow mouse to reach popover
     hideTimeoutRef.current = setTimeout(() => {
       targetSpeedRef.current = 1; // Accelerate
