@@ -16,13 +16,6 @@ docs/.next/
 docs/out/
 
 # Claude Code
-.claude/
-.gource/
-.gource.conf
 img/
-plans/
-papers/
-to-dos.md
 logo-prompt.md
 session-*.md
-gource-swift.sh

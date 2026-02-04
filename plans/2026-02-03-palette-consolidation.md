@@ -1,0 +1,77 @@
+# Palette Consolidation — Replace 6 Palette Structs with SystemPalette.Preset Enum
+
+## Completed
+
+Completed on 2026-02-03. PR #70 merged.
+
+## Problem
+
+Six separate palette files (`GreenPalette`, `AmberPalette`, `RedPalette`, `VioletPalette`, `BluePalette`, `WhitePalette`) contain ~85% identical boilerplate:
+- Same 13 stored properties
+- Same init structure
+- Same `wrapHue()` helper (5 of 6 files)
+- Same convenience accessor pattern
+- Only actual difference: HSL tuning values per preset
+
+Total: ~545 LOC across 6 files. Estimated after: ~150 LOC in 1 file.
+
+## Solution
+
+### New: `SystemPalette.Preset` enum + `SystemPalette` struct
+
+```swift
+/// Built-in palette presets inspired by classic terminal phosphors.
+public enum SystemPalette.Preset: String, CaseIterable, Sendable {
+    case green, amber, red, violet, blue, white
+}
+```
+
+A single `SystemPalette: BlockPalette` struct that takes a `SystemPalette.Preset` and produces all colors from an internal `Tuning` struct containing the hand-tuned HSL parameters.
+
+### What stays the same
+
+- `Palette` protocol — unchanged
+- `BlockPalette` protocol — unchanged
+- `Cyclable` protocol — unchanged
+- `ThemeManager` — unchanged (works with `any Cyclable`)
+- `SemanticColor` — unchanged (resolves against `any Palette`)
+- Custom user palettes — still conform to `Palette` or `BlockPalette` directly
+
+### What changes
+
+1. **Delete**: 6 palette files in `Sources/TUIkit/Styling/Palettes/`
+2. **New**: `PalettePreset.swift` in `Sources/TUIkit/Styling/Palettes/` — enum + SystemPalette + tuning data
+3. **Update**: `PaletteRegistry` in `Theme.swift` — build from `SystemPalette.Preset.allCases`
+4. **Update**: `PaletteKey` default — use `SystemPalette(.green)`
+5. **Update**: Doc comments referencing `GreenPalette()` etc. → `SystemPalette(.green)`
+6. **Update**: Convenience accessors on `BlockPalette` — `.green`, `.amber`, `.default` etc.
+7. **Update**: Tests — replace concrete palette types with `SystemPalette(.xxx)`
+
+### Convenience API
+
+```swift
+// Before
+let palette = GreenPalette()
+paletteManager.setCurrent(AmberPalette())
+
+// After
+let palette = SystemPalette(.green)
+paletteManager.setCurrent(SystemPalette(.amber))
+
+// Convenience accessors still work
+BlockPalette.default  // → SystemPalette(.green)
+BlockPalette.amber    // → SystemPalette(.amber)
+```
+
+## Checklist
+
+- [x] Create feature branch `refactor/palette-consolidation`
+- [x] Implement `SystemPalette.Preset` enum and `SystemPalette` struct
+- [x] Update `PaletteRegistry` to use `SystemPalette.Preset.allCases`
+- [x] Update `PaletteKey` default value
+- [x] Migrate convenience accessors
+- [x] Update doc comments in Theme.swift, ThemeManager.swift, View+Environment.swift
+- [x] Delete 6 individual palette files
+- [x] Migrate tests (4 test files)
+- [x] `swift build` + `swiftlint` + `swift test`
+- [x] Create PR
