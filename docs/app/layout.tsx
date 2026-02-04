@@ -106,8 +106,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" />
         <script defer src="https://cloud.umami.is/script.js" data-website-id="4085eff5-2e56-4e3a-ba91-cf0828914169" />
-        {/* Preload power-on beep for instant playback on first click. */}
+        {/* Preload audio for instant playback on first click. */}
         <link rel="preload" href="/sounds/power-on.mp3" as="audio" />
+        <link rel="preload" href="/sounds/hard-drive-boot.m4a" as="audio" />
       </head>
       <body
         className={`${nunito.variable} ${geistMono.variable} antialiased`}
