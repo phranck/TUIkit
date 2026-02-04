@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(xargs basename:*)",
+      "Bash(git checkout:*)",
+      "Bash(swift package generate-documentation:*)",
+      "Bash(swift:*)",
+      "Bash(xcrun docc convert:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run docs:build:*)"
+    ]
+  }
+}
