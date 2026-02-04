@@ -14,6 +14,7 @@ DerivedData/
 docs/node_modules/
 docs/.next/
 docs/out/
+docs/.env.local
 
 # Claude Code
 img/
