@@ -8,6 +8,9 @@
 
 # TUIkit
 
+> [!IMPORTANT]
+> This project is currently a WORK IN PROGRESS! I strongly advise against using it in a production environment because APIs are subject to change at any time.
+
 A SwiftUI-like framework for building Terminal User Interfaces in Swift — no ncurses, no C dependencies, just pure Swift.
 
 ## What is this?
