@@ -1,7 +1,10 @@
-import type { ReactNode } from "react";
+"use client";
+
+import type { IconName } from "./Icon";
+import IconBadge from "./IconBadge";
 
 interface FeatureCardProps {
-  icon: ReactNode;
+  icon: IconName;
   title: string;
   description: string;
 }
@@ -17,9 +20,7 @@ export default function FeatureCard({
       className="group rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl transition-all duration-300 hover:border-accent/30"
     >
       <div className="mb-3 flex items-center gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent transition-colors group-hover:bg-accent/15">
-          {icon}
-        </div>
+        <IconBadge name={icon} size={28} variant="lg" />
         <h3 className="text-2xl font-semibold text-foreground">{title}</h3>
       </div>
       <p className="text-xl leading-relaxed text-muted">{description}</p>
