@@ -14,6 +14,21 @@ import {
   SFCheckmarkCircleFill,
   SFBookFill,
   SFChevronLeftForwardslashChevronRight,
+  SFChevronRight,
+  SFClockFill,
+  SFCalendar,
+  SFArrowClockwise,
+  SFChartBarFill,
+  SFNumberCircleFill,
+  SFStarFill,
+  SFArrowTriangleheadPull,
+  SFArrowTriangleheadMerge,
+  SFArrowTriangleheadBranch,
+  SFTagFill,
+  SFPerson2Fill,
+  SFShippingboxFill,
+  SFListBullet,
+  SFServerRack,
 } from "sf-symbols-lib/hierarchical";
 
 /** Maps of icon names to SF Symbol constants for type-safe usage. */
@@ -30,6 +45,21 @@ const sfIcons = {
   checkmark: SFCheckmarkCircleFill,
   book: SFBookFill,
   code: SFChevronLeftForwardslashChevronRight,
+  chevronRight: SFChevronRight,
+  clock: SFClockFill,
+  calendar: SFCalendar,
+  refresh: SFArrowClockwise,
+  chart: SFChartBarFill,
+  numberCircle: SFNumberCircleFill,
+  star: SFStarFill,
+  pullRequest: SFArrowTriangleheadPull,
+  merge: SFArrowTriangleheadMerge,
+  branch: SFArrowTriangleheadBranch,
+  tag: SFTagFill,
+  person2: SFPerson2Fill,
+  shippingbox: SFShippingboxFill,
+  listBullet: SFListBullet,
+  serverRack: SFServerRack,
 } as const;
 
 /** Custom SVG icons not available in SF Symbols. */

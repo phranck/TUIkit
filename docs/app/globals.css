@@ -13,6 +13,7 @@
 /* Theme: Green (default) */
 :root,
 [data-theme="green"] {
+  --avatar-hue: 70deg;
   --background: #060a07;
   --foreground: #33ff33;
   --accent: #66ff66;
@@ -30,6 +31,7 @@
 
 /* Theme: Amber */
 [data-theme="amber"] {
+  --avatar-hue: 10deg;
   --background: #0a0706;
   --foreground: #ffaa00;
   --accent: #ffcc33;
@@ -47,6 +49,7 @@
 
 /* Theme: Red */
 [data-theme="red"] {
+  --avatar-hue: -30deg;
   --background: #0a0606;
   --foreground: #ff4444;
   --accent: #ff6666;
@@ -64,6 +67,7 @@
 
 /* Theme: Violet */
 [data-theme="violet"] {
+  --avatar-hue: 210deg;
   --background: #08060a;
   --foreground: #bb77ff;
   --accent: #cc99ff;
@@ -81,6 +85,7 @@
 
 /* Theme: Blue (VFD) */
 [data-theme="blue"] {
+  --avatar-hue: 160deg;
   --background: #060708;
   --foreground: #00aaff;
   --accent: #33bbff;
@@ -372,6 +377,41 @@ code {
     opacity: 0;
     transform: scale(0.2);
   }
+}
+
+/* ── Avatar tint — monochrome in theme color, full color on hover ──── */
+
+img.avatar-tinted {
+  filter: grayscale(1) brightness(0.7) sepia(1) saturate(3) hue-rotate(var(--avatar-hue, 70deg));
+  transition: filter 0.3s ease;
+}
+
+[data-theme="white"] img.avatar-tinted {
+  filter: grayscale(1) brightness(0.8);
+}
+
+.group:hover img.avatar-tinted {
+  filter: none;
+}
+
+/* ── Dashboard Utilities ──────────────────────────────────────────────── */
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+
+@utility animate-skeleton {
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@utility animate-spin-slow {
+  animation: spin-slow 1.5s linear infinite;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────────── */
