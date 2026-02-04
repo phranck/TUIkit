@@ -97,7 +97,7 @@ function computeCellSize(containerWidth: number, colCount: number): number {
 export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(0);
-  const { hover, popover, show: showPopover, hide: hidePopover } = useHoverPopover<HeatmapHover>();
+  const { hover, popover, show: showPopover, hide: hidePopover, cancelHide } = useHoverPopover<HeatmapHover>();
 
   const colCount = weeks.length;
 
@@ -241,6 +241,8 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
             y={popover?.y ?? 0}
             offsetY={-11}
             minWidth="10rem"
+            onMouseEnter={cancelHide}
+            onMouseLeave={hidePopover}
           >
             <p className="whitespace-nowrap text-center text-sm font-medium text-foreground">{popover?.data.date}</p>
             <p className="whitespace-nowrap text-center text-sm text-muted">
