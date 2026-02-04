@@ -118,7 +118,7 @@ const initialStats: GitHubStats = {
 function ghHeaders(): Record<string, string> {
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
   const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-  if (token) {
+  if (token && token.length > 0) {
     headers.Authorization = `Bearer ${token}`;
   }
   return headers;
