@@ -70,6 +70,16 @@ export default function AvatarMarquee<T>({
   const speedRef = useRef(1);
   const targetSpeedRef = useRef(1);
   const animationRef = useRef<number | null>(null);
+  
+  // Drag/swipe state
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragScrollStartRef = useRef(0);
+  const hasDraggedRef = useRef(false); // Track if drag exceeded threshold (to prevent click)
+  const velocityRef = useRef(0); // Momentum velocity
+  const lastDragXRef = useRef(0);
+  const lastDragTimeRef = useRef(0);
+  const momentumRef = useRef<number | null>(null); // Momentum animation frame
 
   // Hover state for popover
   const [hover, setHover] = useState<HoverState<T> | null>(null);
@@ -215,6 +225,140 @@ export default function AvatarMarquee<T>({
     setHover(null);
   }, []);
 
+  // Momentum animation for iOS-like deceleration
+  const startMomentum = useCallback(() => {
+    if (momentumRef.current) {
+      cancelAnimationFrame(momentumRef.current);
+    }
+
+    const friction = 0.95; // Deceleration factor
+    const minVelocity = 0.5; // Stop when velocity is below this
+
+    const animateMomentum = () => {
+      velocityRef.current *= friction;
+
+      if (Math.abs(velocityRef.current) < minVelocity) {
+        velocityRef.current = 0;
+        momentumRef.current = null;
+        targetSpeedRef.current = 1; // Resume auto-scroll
+        return;
+      }
+
+      let newPos = scrollPosRef.current + velocityRef.current;
+      
+      // Wrap around for seamless loop
+      while (newPos < 0) newPos += singleSetWidth;
+      while (newPos >= singleSetWidth) newPos -= singleSetWidth;
+      
+      scrollPosRef.current = newPos;
+      
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateX(-${scrollPosRef.current}px)`;
+      }
+
+      momentumRef.current = requestAnimationFrame(animateMomentum);
+    };
+
+    momentumRef.current = requestAnimationFrame(animateMomentum);
+  }, [singleSetWidth]);
+
+  // Drag/swipe handlers
+  const handleDragStart = useCallback((clientX: number) => {
+    // Cancel any ongoing momentum
+    if (momentumRef.current) {
+      cancelAnimationFrame(momentumRef.current);
+      momentumRef.current = null;
+    }
+
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false;
+    dragStartXRef.current = clientX;
+    dragScrollStartRef.current = scrollPosRef.current;
+    lastDragXRef.current = clientX;
+    lastDragTimeRef.current = performance.now();
+    velocityRef.current = 0;
+    targetSpeedRef.current = 0; // Stop auto-scroll during drag
+  }, []);
+
+  const handleDragMove = useCallback((clientX: number) => {
+    if (!isDraggingRef.current) return;
+    
+    const deltaX = dragStartXRef.current - clientX;
+    
+    // Mark as dragged if moved more than 5px (prevents accidental drag on click)
+    if (Math.abs(deltaX) > 5) {
+      hasDraggedRef.current = true;
+    }
+    
+    // Calculate velocity for momentum
+    const now = performance.now();
+    const dt = now - lastDragTimeRef.current;
+    if (dt > 0) {
+      velocityRef.current = (lastDragXRef.current - clientX) / dt * 16; // Normalize to ~60fps
+    }
+    lastDragXRef.current = clientX;
+    lastDragTimeRef.current = now;
+    
+    let newPos = dragScrollStartRef.current + deltaX;
+    
+    // Wrap around for seamless loop
+    while (newPos < 0) newPos += singleSetWidth;
+    while (newPos >= singleSetWidth) newPos -= singleSetWidth;
+    
+    scrollPosRef.current = newPos;
+    
+    if (trackRef.current) {
+      trackRef.current.style.transform = `translateX(-${scrollPosRef.current}px)`;
+    }
+  }, [singleSetWidth]);
+
+  const handleDragEnd = useCallback(() => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    // Start momentum if velocity is significant
+    if (Math.abs(velocityRef.current) > 1) {
+      startMomentum();
+    } else {
+      targetSpeedRef.current = 1; // Resume auto-scroll
+    }
+  }, [startMomentum]);
+
+  // Prevent click if dragged
+  const handleLinkClick = useCallback((e: React.MouseEvent) => {
+    if (hasDraggedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, []);
+
+  // Mouse drag handlers
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    handleDragStart(e.clientX);
+  }, [handleDragStart]);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    handleDragMove(e.clientX);
+  }, [handleDragMove]);
+
+  const onMouseUp = useCallback(() => {
+    handleDragEnd();
+  }, [handleDragEnd]);
+
+  // Touch handlers
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientX);
+  }, [handleDragStart]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    handleDragMove(e.touches[0].clientX);
+  }, [handleDragMove]);
+
+  const onTouchEnd = useCallback(() => {
+    handleDragEnd();
+  }, [handleDragEnd]);
+
   if (items.length === 0) return null;
 
   return (
@@ -247,11 +391,18 @@ export default function AvatarMarquee<T>({
       {/* Marquee container with fade masks */}
       <div
         ref={containerRef}
-        className="relative overflow-visible py-4"
+        className="relative cursor-grab overflow-visible py-4 active:cursor-grabbing"
         style={{
           maskImage: FADE_GRADIENT,
           WebkitMaskImage: FADE_GRADIENT,
         }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {/* Scrolling track */}
         <div
@@ -266,6 +417,7 @@ export default function AvatarMarquee<T>({
               target="_blank"
               rel="noopener noreferrer"
               className="group flex-shrink-0"
+              onClick={handleLinkClick}
               onMouseEnter={(e) => handleMouseEnter(item, e)}
               onMouseLeave={handleMouseLeave}
             >
