@@ -25,23 +25,6 @@ export default function DashboardPage() {
   const { refresh, ...stats } = useGitHubStats();
   const [showStargazers, setShowStargazers] = useState(false);
 
-  // Preload stargazer avatar images in background so the panel opens instantly
-  useEffect(() => {
-    if (!stats.stargazers || stats.stargazers.length === 0) return;
-    const head = document.head || document.getElementsByTagName('head')[0];
-    const existing = new Set(Array.from(head.querySelectorAll('link[rel="preload"][as="image"]')).map((l) => (l as HTMLLinkElement).href));
-
-    stats.stargazers.slice(0, 100).forEach((s) => {
-      const url = s.avatarUrl + '&s=128';
-      if (existing.has(url)) return;
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = url;
-      head.appendChild(link);
-    });
-  }, [stats.stargazers]);
-
   const toggleStargazers = useCallback(() => setShowStargazers((prev) => !prev), []);
   const closeStargazers = useCallback(() => setShowStargazers(false), []);
 
