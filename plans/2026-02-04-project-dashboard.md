@@ -2,28 +2,28 @@
 
 ## Goal
 
-Eine `/dashboard`-Unterseite der Landing Page, die alle relevanten Projekt- und GitHub-Metriken live visualisiert. Gleicher Retro-Phosphor-Stil wie die Landing Page. Alle Daten client-side via GitHub REST API (public, kein Token nötig).
+A `/dashboard` subpage of the Landing Page that visualizes all relevant project and GitHub metrics live. Same retro phosphor style as the Landing Page. All data fetched client-side via GitHub REST API (public, no token required).
 
 ## Tech Stack
 
-- Next.js App Router (neue Route `app/dashboard/page.tsx`)
-- Tailwind CSS v4 (bestehende Theme-Variablen)
+- Next.js App Router (new route `app/dashboard/page.tsx`)
+- Tailwind CSS v4 (existing theme variables)
 - GitHub REST API (client-side fetch, 60 req/h unauthenticated)
-- Kein Chart-Library — custom SVG/CSS Visualisierungen (konsistent mit dem Retro-Stil)
+- No chart library — custom SVG/CSS visualizations (consistent with retro style)
 
 ## Data Strategy
 
-Alles client-side via `useGitHubStats()` Hook. Ein `useEffect` auf Mount feuert ~12 parallele API-Requests, cached im React State. Kein Build-time-Data, kein Token.
+All client-side via `useGitHubStats()` hook. A `useEffect` on mount fires ~12 parallel API requests, cached in React State. No build-time data, no token.
 
-### API-Endpunkte
+### API Endpoints
 
-| Endpunkt | Daten | Requests |
+| Endpoint | Data | Requests |
 |---|---|---|
 | `GET /repos/:owner/:repo` | Stars, Forks, Watchers, Size, License, Dates | 1 |
-| `GET /repos/:owner/:repo/commits?per_page=20` | Letzte 20 Commits (Message, Author, Date, SHA) | 1 |
+| `GET /repos/:owner/:repo/commits?per_page=20` | Last 20 Commits (Message, Author, Date, SHA) | 1 |
 | `GET /repos/:owner/:repo/commits?per_page=1` | Total Commit Count (via Link header) | 1 |
-| `GET /repos/:owner/:repo/languages` | Language Breakdown (Bytes pro Sprache) | 1 |
-| `GET /repos/:owner/:repo/stats/commit_activity` | Weekly Activity (52 Wochen, Tage aufgeschlüsselt) | 1 |
+| `GET /repos/:owner/:repo/languages` | Language Breakdown (Bytes per language) | 1 |
+| `GET /repos/:owner/:repo/stats/commit_activity` | Weekly Activity (52 weeks, days breakdown) | 1 |
 | `GET /repos/:owner/:repo/pulls?state=open&per_page=1` | Open PR Count (via Link header) | 1 |
 | `GET /repos/:owner/:repo/pulls?state=closed&per_page=1` | Closed PR Count | 1 |
 | `GET /repos/:owner/:repo/issues?state=closed&per_page=1` | Closed Issues Count | 1 |
@@ -33,17 +33,17 @@ Alles client-side via `useGitHubStats()` Hook. Ein `useEffect` auf Mount feuert 
 | `GET /repos/:owner/:repo/tags?per_page=1` | Tags Count | 1 |
 | `GET /search/issues?q=repo:...+is:pr+is:merged` | Merged PR Count | 1 |
 
-**Total: ~13 Requests pro Page Load** (unter dem 60/h Limit bei normalem Browsen).
+**Total: ~13 Requests per Page Load** (under the 60/h limit with normal browsing).
 
 ### Rate Limiting
 
-- Anzeige des verbleibenden Rate Limits im Footer
-- Graceful degradation: Bei 403 → Fehlermeldung statt Crash
-- Kein Auto-Refresh — nur bei Page Load + manuellem Refresh-Button
+- Display remaining rate limit in footer
+- Graceful degradation: On 403 → error message instead of crash
+- No auto-refresh — only on page load + manual refresh button
 
 ### Refresh
 
-Manueller Refresh-Button im Header (neben dem Titel). Zeigt Lade-Spinner während Fetch läuft. Kein Auto-Refresh — bei 13 req pro Fetch und 60 req/h Limit ist manuell die sicherste Option.
+Manual refresh button in header (next to the title). Shows loading spinner during fetch. No auto-refresh — with 13 req per fetch and 60 req/h limit, manual is the safest option.
 
 ## Layout
 
@@ -102,68 +102,68 @@ Manueller Refresh-Button im Header (neben dem Titel). Zeigt Lade-Spinner währen
 | File | Purpose |
 |---|---|
 | `app/dashboard/page.tsx` | Dashboard route + layout |
-| `app/hooks/useGitHubStats.ts` | GitHub API hook (alle Daten) |
-| `app/components/StatCard.tsx` | Einzelne Metrik-Karte (Zahl + Label + Icon) |
-| `app/components/ActivityHeatmap.tsx` | 52-Wochen Commit-Heatmap (GitHub-Style, aber Phosphor-Farben) |
-| `app/components/LanguageBar.tsx` | Horizontaler gestapelter Balken (Language Breakdown) |
-| `app/components/CommitList.tsx` | Letzte 20 Commits (SHA, Message, Author, relative Time) |
-| `app/components/RepoInfo.tsx` | Repo-Metadaten (Created, License, Size, Last Push) |
+| `app/hooks/useGitHubStats.ts` | GitHub API hook (all data) |
+| `app/components/StatCard.tsx` | Single metric card (number + label + icon) |
+| `app/components/ActivityHeatmap.tsx` | 52-week commit heatmap (GitHub-style, but phosphor colors) |
+| `app/components/LanguageBar.tsx` | Horizontal stacked bar (language breakdown) |
+| `app/components/CommitList.tsx` | Last 20 commits (SHA, message, author, relative time) |
+| `app/components/RepoInfo.tsx` | Repo metadata (Created, License, Size, Last Push) |
 
 ### Modified Files
 
 | File | Change |
 |---|---|
-| `app/page.tsx` | Nav: "Dashboard" Link hinzufügen |
+| `app/page.tsx` | Nav: Add "Dashboard" link |
 
 ## Visual Design
 
-- **Stat Cards**: `border-border bg-frosted-glass backdrop-blur-xl` (wie FeatureCard)
-- **Zahlen**: Große `text-4xl font-bold text-foreground` mit `text-glow` Utility
+- **Stat Cards**: `border-border bg-frosted-glass backdrop-blur-xl` (like FeatureCard)
+- **Numbers**: Large `text-4xl font-bold text-foreground` with `text-glow` utility
 - **Labels**: `text-muted text-lg`
-- **Heatmap**: CSS Grid 7×52, Zellen als `rounded-sm`, Intensität über `opacity` auf `bg-accent`
-- **Language Bar**: Horizontaler Balken, Segmente proportional, Farben: accent für Swift, muted für Rest
-- **Commit List**: Monospace SHA (`font-mono text-accent`), volle Commit Message (Title immer sichtbar, Body ausklappbar bei Multi-line), relative Time in `text-muted`
-- **Loading State**: Skeleton/Pulse-Animation auf allen Karten
-- **Error State**: Dezente Fehlermeldung mit Retry-Hint
+- **Heatmap**: CSS Grid 7×52, cells as `rounded-sm`, intensity via `opacity` on `bg-accent`
+- **Language Bar**: Horizontal bar, segments proportional, colors: accent for Swift, muted for rest
+- **Commit List**: Monospace SHA (`font-mono text-accent`), full commit message (title always visible, body expandable for multi-line), relative time in `text-muted`
+- **Loading State**: Skeleton/pulse animation on all cards
+- **Error State**: Subtle error message with retry hint
 
 ## Implementation Plan
 
 ### 1. GitHub API Hook
 
 - [ ] `useGitHubStats.ts` — Types, fetch logic, parallel requests, error handling
-- [ ] Rate limit tracking (remaining/limit aus Response Headers)
-- [ ] AbortController für cleanup bei unmount
-- [ ] `refresh()` Funktion im Hook-Return für manuellen Re-fetch
+- [ ] Rate limit tracking (remaining/limit from response headers)
+- [ ] AbortController for cleanup on unmount
+- [ ] `refresh()` function in hook return for manual re-fetch
 
 ### 2. Dashboard Components
 
-- [ ] `StatCard.tsx` — Icon + Zahl + Label, Loading-Skeleton
-- [ ] `ActivityHeatmap.tsx` — CSS Grid, 7 Rows × 52 Cols, Tooltip mit Datum/Count
-- [ ] `LanguageBar.tsx` — Stacked bar + Legend, Prozent-Berechnung
-- [ ] `CommitList.tsx` — SHA-Link, volle Message (Title + ausklappbarer Body), Author, relative Time Helper
-- [ ] `RepoInfo.tsx` — Metadaten-Grid (Created, License, Size, Last Push, Branch)
+- [ ] `StatCard.tsx` — Icon + number + label, loading skeleton
+- [ ] `ActivityHeatmap.tsx` — CSS Grid, 7 rows × 52 cols, tooltip with date/count
+- [ ] `LanguageBar.tsx` — Stacked bar + legend, percentage calculation
+- [ ] `CommitList.tsx` — SHA link, full message (title + expandable body), author, relative time helper
+- [ ] `RepoInfo.tsx` — Metadata grid (Created, License, Size, Last Push, Branch)
 
 ### 3. Dashboard Page
 
-- [ ] `app/dashboard/page.tsx` — Layout mit allen Components
-- [ ] Loading state (Skeleton)
-- [ ] Error state (Rate limit exceeded / Network error)
-- [ ] Rate limit Anzeige im Footer
+- [ ] `app/dashboard/page.tsx` — Layout with all components
+- [ ] Loading state (skeleton)
+- [ ] Error state (rate limit exceeded / network error)
+- [ ] Rate limit display in footer
 
 ### 4. Navigation
 
-- [ ] "Dashboard" Link in Nav (Landing Page + Dashboard)
-- [ ] Shared Nav Component extrahieren (optional, wenn sinnvoll)
+- [ ] "Dashboard" link in nav (Landing Page + Dashboard)
+- [ ] Extract shared nav component (optional, if useful)
 
 ### 5. Quality
 
 - [ ] `npm run build` (static export)
 - [ ] `npm run lint` (ESLint)
-- [ ] Responsive check (Mobile + Desktop)
-- [ ] Theme check (alle 6 Phosphor-Themes)
+- [ ] Responsive check (mobile + desktop)
+- [ ] Theme check (all 6 phosphor themes)
 
 ## Open Questions
 
-1. **Auto-Refresh?** Timer der alle 5 Minuten neu fetcht? Erstmal nein — nur bei Page Load. Kann später ergänzt werden.
-2. **Shared Nav?** Die Nav ist aktuell inline in `page.tsx`. Sollte als eigene Komponente extrahiert werden damit Dashboard die gleiche Nav hat. Aber: minimal-invasiv — könnte auch kopiert werden.
-3. **Chart Library?** Recharts, Chart.js? Nein — custom SVG/CSS passt besser zum Retro-Stil und vermeidet eine Dependency.
+1. **Auto-Refresh?** Timer that re-fetches every 5 minutes? For now no — only on page load. Can be added later.
+2. **Shared Nav?** The nav is currently inline in `page.tsx`. Should be extracted as its own component so Dashboard has the same nav. But: minimal-invasive — could also be copied.
+3. **Chart Library?** Recharts, Chart.js? No — custom SVG/CSS fits the retro style better and avoids a dependency.
