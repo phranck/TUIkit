@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { CommitEntry } from "../hooks/useGitHubStats";
 import Icon from "./Icon";
 
@@ -71,6 +72,13 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean; children:
   );
 }
 
+/** Animation variants for commit rows. */
+const rowVariants = {
+  initial: { opacity: 0, y: -20, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 20, scale: 0.98 },
+};
+
 /** A single commit row with date/time, title, disclosure chevron, and SHA. */
 function CommitRow({
   commit,
@@ -85,7 +93,20 @@ function CommitRow({
   const { date, time } = formatDateParts(commit.date);
 
   return (
-    <li className="py-2.5 first:pt-0 last:pb-0">
+    <motion.li
+      layout
+      variants={rowVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{
+        layout: { type: "spring", stiffness: 500, damping: 35 },
+        opacity: { duration: 0.2 },
+        y: { type: "spring", stiffness: 500, damping: 35 },
+        scale: { duration: 0.2 },
+      }}
+      className="py-2.5 first:pt-0 last:pb-0"
+    >
       <div className="flex items-center gap-3 min-w-0">
         {/* Date/time — left, stacked with icon */}
         <div className="shrink-0 flex items-start gap-1.5">
@@ -133,7 +154,7 @@ function CommitRow({
           </pre>
         </AnimatedCollapse>
       )}
-    </li>
+    </motion.li>
   );
 }
 
@@ -142,6 +163,9 @@ function CommitRow({
  *
  * Initially shows 8 commits. A chevron at the bottom toggles the remaining commits
  * with a smooth animation. All expand/collapse actions are animated.
+ *
+ * When new commits arrive (e.g. from auto-refresh), they smoothly slide in from
+ * the top while existing commits animate to their new positions.
  */
 export default function CommitList({ commits, loading = false }: CommitListProps) {
   const [expandedSha, setExpandedSha] = useState<Set<string>>(new Set());
@@ -229,30 +253,34 @@ export default function CommitList({ commits, loading = false }: CommitListProps
         )}
       </div>
 
-      {/* Always-visible commits */}
+      {/* Always-visible commits with enter/exit/reorder animations */}
       <ul className="flex flex-col divide-y divide-border/30">
-        {initialCommits.map((commit) => (
-          <CommitRow
-            key={commit.sha}
-            commit={commit}
-            isBodyExpanded={expandedSha.has(commit.sha)}
-            onToggleBody={() => toggleExpanded(commit.sha)}
-          />
-        ))}
+        <AnimatePresence initial={false} mode="popLayout">
+          {initialCommits.map((commit) => (
+            <CommitRow
+              key={commit.sha}
+              commit={commit}
+              isBodyExpanded={expandedSha.has(commit.sha)}
+              onToggleBody={() => toggleExpanded(commit.sha)}
+            />
+          ))}
+        </AnimatePresence>
       </ul>
 
       {/* Animated extra commits */}
       {hasMore && (
         <AnimatedCollapse expanded={showAll}>
           <ul className="flex flex-col divide-y divide-border/30 border-t border-border/30">
-            {extraCommits.map((commit) => (
-              <CommitRow
-                key={commit.sha}
-                commit={commit}
-                isBodyExpanded={expandedSha.has(commit.sha)}
-                onToggleBody={() => toggleExpanded(commit.sha)}
-              />
-            ))}
+            <AnimatePresence initial={false} mode="popLayout">
+              {extraCommits.map((commit) => (
+                <CommitRow
+                  key={commit.sha}
+                  commit={commit}
+                  isBodyExpanded={expandedSha.has(commit.sha)}
+                  onToggleBody={() => toggleExpanded(commit.sha)}
+                />
+              ))}
+            </AnimatePresence>
           </ul>
         </AnimatedCollapse>
       )}
