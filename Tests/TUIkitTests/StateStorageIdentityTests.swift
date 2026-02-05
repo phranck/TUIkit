@@ -2,7 +2,7 @@
 //  StateStorageIdentityTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  branch switches invalidate state, and nested views get independent state.
+//  License: MIT  branch switches invalidate state, and nested views get independent state.
 //
 
 import Testing

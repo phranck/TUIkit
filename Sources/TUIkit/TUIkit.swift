@@ -2,7 +2,7 @@
 //  TUIkit.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 //  TUIkit enables creating TUI applications with a declarative,
 //  SwiftUI-like syntax - without ncurses or other low-level libraries.
 //

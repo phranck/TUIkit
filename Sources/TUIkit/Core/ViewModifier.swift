@@ -2,7 +2,7 @@
 //  ViewModifier.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A modifier that transforms a view's rendered output.
 ///

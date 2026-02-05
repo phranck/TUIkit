@@ -2,7 +2,7 @@
 //  DimmedModifier.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A modifier that strips all styling from content and replaces it with
 /// a uniform dimmed appearance using only two colors.

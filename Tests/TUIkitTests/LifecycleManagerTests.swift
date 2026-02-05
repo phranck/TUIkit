@@ -2,7 +2,7 @@
 //  LifecycleManagerTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  render pass management, and async task lifecycle.
+//  License: MIT  render pass management, and async task lifecycle.
 //
 
 import Testing

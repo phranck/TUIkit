@@ -2,7 +2,7 @@
 //  Preferences.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  Similar to SwiftUI's PreferenceKey system.
+//  License: MIT  Similar to SwiftUI's PreferenceKey system.
 //
 
 import Foundation

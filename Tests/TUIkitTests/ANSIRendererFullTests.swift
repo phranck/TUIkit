@@ -2,7 +2,7 @@
 //  ANSIRendererFullTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  cursor control, screen control, and convenience methods.
+//  License: MIT  cursor control, screen control, and convenience methods.
 //
 
 import Testing
