@@ -21,7 +21,11 @@ const CELL_GAP = 3;
 /** Width of the day-label column including right padding. */
 const LABEL_WIDTH = 32;
 /** Minimum cell size to prevent cells from becoming invisible. */
-const MIN_CELL_SIZE = 6;
+const MIN_CELL_SIZE = 8;
+/** Fixed cell size for mobile (scroll mode). */
+const MOBILE_CELL_SIZE = 10;
+/** Container width threshold below which we switch to scroll mode. */
+const SCROLL_MODE_THRESHOLD = 600;
 /** A full year of weekly data. */
 const WEEKS_PER_YEAR = 52;
 /** Seconds in one week. */
@@ -121,6 +125,7 @@ function computeCellSize(containerWidth: number, colCount: number): number {
 export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(0);
+  const [scrollMode, setScrollMode] = useState(false);
   const { hover, popover, show: showPopover, hide: hidePopover, cancelHide } = useHoverPopover<HeatmapHover>();
 
   const fullYear = padToFullYear(weeks);
@@ -132,13 +137,29 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setCellSize(computeCellSize(entry.contentRect.width, colCount));
+        const width = entry.contentRect.width;
+        if (width < SCROLL_MODE_THRESHOLD) {
+          // Mobile: fixed cell size, horizontal scroll
+          setScrollMode(true);
+          setCellSize(MOBILE_CELL_SIZE);
+        } else {
+          // Desktop: compute cell size to fill available space
+          setScrollMode(false);
+          setCellSize(computeCellSize(width, colCount));
+        }
       }
     });
 
     observer.observe(container);
     // Initial measurement
-    setCellSize(computeCellSize(container.clientWidth, colCount));
+    const width = container.clientWidth;
+    if (width < SCROLL_MODE_THRESHOLD) {
+      setScrollMode(true);
+      setCellSize(MOBILE_CELL_SIZE);
+    } else {
+      setScrollMode(false);
+      setCellSize(computeCellSize(width, colCount));
+    }
 
     return () => observer.disconnect();
   }, [colCount, loading]);
@@ -186,65 +207,68 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
       {cellSize > 0 && (
         <div className="relative" data-heatmap-grid onMouseLeave={hidePopover}>
 
-          {/* Month labels — absolutely positioned above the cell grid */}
-          <div className="relative h-5" style={{ marginLeft: LABEL_WIDTH }}>
-            {monthLabels.map(({ label, offset }) => (
-              <span
-                key={`${label}-${offset}`}
-                className="absolute bottom-0 text-xs text-muted"
-                style={{ left: offset }}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-
-          {/* Day labels (left) + Cell grid (right) */}
-          <div className="flex">
-            {/* Day labels */}
-            <div
-              className="flex shrink-0 flex-col"
-              style={{
-                width: LABEL_WIDTH,
-                height: gridHeight,
-                justifyContent: "space-around",
-              }}
-            >
-              {DAY_LABELS.map((day) => (
+          {/* Scrollable wrapper for mobile */}
+          <div className={scrollMode ? "overflow-x-auto pb-2" : ""}>
+            {/* Month labels — absolutely positioned above the cell grid */}
+            <div className="relative h-5" style={{ marginLeft: LABEL_WIDTH, minWidth: scrollMode ? colCount * (cellSize + CELL_GAP) : undefined }}>
+              {monthLabels.map(({ label, offset }) => (
                 <span
-                  key={day}
-                  className="text-right text-xs leading-none text-muted"
-                  style={{ height: cellSize, lineHeight: `${cellSize}px`, paddingRight: 6 }}
+                  key={`${label}-${offset}`}
+                  className="absolute bottom-0 text-xs text-muted"
+                  style={{ left: offset }}
                 >
-                  {day}
+                  {label}
                 </span>
               ))}
             </div>
 
-            {/* Cell grid — column-flow: 7 rows, columns auto-created per week */}
-            <div
-              className="grid"
-              style={{
-                gridTemplateRows: `repeat(7, ${cellSize}px)`,
-                gridAutoFlow: "column",
-                gridAutoColumns: `${cellSize}px`,
-                gap: CELL_GAP,
-              }}
-            >
-              {fullYear.map((week) =>
-                week.days.map((count, dayIdx) => {
-                  const level = intensityLevel(count, maxCommits);
-                  return (
-                    <div
-                      key={`${week.week}-${dayIdx}`}
-                      className={`rounded-sm bg-accent ${OPACITY_MAP[level]} transition-opacity hover:ring-1 hover:ring-accent/60`}
-                      style={{ width: cellSize, height: cellSize }}
-                      onMouseEnter={(event) => count > 0 && handleMouseEnter(event, week.week, dayIdx, count)}
-                      onMouseLeave={hidePopover}
-                    />
-                  );
-                })
-              )}
+            {/* Day labels (left) + Cell grid (right) */}
+            <div className="flex" style={{ minWidth: scrollMode ? LABEL_WIDTH + colCount * (cellSize + CELL_GAP) : undefined }}>
+              {/* Day labels */}
+              <div
+                className={`flex shrink-0 flex-col ${scrollMode ? "sticky left-0 z-10 bg-frosted-glass" : ""}`}
+                style={{
+                  width: LABEL_WIDTH,
+                  height: gridHeight,
+                  justifyContent: "space-around",
+                }}
+              >
+                {DAY_LABELS.map((day) => (
+                  <span
+                    key={day}
+                    className="text-right text-xs leading-none text-muted"
+                    style={{ height: cellSize, lineHeight: `${cellSize}px`, paddingRight: 6 }}
+                  >
+                    {day}
+                  </span>
+                ))}
+              </div>
+
+              {/* Cell grid — column-flow: 7 rows, columns auto-created per week */}
+              <div
+                className="grid"
+                style={{
+                  gridTemplateRows: `repeat(7, ${cellSize}px)`,
+                  gridAutoFlow: "column",
+                  gridAutoColumns: `${cellSize}px`,
+                  gap: CELL_GAP,
+                }}
+              >
+                {fullYear.map((week) =>
+                  week.days.map((count, dayIdx) => {
+                    const level = intensityLevel(count, maxCommits);
+                    return (
+                      <div
+                        key={`${week.week}-${dayIdx}`}
+                        className={`rounded-sm bg-accent ${OPACITY_MAP[level]} transition-opacity hover:ring-1 hover:ring-accent/60`}
+                        style={{ width: cellSize, height: cellSize }}
+                        onMouseEnter={(event) => count > 0 && handleMouseEnter(event, week.week, dayIdx, count)}
+                        onMouseLeave={hidePopover}
+                      />
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
 
