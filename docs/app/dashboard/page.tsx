@@ -169,8 +169,8 @@ export default function DashboardPage() {
             <StatCard label="Merged PRs" value={stats.mergedPRs} icon="merge" loading={stats.loading} />
           </div>
 
-          {/* Activity heatmap */}
-          <div className="mb-8">
+          {/* Activity heatmap — hidden on mobile */}
+          <div className="mb-8 hidden sm:block">
             <ActivityHeatmap weeks={stats.weeklyActivity} loading={stats.loading} />
           </div>
 
@@ -190,29 +190,29 @@ export default function DashboardPage() {
             <CommitList commits={stats.recentCommits} loading={stats.loading} />
           </div>
 
-          {/* Footer: cache status + rate limit */}
-          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-sm text-muted/60">
-            <div className="flex items-center gap-3">
+          {/* Footer: cache status (centered on mobile) + rate limit (desktop only) */}
+          <div className="flex flex-col items-center gap-2 font-mono text-xs text-muted/60 sm:flex-row sm:justify-between sm:text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center sm:justify-start sm:text-left">
               {lastFetchedAt && (
                 <>
                   <span>
                     Updated {formatTimeAgo(lastFetchedAt)}
                     {isFromCache && (
-                      <span className="ml-1.5 rounded bg-white/5 px-1.5 py-0.5 text-xs text-muted/40">
+                      <span className="ml-1 rounded bg-white/5 px-1 py-0.5 text-[10px] text-muted/40 sm:ml-1.5 sm:px-1.5 sm:text-xs">
                         cached
                       </span>
                     )}
                   </span>
                   {nextRefreshAt && (
                     <span className="text-muted/40">
-                      · Next refresh in {formatCountdown(nextRefreshAt)}
+                      · Next in {formatCountdown(nextRefreshAt)}
                     </span>
                   )}
                 </>
               )}
             </div>
             {stats.rateLimit && (
-              <div>
+              <div className="hidden sm:block">
                 API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
               </div>
             )}
