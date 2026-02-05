@@ -10,33 +10,32 @@
 
 #### High
 
-- [ ] **TextInput / TextField** — Einzeilige Texteingabe mit Cursor, Backspace, Delete, Scrolling
-- [ ] **Table** — Spaltenausrichtung mit ANSI-aware Padding
+- [ ] **TextInput / TextField** — Single-line text input with cursor, backspace, delete, scrolling
+- [ ] **Table** — Column alignment with ANSI-aware padding
 
 #### Medium
 
-- [ ] **ProgressBar** — Prozentbalken mit Unicode-Blöcken (`▓░`)
-- [ ] **List (scrollbar)** — Scrollbare Liste mit Selektion für beliebige Views
-- [ ] **Checkbox / Toggle** — `[x]`/`[ ]` mit Keyboard-Toggle
+- [ ] **ProgressBar** — Progress bar with Unicode blocks (`▓░`)
+- [ ] **List (scrollable)** — Scrollable list with selection for arbitrary views
+- [ ] **Checkbox / Toggle** — `[x]`/`[ ]` with keyboard toggle
 
 #### Low
 
-- [ ] **Toast / Notification** — Temporäre Meldung, verschwindet nach X Sekunden
+- [ ] **Toast / Notification** — Temporary message, disappears after X seconds
 
 ### Performance
 
-- [ ] **TupleView Equatable** — `VStack { Text("A"); Text("B") }` erzeugt `TupleView<(Text, Text)>`, braucht per-arity conditional Equatable
-- [ ] **`View._printChanges()` Equivalent** — Debug-Mechanismus der loggt warum body re-evaluiert wurde
+- [ ] **TupleView Equatable** — `VStack { Text("A"); Text("B") }` produces `TupleView<(Text, Text)>`, needs per-arity conditional Equatable
+- [ ] **`View._printChanges()` Equivalent** — Debug mechanism that logs why body was re-evaluated
 
 ### Infrastructure
 
-- [ ] **Example App Neugestaltung** — Feature-Katalog → mehrere kleine Example Apps
-- [ ] **GitHub → Codeberg Migration** — `gh2cb`, Woodpecker CI, DNS-Umstellung
-- [ ] **GH Actions: Social Cache Workflow** — 403 push denied, `github-actions[bot]` braucht Write-Permissions auf Repo oder PAT
+- [ ] **Example App Redesign** — Feature catalog → multiple small example apps
+- [ ] **GitHub → Codeberg Migration** — `gh2cb`, Woodpecker CI, DNS migration
 
 ### Testing & Docs
 
-- [ ] **Mobile/Tablet Docs** — Landing Page + DocC auf mobilen Geräten testen
+- [ ] **Mobile/Tablet Docs** — Test landing page + DocC on mobile devices
 - [ ] **Code Examples** — Counter, Todo List, Form, Table/List
 
 ## Completed
@@ -46,49 +45,50 @@
 - [x] **Render Performance Phase 2** — Cache invalidation fix, Equatable on 15 types/views, debug tooling, example app decomposition + `.equatable()`, DocC documentation (PR #74)
 - [x] **Social Lookup Optimization** — GitHub Social API, NodeInfo instance validation, timeouts, false positives eliminated
 - [x] **Dashboard: Branches → Open Issues** — StatCard replaced with `SFBubbleLeftAndExclamationmarkBubbleRightFill` icon
+- [x] **GH Actions: Social Cache Workflow** — 403 push denied, fixed with PAT + `contents: write` permissions
 
 ### 2026-02-03
 
 - [x] **Subtree Memoization** — EquatableView + RenderCache, opt-in via `.equatable()`, cache cleared on @State change
 - [x] **Palette Consolidation** — 6 Palette-Structs → `SystemPalette.Preset` enum + `SystemPalette` (PR #70)
-- [x] **Extension Separation** — 35 Source-Files: Funktionen in access-level Extensions (PR #69)
+- [x] **Extension Separation** — 35 source files: functions moved to access-level extensions (PR #69)
 - [x] **AppHeader** — Framework-managed Header Bar, `.appHeader {}` Modifier
 - [x] **Focus Sections** — `.focusSection()`, section-aware FocusManager, StatusBar Cascading
-- [x] **Dimmed Overlay Rewrite** — Palette-basiertes Dimming, Ornament-Stripping, ANSI-aware Splitting
-- [x] **Unified File Headers** — 136 Swift-Files standardisiert
-- [x] **OverlaysPage Redesign** — 8 Overlay-Varianten, modale Focus-Isolation (PR #67)
+- [x] **Dimmed Overlay Rewrite** — Palette-based dimming, ornament stripping, ANSI-aware splitting
+- [x] **Unified File Headers** — 136 Swift files standardized
+- [x] **OverlaysPage Redesign** — 8 overlay variants, modal focus isolation (PR #67)
 
 ### 2026-02-02
 
 - [x] **Render-Pipeline Phase 1–4** — Line-Diffing, Output Buffering, Caching, Architecture Cleanup (PR #62, #63)
 - [x] **Spinner View** — dots/line/bouncing Styles, auto-animating (PR #61)
 - [x] **Structural Identity for @State** — ViewIdentity, StateStorage, self-hydrating @State (PR #60)
-- [x] **Landing Page Optimierung** — CRT Boot/Shutdown, Terminal Markdown Parser, Smart Typing, SEO
-- [x] **Test Quality Audits** — 134 wertlose Tests entfernt, 33 schwache Assertions verschärft
+- [x] **Landing Page Optimization** — CRT boot/shutdown, terminal Markdown parser, smart typing, SEO
+- [x] **Test Quality Audits** — 134 worthless tests removed, 33 weak assertions tightened
 - [x] **CI Automation** — Test-Badge, Git Author Cleanup
 
 ### 2026-01-31
 
 - [x] **Source Restructure** — Directory-Reorg, Phosphor→Palette Rename (PR #30)
-- [x] **EnvironmentStorage Elimination** — Singleton entfernt, SemanticColor System (PR #31)
+- [x] **EnvironmentStorage Elimination** — Singleton removed, SemanticColor system (PR #31)
 - [x] **Palette Protocol Split** — `Palette` + `BlockPalette`, ANSI→RGB (PR #48)
-- [x] **Access-Level Refactor** — Public API Surface eingeschränkt (PR #37)
-- [x] **DocC Documentation** — 8 Guide-Artikel, Diagramme, Palette/Keyboard Reference
+- [x] **Access-Level Refactor** — Public API surface restricted (PR #37)
+- [x] **DocC Documentation** — 8 guide articles, diagrams, palette/keyboard reference
 
 ### 2026-01-30
 
 - [x] **Code Quality PR #5–#18** — Dead Code, Singletons, SwiftLint, Linux Compat, AppRunner Decomposition
-- [x] **Testing PR #20–#23** — 4 Phasen, 569 Tests initial
+- [x] **Testing PR #20–#23** — 4 phases, 569 tests initial
 - [x] **DocC + GitHub Pages** — swift-docc-plugin, CI Deploy, Custom Domain
 - [x] **Landing Page** — Next.js, CRT Terminal, Blade Runner Atmosphere (PR #40–#54)
 
 ### 2026-01-29
 
-- [x] **Git Cleanup** — `.claude/` aus History entfernt, Branches gelöscht
+- [x] **Git Cleanup** — `.claude/` removed from history, branches deleted
 
 ## Notes
 
-- DocC: `swift-docc-plugin`, GitHub Pages mit `theme-settings.json` Workaround
+- DocC: `swift-docc-plugin`, GitHub Pages with `theme-settings.json` workaround
 - Landing Page: Next.js 16 + React 19 + Tailwind 4, CI-deployed, tuikit.layered.work
 
 ---
@@ -141,4 +141,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 15:00
+**Last Updated:** 2026-02-05
