@@ -81,13 +81,58 @@ struct SettingsAndAlignmentRow: View, Equatable {
     }
 }
 
+/// Static row showing ProgressView examples.
+///
+/// Purely palette-driven, no state — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+/// Static row showing ProgressView examples with all 6 styles.
+struct ProgressViewRow: View, Equatable {
+    var body: some View {
+        DemoSection("ProgressView") {
+            VStack(spacing: 1) {
+                ProgressView("Downloading files...", value: 0.73)
+
+                ProgressView(value: 0.4) {
+                    Text("Build progress").foregroundColor(.palette.foreground)
+                } currentValueLabel: {
+                    Text("40%").foregroundColor(.palette.foregroundSecondary)
+                }
+
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Styles:").dim()
+                    HStack(spacing: 1) {
+                        Text("block    ").dim()
+                        ProgressView(value: 0.6).progressBarStyle(.block)
+                    }
+                    HStack(spacing: 1) {
+                        Text("blockFine").dim()
+                        ProgressView(value: 0.6).progressBarStyle(.blockFine)
+                    }
+                    HStack(spacing: 1) {
+                        Text("shade    ").dim()
+                        ProgressView(value: 0.6).progressBarStyle(.shade)
+                    }
+                    HStack(spacing: 1) {
+                        Text("bar      ").dim()
+                        ProgressView(value: 0.6).progressBarStyle(.bar)
+                    }
+                    HStack(spacing: 1) {
+                        Text("dot      ").dim()
+                        ProgressView(value: 0.6).progressBarStyle(.dot)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Container views demo page.
 ///
 /// Shows various container views including:
 /// - Card (bordered container with padding)
 /// - Box (simple bordered container)
 /// - Panel (container with title in border)
-/// - ContainerView (with header and footer)
+/// - ProgressView (horizontal progress bar)
 /// - Collapsible detail section demonstrating `@State` toggle
 struct ContainersPage: View {
     @State var showDetails: Bool = false
@@ -96,6 +141,7 @@ struct ContainersPage: View {
         VStack(spacing: 1) {
             ContainerTypesRow().equatable()
             SettingsAndAlignmentRow().equatable()
+            ProgressViewRow().equatable()
 
             DemoSection("Collapsible Detail (@State)") {
                 VStack(alignment: .leading) {
