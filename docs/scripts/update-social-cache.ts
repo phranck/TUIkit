@@ -26,7 +26,9 @@ const GITHUB_API = "https://api.github.com";
 const KNOWN_MASTODON_INSTANCES = [
   "mastodon.social",
   "mastodon.online",
+  "mastodon.world",
   "mstdn.social",
+  "mas.to",
   "fosstodon.org",
   "hachyderm.io",
   "infosec.exchange",
@@ -36,6 +38,13 @@ const KNOWN_MASTODON_INSTANCES = [
   "chaos.social",
   "ruby.social",
   "phpc.social",
+  "social.linux.pizza",
+  "toot.community",
+  "det.social",
+  "mastodon.art",
+  "social.coop",
+  "aus.social",
+  "nrw.social",
 ];
 
 /** Delay between API requests to avoid rate limiting (ms). */
@@ -86,6 +95,61 @@ interface GitHubStargazer {
   login: string;
   avatar_url: string;
   html_url: string;
+}
+
+/**
+ * Domains that use `/@username` URL patterns but are NOT Mastodon instances.
+ * Prevents false positive matches from link-in-bio services and social platforms.
+ */
+const NON_MASTODON_DOMAINS = [
+  "twitter.com", "x.com", "github.com", "linkedin.com",
+  "facebook.com", "instagram.com", "youtube.com", "reddit.com",
+  "bento.me", "linktr.ee", "carrd.co", "bio.link", "beacons.ai",
+  "campsite.bio", "solo.to", "tap.bio", "withkoji.com", "milkshake.app",
+  "later.com", "snipfeed.co", "hoo.be", "allmylinks.com", "lnk.bio",
+  "medium.com", "dev.to", "hashnode.dev", "substack.com",
+  "codepen.io", "dribbble.com", "behance.net",
+  "threads.net", "bsky.app",
+];
+
+/** Cache for validated Mastodon/ActivityPub instances (domain → boolean). */
+const mastodonInstanceCache = new Map<string, boolean>();
+
+/**
+ * Checks whether a domain is a Mastodon/ActivityPub instance by querying its
+ * `.well-known/nodeinfo` endpoint. Results are cached for the script lifetime.
+ */
+async function isMastodonInstance(domain: string): Promise<boolean> {
+  if (NON_MASTODON_DOMAINS.some((blocked) => domain.includes(blocked))) return false;
+  if (KNOWN_MASTODON_INSTANCES.includes(domain)) return true;
+
+  const cached = mastodonInstanceCache.get(domain);
+  if (cached !== undefined) return cached;
+
+  try {
+    const response = await fetch(`https://${domain}/.well-known/nodeinfo`, {
+      headers: { "User-Agent": "TUIKit-Social-Lookup" },
+      signal: AbortSignal.timeout(5000),
+      redirect: "follow",
+    });
+    if (!response.ok) {
+      mastodonInstanceCache.set(domain, false);
+      return false;
+    }
+    const data = (await response.json()) as { links?: Array<{ rel: string }> };
+    // NodeInfo is used by Mastodon, Pleroma, Misskey, etc.
+    const isValid = Array.isArray(data.links) && data.links.some(
+      (link) => link.rel?.includes("nodeinfo"),
+    );
+    mastodonInstanceCache.set(domain, isValid);
+    if (isValid) {
+      console.log(`    Validated ${domain} as ActivityPub instance ✓`);
+    }
+    return isValid;
+  } catch {
+    mastodonInstanceCache.set(domain, false);
+    return false;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -159,6 +223,7 @@ async function fetchSocialFromAboutMe(username: string): Promise<ProfileSocialAc
     const response = await fetch(url, {
       headers: { "User-Agent": "TUIKit-Social-Lookup" },
       redirect: "follow",
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return accounts;
@@ -224,6 +289,7 @@ async function fetchSocialFromKeybase(githubUsername: string): Promise<ProfileSo
     const url = `https://keybase.io/_/api/1.0/user/lookup.json?github=${githubUsername}`;
     const response = await fetch(url, {
       headers: { "User-Agent": "TUIKit-Social-Lookup" },
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return accounts;
@@ -291,6 +357,7 @@ async function fetchSocialFromLinktree(username: string): Promise<ProfileSocialA
     const response = await fetch(url, {
       headers: { "User-Agent": "TUIKit-Social-Lookup" },
       redirect: "follow",
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return accounts;
@@ -398,6 +465,80 @@ async function fetchUserDetails(login: string): Promise<GitHubUser | null> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GitHub Social Accounts API
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface GitHubSocialAccount {
+  provider: string;
+  url: string;
+}
+
+/**
+ * Fetches social accounts from GitHub's `/users/{login}/social_accounts` endpoint.
+ * These are user-provided and authoritative — highest trust after manual overrides.
+ */
+async function fetchGitHubSocialAccounts(login: string): Promise<ProfileSocialAccounts> {
+  const accounts: ProfileSocialAccounts = {};
+
+  try {
+    const url = `${GITHUB_API}/users/${login}/social_accounts`;
+    const response = await fetch(url, {
+      headers: getGitHubHeaders(),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) return accounts;
+
+    const data = (await response.json()) as GitHubSocialAccount[];
+
+    for (const entry of data) {
+      if (entry.provider === "twitter" && !accounts.twitter) {
+        const handle = entry.url.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/i);
+        if (handle) {
+          accounts.twitter = {
+            handle: `@${handle[1]}`,
+            url: `https://x.com/${handle[1]}`,
+            source: "github",
+            verified: true,
+          };
+          console.log(`    Found Twitter from GitHub social accounts: @${handle[1]}`);
+        }
+      }
+
+      if (entry.provider === "mastodon" && !accounts.mastodon) {
+        const match = entry.url.match(/https?:\/\/([^/]+)\/@?([^/]+)/);
+        if (match) {
+          accounts.mastodon = {
+            handle: `@${match[2]}@${match[1]}`,
+            url: entry.url,
+            source: "github",
+            verified: true,
+          };
+          console.log(`    Found Mastodon from GitHub social accounts: @${match[2]}@${match[1]}`);
+        }
+      }
+
+      if (entry.provider === "bluesky" && !accounts.bluesky) {
+        const match = entry.url.match(/bsky\.app\/profile\/([a-zA-Z0-9.-]+)/);
+        if (match) {
+          accounts.bluesky = {
+            handle: `@${match[1]}`,
+            url: `https://bsky.app/profile/${match[1]}`,
+            source: "github",
+            verified: true,
+          };
+          console.log(`    Found Bluesky from GitHub social accounts: @${match[1]}`);
+        }
+      }
+    }
+  } catch {
+    // Social accounts endpoint failed, continue
+  }
+
+  return accounts;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Social Detection - Mastodon
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -407,19 +548,30 @@ const MASTODON_HANDLE_REGEX = /@?([a-zA-Z0-9_]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/
 /** Matches Mastodon profile URLs. */
 const MASTODON_URL_REGEX = /https?:\/\/([a-zA-Z0-9.-]+)\/(@|users\/)?([a-zA-Z0-9_]+)\/?$/i;
 
-function parseMastodonFromBio(bio: string): SocialInfo | null {
+async function parseMastodonFromBio(bio: string): Promise<SocialInfo | null> {
   const matches = [...bio.matchAll(MASTODON_HANDLE_REGEX)];
   if (matches.length === 0) return null;
 
-  const [, username, instance] = matches[0];
-  // Exclude email-like patterns (common email providers)
-  const emailProviders = [
-    "gmail", "outlook", "yahoo", "hotmail", "icloud", "protonmail", "hey.com",
-    "mail.com", "aol.com", "live.com", "msn.com", "yandex", "zoho",
-  ];
-  if (emailProviders.some((provider) => instance.toLowerCase().includes(provider))) {
-    return null;
+  const [fullMatch, username, instance] = matches[0];
+  const hasLeadingAt = fullMatch.startsWith("@") && fullMatch.indexOf("@", 1) > 0;
+
+  // Bare `user@domain` without leading `@` is almost always an email.
+  // Only accept it if the domain is a validated ActivityPub instance.
+  if (!hasLeadingAt) {
+    const isInstance = await isMastodonInstance(instance);
+    if (!isInstance) {
+      console.log(`    Skipping bio match ${username}@${instance} (no leading @, not a known instance)`);
+      return null;
+    }
+  } else {
+    // Even with leading `@`, validate the domain
+    const isInstance = await isMastodonInstance(instance);
+    if (!isInstance) {
+      console.log(`    Skipping bio match @${username}@${instance} (domain is not an ActivityPub instance)`);
+      return null;
+    }
   }
+
   return {
     handle: `@${username}@${instance}`,
     url: `https://${instance}/@${username}`,
@@ -428,7 +580,7 @@ function parseMastodonFromBio(bio: string): SocialInfo | null {
   };
 }
 
-function parseMastodonFromBlog(blog: string): SocialInfo | null {
+async function parseMastodonFromBlog(blog: string): Promise<SocialInfo | null> {
   if (!blog) return null;
 
   const match = blog.match(MASTODON_URL_REGEX);
@@ -436,9 +588,10 @@ function parseMastodonFromBlog(blog: string): SocialInfo | null {
 
   const [, instance, , username] = match;
 
-  // Blocklist non-Mastodon sites (bsky.app uses /profile/ not /@, so won't match anyway)
-  const blocklist = ["twitter.com", "x.com", "github.com", "linkedin.com", "facebook.com", "instagram.com", "youtube.com"];
-  if (blocklist.some((blocked) => instance.includes(blocked))) {
+  // Validate the domain is actually an ActivityPub instance
+  const isInstance = await isMastodonInstance(instance);
+  if (!isInstance) {
+    console.log(`    Skipping blog URL match ${instance}/@${username} (not an ActivityPub instance)`);
     return null;
   }
 
@@ -456,14 +609,15 @@ async function searchMastodonByUsername(username: string, githubAvatarUrl: strin
       const url = `https://${instance}/api/v1/accounts/lookup?acct=${username}`;
       const response = await fetch(url, {
         headers: { "User-Agent": "TUIKit-Social-Lookup" },
+        signal: AbortSignal.timeout(5000),
       });
 
       if (response.ok) {
         const data = (await response.json()) as { username: string; url: string; avatar: string };
 
-        // Verify by comparing avatars
-        const match = await avatarsMatch(githubAvatarUrl, data.avatar);
-        if (match) {
+        // Avatar match is a bonus signal — if it matches, we're confident immediately
+        const avatarMatch = await avatarsMatch(githubAvatarUrl, data.avatar);
+        if (avatarMatch) {
           console.log(`    Found Mastodon @${username} on ${instance} (avatar verified ✓)`);
           return {
             handle: `@${data.username}@${instance}`,
@@ -471,9 +625,17 @@ async function searchMastodonByUsername(username: string, githubAvatarUrl: strin
             source: "username-match",
             verified: true,
           };
-        } else {
-          console.log(`    Skipping @${username} on ${instance} (avatar mismatch)`);
         }
+
+        // No avatar match — accept as unverified candidate.
+        // Cross-verification will check for back-links and either verify or remove it.
+        console.log(`    Found Mastodon @${username} on ${instance} (pending cross-verification)`);
+        return {
+          handle: `@${data.username}@${instance}`,
+          url: data.url,
+          source: "username-match",
+          verified: false,
+        };
       }
     } catch {
       // Instance unreachable or rate limited, continue
@@ -602,10 +764,10 @@ async function searchBlueskyByUsername(username: string, githubAvatarUrl: string
     if (response.ok) {
       const data = (await response.json()) as { handle: string; avatar?: string };
 
-      // Verify by comparing avatars if available
+      // Avatar match is a bonus signal — if it matches, we're confident immediately
       if (data.avatar) {
-        const match = await avatarsMatch(githubAvatarUrl, data.avatar);
-        if (match) {
+        const avatarMatch = await avatarsMatch(githubAvatarUrl, data.avatar);
+        if (avatarMatch) {
           console.log(`    Found Bluesky @${data.handle} (avatar verified ✓)`);
           return {
             handle: `@${data.handle}`,
@@ -613,10 +775,18 @@ async function searchBlueskyByUsername(username: string, githubAvatarUrl: string
             source: "username-match",
             verified: true,
           };
-        } else {
-          console.log(`    Skipping Bluesky @${data.handle} (avatar mismatch)`);
         }
       }
+
+      // No avatar match — accept as unverified candidate.
+      // Cross-verification will check for back-links and either verify or remove it.
+      console.log(`    Found Bluesky @${data.handle} (pending cross-verification)`);
+      return {
+        handle: `@${data.handle}`,
+        url: `https://bsky.app/profile/${data.handle}`,
+        source: "username-match",
+        verified: false,
+      };
     }
   } catch {
     // API error, continue
@@ -633,11 +803,19 @@ async function findSocialAccounts(user: GitHubUser): Promise<ProfileSocialAccoun
   const accounts: ProfileSocialAccounts = {};
   const githubAvatarUrl = user.avatar_url;
 
-  // ── Try Keybase first (cryptographically verified, highest trust) ──
-  const keybaseAccounts = await fetchSocialFromKeybase(user.login);
-  if (keybaseAccounts.twitter) accounts.twitter = keybaseAccounts.twitter;
-  if (keybaseAccounts.mastodon) accounts.mastodon = keybaseAccounts.mastodon;
-  if (keybaseAccounts.bluesky) accounts.bluesky = keybaseAccounts.bluesky;
+  // ── GitHub Social Accounts API first (user-provided, authoritative) ──
+  const ghSocialAccounts = await fetchGitHubSocialAccounts(user.login);
+  if (ghSocialAccounts.twitter) accounts.twitter = ghSocialAccounts.twitter;
+  if (ghSocialAccounts.mastodon) accounts.mastodon = ghSocialAccounts.mastodon;
+  if (ghSocialAccounts.bluesky) accounts.bluesky = ghSocialAccounts.bluesky;
+
+  // ── Try Keybase (cryptographically verified, fills remaining gaps) ──
+  if (!accounts.twitter || !accounts.mastodon || !accounts.bluesky) {
+    const keybaseAccounts = await fetchSocialFromKeybase(user.login);
+    if (!accounts.twitter && keybaseAccounts.twitter) accounts.twitter = keybaseAccounts.twitter;
+    if (!accounts.mastodon && keybaseAccounts.mastodon) accounts.mastodon = keybaseAccounts.mastodon;
+    if (!accounts.bluesky && keybaseAccounts.bluesky) accounts.bluesky = keybaseAccounts.bluesky;
+  }
 
   // ── Try about.me profile (high quality source) ──
   if (!accounts.twitter || !accounts.mastodon || !accounts.bluesky) {
@@ -679,10 +857,10 @@ async function findSocialAccounts(user: GitHubUser): Promise<ProfileSocialAccoun
 
   // ── Mastodon ──
   if (!accounts.mastodon && user.bio) {
-    accounts.mastodon = parseMastodonFromBio(user.bio) ?? undefined;
+    accounts.mastodon = (await parseMastodonFromBio(user.bio)) ?? undefined;
   }
   if (!accounts.mastodon && user.blog) {
-    accounts.mastodon = parseMastodonFromBlog(user.blog) ?? undefined;
+    accounts.mastodon = (await parseMastodonFromBlog(user.blog)) ?? undefined;
   }
   if (!accounts.mastodon) {
     accounts.mastodon = (await searchMastodonByUsername(user.login, githubAvatarUrl)) ?? undefined;
@@ -699,43 +877,44 @@ async function findSocialAccounts(user: GitHubUser): Promise<ProfileSocialAccoun
 // Cross-Platform Verification
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Sources that are inherently authoritative and should never be downgraded. */
+const AUTHORITATIVE_SOURCES = new Set(["github", "keybase", "manual"]);
+
 /**
  * Cross-references found accounts to increase confidence.
  * Checks for:
  * - GitHub links in social profiles (back-link verification)
  * - Matching display names across platforms
  * - Consistent avatar usage
+ *
+ * Authoritative sources (github, keybase, manual) are never downgraded.
  */
 async function crossPlatformVerify(accounts: ProfileSocialAccounts, user: GitHubUser): Promise<void> {
   const validationResults: string[] = [];
 
   // Verify Mastodon by checking if profile links back to GitHub
-  if (accounts.mastodon && !accounts.mastodon.verified) {
+  if (accounts.mastodon && !accounts.mastodon.verified && !AUTHORITATIVE_SOURCES.has(accounts.mastodon.source)) {
     const verified = await verifyMastodonLinksToGitHub(accounts.mastodon.url, user.login);
     if (verified) {
       accounts.mastodon.verified = true;
       validationResults.push("Mastodon→GitHub ✓");
-    } else {
-      // Unverified username-match, remove it to avoid false positives
-      if (accounts.mastodon.source === "username-match") {
-        console.log(`    Removing unverified Mastodon match (no back-link to GitHub)`);
-        delete accounts.mastodon;
-      }
+    } else if (accounts.mastodon.source === "username-match") {
+      // Unverified username-match without back-link — remove to avoid false positives
+      console.log(`    Removing unverified Mastodon match (no back-link to GitHub)`);
+      delete accounts.mastodon;
     }
   }
 
   // Verify Bluesky by checking if profile links back to GitHub
-  if (accounts.bluesky && !accounts.bluesky.verified) {
+  if (accounts.bluesky && !accounts.bluesky.verified && !AUTHORITATIVE_SOURCES.has(accounts.bluesky.source)) {
     const verified = await verifyBlueskyLinksToGitHub(accounts.bluesky.handle.replace("@", ""), user.login);
     if (verified) {
       accounts.bluesky.verified = true;
       validationResults.push("Bluesky→GitHub ✓");
-    } else {
-      // Unverified username-match, remove it
-      if (accounts.bluesky.source === "username-match") {
-        console.log(`    Removing unverified Bluesky match (no back-link to GitHub)`);
-        delete accounts.bluesky;
-      }
+    } else if (accounts.bluesky.source === "username-match") {
+      // Unverified username-match without back-link — remove
+      console.log(`    Removing unverified Bluesky match (no back-link to GitHub)`);
+      delete accounts.bluesky;
     }
   }
 
@@ -758,25 +937,28 @@ async function verifyMastodonLinksToGitHub(mastodonUrl: string, githubUsername: 
 
     const response = await fetch(apiUrl, {
       headers: { "User-Agent": "TUIKit-Social-Lookup" },
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return false;
 
     const data = (await response.json()) as {
       note?: string;
-      fields?: Array<{ name: string; value: string }>;
+      url?: string;
+      fields?: Array<{ name: string; value: string; verified_at?: string | null }>;
     };
 
-    // Check bio and fields for GitHub link
+    // Check bio (note) for GitHub link
     const githubPattern = new RegExp(`github\\.com/${githubUsername}`, "i");
 
     if (data.note && githubPattern.test(data.note)) {
       return true;
     }
 
+    // Check profile fields (Website, Homepage, etc.) for GitHub link
     if (data.fields) {
       for (const field of data.fields) {
-        if (githubPattern.test(field.value)) {
+        if (githubPattern.test(field.value) || githubPattern.test(field.name)) {
           return true;
         }
       }
@@ -796,6 +978,7 @@ async function verifyBlueskyLinksToGitHub(handle: string, githubUsername: string
     const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${handle}`;
     const response = await fetch(url, {
       headers: { "User-Agent": "TUIKit-Social-Lookup" },
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return false;
@@ -875,6 +1058,12 @@ async function main() {
       console.log(`Removing unstarred user: ${login}`);
       delete cache.entries[login];
     }
+  }
+
+  // On full refresh, clear all entries so stale false positives don't survive
+  if (isFullRefresh) {
+    console.log("Full refresh — clearing all cached entries");
+    cache.entries = {};
   }
 
   // Find new stargazers (not in cache)
