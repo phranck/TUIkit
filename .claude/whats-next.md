@@ -1,11 +1,11 @@
 # TUIKit — What's Next
 
-**Branch:** `feature/progress-view` (PR pending)
+**Branch:** `main`
 **Tests:** 552 / 87 suites ✅ · **Build:** clean ✅ · **Lint:** 0 serious ✅
 
 ## Active
 
-- **ProgressView** — PR ready, awaiting merge
+(none)
 
 ## Next Steps
 
