@@ -8,8 +8,9 @@ import TUIkit
 
 /// Static row showing Card, Box, and Panel side by side.
 ///
-/// Purely palette-driven, no state — candidate for `.equatable()`.
-struct ContainerTypesRow: View {
+/// Purely palette-driven, no state — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct ContainerTypesRow: View, Equatable {
     var body: some View {
         HStack(spacing: 2) {
             VStack(alignment: .leading) {
@@ -39,8 +40,9 @@ struct ContainerTypesRow: View {
 
 /// Static row showing a settings panel with footer and alignment examples.
 ///
-/// Purely palette-driven, no state — candidate for `.equatable()`.
-struct SettingsAndAlignmentRow: View {
+/// Purely palette-driven, no state — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct SettingsAndAlignmentRow: View, Equatable {
     var body: some View {
         HStack(spacing: 2) {
             DemoSection("Panel (Header + Footer)") {
@@ -92,8 +94,8 @@ struct ContainersPage: View {
 
     var body: some View {
         VStack(spacing: 1) {
-            ContainerTypesRow()
-            SettingsAndAlignmentRow()
+            ContainerTypesRow().equatable()
+            SettingsAndAlignmentRow().equatable()
 
             DemoSection("Collapsible Detail (@State)") {
                 VStack(alignment: .leading) {
