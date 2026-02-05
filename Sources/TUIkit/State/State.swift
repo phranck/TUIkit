@@ -36,6 +36,11 @@ public final class AppState: @unchecked Sendable {
 
 public extension AppState {
     /// Marks state as changed and notifies observers.
+    ///
+    /// Callers that change visual output (theme, palette, appearance) do
+    /// **not** need to manually clear the render cache. ``RenderLoop``
+    /// automatically detects environment changes via ``EnvironmentSnapshot``
+    /// comparison and clears the cache when needed.
     func setNeedsRender() {
         needsRender = true
         for observer in observers {
@@ -301,5 +306,4 @@ public struct State<Value> {
             self.box = StateBox(wrappedValue)
         }
     }
-
 }

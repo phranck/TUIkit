@@ -123,6 +123,10 @@ public struct Panel<Content: View, Footer: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension Panel: Equatable where Content: Equatable, Footer: Equatable {}
+
 // MARK: - Convenience Initializer (no footer)
 
 extension Panel where Footer == EmptyView {

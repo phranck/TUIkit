@@ -181,7 +181,7 @@ public enum VerticalAlignment: Sendable {
 }
 
 /// Combined alignment for both axes.
-public struct Alignment: Sendable {
+public struct Alignment: Sendable, Equatable {
     /// The horizontal component.
     public let horizontal: HorizontalAlignment
 
@@ -227,6 +227,12 @@ public struct Alignment: Sendable {
     /// Bottom trailing.
     public static let bottomTrailing = Self(horizontal: .trailing, vertical: .bottom)
 }
+
+// MARK: - Equatable Conformances
+
+extension VStack: Equatable where Content: Equatable {}
+extension HStack: Equatable where Content: Equatable {}
+extension ZStack: Equatable where Content: Equatable {}
 
 // MARK: - VStack Rendering
 
