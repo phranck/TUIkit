@@ -119,10 +119,16 @@ export default function HeroTerminal() {
     };
   }, [clearAllTimers]);
 
-  // Handle client-side hydration for power button
+  // Handle client-side hydration for power button and detect phone-sized screens
+  const [isPhone, setIsPhone] = useState(false);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    // Check if phone (< 768px) — tablets and larger keep the power button
+    const checkPhone = () => setIsPhone(window.innerWidth < 768);
+    checkPhone();
+    window.addEventListener("resize", checkPhone);
+    return () => window.removeEventListener("resize", checkPhone);
   }, []);
 
   /** Computes the translation needed to center the element in the viewport. */
@@ -422,8 +428,9 @@ export default function HeroTerminal() {
           priority
         />
 
-        {/* Red power button — positioned over the physical button in the logo */}
-        {mounted && (
+        {/* Red power button — positioned over the physical button in the logo.
+            Disabled on phones (< 768px) to prevent the zoomed view on small screens. */}
+        {mounted && !isPhone && (
           <button
             onClick={powered ? handlePowerOff : handlePowerOn}
             className="absolute z-10 cursor-pointer rounded-none bg-transparent p-0 transition-all duration-300"
