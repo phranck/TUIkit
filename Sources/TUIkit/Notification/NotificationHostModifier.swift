@@ -77,11 +77,13 @@ extension NotificationHostModifier: Renderable {
             let fadedBorderColor = resolvedBorderColor.opacity(opacity)
             let fgColor = Color.palette.foreground.resolve(with: palette).opacity(opacity)
 
-            // Build content lines with horizontal padding.
+            // Build content lines with horizontal padding, padded to full inner width
+            // so the Box (and its block-appearance background) spans the intended width.
             let wrappedLines = NotificationTiming.wordWrap(entry.message, maxWidth: textWidth)
             var contentLines: [String] = []
             for line in wrappedLines {
-                contentLines.append(pad + ANSIRenderer.colorize(line, foreground: fgColor))
+                let styledLine = pad + ANSIRenderer.colorize(line, foreground: fgColor)
+                contentLines.append(styledLine.padToVisibleWidth(innerWidth))
             }
 
             // Render a Box around the pre-styled lines. Box handles
