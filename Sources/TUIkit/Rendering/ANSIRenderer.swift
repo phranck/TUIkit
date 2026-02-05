@@ -2,7 +2,7 @@
 //  ANSIRenderer.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// Generates ANSI escape codes for terminal formatting.
 ///

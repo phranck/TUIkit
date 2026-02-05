@@ -2,7 +2,7 @@
 //  ForEach.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A view that generates views from a collection of data.
 ///

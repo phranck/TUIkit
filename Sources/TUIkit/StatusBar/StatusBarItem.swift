@@ -2,7 +2,7 @@
 //  StatusBarItem.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  style, shortcut symbols, and system items.
+//  License: MIT  style, shortcut symbols, and system items.
 //
 
 import Foundation

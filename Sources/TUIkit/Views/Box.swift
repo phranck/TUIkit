@@ -2,7 +2,7 @@
 //  Box.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A minimal bordered container with 1-character inner padding.
 ///

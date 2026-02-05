@@ -2,7 +2,7 @@
 //  main.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 //  This app demonstrates TUIkit capabilities through various demo pages.
 //  Use the menu to navigate between demos.
 //

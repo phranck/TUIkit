@@ -2,7 +2,7 @@
 //  Menu.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A menu item representing a single selectable option.
 public struct MenuItem: Identifiable {

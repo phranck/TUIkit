@@ -2,7 +2,7 @@
 //  FrameDiffWriter.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  only the lines that changed since the previous frame.
+//  License: MIT  only the lines that changed since the previous frame.
 //
 
 // MARK: - Frame Diff Writer

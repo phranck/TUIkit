@@ -2,7 +2,7 @@
 //  BackgroundModifier.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A modifier that fills the background of a view with a color.
 ///

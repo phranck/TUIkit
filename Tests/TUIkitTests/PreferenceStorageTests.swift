@@ -2,7 +2,7 @@
 //  PreferenceStorageTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  callbacks, beginRenderPass, and reset.
+//  License: MIT  callbacks, beginRenderPass, and reset.
 //
 
 import Testing

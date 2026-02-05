@@ -2,7 +2,7 @@
 //  ModalPresentationModifierTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  dimming, centering, and arbitrary content.
+//  License: MIT  dimming, centering, and arbitrary content.
 //
 
 import Testing
