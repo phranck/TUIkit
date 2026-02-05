@@ -2,7 +2,7 @@
 //  ModalPresentationModifier.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A modifier that presents content as a centered modal overlay when a binding is true.
 ///

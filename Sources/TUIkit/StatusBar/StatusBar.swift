@@ -2,7 +2,7 @@
 //  StatusBar.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  Always rendered at the bottom of the terminal, never dimmed by overlays.
+//  License: MIT  Always rendered at the bottom of the terminal, never dimmed by overlays.
 //
 
 import Foundation

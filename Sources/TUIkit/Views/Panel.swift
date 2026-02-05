@@ -2,7 +2,7 @@
 //  Panel.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A labeled container — always has a title, optionally a footer.
 ///

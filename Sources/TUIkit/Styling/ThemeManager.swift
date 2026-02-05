@@ -2,7 +2,7 @@
 //  ThemeManager.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  Replaces the previously duplicated palette manager and appearance manager
+//  License: MIT  Replaces the previously duplicated palette manager and appearance manager
 //  with a single, reusable implementation.
 //
 
