@@ -296,18 +296,26 @@ public extension Color {
 
     /// Returns a lighter version of this color.
     ///
-    /// - Parameter amount: The amount to lighten (0-1, default 0.2).
-    /// - Returns: A lighter color.
-    func lighter(by amount: Double = 0.2) -> Self {
-        adjusted(by: amount)
+    /// The percentage is relative to the remaining lightness headroom.
+    /// For example, a color with HSL lightness 60 lightened by 0.5 (50%)
+    /// moves halfway toward 100: `60 + (100 − 60) × 0.5 = 80`.
+    ///
+    /// - Parameter percentage: The fraction to lighten (0–1, default 0.2 = 20%).
+    /// - Returns: A lighter color with preserved hue and saturation.
+    func lighter(by percentage: Double = 0.2) -> Self {
+        adjusted(by: percentage)
     }
 
     /// Returns a darker version of this color.
     ///
-    /// - Parameter amount: The amount to darken (0-1, default 0.2).
-    /// - Returns: A darker color.
-    func darker(by amount: Double = 0.2) -> Self {
-        adjusted(by: -amount)
+    /// The percentage is relative to the current lightness.
+    /// For example, a color with HSL lightness 60 darkened by 0.5 (50%)
+    /// moves halfway toward 0: `60 × (1 − 0.5) = 30`.
+    ///
+    /// - Parameter percentage: The fraction to darken (0–1, default 0.2 = 20%).
+    /// - Returns: A darker color with preserved hue and saturation.
+    func darker(by percentage: Double = 0.2) -> Self {
+        adjusted(by: -percentage)
     }
 
     /// Returns a color with adjusted opacity (simulated via color mixing).
@@ -441,24 +449,37 @@ private extension Color {
         }
     }
 
-    /// Adjusts a color's lightness by the given amount in HSL space.
+    /// Adjusts a color's lightness by a relative percentage in HSL space.
     ///
-    /// Positive values lighten, negative values darken. Converts to HSL first,
-    /// adjusts only the lightness component, then converts back to RGB.
-    /// This preserves hue and saturation, preventing colors from shifting
-    /// toward gray when lightened or darkened.
+    /// Positive values lighten (move toward 100), negative values darken
+    /// (move toward 0). The adjustment is **relative** to the current position:
     ///
-    /// - Parameter amount: The lightness adjustment (-1 to 1).
-    /// - Returns: The adjusted color as RGB, or self if semantic (unresolved).
-    func adjusted(by amount: Double) -> Self {
+    /// - Lighten: `newLightness = lightness + (100 − lightness) × percentage`
+    /// - Darken:  `newLightness = lightness × (1 − |percentage|)`
+    ///
+    /// This means 0.5 always moves halfway to the target extreme, regardless
+    /// of the starting lightness. Hue and saturation are preserved.
+    ///
+    /// - Parameter percentage: The relative adjustment (−1 to 1).
+    /// - Returns: The adjusted color as HSL, or self if semantic (unresolved).
+    func adjusted(by percentage: Double) -> Self {
         guard let (red, green, blue) = rgbComponents else {
             return self
         }
 
         let (hue, saturation, lightness) = Self.rgbToHSL(red: red, green: green, blue: blue)
-        let newLightness = min(100, max(0, lightness + amount * 100))
+        let clamped = min(1.0, max(-1.0, percentage))
 
-        return .hsl(hue, saturation, newLightness)
+        let newLightness: Double
+        if clamped >= 0 {
+            // Lighten: move toward 100
+            newLightness = lightness + (100.0 - lightness) * clamped
+        } else {
+            // Darken: move toward 0
+            newLightness = lightness * (1.0 + clamped)
+        }
+
+        return .hsl(hue, saturation, min(100, max(0, newLightness)))
     }
 }
 
