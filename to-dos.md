@@ -39,6 +39,11 @@
 
 ## Completed
 
+### 2026-02-05
+
+- [x] **Social Lookup Optimization** — GitHub Social API, NodeInfo instance validation, timeouts, false positives eliminated
+- [x] **Dashboard: Branches → Open Issues** — StatCard replaced with `SFBubbleLeftAndExclamationmarkBubbleRightFill` icon
+
 ### 2026-02-03
 
 - [x] **Subtree Memoization** — EquatableView + RenderCache, opt-in via `.equatable()`, cache cleared on @State change
@@ -85,4 +90,52 @@
 
 ---
 
-**Last Updated:** 2026-02-04
+## Feature Ideas (Backlog)
+
+### Render Performance — Architectural Guidelines from SwiftUI Patterns - 2026-02-05 12:21
+
+Permanent architectural concern. Synthesized from the [SwiftUI performance article](https://www.swiftdifferently.com/blog/swiftui/swiftui-performance-article) by Omar Elsayed, the [SwiftUI Agent Skill](https://github.com/AvdLee/SwiftUI-Agent-Skill) by Antoine van der Lee (references: `performance-patterns.md`, `view-structure.md`, `list-patterns.md`, `layout-best-practices.md`), and evaluated for applicability to a TUI framework.
+
+**Problem:** State changes trigger body re-evaluation. The cost scales with the number of primitive views in the body. SwiftUI diffs old vs. new body output to find what changed — the more primitives, the more work. Identical patterns apply to TUIKit's render pipeline.
+
+**Core principles and TUIKit applicability:**
+
+1. **View struct decomposition = diffing boundaries**
+   Separate structs let the framework skip body re-evaluation when inputs haven't changed. `@ViewBuilder` functions and computed properties do NOT create boundaries — they inline at runtime. *Directly applicable.* Already partially addressed via `EquatableView` + `RenderCache`, but structural decomposition should be a documented best practice.
+
+2. **POD (Plain Old Data) views for fast diffing**
+   Views containing only simple value types (no property wrappers) use `memcmp` for fastest comparison. Wrap expensive non-POD views in POD parent structs. *Applicable:* TUIKit views with only `let` properties and no `@State` can benefit from this pattern.
+
+3. **Pass only needed values, not entire models**
+   Passing large context/config objects creates broad dependencies — any property change triggers updates in all observing views. Pass specific values instead. *Directly applicable:* TUIKit views should receive only the data they render, not entire app state objects.
+
+4. **Avoid redundant state updates in hot paths**
+   Check for value changes before assigning state. Gate frequent updates (scroll, resize) by thresholds. *Applicable to TUIKit:* terminal resize events, keyboard repeat, timer ticks — guard with `if newValue != oldValue`.
+
+5. **No object creation or heavy computation in body**
+   Formatters, sorting, filtering — all belong outside body. Body should be a pure structural declaration. *Directly applicable.* DateFormatters → static properties; sorted arrays → computed on state change, not in body.
+
+6. **Stable identity for ForEach / list items**
+   Never use `.indices` for dynamic content. Ensure constant view count per element. Prefilter arrays instead of inline filtering. Avoid `AnyView` in list rows. *Applicable when TUIKit gets List/Table components:* stable identity prevents excessive diffing and potential crashes.
+
+7. **Prefer modifiers over conditional views for state changes**
+   `opacity(0)` vs. `if isVisible { ... }` — conditionals destroy view identity and state. Use modifiers to represent different states of the *same* view. *Partially applicable:* TUIKit's modifier chain (`.hidden()`, `.disabled()`) should be preferred over conditional inclusion where possible.
+
+8. **Container views: `@ViewBuilder let content` over closures**
+   Closures can't be compared → always cause re-renders. `@ViewBuilder let content: Content` allows the framework to diff the content. *Directly applicable to TUIKit container views.*
+
+9. **Equatable as escape hatch for closure identity**
+   When closures prevent comparison, conform to `Equatable` + use `.equatable()`. *Already implemented in TUIKit.* Ensure it's documented for user-facing views.
+
+10. **Debug: `Self._printChanges()` equivalent**
+    SwiftUI has `Self._printChanges()` to identify what caused body re-evaluation. *Consider:* adding a similar debug mechanism to TUIKit's render pipeline (e.g., log which views re-evaluated and why).
+
+**Action items:**
+- Document these as architectural guidelines in DocC
+- Audit existing complex views (example apps, overlay compositions) for monolithic bodies
+- Ensure `@ViewBuilder` helper methods in existing views don't mask performance issues
+- Add debug logging for view re-evaluation in development builds
+
+---
+
+**Last Updated:** 2026-02-05
