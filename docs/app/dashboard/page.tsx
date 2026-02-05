@@ -190,15 +190,15 @@ export default function DashboardPage() {
             <CommitList commits={stats.recentCommits} loading={stats.loading} />
           </div>
 
-          {/* Footer: cache status (centered on mobile) + rate limit (desktop only) */}
-          <div className="flex flex-col items-center gap-2 font-mono text-xs text-muted/60 sm:flex-row sm:justify-between sm:text-sm">
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center sm:justify-start sm:text-left">
+          {/* Footer: cache status + rate limit — stacked and centered on phones/tablets, side-by-side on desktop */}
+          <div className="flex flex-col items-center gap-2 font-mono text-xs text-muted/60 lg:flex-row lg:justify-between lg:text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center lg:justify-start lg:text-left">
               {lastFetchedAt && (
                 <>
                   <span>
                     Updated {formatTimeAgo(lastFetchedAt)}
                     {isFromCache && (
-                      <span className="ml-1 rounded bg-white/5 px-1 py-0.5 text-[10px] text-muted/40 sm:ml-1.5 sm:px-1.5 sm:text-xs">
+                      <span className="ml-1 rounded bg-white/5 px-1 py-0.5 text-[10px] text-muted/40 lg:ml-1.5 lg:px-1.5 lg:text-xs">
                         cached
                       </span>
                     )}
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               )}
             </div>
             {stats.rateLimit && (
-              <div className="hidden sm:block">
+              <div className="text-center lg:text-right">
                 API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
               </div>
             )}
