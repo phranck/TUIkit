@@ -302,6 +302,7 @@ extension RenderLoop {
         if let appearance = appearanceManager.currentAppearance {
             environment.appearance = appearance
         }
+        environment.notificationService = NotificationService.current
         return environment
     }
 }

@@ -1,5 +1,9 @@
 # Toast View
 
+## Superseded
+
+Superseded on 2026-02-05 by the Notification System (PR #77). The final implementation diverged significantly: fire-and-forget `NotificationService.post()` instead of `Binding<Bool>`, no severity styles (just a notification), fixed top-right placement, `Box`-based rendering.
+
 ## Goal
 
 Add a `.toast()` view modifier to TUIKit that shows a temporary notification message with auto-dismiss, fade-in/fade-out animation, and preset severity styles.

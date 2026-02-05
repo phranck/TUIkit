@@ -1,15 +1,14 @@
 # TUIKit — Session Context
 
-Branch: `main` | Tests: 514 / 86 suites | Build: clean
+Branch: `feature/notification-view` (PR #77, ready to merge) | Tests: 541 / 88 suites | Build: clean
 
 ## Active
 
-Markdown language audit — translating German remnants to English.
+Waiting for PR #77 merge.
 
 ## Next
 
-1. **TupleView Equatable** — per-arity conditional conformance for `TupleView2..10`
+1. **Remove Block Appearance** — new branch after merge, full inventory prepared
 2. **TextInput / TextField** — single-line text input, cursor, backspace, delete, scrolling
 3. **Table** — column alignment, ANSI-aware padding
 4. **ProgressBar** — Unicode blocks (`▓░`)
-5. **Cache JSON from Git** — `.gitignore` + CI regeneration for social-cache.json / weekly-activity-cache.json
