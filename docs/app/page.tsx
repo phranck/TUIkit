@@ -94,16 +94,18 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Swift Package badge */}
-            <p className="mt-20 mb-4 max-w-2xl text-xl leading-relaxed text-muted">
-              Getting started is simple. Add TUIkit as a dependency to your
-              Swift package — no extra configuration, no system libraries to install:
-            </p>
-            <PackageBadge />
+            {/* Swift Package badge — hidden on mobile */}
+            <div className="hidden sm:block">
+              <p className="mt-20 mb-4 max-w-2xl text-xl leading-relaxed text-muted">
+                Getting started is simple. Add TUIkit as a dependency to your
+                Swift package — no extra configuration, no system libraries to install:
+              </p>
+              <PackageBadge />
+            </div>
           </section>
 
-          {/* Code Preview Section */}
-          <section className="mx-auto max-w-3xl px-6 pb-28">
+          {/* Code Preview Section — hidden on mobile */}
+          <section className="mx-auto hidden max-w-3xl px-6 pb-28 sm:block">
             <CodePreview />
           </section>
 
