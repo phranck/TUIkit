@@ -1,16 +1,16 @@
 # TUIKit — Session Context
 
-Branch: `main` | Tests: 503 / 86 suites | Build: clean
+Branch: `feature/render-performance-phase2` → PR #74 | Tests: 514 / 86 suites | Build: clean
 
 ## Active
 
-(none)
+PR #74 open — 5 commits, awaiting review/merge.
 
 ## Next
 
-1. **TextInput / TextField** — single-line text input, cursor, backspace, delete, scrolling
-2. **Table** — column alignment, ANSI-aware padding (`padToVisibleWidth` exists)
-3. **ProgressBar** — Unicode blocks (`▓░`)
-4. **Toast / Notification** — plan: `plans/2026-02-02-toast-view.md`
-5. **Linux race conditions** — `StatePropertyTests` disabled on Linux; `AppState`, `PulseTimer`, `RenderCache`, `JSONFileStorage` need synchronization
-6. **Example App Redesign** — split feature catalog into small focused apps
+1. **GH Actions: Social Cache Workflow** — 403 push denied, needs `contents: write` or PAT
+2. **TupleView Equatable** — per-arity conditional conformance for `TupleView2..10`
+3. **TextInput / TextField** — single-line text input, cursor, backspace, delete, scrolling
+4. **Table** — column alignment, ANSI-aware padding
+5. **ProgressBar** — Unicode blocks (`▓░`)
+6. **Cache-JSON aus Git** — `.gitignore` + CI regeneration for social-cache.json / weekly-activity-cache.json

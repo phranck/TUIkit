@@ -144,7 +144,7 @@ This path is used by:
 - **Layout containers** — `VStack`, `HStack`, `ZStack`
 - **Interactive views** — ``Button``, ``ButtonRow``, ``Menu``
 - **Container views** — ``Panel``, ``Card``, ``Alert``, ``Dialog``
-- **Modifier wrappers** — `ModifiedView`, `BorderedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, and all lifecycle modifiers
+- **Modifier wrappers** — `ModifiedView`, `BorderedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
 
 ### Path 2: Composition (body)
 
@@ -277,6 +277,7 @@ More complex modifiers are full `View + Renderable` implementations that control
 - **`OverlayModifier`** — Renders base and overlay separately, composites via `FrameBuffer.composited(with:at:)`
 - **`DimmedModifier`** — Renders content, then applies ANSI dim code to every line
 - **`EnvironmentModifier`** — Creates modified context, renders content with it
+- **``EquatableView``** — Checks ``RenderCache`` before rendering; returns cached buffer on hit, renders and stores on miss (see <doc:RenderCycle#Subtree-Memoization>)
 
 ## Lifecycle Tracking
 
@@ -327,6 +328,92 @@ All terminal writes during a frame are collected in an internal `[UInt8]` buffer
 
 ### What Is NOT Diffed
 
-The **view tree** is always fully re-evaluated each frame — there is no virtual DOM or subtree memoization. This keeps the architecture simple and eliminates stale-state bugs. The diffing happens only at the terminal output level.
+The view tree is re-evaluated each frame — there is no virtual DOM. However, views wrapped in ``EquatableView`` (via `.equatable()`) can skip subtree rendering when their properties are unchanged. See <doc:RenderCycle#Subtree-Memoization> below.
 
 The alternate screen buffer (entered during setup) ensures that the user's previous terminal content is preserved and restored on exit.
+
+## Subtree Memoization
+
+While the view tree is reconstructed each frame, ``EquatableView`` allows **individual subtrees** to skip rendering when their inputs haven't changed. This combines the simplicity of full tree evaluation with targeted caching for expensive or static subtrees.
+
+### How It Works
+
+When a view is wrapped in `.equatable()`, the rendering system:
+
+1. Looks up the cached ``FrameBuffer`` for this view's ``ViewIdentity``
+2. Compares the **current view value** with the cached snapshot via `Equatable.==`
+3. Checks that the available **width and height** haven't changed
+4. On **cache hit**: returns the cached buffer — the entire subtree is skipped
+5. On **cache miss**: renders normally and stores the result
+
+```swift
+// A static info box — title and subtitle are the only inputs.
+struct FeatureBox: View, Equatable {
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        VStack {
+            Text(title).bold().foregroundColor(.palette.accent)
+            Text(subtitle).foregroundColor(.palette.foregroundSecondary)
+        }
+        .padding(EdgeInsets(horizontal: 2, vertical: 1))
+        .border(color: .palette.border)
+    }
+}
+
+// In a parent view — cached between frames when title/subtitle are unchanged:
+FeatureBox("Pure Swift", "No ncurses").equatable()
+```
+
+### Cache Invalidation
+
+The ``RenderCache`` is **fully cleared** in two situations:
+
+| Trigger | Mechanism |
+|---------|-----------|
+| Any `@State` change | `StateBox.value.didSet` calls `renderCache.clearAll()` |
+| Environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
+
+Between these events — for example during Spinner animation frames at 25 FPS — the cache is fully active. Static subtrees are rendered once and reused for every subsequent frame.
+
+### When to Use `.equatable()`
+
+| Good candidates | Why |
+|----------------|-----|
+| Static display views (labels, headers, feature boxes) | Properties rarely change, body is rebuilt identically each frame |
+| Complex container hierarchies | Many nested views that produce the same output |
+| Views next to animated siblings | Spinner/Pulse re-renders the whole tree; static siblings benefit from caching |
+
+| Bad candidates | Why |
+|---------------|-----|
+| Views that read `@State` directly | State lives in a reference-type box — the view struct compares as equal even when state changed |
+| Views that change every frame | Cache overhead with no benefit |
+| Tiny views (single `Text`) | Rendering cost is already minimal |
+
+### Which Types Support `.equatable()`
+
+The following types have `Equatable` conformance, enabling `.equatable()` on views composed of them:
+
+**Leaf views:** ``Text``
+
+**Container views** (conditional: `where Content: Equatable`): `VStack`, `HStack`, `ZStack`, ``Box``, ``Panel``, ``Card``, ``Dialog``, `ContainerView`, ``BorderedView``
+
+**Modifier views** (conditional): `FlexibleFrameView`, `OverlayModifier`, `DimmedModifier`
+
+**Supporting types:** `TextStyle`, `Alignment`, `ContainerConfig`, `ContainerStyle`
+
+> Note: `Button` cannot be `Equatable` because it stores a closure (`action: () -> Void`). Views containing buttons are not candidates for `.equatable()`.
+
+### Debug Logging
+
+Set `TUIKIT_DEBUG_RENDER=1` to enable per-frame cache statistics on stderr:
+
+```
+[RenderCache] STORE Root/MainMenuPage/FeatureBox
+[RenderCache] HIT Root/MainMenuPage/FeatureBox
+[RenderCache] MISS (no entry) Root/SpinnersPage/Spinner
+[RenderCache] FRAME — hits: 3, misses: 2, stores: 2, clears: 0, entries: 3, hit rate: 60%
+```
+
+Redirect with `2>render.log` to capture without interfering with the TUI.

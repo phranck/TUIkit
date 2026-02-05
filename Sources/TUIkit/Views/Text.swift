@@ -20,7 +20,7 @@
 /// Text("Colored")
 ///     .foregroundColor(.red)
 /// ```
-public struct Text: View {
+public struct Text: View, Equatable {
     /// The text to display.
     let content: String
 
@@ -140,7 +140,7 @@ extension Text {
 /// The style of a text view.
 ///
 /// Contains all formatting options like color, bold, etc.
-public struct TextStyle: Sendable {
+public struct TextStyle: Sendable, Equatable {
     /// The foreground color of the text.
     public var foregroundColor: Color?
 

@@ -119,3 +119,7 @@ public struct Box<Content: View>: View {
         content.border(borderStyle, color: borderColor)
     }
 }
+
+// MARK: - Equatable Conformance
+
+extension Box: Equatable where Content: Equatable {}
