@@ -22,6 +22,8 @@ const CELL_GAP = 3;
 const LABEL_WIDTH = 32;
 /** Minimum cell size to prevent cells from becoming invisible. */
 const MIN_CELL_SIZE = 6;
+/** Minimum number of columns so the grid never produces oversized cells with sparse data. */
+const MIN_COLUMNS = 52;
 
 /**
  * Formats a Unix timestamp (seconds) + day offset into a readable date.
@@ -83,8 +85,9 @@ function intensityLevel(count: number, maxCommits: number): number {
  * Formula: floor((availableWidth - LABEL_WIDTH - (colCount - 1) * CELL_GAP) / colCount)
  */
 function computeCellSize(containerWidth: number, colCount: number): number {
-  const availableForCells = containerWidth - LABEL_WIDTH - (colCount - 1) * CELL_GAP;
-  return Math.max(MIN_CELL_SIZE, Math.floor(availableForCells / colCount));
+  const cols = Math.max(MIN_COLUMNS, colCount);
+  const availableForCells = containerWidth - LABEL_WIDTH - (cols - 1) * CELL_GAP;
+  return Math.max(MIN_CELL_SIZE, Math.floor(availableForCells / cols));
 }
 
 /**
