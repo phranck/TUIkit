@@ -25,7 +25,6 @@
 
 ### Performance
 
-- [ ] **TupleView Equatable** — `VStack { Text("A"); Text("B") }` produces `TupleView<(Text, Text)>`, needs per-arity conditional Equatable
 - [ ] **`View._printChanges()` Equivalent** — Debug mechanism that logs why body was re-evaluated
 
 ### Infrastructure
@@ -46,6 +45,8 @@
 - [x] **Social Lookup Optimization** — GitHub Social API, NodeInfo instance validation, timeouts, false positives eliminated
 - [x] **Dashboard: Branches → Open Issues** — StatCard replaced with `SFBubbleLeftAndExclamationmarkBubbleRightFill` icon
 - [x] **GH Actions: Social Cache Workflow** — 403 push denied, fixed with PAT + `contents: write` permissions
+- [x] **TupleView Equatable** — Conditional Equatable via parameter packs, enables `.equatable()` on VStack/HStack/ZStack compositions (PR #76)
+- [x] **Markdown Language Audit** — German remnants translated to English across 4 files (PR #75)
 
 ### 2026-02-03
 
@@ -141,4 +142,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-05 17:00
