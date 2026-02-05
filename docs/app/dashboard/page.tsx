@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGitHubStatsCache } from "../hooks/useGitHubStatsCache";
 import CloudBackground from "../components/CloudBackground";
 import RainOverlay from "../components/RainOverlay";
@@ -49,16 +50,14 @@ function formatCountdown(targetMs: number): string {
  *
  * Data is cached in localStorage for 5 minutes. Page reloads within that window
  * serve cached data without hitting the GitHub API. A background timer
- * auto-refreshes every 5 minutes. A manual force-refresh button is available
- * with a 60-second cooldown. Rate limit is displayed in the footer.
+ * auto-refreshes every 5 minutes. An animated refresh icon appears during loading.
  */
 export default function DashboardPage() {
   const {
-    forceRefresh,
     lastFetchedAt,
     nextRefreshAt,
-    canForceRefresh,
     isFromCache,
+    isRefreshing,
     ...stats
   } = useGitHubStatsCache();
 
@@ -91,16 +90,6 @@ export default function DashboardPage() {
   const toggleStargazers = useCallback(() => setShowStargazers((prev) => !prev), []);
   const closeStargazers = useCallback(() => setShowStargazers(false), []);
 
-  // Compute cooldown remaining for the button tooltip
-  const cooldownRemaining = lastFetchedAt !== null
-    ? Math.max(0, Math.ceil((60_000 - (Date.now() - lastFetchedAt)) / 1000))
-    : 0;
-
-  const refreshButtonDisabled = stats.loading || !canForceRefresh;
-  const refreshButtonTitle = !canForceRefresh && cooldownRemaining > 0
-    ? `Available in ${cooldownRemaining}s`
-    : "Refresh data";
-
   return (
     <div className="relative min-h-screen">
       <CloudBackground />
@@ -119,7 +108,7 @@ export default function DashboardPage() {
         <SiteNav activePage="dashboard" />
 
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-6 pt-28 pb-20">
-          {/* Header with refresh */}
+          {/* Header with loading indicator */}
           <div className="mb-10 flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-foreground">Project Dashboard</h1>
@@ -127,27 +116,30 @@ export default function DashboardPage() {
                 Live metrics · <a href="https://github.com/phranck/TUIkit" target="_blank" rel="noopener noreferrer" className="text-accent transition-colors hover:text-foreground">phranck/TUIkit</a>
               </p>
             </div>
-            <button
-              onClick={forceRefresh}
-              disabled={refreshButtonDisabled}
-              title={refreshButtonTitle}
-              className="flex cursor-pointer items-center gap-2 rounded-full border border-border px-5 py-2 text-base font-medium text-foreground transition-all hover:border-accent/40 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={refreshButtonTitle}
-            >
-              <span className={stats.loading ? "animate-spin-slow" : ""}>
-                <Icon name="refresh" size={16} />
-              </span>
-              Refresh
-            </button>
+            {/* Animated refresh icon — fades in while refreshing, spins, then fades out */}
+            <AnimatePresence>
+              {isRefreshing && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                  aria-label="Refreshing data"
+                >
+                  <span className="animate-spin-slow text-muted">
+                    <Icon name="refresh" size={20} />
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Error state */}
           {stats.error && (
             <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-base text-red-400">
               <strong>Error:</strong> {stats.error}
-              <button onClick={forceRefresh} className="ml-3 text-accent underline transition-colors hover:text-foreground">
-                Retry
-              </button>
+              <span className="ml-3 text-muted/60">Will retry automatically</span>
             </div>
           )}
 
