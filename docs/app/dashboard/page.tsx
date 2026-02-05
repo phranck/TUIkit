@@ -109,10 +109,10 @@ export default function DashboardPage() {
 
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-6 pt-28 pb-20">
           {/* Header with loading indicator */}
-          <div className="mb-10 flex items-center justify-between">
+          <div className="mb-6 flex flex-col items-center text-center sm:mb-10 sm:flex-row sm:items-center sm:justify-between sm:text-left">
             <div>
-              <h1 className="text-4xl font-bold text-foreground">Project Dashboard</h1>
-              <p className="mt-1 text-lg text-muted">
+              <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Project Dashboard</h1>
+              <p className="mt-1 text-base text-muted sm:text-lg">
                 Live metrics · <a href="https://github.com/phranck/TUIkit" target="_blank" rel="noopener noreferrer" className="text-accent transition-colors hover:text-foreground">phranck/TUIkit</a>
               </p>
             </div>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center justify-center"
+                  className="mt-3 flex items-center justify-center sm:mt-0"
                   aria-label="Refreshing data"
                 >
                   <span className="animate-spin-slow text-muted">
