@@ -152,4 +152,154 @@ struct RenderCacheTests {
         let result = cache.lookup(identity: identity, view: "42", contextWidth: 80, contextHeight: 24)
         #expect(result == nil)
     }
+
+    // MARK: - Stats
+
+    @Test("Stats start at zero")
+    func statsInitiallyZero() {
+        let cache = RenderCache()
+        #expect(cache.stats == RenderCache.Stats())
+        #expect(cache.stats.hits == 0)
+        #expect(cache.stats.misses == 0)
+        #expect(cache.stats.stores == 0)
+        #expect(cache.stats.clears == 0)
+    }
+
+    @Test("Cache hit increments hits counter")
+    func statsCountHits() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+
+        #expect(cache.stats.hits == 2)
+        #expect(cache.stats.misses == 0)
+    }
+
+    @Test("Cache miss increments misses counter")
+    func statsCountMisses() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+
+        // Miss: different view value
+        _ = cache.lookup(identity: identity, view: "B", contextWidth: 80, contextHeight: 24)
+        // Miss: unknown identity
+        _ = cache.lookup(identity: ViewIdentity(path: "Root/Other"), view: "A", contextWidth: 80, contextHeight: 24)
+        // Miss: different size
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 120, contextHeight: 24)
+
+        #expect(cache.stats.misses == 3)
+        #expect(cache.stats.hits == 0)
+    }
+
+    @Test("Store increments stores counter")
+    func statsCountStores() {
+        let cache = RenderCache()
+        cache.store(identity: ViewIdentity(path: "A"), view: 1, buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+        cache.store(identity: ViewIdentity(path: "B"), view: 2, buffer: FrameBuffer(text: "b"), contextWidth: 80, contextHeight: 24)
+        // Overwrite existing entry
+        cache.store(identity: ViewIdentity(path: "A"), view: 3, buffer: FrameBuffer(text: "c"), contextWidth: 80, contextHeight: 24)
+
+        #expect(cache.stats.stores == 3)
+    }
+
+    @Test("clearAll increments clears counter")
+    func statsCountClears() {
+        let cache = RenderCache()
+        cache.store(identity: ViewIdentity(path: "A"), view: 1, buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+
+        cache.clearAll()
+        cache.clearAll()
+
+        #expect(cache.stats.clears == 2)
+    }
+
+    @Test("Stats accumulate across multiple operations")
+    func statsAccumulateAcrossOperations() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+
+        // 1 store
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+        // 1 hit
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        // 1 miss (view changed)
+        _ = cache.lookup(identity: identity, view: "B", contextWidth: 80, contextHeight: 24)
+        // 1 clear
+        cache.clearAll()
+        // 1 miss (cache empty)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+
+        #expect(cache.stats.hits == 1)
+        #expect(cache.stats.misses == 2)
+        #expect(cache.stats.stores == 1)
+        #expect(cache.stats.clears == 1)
+        #expect(cache.stats.lookups == 3)
+    }
+
+    @Test("Hit rate is calculated correctly")
+    func statsHitRate() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+
+        // 3 hits
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        // 1 miss
+        _ = cache.lookup(identity: identity, view: "B", contextWidth: 80, contextHeight: 24)
+
+        #expect(cache.stats.hitRate == 0.75)
+    }
+
+    @Test("Hit rate is zero when no lookups occurred")
+    func statsHitRateZeroWithoutLookups() {
+        let cache = RenderCache()
+        #expect(cache.stats.hitRate == 0)
+    }
+
+    @Test("resetStats clears all counters")
+    func resetStatsClearsCounters() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        cache.clearAll()
+
+        #expect(cache.stats.hits > 0)
+        cache.resetStats()
+        #expect(cache.stats == RenderCache.Stats())
+    }
+
+    @Test("reset() also clears statistics")
+    func resetClearsStats() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/View")
+        cache.store(identity: identity, view: "A", buffer: FrameBuffer(text: "a"), contextWidth: 80, contextHeight: 24)
+        _ = cache.lookup(identity: identity, view: "A", contextWidth: 80, contextHeight: 24)
+        cache.clearAll()
+
+        #expect(cache.stats.hits > 0)
+        cache.reset()
+        #expect(cache.stats == RenderCache.Stats())
+        #expect(cache.isEmpty)
+    }
+
+    @Test("Stats delta computes per-frame difference")
+    func statsDelta() {
+        let earlier = RenderCache.Stats(hits: 10, misses: 5, stores: 8, clears: 2)
+        let current = RenderCache.Stats(hits: 13, misses: 7, stores: 9, clears: 3)
+
+        let delta = current.delta(since: earlier)
+
+        #expect(delta.hits == 3)
+        #expect(delta.misses == 2)
+        #expect(delta.stores == 1)
+        #expect(delta.clears == 1)
+        #expect(delta.lookups == 5)
+    }
 }

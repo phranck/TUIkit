@@ -39,6 +39,12 @@ public struct FlexibleFrameView<Content: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension FlexibleFrameView: Equatable where Content: Equatable {}
+
+// MARK: - Renderable
+
 extension FlexibleFrameView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Calculate the target width based on constraints

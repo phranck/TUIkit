@@ -6,6 +6,36 @@
 
 import TUIkit
 
+/// A small feature highlight box with a bold title and subtitle.
+///
+/// Used on the main menu to showcase key framework properties.
+/// Stateless and palette-driven — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct FeatureBox: View, Equatable {
+    /// The bold headline text.
+    let title: String
+
+    /// The secondary description text.
+    let subtitle: String
+
+    init(_ title: String, _ subtitle: String) {
+        self.title = title
+        self.subtitle = subtitle
+    }
+
+    var body: some View {
+        VStack {
+            Text(title)
+                .bold()
+                .foregroundColor(.palette.accent)
+            Text(subtitle)
+                .foregroundColor(.palette.foregroundSecondary)
+        }
+        .padding(EdgeInsets(horizontal: 2, vertical: 1))
+        .border(color: .palette.border)
+    }
+}
+
 /// The main menu page.
 ///
 /// Displays a centered menu with all available demos and
@@ -52,9 +82,9 @@ struct MainMenuPage: View {
             HStack {
                 Spacer()
                 HStack(spacing: 3) {
-                    featureBox("Pure Swift", "No ncurses")
-                    featureBox("Declarative", "SwiftUI-like")
-                    featureBox("Composable", "View protocol")
+                    FeatureBox("Pure Swift", "No ncurses").equatable()
+                    FeatureBox("Declarative", "SwiftUI-like").equatable()
+                    FeatureBox("Composable", "View protocol").equatable()
                 }
                 Spacer()
             }
@@ -73,20 +103,5 @@ struct MainMenuPage: View {
                     .italic()
             }
         }
-    }
-
-    /// Creates a small feature highlight box.
-    ///
-    /// The border style is automatically derived from the current appearance.
-    private func featureBox(_ title: String, _ subtitle: String) -> some View {
-        VStack {
-            Text(title)
-                .bold()
-                .foregroundColor(.palette.accent)
-            Text(subtitle)
-                .foregroundColor(.palette.foregroundSecondary)
-        }
-        .padding(EdgeInsets(horizontal: 2, vertical: 1))
-        .border(color: .palette.border)  // Uses appearance default borderStyle
     }
 }

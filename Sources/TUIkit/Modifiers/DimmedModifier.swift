@@ -22,6 +22,10 @@ public struct DimmedModifier<Content: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension DimmedModifier: Equatable where Content: Equatable {}
+
 // MARK: - Ornament Characters
 
 /// Characters that are purely decorative and should be replaced with spaces
