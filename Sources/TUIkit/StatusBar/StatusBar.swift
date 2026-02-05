@@ -310,9 +310,14 @@ extension StatusBar: Renderable {
     }
 
     /// Renders the bordered style using the current appearance's border style.
+    ///
+    /// Content is inset by 1 character on each side so items don't touch the
+    /// border characters.
     private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
+        let contentPadding = 2  // 1 char padding left + right
         let innerWidth = width - BorderRenderer.borderWidthOverhead
-        let content = alignContent(itemStrings: itemStrings, width: innerWidth)
+        let contentWidth = innerWidth - contentPadding
+        let content = " " + alignContent(itemStrings: itemStrings, width: contentWidth) + " "
 
         let border = context.environment.appearance.borderStyle
         let borderColor = context.environment.palette.border
