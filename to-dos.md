@@ -15,7 +15,6 @@
 
 #### Medium
 
-- [ ] **ProgressBar** — Progress bar with Unicode blocks (`▓░`)
 - [ ] **List (scrollable)** — Scrollable list with selection for arbitrary views
 - [ ] **Checkbox / Toggle** — `[x]`/`[ ]` with keyboard toggle
 
@@ -40,7 +39,8 @@
 
 ### 2026-02-05
 
-- [x] **Remove Block/Flat Appearances** — Eliminated block, flat, and ascii appearances. 4 border-based styles remain (line, rounded, doubleLine, heavy). Removed BlockPalette, surface tokens, BorderedView (consolidated into ContainerView), stale DocC. Consistent 1-char padding in all containers.
+- [x] **ProgressView** — Determinate progress bar with 5 styles (block, blockFine, shade, bar, dot), SwiftUI-matching API, 26 tests. Also: `darker(by:)`/`lighter(by:)` changed to relative percentage scaling.
+- [x] **Remove Block/Flat Appearances** — Eliminated block, flat, ascii. BorderedView consolidated into ContainerView. Consistent 1-char padding in all containers. DocC overhauled. (PR #78)
 - [x] **Notification System** — Fire-and-forget `NotificationService`, fade-in/out animation, word-wrap, top-right overlay, Box rendering. No severity styles, no Binding. (PR #77)
 
 - [x] **Render Performance Phase 2** — Cache invalidation fix, Equatable on 15 types/views, debug tooling, example app decomposition + `.equatable()`, DocC documentation (PR #74)
@@ -74,7 +74,7 @@
 
 - [x] **Source Restructure** — Directory-Reorg, Phosphor→Palette Rename (PR #30)
 - [x] **EnvironmentStorage Elimination** — Singleton removed, SemanticColor system (PR #31)
-- [x] **Palette Protocol Split** — `Palette` + `BlockPalette`, ANSI→RGB (PR #48)
+- [x] **Palette Protocol Split** — `Palette` + `BlockPalette` (later removed), ANSI→RGB (PR #48)
 - [x] **Access-Level Refactor** — Public API surface restricted (PR #37)
 - [x] **DocC Documentation** — 8 guide articles, diagrams, palette/keyboard reference
 
@@ -144,4 +144,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 22:30
+**Last Updated:** 2026-02-05 23:30
