@@ -29,6 +29,7 @@ import {
   SFShippingboxFill,
   SFListBullet,
   SFServerRack,
+  SFBubbleLeftAndExclamationmarkBubbleRightFill,
 } from "sf-symbols-lib/hierarchical";
 
 /** Maps of icon names to SF Symbol constants for type-safe usage. */
@@ -60,6 +61,7 @@ const sfIcons = {
   shippingbox: SFShippingboxFill,
   listBullet: SFListBullet,
   serverRack: SFServerRack,
+  issue: SFBubbleLeftAndExclamationmarkBubbleRightFill,
 } as const;
 
 /** Custom SVG icons not available in SF Symbols. */
