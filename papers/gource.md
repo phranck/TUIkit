@@ -1,6 +1,6 @@
 # Gource — Git History Visualization
 
-Gource visualisiert die Git-History als animierten Baum. Dateien sind Nodes, Committer fliegen als Avatare durch das Repo. Klassisch für Projekt-Timelapses.
+Gource visualizes Git history as an animated tree. Files are nodes, committers fly through the repo as avatars. A classic for project timelapses.
 
 ## Installation
 
@@ -8,28 +8,28 @@ Gource visualisiert die Git-History als animierten Baum. Dateien sind Nodes, Com
 brew install gource
 ```
 
-## Konfiguration
+## Configuration
 
-Config-File: `.gource.conf` im Projekt-Root.
+Config file: `.gource.conf` in the project root.
 
 ```bash
 gource --load-config .gource.conf
 ```
 
-### Aktuelle Config-Einstellungen
+### Current Config Settings
 
-| Setting | Wert | Zweck |
-|---------|------|-------|
+| Setting | Value | Purpose |
+|---------|-------|---------|
 | `viewport` | 1920×1080 | Full HD |
 | `background-colour` | `0D1117` | GitHub Dark Theme |
-| `seconds-per-day` | 1.5 | Geschwindigkeit pro Tag |
-| `time-scale` | 1.5 | Zusätzliche Beschleunigung |
-| `highlight-colour` | `58A6FF` | GitHub Blue für aktiven User |
-| `dir-name-depth` | 2 | Zeigt `Sources/TUIkit`, `Tests/TUIkitTests` |
-| `file-idle-time` | 0 | Dateien verschwinden nicht |
-| `camera-mode` | overview | Zeigt ganzen Baum |
+| `seconds-per-day` | 1.5 | Speed per day |
+| `time-scale` | 1.5 | Additional acceleration |
+| `highlight-colour` | `58A6FF` | GitHub Blue for active user |
+| `dir-name-depth` | 2 | Shows `Sources/TUIkit`, `Tests/TUIkitTests` |
+| `file-idle-time` | 0 | Files don't disappear |
+| `camera-mode` | overview | Shows entire tree |
 
-### Gefilterte Pfade
+### Filtered Paths
 
 - `.DS_Store`
 - `.build/`
@@ -44,32 +44,32 @@ gource --load-config .gource.conf -o - | \
   tui-kit-history.mp4
 ```
 
-### ffmpeg-Parameter
+### ffmpeg Parameters
 
-| Flag | Bedeutung |
-|------|-----------|
+| Flag | Meaning |
+|------|---------|
 | `-r 60` | 60 fps Input |
 | `-vcodec libx264` | H.264 Codec |
-| `-preset medium` | Balance Geschwindigkeit/Qualität |
-| `-pix_fmt yuv420p` | Kompatibel mit allen Playern |
-| `-crf 18` | Hohe Qualität (0=lossless, 23=default, 51=worst) |
+| `-preset medium` | Balance speed/quality |
+| `-pix_fmt yuv420p` | Compatible with all players |
+| `-crf 18` | High quality (0=lossless, 23=default, 51=worst) |
 
-## Nützliche CLI-Flags
+## Useful CLI Flags
 
 ```bash
-# Nur bestimmten Zeitraum
+# Only specific time range
 gource --load-config .gource.conf --start-date "2026-02-01"
 
-# Screenshot statt Animation
+# Screenshot instead of animation
 gource --load-config .gource.conf --stop-at-end -o screenshot.ppm
 
-# Bestimmten User hervorheben
+# Highlight specific user
 gource --load-config .gource.conf --highlight-user "Frank Gregor"
 
-# Langsamer abspielen (z.B. für längere Repos)
+# Play slower (e.g. for longer repos)
 gource --load-config .gource.conf --seconds-per-day 3
 
-# Mit User-Avataren (Bilder in avatars/ Ordner, Name = Dateiname)
+# With user avatars (images in avatars/ folder, name = filename)
 gource --load-config .gource.conf --user-image-dir avatars/
 ```
 
