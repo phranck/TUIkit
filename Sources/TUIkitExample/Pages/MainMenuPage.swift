@@ -9,8 +9,9 @@ import TUIkit
 /// A small feature highlight box with a bold title and subtitle.
 ///
 /// Used on the main menu to showcase key framework properties.
-/// Stateless and palette-driven — a good candidate for `.equatable()`.
-struct FeatureBox: View {
+/// Stateless and palette-driven — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct FeatureBox: View, Equatable {
     /// The bold headline text.
     let title: String
 
@@ -81,9 +82,9 @@ struct MainMenuPage: View {
             HStack {
                 Spacer()
                 HStack(spacing: 3) {
-                    FeatureBox("Pure Swift", "No ncurses")
-                    FeatureBox("Declarative", "SwiftUI-like")
-                    FeatureBox("Composable", "View protocol")
+                    FeatureBox("Pure Swift", "No ncurses").equatable()
+                    FeatureBox("Declarative", "SwiftUI-like").equatable()
+                    FeatureBox("Composable", "View protocol").equatable()
                 }
                 Spacer()
             }
