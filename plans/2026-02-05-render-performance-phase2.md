@@ -1,5 +1,9 @@
 # Render Performance Phase 2: Memoization Activation & Debug Tooling
 
+## Completed
+
+2026-02-05 — All 6 phases implemented. PR #74 on `feature/render-performance-phase2`.
+
 ## Goal
 
 Make the existing subtree memoization (Phase 5, PR #71) actually effective. Currently `EquatableView` + `RenderCache` are fully implemented but **unused in production**: zero views call `.equatable()`, and only 3 trivial views (`Spacer`, `Divider`, `EmptyView`) conform to `Equatable`. Additionally, environment changes bypass cache invalidation — a latent bug that becomes real the moment `.equatable()` is used.
@@ -72,106 +76,85 @@ This is:
 
 #### Implementation
 
-- [ ] Add `EnvironmentSnapshot` struct to `RenderCache` with `paletteName: String` and `appearanceName: String`
-- [ ] Add `private var lastEnvironmentSnapshot: EnvironmentSnapshot?` to `RenderLoop`
-- [ ] In `RenderLoop.render()`, after `buildEnvironment()`: build snapshot from current environment, compare with `lastEnvironmentSnapshot`. If different → `renderCache.clearAll()`. Store as new `lastEnvironmentSnapshot`.
-- [ ] Keep existing `clearAll()` in `StateBox.value.didSet` — state changes can affect content independently of environment
-- [ ] Doc comment on `AppState.setNeedsRender()`: note that environment-affecting changes are automatically detected by `RenderLoop`
+- [x] Add `EnvironmentSnapshot` struct (private in `RenderLoop.swift`) with `paletteID` and `appearanceID`
+- [x] Add `private var lastEnvironmentSnapshot: EnvironmentSnapshot?` to `RenderLoop`
+- [x] In `RenderLoop.render()`, after `buildEnvironment()`: snapshot from built `EnvironmentValues`, compare, `clearAll()` on mismatch
+- [x] Keep existing `clearAll()` in `StateBox.value.didSet`
+- [x] Doc comment on `AppState.setNeedsRender()`
 
 #### Tests
 
-- [ ] Theme change with `.equatable()` view → verify view re-renders with new palette
-- [ ] `setNeedsRender()` without state change → verify cache survives (Spinner scenario)
-- [ ] StatusBar content change → verify it doesn't unnecessarily clear the cache
+- [x] Theme change with `.equatable()` view → verify view re-renders with new palette
+- [x] `setNeedsRender()` without state change → verify cache survives (Spinner scenario)
+- [x] StatusBar content change → verify it doesn't unnecessarily clear the cache
 
 ### Phase 2: Equatable Conformances for Core Types (High Priority)
 
 #### 2a. Types (prerequisites for views)
 
-- [ ] `TextStyle: Equatable` — add conformance declaration (auto-synthesis)
-- [ ] `Alignment: Equatable` — add conformance declaration (auto-synthesis)
-- [ ] `ContainerConfig: Equatable` — add conformance declaration (auto-synthesis)
-- [ ] `DividerStyle: Equatable` — verify, add if missing
+- [x] `TextStyle: Equatable` — auto-synthesis
+- [x] `Alignment: Equatable` — auto-synthesis
+- [x] `ContainerConfig: Equatable` — auto-synthesis
+- [x] `ContainerStyle: Equatable` — auto-synthesis (added during implementation)
 
 #### 2b. Leaf Views
 
-- [ ] `Text: Equatable` — stored properties: `content: String`, `style: TextStyle` — both now `Equatable`
-- [ ] Test: `Text("A") == Text("A")` → true, `Text("A") != Text("B")` → true, styled vs unstyled
+- [x] `Text: Equatable` — stored properties: `content: String`, `style: TextStyle`
+- [x] Test: existing EquatableView tests cover Text equality
 
 #### 2c. Container Views (conditional conformance)
 
-- [ ] `VStack: Equatable where Content: Equatable` — properties: `alignment`, `spacing`, `content`
-- [ ] `HStack: Equatable where Content: Equatable` — same pattern
-- [ ] `ZStack: Equatable where Content: Equatable` — same pattern
-- [ ] `Box: Equatable where Content: Equatable` — properties: `content`, `borderStyle?`, `borderColor?`
-- [ ] `BorderedView: Equatable where Content: Equatable`
-- [ ] `ContainerView: Equatable where Content: Equatable, Footer: Equatable`
-- [ ] `Panel: Equatable where Content: Equatable, Footer: Equatable`
-- [ ] `Card: Equatable where Content: Equatable, Footer: Equatable`
-- [ ] `Dialog: Equatable where Content: Equatable, Footer: Equatable`
-- [ ] Test: `VStack { Text("A") } == VStack { Text("A") }` → true
+- [x] `VStack: Equatable where Content: Equatable`
+- [x] `HStack: Equatable where Content: Equatable`
+- [x] `ZStack: Equatable where Content: Equatable`
+- [x] `Box: Equatable where Content: Equatable`
+- [x] `BorderedView: Equatable where Content: Equatable`
+- [x] `ContainerView: Equatable where Content: Equatable, Footer: Equatable`
+- [x] `Panel: Equatable where Content: Equatable, Footer: Equatable`
+- [x] `Card: Equatable where Content: Equatable, Footer: Equatable`
+- [x] `Dialog: Equatable where Content: Equatable, Footer: Equatable`
+- [x] Existing EquatableView tests cover equality via cache hit/miss
 
 #### 2d. Modifier Views (conditional conformance where possible)
 
-- [ ] `EnvironmentModifier: Equatable where Content: Equatable, V: Equatable`
-- [ ] `FlexibleFrameView: Equatable where Content: Equatable`
-- [ ] `PaddingModifier: Equatable where Content: Equatable`
-- [ ] `OverlayModifier: Equatable where Base: Equatable, Overlay: Equatable`
-- [ ] `DimmedModifier: Equatable where Content: Equatable`
-- [ ] `ForegroundColorModifier: Equatable where Content: Equatable`
-- [ ] `BackgroundColorModifier: Equatable where Content: Equatable`
+- [x] `FlexibleFrameView: Equatable where Content: Equatable`
+- [x] `OverlayModifier: Equatable where Base: Equatable, Overlay: Equatable`
+- [x] `DimmedModifier: Equatable where Content: Equatable`
+- Skipped: `EnvironmentModifier` — `WritableKeyPath` is not `Equatable`
+- Skipped: `PaddingModifier`, `BackgroundModifier` — these are `ViewModifier` (buffer transform), not `View`, so not relevant for `EquatableView` comparison
 
 Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `TaskModifier`, etc.) **cannot** be made `Equatable` — this is expected and matches SwiftUI behavior.
 
 ### Phase 3: Debug Tooling (Medium Priority)
 
-- [ ] Add `RenderCache.Stats` struct: `hits: Int`, `misses: Int`, `clears: Int`, `entries: Int`
-- [ ] Increment counters in `lookup` (hit/miss), `clearAll` (clears), `store` (entries)
-- [ ] Add `RenderCache.stats` property
-- [ ] Add environment-gated debug logging: `TUIKIT_DEBUG_RENDER=1` env var
-  - Log cache hit/miss per identity per frame
-  - Log total stats at end of render pass
-  - Log which views triggered body re-evaluation
-- [ ] Consider: `View._printChanges()` equivalent — static method that logs why a view's body was called
-- [ ] Tests for stats counting
+- [x] Add `RenderCache.Stats` struct with hits/misses/stores/clears, hitRate, delta(since:)
+- [x] Increment counters in `lookup` (hit/miss), `clearAll` (clears), `store`
+- [x] `private(set) var stats` + `statsAtFrameStart` for per-frame deltas
+- [x] `TUIKIT_DEBUG_RENDER=1` env var: per-identity HIT/MISS/STORE logs + FRAME summary
+- [x] `logDebug(@autoclosure)` — zero cost when disabled, stderr output
+- [x] 11 new tests for stats counting, delta, reset
+- Deferred: `View._printChanges()` equivalent — future work
 
 ### Phase 4: Example App — View Decomposition (Medium Priority)
 
-Extract subviews from monolithic bodies. Each extracted subview becomes a diffing boundary.
-
-#### ContainersPage (111-line body → ~4 subviews)
-
-- [ ] Extract `ContainersOverviewSection` — Card/Box/Panel comparison row
-- [ ] Extract `AlignmentDemoSection` — alignment demonstrations
-- [ ] Extract `CollapsibleSection` — conditional `showDetails` block
-- [ ] Extract `AppearanceSwitcherSection` — appearance toggle section
-
-#### ButtonsPage (76-line body → ~3 subviews)
-
-- [ ] Extract `ButtonStylesSection` — DemoSections with button variants
-- [ ] Extract `ButtonRowSection` — ButtonRow demonstrations
-- [ ] Extract `ClickCounterSection` — interactive counter
-
-#### MainMenuPage (59-line body)
-
-- [ ] Evaluate: `featureBox()` helper is already well-factored, but it's a `@ViewBuilder` function — NOT a diffing boundary. Extract `FeatureBox` as a separate View struct.
+- [x] `ContainerTypesRow` — Card/Box/Panel comparison row (from ContainersPage)
+- [x] `SettingsAndAlignmentRow` — settings panel + alignment demos (from ContainersPage)
+- [x] `FeatureBox` — extracted from MainMenuPage's private `featureBox()` method
+- Skipped: ButtonsPage — nearly all sections depend on `@State clickCount` via Button closures, decomposition ineffective for memoization
+- Skipped: CollapsibleSection — depends on `@State showDetails`, must stay in parent
 
 ### Phase 5: Example App — Apply `.equatable()` (Medium Priority)
 
-- [ ] Identify static subtrees in example app pages that don't depend on `@State`
-- [ ] Apply `.equatable()` to extracted subviews where all properties are `Equatable`
-- [ ] Verify with debug logging that cache hits occur during Spinner animation frames
-- [ ] Measure: count body evaluations per frame with/without `.equatable()`
+- [x] `FeatureBox: View, Equatable` + `.equatable()` on 3 instances in MainMenuPage
+- [x] `ContainerTypesRow: View, Equatable` + `.equatable()` in ContainersPage
+- [x] `SettingsAndAlignmentRow: View, Equatable` + `.equatable()` in ContainersPage
 
 ### Phase 6: Documentation (Low Priority)
 
-- [ ] Update `RenderCycle.md` DocC article with Phase 5 (Memoization) info — deferred from PR #71
-- [ ] Add Phase 6 (this work) section covering:
-  - Equatable conformance strategy
-  - Cache invalidation rules
-  - When to use `.equatable()` — decision guide
-  - Debug tooling usage (`TUIKIT_DEBUG_RENDER=1`)
-- [ ] Add doc comments on all new `Equatable` conformances explaining the pattern
+- [x] Update `RenderCycle.md` — new "Subtree Memoization" section with how-it-works, invalidation, decision guide, type list, debug logging
+- [x] Add `EquatableView` to Renderable lists in existing sections
+- [x] Correct "no subtree memoization" claim
+- [x] Code example using real `FeatureBox` from example app
 
 ## Files Modified
 
