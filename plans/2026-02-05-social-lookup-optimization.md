@@ -1,3 +1,7 @@
+## Completed
+
+2026-02-05. All 8 implementation steps done. Commits: `fb4eef0`, `032bcc7`.
+
 # Social Lookup Script — Matching-Algorithmus Optimierung
 
 ## Goal
