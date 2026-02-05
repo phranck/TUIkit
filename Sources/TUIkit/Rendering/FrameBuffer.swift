@@ -2,7 +2,7 @@
 //  FrameBuffer.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A 2D text buffer that views render into before flushing to the terminal.
 ///

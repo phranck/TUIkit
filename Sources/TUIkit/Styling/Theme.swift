@@ -2,7 +2,7 @@
 //  Theme.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  and palette registry.
+//  License: MIT  and palette registry.
 //
 
 import Foundation

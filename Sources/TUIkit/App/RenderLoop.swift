@@ -2,7 +2,7 @@
 //  RenderLoop.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  assembly, and status bar output.
+//  License: MIT  assembly, and status bar output.
 //
 
 // MARK: - Environment Snapshot

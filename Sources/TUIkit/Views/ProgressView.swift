@@ -2,7 +2,7 @@
 //  ProgressView.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 // MARK: - ProgressBar Style
 

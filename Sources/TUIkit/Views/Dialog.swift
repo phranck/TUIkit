@@ -2,7 +2,7 @@
 //  Dialog.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A modal dialog view with a title, customizable content, and optional footer.
 ///

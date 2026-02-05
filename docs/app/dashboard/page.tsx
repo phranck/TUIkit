@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useGitHubStats } from "../hooks/useGitHubStats";
+import { motion, AnimatePresence } from "framer-motion";
+import { useGitHubStatsCache } from "../hooks/useGitHubStatsCache";
 import CloudBackground from "../components/CloudBackground";
 import RainOverlay from "../components/RainOverlay";
 import SpinnerLights from "../components/SpinnerLights";
@@ -16,14 +17,58 @@ import CommitList from "../components/CommitList";
 import RepoInfo from "../components/RepoInfo";
 
 /**
+ * Formats a relative time string like "2 min ago" or "just now".
+ *
+ * Uses simple second/minute thresholds — no need for Intl.RelativeTimeFormat
+ * since the maximum age before auto-refresh is 5 minutes.
+ */
+function formatTimeAgo(timestampMs: number): string {
+  const seconds = Math.floor((Date.now() - timestampMs) / 1000);
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (remainingSeconds === 0) return `${minutes} min ago`;
+  return `${minutes} min ${remainingSeconds}s ago`;
+}
+
+/**
+ * Formats a countdown string like "3:12" from a future timestamp.
+ *
+ * Returns "now" if the target is in the past or within 1 second.
+ */
+function formatCountdown(targetMs: number): string {
+  const remainingSeconds = Math.max(0, Math.floor((targetMs - Date.now()) / 1000));
+  if (remainingSeconds <= 0) return "now";
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+/**
  * Project Dashboard page — displays live GitHub metrics for the TUIKit repository.
  *
- * All data is fetched client-side via the GitHub REST API (no token required).
- * Supports manual refresh via button. Rate limit is displayed in the footer.
+ * Data is cached in localStorage for 5 minutes. Page reloads within that window
+ * serve cached data without hitting the GitHub API. A background timer
+ * auto-refreshes every 5 minutes. An animated refresh icon appears during loading.
  */
 export default function DashboardPage() {
-  const { refresh, ...stats } = useGitHubStats();
+  const {
+    lastFetchedAt,
+    nextRefreshAt,
+    isFromCache,
+    isRefreshing,
+    ...stats
+  } = useGitHubStatsCache();
+
   const [showStargazers, setShowStargazers] = useState(false);
+
+  // Tick every second to update the "last updated" and countdown displays
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick((prev) => prev + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Preload stargazer avatar images in background so the panel opens instantly
   useEffect(() => {
@@ -63,7 +108,7 @@ export default function DashboardPage() {
         <SiteNav activePage="dashboard" />
 
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-6 pt-28 pb-20">
-          {/* Header with refresh */}
+          {/* Header with loading indicator */}
           <div className="mb-10 flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-foreground">Project Dashboard</h1>
@@ -71,26 +116,30 @@ export default function DashboardPage() {
                 Live metrics · <a href="https://github.com/phranck/TUIkit" target="_blank" rel="noopener noreferrer" className="text-accent transition-colors hover:text-foreground">phranck/TUIkit</a>
               </p>
             </div>
-            <button
-              onClick={refresh}
-              disabled={stats.loading}
-              className="flex cursor-pointer items-center gap-2 rounded-full border border-border px-5 py-2 text-base font-medium text-foreground transition-all hover:border-accent/40 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Refresh data"
-            >
-              <span className={stats.loading ? "animate-spin-slow" : ""}>
-                <Icon name="refresh" size={16} />
-              </span>
-              Refresh
-            </button>
+            {/* Animated refresh icon — fades in while refreshing, spins, then fades out */}
+            <AnimatePresence>
+              {isRefreshing && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                  aria-label="Refreshing data"
+                >
+                  <span className="animate-spin-slow text-muted">
+                    <Icon name="refresh" size={20} />
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Error state */}
           {stats.error && (
             <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-base text-red-400">
               <strong>Error:</strong> {stats.error}
-              <button onClick={refresh} className="ml-3 text-accent underline transition-colors hover:text-foreground">
-                Retry
-              </button>
+              <span className="ml-3 text-muted/60">Will retry automatically</span>
             </div>
           )}
 
@@ -141,12 +190,33 @@ export default function DashboardPage() {
             <CommitList commits={stats.recentCommits} loading={stats.loading} />
           </div>
 
-          {/* Rate limit */}
-          {stats.rateLimit && (
-            <div className="text-right font-mono text-sm text-muted/60">
-              API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
+          {/* Footer: cache status + rate limit */}
+          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-sm text-muted/60">
+            <div className="flex items-center gap-3">
+              {lastFetchedAt && (
+                <>
+                  <span>
+                    Updated {formatTimeAgo(lastFetchedAt)}
+                    {isFromCache && (
+                      <span className="ml-1.5 rounded bg-white/5 px-1.5 py-0.5 text-xs text-muted/40">
+                        cached
+                      </span>
+                    )}
+                  </span>
+                  {nextRefreshAt && (
+                    <span className="text-muted/40">
+                      · Next refresh in {formatCountdown(nextRefreshAt)}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
-          )}
+            {stats.rateLimit && (
+              <div>
+                API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
+              </div>
+            )}
+          </div>
         </main>
 
         <SiteFooter />
