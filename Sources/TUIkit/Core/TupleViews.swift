@@ -31,6 +31,17 @@ public struct TupleView<each V: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension TupleView: Equatable where repeat each V: Equatable {
+    public static func == (lhs: TupleView, rhs: TupleView) -> Bool {
+        func isEqual<T: Equatable>(_ left: T, _ right: T) -> Bool { left == right }
+        var result = true
+        repeat result = result && isEqual(each lhs.children, each rhs.children)
+        return result
+    }
+}
+
 // MARK: - TupleView Rendering + ChildInfoProvider
 
 extension TupleView: Renderable, ChildInfoProvider {
