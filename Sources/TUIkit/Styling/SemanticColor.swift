@@ -17,16 +17,11 @@
 /// Text("Hello").foregroundColor(.palette.accent)
 /// ```
 enum SemanticColor: String, Sendable, Equatable {
-    // Background (Palette)
+    // Background
     case background
     case statusBarBackground
     case appHeaderBackground
     case overlayBackground
-
-    // Background (BlockPalette)
-    case surfaceBackground
-    case surfaceHeaderBackground
-    case elevatedBackground
 
     // Foreground
     case foreground
@@ -51,16 +46,10 @@ enum SemanticColor: String, Sendable, Equatable {
 extension SemanticColor {
     /// Resolves this token to a concrete color using the given palette.
     ///
-    /// For ``BlockPalette``-specific tokens (`surfaceBackground`,
-    /// `surfaceHeaderBackground`, `elevatedBackground`), the palette is
-    /// cast to ``BlockPalette``. If the cast fails, `background` is used
-    /// as fallback.
-    ///
     /// - Parameter palette: The palette to read from.
     /// - Returns: The concrete ``Color`` from the palette.
     func resolve(with palette: any Palette) -> Color {
         switch self {
-        // Palette properties
         case .background: palette.background
         case .statusBarBackground: palette.statusBarBackground
         case .appHeaderBackground: palette.appHeaderBackground
@@ -74,14 +63,6 @@ extension SemanticColor {
         case .error: palette.error
         case .info: palette.info
         case .border: palette.border
-
-        // BlockPalette properties (fallback to background)
-        case .surfaceBackground:
-            (palette as? any BlockPalette)?.surfaceBackground ?? palette.background
-        case .surfaceHeaderBackground:
-            (palette as? any BlockPalette)?.surfaceHeaderBackground ?? palette.background
-        case .elevatedBackground:
-            (palette as? any BlockPalette)?.elevatedBackground ?? palette.background
         }
     }
 }

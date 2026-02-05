@@ -122,16 +122,11 @@ public struct Color: Sendable, Equatable {
     /// Text("Hello").foregroundColor(.palette.accent)
     /// ```
     public enum Semantic {
-        // Background colors (Palette)
+        // Background colors
         public static let background = Color(value: .semantic(.background))
         public static let statusBarBackground = Color(value: .semantic(.statusBarBackground))
         public static let appHeaderBackground = Color(value: .semantic(.appHeaderBackground))
         public static let overlayBackground = Color(value: .semantic(.overlayBackground))
-
-        // Background colors (BlockPalette)
-        public static let surfaceBackground = Color(value: .semantic(.surfaceBackground))
-        public static let surfaceHeaderBackground = Color(value: .semantic(.surfaceHeaderBackground))
-        public static let elevatedBackground = Color(value: .semantic(.elevatedBackground))
 
         // Foreground colors
         public static let foreground = Color(value: .semantic(.foreground))
