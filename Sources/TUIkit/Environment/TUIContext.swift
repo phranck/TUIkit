@@ -101,6 +101,14 @@ extension LifecycleManager {
         return appearedTokens.contains(token)
     }
 
+    /// Removes the appeared state for a token so the next `recordAppear`
+    /// treats it as a fresh first appearance.
+    func resetAppearance(token: String) {
+        lock.lock()
+        appearedTokens.remove(token)
+        lock.unlock()
+    }
+
     /// Registers a callback for when a view with the given token disappears.
     ///
     /// - Parameters:
