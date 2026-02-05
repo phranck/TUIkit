@@ -37,9 +37,14 @@
 
 ## Completed
 
+### 2026-02-06
+
+- [x] **Dashboard Cache + Auto-Refresh** — localStorage cache (5 min TTL), auto-refresh timer, smooth list animations with Framer Motion, no skeleton flash during background refresh (PR #80)
+- [x] **License Change** — CC BY-NC-SA 4.0 → MIT, 141 Swift files updated, LICENSE file added
+
 ### 2026-02-05
 
-- [x] **ProgressView** — Determinate progress bar with 5 styles (block, blockFine, shade, bar, dot), SwiftUI-matching API, 26 tests. Also: `darker(by:)`/`lighter(by:)` changed to relative percentage scaling.
+- [x] **ProgressView** — 5 bar styles, SwiftUI API parity, `darker(by:)`/`lighter(by:)` → relative % (PR #79)
 - [x] **Remove Block/Flat Appearances** — Eliminated block, flat, ascii. BorderedView consolidated into ContainerView. Consistent 1-char padding in all containers. DocC overhauled. (PR #78)
 - [x] **Notification System** — Fire-and-forget `NotificationService`, fade-in/out animation, word-wrap, top-right overlay, Box rendering. No severity styles, no Binding. (PR #77)
 
@@ -144,4 +149,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 23:30
+**Last Updated:** 2026-02-05 23:45
