@@ -12,8 +12,8 @@
 /// and hand-tuned HSL parameters. This single type replaces the six
 /// individual palette structs (`GreenPalette`, `AmberPalette`, etc.).
 ///
-/// Custom palettes should conform to ``Palette`` or ``BlockPalette`` directly
-/// instead of using this type.
+/// Custom palettes should conform to ``Palette`` directly instead of using
+/// this type.
 ///
 /// # Usage
 ///
@@ -21,7 +21,7 @@
 /// let palette = SystemPalette(.amber)
 /// paletteManager.setCurrent(SystemPalette(.green))
 /// ```
-public struct SystemPalette: BlockPalette {
+public struct SystemPalette: Palette {
     // MARK: - Preset
 
     /// Built-in palette presets inspired by classic terminal phosphors.
@@ -252,7 +252,7 @@ private extension SystemPalette.Tuning {
 
 // MARK: - Convenience Accessors
 
-extension BlockPalette where Self == SystemPalette {
+extension Palette where Self == SystemPalette {
     /// The default palette (green).
     public static var `default`: SystemPalette { SystemPalette(.green) }
 

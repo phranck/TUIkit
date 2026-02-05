@@ -70,9 +70,6 @@ struct ContainerConfig: Sendable, Equatable {
 /// Controls separators, backgrounds, and other visual aspects of containers.
 struct ContainerStyle: Sendable, Equatable {
     /// Whether to show a separator line between header and body.
-    ///
-    /// Note: Only applies to `Appearance.block`. For other appearances,
-    /// the title is rendered in the top border.
     var showHeaderSeparator: Bool
 
     /// Whether to show a separator line between body and footer.
@@ -173,11 +170,6 @@ internal func renderContainer<Content: View, Footer: View>(
 ///
 /// - **Standard appearances** (line, rounded, doubleLine, heavy):
 ///   Title is rendered IN the top border. Footer is a separate section.
-///
-/// - **Block appearance**:
-///   Header is a separate section with darker background.
-///   Body and border share the same background color.
-///   Footer has darker background like header.
 ///
 /// ## Example
 ///
@@ -280,7 +272,6 @@ extension ContainerView where Footer == EmptyView {
 extension ContainerView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let appearance = context.environment.appearance
-        let isBlockAppearance = appearance.rawId == .block
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
         let palette = context.environment.palette
         let borderColor = style.borderColor?.resolve(with: palette) ?? palette.border
@@ -298,6 +289,13 @@ extension ContainerView: Renderable {
         // Render body content first to determine its natural width.
         let paddedContent = content.padding(padding)
         let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: innerContext)
+
+        // If body is empty and there's no footer, return empty buffer.
+        // This preserves the convention that bordering empty content
+        // produces nothing (e.g. `EmptyView().border()`).
+        if bodyBuffer.isEmpty && footer == nil {
+            return bodyBuffer
+        }
 
         // Render footer with full available width for initial measurement.
         // This ensures the footer's natural width is included in the
@@ -329,26 +327,15 @@ extension ContainerView: Renderable {
             footerBuffer = nil
         }
 
-        if isBlockAppearance {
-            return renderBlockStyle(
-                bodyBuffer: bodyBuffer,
-                footerBuffer: footerBuffer,
-                innerWidth: innerWidth,
-                borderStyle: effectiveBorderStyle,
-                borderColor: borderColor,
-                context: context
-            )
-        } else {
-            return renderStandardStyle(
-                bodyBuffer: bodyBuffer,
-                footerBuffer: footerBuffer,
-                innerWidth: innerWidth,
-                borderStyle: effectiveBorderStyle,
-                borderColor: borderColor,
-                context: context,
-                focusIndicatorColor: indicatorColor
-            )
-        }
+        return renderStandardStyle(
+            bodyBuffer: bodyBuffer,
+            footerBuffer: footerBuffer,
+            innerWidth: innerWidth,
+            borderStyle: effectiveBorderStyle,
+            borderColor: borderColor,
+            context: context,
+            focusIndicatorColor: indicatorColor
+        )
     }
 
     // MARK: - Standard Style Rendering
@@ -389,7 +376,7 @@ extension ContainerView: Renderable {
             )
         }
 
-        // Body lines (no background — only block style uses distinct section colors)
+        // Body lines (no background color applied)
         for line in bodyBuffer.lines {
             lines.append(
                 BorderRenderer.standardContentLine(
@@ -438,115 +425,4 @@ extension ContainerView: Renderable {
         return FrameBuffer(lines: lines)
     }
 
-    // MARK: - Block Style Rendering
-
-    /// Renders with half-block characters for smooth visual edges.
-    ///
-    /// Block style design:
-    /// ```
-    /// ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  ← Top: ▄, FG = header BG, BG = App BG (transparent)
-    /// █ HEADER         █  ← Sides: █, FG = header BG, content has header BG
-    /// ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ← Separator: ▀, FG = header BG, BG = body BG
-    /// █ BODY           █  ← Body has container BG (slightly brighter)
-    /// █                █
-    /// ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄  ← Footer sep: ▄, FG = footer BG, BG = body BG
-    /// █ FOOTER         █  ← Sides: █, FG = footer BG, content has footer BG
-    /// ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ← Bottom: ▀, FG = footer BG, BG = App BG (transparent)
-    /// ```
-    private func renderBlockStyle(
-        bodyBuffer: FrameBuffer,
-        footerBuffer: FrameBuffer?,
-        innerWidth: Int,
-        borderStyle: BorderStyle,
-        borderColor: Color,
-        context: RenderContext
-    ) -> FrameBuffer {
-        let palette = context.environment.palette
-        var lines: [String] = []
-
-        // Get palette colors for block appearance
-        // Header/Footer = darker background (surfaceHeaderBackground)
-        // Body = lighter background (surfaceBackground)
-        let headerFooterBg = palette.blockSurfaceHeaderBackground
-        let bodyBg = palette.blockSurfaceBackground
-
-        let hasHeader = title != nil
-        let hasFooter = footerBuffer != nil && !(footerBuffer?.isEmpty ?? true)
-
-        // === TOP BORDER ===
-        lines.append(
-            BorderRenderer.blockTopBorder(
-                innerWidth: innerWidth,
-                color: hasHeader ? headerFooterBg : bodyBg
-            )
-        )
-
-        // === HEADER SECTION (if title present) ===
-        if let titleText = title {
-            let resolvedColor = titleColor?.resolve(with: palette) ?? palette.accent
-            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: resolvedColor, bold: true)
-            lines.append(
-                BorderRenderer.blockContentLine(
-                    content: titleStyled,
-                    innerWidth: innerWidth,
-                    sectionColor: headerFooterBg
-                )
-            )
-
-            if style.showHeaderSeparator {
-                lines.append(
-                    BorderRenderer.blockSeparator(
-                        innerWidth: innerWidth,
-                        foregroundColor: headerFooterBg,
-                        backgroundColor: bodyBg
-                    )
-                )
-            }
-        }
-
-        // === BODY LINES ===
-        for line in bodyBuffer.lines {
-            lines.append(
-                BorderRenderer.blockContentLine(
-                    content: line,
-                    innerWidth: innerWidth,
-                    sectionColor: bodyBg
-                )
-            )
-        }
-
-        // === FOOTER SECTION (if present) ===
-        if let footerBuf = footerBuffer, !footerBuf.isEmpty {
-            if style.showFooterSeparator {
-                lines.append(
-                    BorderRenderer.blockSeparator(
-                        innerWidth: innerWidth,
-                        character: BorderStyle.blockFooterSeparator,
-                        foregroundColor: headerFooterBg,
-                        backgroundColor: bodyBg
-                    )
-                )
-            }
-
-            for line in footerBuf.lines {
-                lines.append(
-                    BorderRenderer.blockContentLine(
-                        content: line,
-                        innerWidth: innerWidth,
-                        sectionColor: headerFooterBg
-                    )
-                )
-            }
-        }
-
-        // === BOTTOM BORDER ===
-        lines.append(
-            BorderRenderer.blockBottomBorder(
-                innerWidth: innerWidth,
-                color: hasFooter ? headerFooterBg : bodyBg
-            )
-        )
-
-        return FrameBuffer(lines: lines)
-    }
 }

@@ -38,7 +38,7 @@
 /// ## Structure
 ///
 /// - **Header**: Optional title (rendered in the top border for standard
-///   appearances, as a separate section for block appearance)
+///   appearances)
 /// - **Body**: Main content, wrapped in configurable padding
 /// - **Footer**: Optional, typically ``Button`` or ``ButtonRow``
 ///
@@ -56,7 +56,7 @@
 /// }
 ///
 /// // Card with title, footer, and background
-/// Card(title: "User Info", backgroundColor: .palette.containerBodyBackground) {
+/// Card(title: "User Info", backgroundColor: .palette.background) {
 ///     Text("Name: John")
 ///     Text("Email: john@example.com")
 /// } footer: {

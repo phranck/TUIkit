@@ -17,7 +17,7 @@ public struct ButtonStyle: Sendable {
     /// palette's accent color.
     public var foregroundColor: Color?
 
-    /// The background color (used in block appearance).
+    /// The background color (reserved for future use).
     public var backgroundColor: Color?
 
     /// Whether the label is bold.
@@ -82,9 +82,6 @@ public struct ButtonStyle: Sendable {
 ///
 /// - **Standard appearances** (line, rounded, doubleLine, heavy):
 ///   Rendered as single-line `[ Label ]` with bracket delimiters.
-///
-/// - **Block appearance**:
-///   Rendered as single-line with elevated background color, no brackets.
 ///
 /// - **Plain style**: No brackets, no background — just the label text.
 ///
@@ -213,7 +210,6 @@ extension Button: Renderable {
         let isFocused = focusManager.isFocused(id: focusID)
         let currentStyle = isFocused ? focusedStyle : style
         let palette = context.environment.palette
-        let isBlockAppearance = context.environment.appearance.rawId == .block
         let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold
 
         // Build the label with padding
@@ -238,14 +234,8 @@ extension Button: Renderable {
             // Plain: just the label, no decoration
             let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
             return FrameBuffer(lines: [styledLabel])
-        } else if isBlockAppearance {
-            // Block: elevated background, no brackets
-            textStyle.backgroundColor = currentStyle.backgroundColor?.resolve(with: palette)
-                ?? palette.blockElevatedBackground
-            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
-            return FrameBuffer(lines: [styledLabel])
         } else {
-            // Standard appearances: single-line brackets [ Label ]
+            // Standard: single-line brackets [ Label ]
             let bracketColor: Color
             if isDisabled {
                 bracketColor = palette.foregroundTertiary

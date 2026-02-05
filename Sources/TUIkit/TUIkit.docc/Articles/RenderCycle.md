@@ -48,7 +48,7 @@ var env = EnvironmentValues()
 env.statusBar       = statusBar
 env.focusManager    = focusManager
 env.paletteManager  = paletteManager
-env.palette         = paletteManager.current    // e.g. GreenPalette
+env.palette         = paletteManager.current    // e.g. SystemPalette(.green)
 env.appearanceManager = appearanceManager
 env.appearance      = appearanceManager.current // e.g. BorderStyle.rounded
 ```

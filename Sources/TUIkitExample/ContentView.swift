@@ -18,7 +18,6 @@ enum DemoPage: Int, CaseIterable {
     case layout
     case buttons
     case spinners
-    case blockTheme
 }
 
 // MARK: - Content View (Page Router)
@@ -84,9 +83,6 @@ struct ContentView: View {
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .spinners:
             SpinnersPage()
-                .statusBarItems(subPageItems(pageSetter: pageSetter))
-        case .blockTheme:
-            BlockThemePage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }

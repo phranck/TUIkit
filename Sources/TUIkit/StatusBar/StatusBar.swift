@@ -310,17 +310,15 @@ extension StatusBar: Renderable {
     }
 
     /// Renders the bordered style using the current appearance's border style.
+    ///
+    /// Content is inset by 1 character on each side so items don't touch the
+    /// border characters.
     private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
+        let contentPadding = 2  // 1 char padding left + right
         let innerWidth = width - BorderRenderer.borderWidthOverhead
-        let content = alignContent(itemStrings: itemStrings, width: innerWidth)
+        let contentWidth = innerWidth - contentPadding
+        let content = " " + alignContent(itemStrings: itemStrings, width: contentWidth) + " "
 
-        // Check if we're using block appearance for special rendering
-        let isBlockAppearance = context.environment.appearance.rawId == .block
-        if isBlockAppearance {
-            return renderBlockBordered(content: content, innerWidth: innerWidth, context: context)
-        }
-
-        // Standard bordered rendering with regular box-drawing characters
         let border = context.environment.appearance.borderStyle
         let borderColor = context.environment.palette.border
 
@@ -328,17 +326,6 @@ extension StatusBar: Renderable {
             BorderRenderer.standardTopBorder(style: border, innerWidth: innerWidth, color: borderColor),
             BorderRenderer.standardContentLine(content: content, innerWidth: innerWidth, style: border, color: borderColor),
             BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor),
-        ])
-    }
-
-    /// Renders block-style status bar with half-block characters.
-    private func renderBlockBordered(content: String, innerWidth: Int, context: RenderContext) -> FrameBuffer {
-        let statusBarBg = context.environment.palette.statusBarBackground
-
-        return FrameBuffer(lines: [
-            BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: statusBarBg),
-            BorderRenderer.blockContentLine(content: content, innerWidth: innerWidth, sectionColor: statusBarBg),
-            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg),
         ])
     }
 }
