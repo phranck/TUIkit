@@ -44,9 +44,6 @@
 /// - **Standard appearances** (line, rounded, doubleLine, heavy):
 ///   Title is rendered **in the top border** (e.g. `┤ Settings ├`).
 ///
-/// - **Block appearance**:
-///   Title becomes a separate header section with darker background.
-///
 /// ## Examples
 ///
 /// ```swift

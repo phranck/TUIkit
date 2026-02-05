@@ -130,18 +130,18 @@ struct MyApp: App {
         WindowGroup {
             ContentView()
         }
-        .palette(GreenPalette())  // Classic green terminal
+        .palette(SystemPalette(.green))  // Classic green terminal
     }
 }
 ```
 
-Available palettes:
-- `GreenPalette` — Classic green CRT (default)
-- `AmberPalette` — Amber monochrome
-- `WhitePalette` — White on black
-- `RedPalette` — Red terminal
-- `NCursesPalette` — ncurses-inspired colors
-- `GeneratedPalette` — Algorithmic palette from a single hue
+Available palettes (all via `SystemPalette`):
+- `.green` — Classic green CRT (default)
+- `.amber` — Amber monochrome
+- `.white` — White on black
+- `.red` — Red terminal
+- `.violet` — Retro sci-fi
+- `.blue` — VFD displays
 
 ## Architecture
 
@@ -179,4 +179,4 @@ Tests/
 
 ## License
 
-This repository has been published under the [CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license.
+This repository has been published under the [MIT](https://mit-license.org) license.

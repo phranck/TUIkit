@@ -33,9 +33,8 @@ extension BorderedView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
 
-        // Resolve border style - use explicit or fall back to appearance default
+        // Resolve border style — use explicit or fall back to appearance default
         let effectiveStyle = style ?? context.environment.appearance.borderStyle
-        let isBlockAppearance = context.environment.appearance.rawId == .block
 
         // Reduce available width for content by 2 (left + right border)
         var contentContext = context
@@ -52,54 +51,26 @@ extension BorderedView: Renderable {
 
         let contentWidth = buffer.width
         let innerWidth = max(contentWidth, 1)
-
-        if isBlockAppearance {
-            return renderBlockStyle(buffer: buffer, innerWidth: innerWidth, palette: palette)
-        } else {
-            return renderStandardStyle(
-                buffer: buffer, innerWidth: innerWidth, style: effectiveStyle,
-                palette: palette, focusIndicatorColor: indicatorColor
-            )
-        }
-    }
-
-    /// Renders with standard box-drawing characters.
-    private func renderStandardStyle(
-        buffer: FrameBuffer, innerWidth: Int, style: BorderStyle,
-        palette: any Palette, focusIndicatorColor: Color?
-    ) -> FrameBuffer {
         let borderColor = color?.resolve(with: palette) ?? palette.border
         var lines: [String] = []
 
         lines.append(BorderRenderer.standardTopBorder(
-            style: style, innerWidth: innerWidth, color: borderColor,
-            focusIndicatorColor: focusIndicatorColor
+            style: effectiveStyle, innerWidth: innerWidth, color: borderColor,
+            focusIndicatorColor: indicatorColor
         ))
         for line in buffer.lines {
             lines.append(
                 BorderRenderer.standardContentLine(
                     content: line,
                     innerWidth: innerWidth,
-                    style: style,
+                    style: effectiveStyle,
                     color: borderColor
                 )
             )
         }
-        lines.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderColor))
-
-        return FrameBuffer(lines: lines)
-    }
-
-    /// Renders with half-block characters for block appearance.
-    private func renderBlockStyle(buffer: FrameBuffer, innerWidth: Int, palette: any Palette) -> FrameBuffer {
-        let containerBg = palette.blockSurfaceBackground
-        var lines: [String] = []
-
-        lines.append(BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: containerBg))
-        for line in buffer.lines {
-            lines.append(BorderRenderer.blockContentLine(content: line, innerWidth: innerWidth, sectionColor: containerBg))
-        }
-        lines.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: containerBg))
+        lines.append(BorderRenderer.standardBottomBorder(
+            style: effectiveStyle, innerWidth: innerWidth, color: borderColor
+        ))
 
         return FrameBuffer(lines: lines)
     }
