@@ -1,5 +1,11 @@
 # Stargazer Social Account Lookup — Multi-Platform Discovery
 
+## Completed
+
+Completed 2026-02-04. Social lookup script, GitHub Action workflow, and UI integration all functional. Supersedes [2026-02-04-stargazer-mastodon-lookup.md](2026-02-04-stargazer-mastodon-lookup.md).
+
+---
+
 ## Goal
 
 Find social media accounts (Mastodon, Twitter/X, Bluesky) for all repository stargazers and display/link them in the Dashboard popover with platform-specific icons.
@@ -267,7 +273,7 @@ jobs:
 - [x] Create `update-social-cache.yml` workflow
 - [x] Configure incremental (2h) + full (weekly) schedule
 - [x] Use `DASHBOARD_GITHUB_TOKEN` secret
-- [ ] Test manual trigger
+- [x] Test manual trigger
 
 ### Phase 4: UI Updates
 
@@ -281,8 +287,8 @@ jobs:
 - [x] Fix TypeScript errors in script
 - [x] Run `npm run build` successfully
 - [x] Run script locally to verify
-- [ ] Test popover in browser
-- [ ] Add manual overrides for known stargazers
+- [x] Test popover in browser
+- [x] Add manual overrides for known stargazers
 
 ## Risks & Mitigations
 
