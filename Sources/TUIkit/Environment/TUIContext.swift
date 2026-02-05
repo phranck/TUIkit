@@ -2,7 +2,7 @@
 //  TUIContext.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  Owned by AppRunner and threaded through RenderContext.
+//  License: MIT  Owned by AppRunner and threaded through RenderContext.
 //
 
 import Foundation

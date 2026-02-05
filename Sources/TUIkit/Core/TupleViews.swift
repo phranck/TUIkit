@@ -2,7 +2,7 @@
 //  TupleViews.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0
+//  License: MIT
 
 /// A view that contains multiple child views packed via a parameter pack.
 ///

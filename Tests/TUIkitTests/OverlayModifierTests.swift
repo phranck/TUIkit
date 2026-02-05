@@ -2,7 +2,7 @@
 //  OverlayModifierTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  and View extension.
+//  License: MIT  and View extension.
 //
 
 import Testing

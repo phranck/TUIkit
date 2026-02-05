@@ -2,7 +2,7 @@
 //  AlertPresentationModifierTests.swift
 //
 //  Created by LAYERED.work
-//  CC BY-NC-SA 4.0  dimming, centering, and alert rendering.
+//  License: MIT  dimming, centering, and alert rendering.
 //
 
 import Testing
