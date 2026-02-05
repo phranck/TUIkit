@@ -290,6 +290,13 @@ extension ContainerView: Renderable {
         let paddedContent = content.padding(padding)
         let bodyBuffer = TUIkit.renderToBuffer(paddedContent, context: innerContext)
 
+        // If body is empty and there's no footer, return empty buffer.
+        // This preserves the convention that bordering empty content
+        // produces nothing (e.g. `EmptyView().border()`).
+        if bodyBuffer.isEmpty && footer == nil {
+            return bodyBuffer
+        }
+
         // Render footer with full available width for initial measurement.
         // This ensures the footer's natural width is included in the
         // innerWidth calculation, preventing truncation when footer content

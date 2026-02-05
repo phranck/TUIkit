@@ -26,7 +26,7 @@
 /// - **ViewBuilder glue**: `TupleView`, `ConditionalView`, `ViewArray`
 /// - **Interactive views**: `Button`, `ButtonRow`, `Menu`, `StatusBar`
 /// - **Containers**: `Panel`, `ContainerView`, `Alert`, `Dialog`, `Card`
-/// - **Modifiers**: `ModifiedView`, `BorderedView`, `DimmedModifier`, etc.
+/// - **Modifiers**: `ModifiedView`, `DimmedModifier`, etc.
 ///
 /// All of these declare `body: Never` (which `fatalError`s) because
 /// their rendering is fully handled by `Renderable`.
@@ -35,7 +35,7 @@
 ///
 /// Views that do **not** conform to `Renderable` use `body` to compose
 /// other views. Example: ``Box`` returns `content.border(...)` from its
-/// `body`, delegating rendering to `BorderedView` which *is* `Renderable`.
+/// `body`, delegating rendering to ``ContainerView`` which *is* `Renderable`.
 ///
 /// ## Adding a new view type
 ///
@@ -232,9 +232,9 @@ public struct RenderContext {
 /// ```
 /// renderToBuffer(Box { Text("Hi") })
 ///   → Box is NOT Renderable, Body != Never
-///   → recurse into Box.body → BorderedView
-///     → BorderedView IS Renderable
-///     → calls BorderedView.renderToBuffer(context:)
+///   → recurse into Box.body → ContainerView
+///     → ContainerView IS Renderable
+///     → calls ContainerView.renderToBuffer(context:)
 ///       → internally calls renderToBuffer(Text("Hi"), context:)
 ///         → Text IS Renderable → produces FrameBuffer
 /// ```

@@ -9,8 +9,12 @@
 extension View {
     /// Adds a border around this view.
     ///
-    /// The border reserves 2 characters of width (left and right),
-    /// so the content is rendered with reduced available width.
+    /// Content is inset by 1 character on each side so text doesn't touch
+    /// the border characters. The total width overhead is 4 characters
+    /// (2 for borders + 2 for inner padding).
+    ///
+    /// Internally this creates a ``ContainerView`` without title or footer,
+    /// ensuring consistent padding and rendering across all bordered views.
     ///
     /// # Example
     ///
@@ -33,7 +37,16 @@ extension View {
         _ style: BorderStyle? = nil,
         color: Color? = nil
     ) -> some View {
-        BorderedView(content: self, style: style, color: color)
+        ContainerView(
+            style: ContainerStyle(
+                showHeaderSeparator: false,
+                showFooterSeparator: false,
+                borderStyle: style,
+                borderColor: color
+            )
+        ) {
+            self
+        }
     }
 }
 

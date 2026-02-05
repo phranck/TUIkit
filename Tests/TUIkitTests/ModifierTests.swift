@@ -310,33 +310,33 @@ struct FrameModifierTests {
 @Suite("BorderModifier Tests")
 struct BorderModifierTests {
 
-    @Test("BorderedView renders with top and bottom borders")
-    func borderedViewRenders() {
-        let bordered = BorderedView(content: Text("Test"), style: .line, color: nil)
+    @Test(".border() renders with top and bottom borders")
+    func borderModifierRenders() {
+        let view = Text("Test").border(.line)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         // Top border + content + bottom border
         #expect(buffer.height == 3)
-        #expect(buffer.lines[0].contains("┌")) // top-left corner
+        #expect(buffer.lines[0].contains("┌"))
         #expect(buffer.lines[1].contains("Test"))
-        #expect(buffer.lines[2].contains("└")) // bottom-left corner
+        #expect(buffer.lines[2].contains("└"))
     }
 
-    @Test("BorderedView with empty content returns empty")
-    func borderedViewEmptyContent() {
-        let bordered = BorderedView(content: EmptyView(), style: .line, color: nil)
+    @Test(".border() with empty content returns empty")
+    func borderModifierEmptyContent() {
+        let view = EmptyView().border(.line)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         #expect(buffer.isEmpty)
     }
 
-    @Test("BorderedView with line style uses correct corner characters")
-    func borderedViewLineStyle() {
-        let bordered = BorderedView(content: Text("X"), style: .line, color: nil)
+    @Test(".border() with line style uses correct corner characters")
+    func borderModifierLineStyle() {
+        let view = Text("X").border(.line)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         let topLine = buffer.lines[0].stripped
         let bottomLine = buffer.lines[buffer.height - 1].stripped
@@ -347,11 +347,11 @@ struct BorderModifierTests {
         #expect(bottomLine.hasSuffix("┘"))
     }
 
-    @Test("BorderedView with doubleLine style uses correct characters")
-    func borderedViewDoubleLineStyle() {
-        let bordered = BorderedView(content: Text("X"), style: .doubleLine, color: nil)
+    @Test(".border() with doubleLine style uses correct characters")
+    func borderModifierDoubleLineStyle() {
+        let view = Text("X").border(.doubleLine)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         let topLine = buffer.lines[0].stripped
         let bottomLine = buffer.lines[buffer.height - 1].stripped
@@ -362,11 +362,11 @@ struct BorderModifierTests {
         #expect(bottomLine.hasSuffix("╝"))
     }
 
-    @Test("BorderedView with rounded style uses correct characters")
-    func borderedViewRoundedStyle() {
-        let bordered = BorderedView(content: Text("X"), style: .rounded, color: nil)
+    @Test(".border() with rounded style uses correct characters")
+    func borderModifierRoundedStyle() {
+        let view = Text("X").border(.rounded)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         let topLine = buffer.lines[0].stripped
         let bottomLine = buffer.lines[buffer.height - 1].stripped
@@ -377,11 +377,11 @@ struct BorderModifierTests {
         #expect(bottomLine.hasSuffix("╯"))
     }
 
-    @Test("BorderedView with heavy style uses correct characters")
-    func borderedViewHeavyStyle() {
-        let bordered = BorderedView(content: Text("X"), style: .heavy, color: nil)
+    @Test(".border() with heavy style uses correct characters")
+    func borderModifierHeavyStyle() {
+        let view = Text("X").border(.heavy)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         let topLine = buffer.lines[0].stripped
         let bottomLine = buffer.lines[buffer.height - 1].stripped
@@ -392,15 +392,28 @@ struct BorderModifierTests {
         #expect(bottomLine.hasSuffix("┛"))
     }
 
-    @Test("BorderedView adds 2 to content width")
-    func borderedViewWidthOverhead() {
-        let bordered = BorderedView(content: Text("ABCDE"), style: .line, color: nil)
+    @Test(".border() adds 4 to content width (2 border + 2 padding)")
+    func borderModifierWidthOverhead() {
+        let view = Text("ABCDE").border(.line)
         let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
+        let buffer = renderToBuffer(view, context: context)
 
-        // Content "ABCDE" = 5, + 2 for borders = 7
+        // Content "ABCDE" = 5, + 2 for padding + 2 for borders = 9
         let topLine = buffer.lines[0].stripped
-        #expect(topLine.count == 7)
+        #expect(topLine.count == 9)
+    }
+
+    @Test(".border() content has 1 char padding on each side")
+    func borderModifierContentPadding() {
+        let view = Text("Hi").border(.line)
+        let context = testContext()
+        let buffer = renderToBuffer(view, context: context)
+
+        // Content line should be: │ Hi │ (with spaces around "Hi")
+        let contentLine = buffer.lines[1].stripped
+        #expect(contentLine.hasPrefix("│ "))
+        #expect(contentLine.hasSuffix(" │"))
+        #expect(contentLine.contains(" Hi "))
     }
 
 }

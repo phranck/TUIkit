@@ -4,18 +4,17 @@
 //  Created by LAYERED.work
 //  CC BY-NC-SA 4.0
 
-/// A minimal bordered container — just a border, nothing else.
+/// A minimal bordered container with 1-character inner padding.
 ///
-/// `Box` wraps content in a border without adding padding, background color,
-/// title, or footer. It is the thinnest container in TUIkit: content sits
-/// directly against the border characters.
+/// `Box` wraps content in a border with 1 character of horizontal padding
+/// on each side. It has no title, footer, or background color.
 ///
 /// ## How Box Differs from Card and Panel
 ///
 /// | Feature | Box | Card | Panel |
 /// |---------|-----|------|-------|
 /// | Border | Yes | Yes | Yes |
-/// | Padding | **No** | Yes (default: 1 all sides) | Yes (default: horizontal 1) |
+/// | Padding | Horizontal 1 | Yes (default: 1 all sides) | Yes (default: horizontal 1) |
 /// | Background color | **No** | Optional | No |
 /// | Title | **No** | Optional | **Required** |
 /// | Footer | **No** | Optional | Optional |
@@ -30,7 +29,6 @@
 ///
 /// - Framing a single value or status indicator
 /// - Visually grouping a few lines of output
-/// - Wrapping content that already manages its own padding
 /// - Quick debug borders during layout development
 ///
 /// ## Appearance Integration
@@ -79,7 +77,7 @@
 /// ## Size Behavior
 ///
 /// The `Box` size is determined by its content:
-/// - If content has a fixed size, `Box` will be that size plus border
+/// - If content has a fixed size, `Box` will be that size plus border + padding
 /// - If content is flexible, `Box` expands to fill available space
 /// - Content inside `Box` respects its layout constraints
 ///
@@ -87,7 +85,7 @@
 ///
 /// `Box` is a **composite view** — it does not conform to `Renderable`.
 /// Instead, it uses `body` to delegate to `content.border(...)`, which
-/// produces a `BorderedView` that *is* `Renderable`. This is intentional:
+/// creates a ``ContainerView`` without title or footer. This is intentional:
 /// `Box` is purely compositional sugar and carries no rendering logic.
 public struct Box<Content: View>: View {
     /// The content of the box.
