@@ -57,8 +57,7 @@ export default function Home() {
         <main id="main-content" tabIndex={-1}>
           {/* Hero Section */}
           <section className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-28 pb-24 text-center sm:pt-40">
-            {/* Hero terminal — hidden on mobile */}
-            <div className="mb-10 hidden sm:block">
+            <div className="mb-6 sm:mb-10">
               <HeroTerminal />
             </div>
 
