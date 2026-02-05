@@ -14,7 +14,7 @@ public enum StatusBarStyle: Sendable {
     /// A single line with horizontal padding.
     case compact
 
-    /// Block-style border (like `BorderStyle.block`).
+    /// Bordered with the current appearance's border style.
     case bordered
 }
 

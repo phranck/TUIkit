@@ -36,10 +36,10 @@ import Foundation
 /// Or override locally:
 ///
 /// ```swift
-/// Panel("Retro Section") {
+/// Panel("Bold Section") {
 ///     content()
 /// }
-/// .appearance(.ascii)
+/// .appearance(.heavy)
 /// ```
 ///
 /// Access in `renderToBuffer(context:)`:
@@ -120,8 +120,6 @@ extension Appearance {
         /// Heavy/bold borders (┏━┓).
         public static let heavy = Self(rawValue: "heavy")
 
-        /// Block/solid borders (███).
-        public static let block = Self(rawValue: "block")
     }
 }
 
@@ -148,11 +146,6 @@ extension Appearance {
     /// Uses `BorderStyle.heavy` for bold, prominent borders.
     public static let heavy = Appearance(id: .heavy, borderStyle: .heavy)
 
-    /// Block/solid borders.
-    ///
-    /// Uses `BorderStyle.block` with solid block characters.
-    public static let block = Appearance(id: .block, borderStyle: .block)
-
     /// The default appearance (rounded).
     public static let `default`: Appearance = .rounded
 }
@@ -163,13 +156,12 @@ extension Appearance {
 struct AppearanceRegistry {
     /// All available appearances in cycling order.
     ///
-    /// Order: line → rounded → doubleLine → heavy → block
+    /// Order: line → rounded → doubleLine → heavy
     static let all: [Appearance] = [
         .line,
         .rounded,
         .doubleLine,
         .heavy,
-        .block,
     ]
 
     /// Finds an appearance by ID.

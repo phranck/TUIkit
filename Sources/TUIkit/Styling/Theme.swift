@@ -16,9 +16,6 @@ import Foundation
 ///
 /// Conforms to ``Cyclable`` so it can be managed by a ``ThemeManager``.
 ///
-/// For block-appearance-specific backgrounds (surfaces, elevated elements),
-/// see ``BlockPalette``.
-///
 /// # Usage
 ///
 /// ```swift
@@ -92,73 +89,6 @@ extension Palette {
 
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
-}
-
-// MARK: - BlockPalette Protocol
-
-/// A palette with additional background colors for block-style appearances.
-///
-/// Block appearances use solid background fills to visually separate containers,
-/// headers, and interactive elements. `BlockPalette` extends ``Palette`` with
-/// three surface-level backgrounds that create this visual hierarchy.
-///
-/// All three properties provide computed defaults based on ``Palette/background``
-/// using ``Color/lighter(by:)``, so conforming types don't need to define them
-/// explicitly unless custom values are desired.
-///
-/// # Default Hierarchy
-///
-/// ```
-/// background                          (darkest)
-/// └── surfaceHeaderBackground         (background.lighter(by: 0.05))
-///     └── surfaceBackground           (background.lighter(by: 0.08))
-///         └── elevatedBackground      (surfaceHeaderBackground.lighter(by: 0.05))
-/// ```
-public protocol BlockPalette: Palette {
-    /// Container body/content background.
-    ///
-    /// Used for the main content area of containers, menus, and bordered regions
-    /// in block appearance mode.
-    var surfaceBackground: Color { get }
-
-    /// Container header/footer background.
-    ///
-    /// Used for the "cap" area of containers (title bars, footers) and menu
-    /// headers in block appearance mode.
-    var surfaceHeaderBackground: Color { get }
-
-    /// Elevated element background (buttons, interactive surfaces).
-    ///
-    /// Used for elements that sit visually "above" the surface, such as
-    /// buttons in block appearance mode.
-    var elevatedBackground: Color { get }
-}
-
-// MARK: - Default BlockPalette Implementation
-
-extension BlockPalette {
-    public var surfaceBackground: Color { background.lighter(by: 0.10) }
-    public var surfaceHeaderBackground: Color { background.lighter(by: 0.07) }
-    public var elevatedBackground: Color { surfaceHeaderBackground.lighter(by: 0.08) }
-}
-
-// MARK: - BlockPalette Convenience Accessors
-
-extension Palette {
-    /// The surface background if this palette is a ``BlockPalette``, otherwise ``background``.
-    var blockSurfaceBackground: Color {
-        (self as? any BlockPalette)?.surfaceBackground ?? background
-    }
-
-    /// The surface header background if this palette is a ``BlockPalette``, otherwise ``background``.
-    var blockSurfaceHeaderBackground: Color {
-        (self as? any BlockPalette)?.surfaceHeaderBackground ?? background
-    }
-
-    /// The elevated background if this palette is a ``BlockPalette``, otherwise ``background``.
-    var blockElevatedBackground: Color {
-        (self as? any BlockPalette)?.elevatedBackground ?? background
-    }
 }
 
 // MARK: - Palette Environment Key

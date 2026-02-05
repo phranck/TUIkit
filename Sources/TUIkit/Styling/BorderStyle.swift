@@ -60,11 +60,11 @@ public struct BorderStyle: Sendable, Equatable {
     /// Single line border (─ │ ┌ ┐ └ ┘ ├ ┤).
     ///
     /// ```
-    /// ┌────────┐
-    /// │ Title  │
-    /// ├────────┤
-    /// │ Content│
-    /// └────────┘
+    /// ┌─────────┐
+    /// │ Title   │
+    /// ├─────────┤
+    /// │ Content │
+    /// └─────────┘
     /// ```
     public static let line = Self(
         topLeft: "┌",
@@ -80,11 +80,11 @@ public struct BorderStyle: Sendable, Equatable {
     /// Double line border (═ ║ ╔ ╗ ╚ ╝ ╠ ╣).
     ///
     /// ```
-    /// ╔════════╗
-    /// ║ Title  ║
-    /// ╠════════╣
-    /// ║ Content║
-    /// ╚════════╝
+    /// ╔═════════╗
+    /// ║ Title   ║
+    /// ╠═════════╣
+    /// ║ Content ║
+    /// ╚═════════╝
     /// ```
     public static let doubleLine = Self(
         topLeft: "╔",
@@ -100,11 +100,11 @@ public struct BorderStyle: Sendable, Equatable {
     /// Rounded border with curved corners (─ │ ╭ ╮ ╰ ╯ ├ ┤).
     ///
     /// ```
-    /// ╭────────╮
-    /// │ Title  │
-    /// ├────────┤
-    /// │ Content│
-    /// ╰────────╯
+    /// ╭─────────╮
+    /// │ Title   │
+    /// ├─────────┤
+    /// │ Content │
+    /// ╰─────────╯
     /// ```
     public static let rounded = Self(
         topLeft: "╭",
@@ -120,11 +120,11 @@ public struct BorderStyle: Sendable, Equatable {
     /// Heavy/bold border (━ ┃ ┏ ┓ ┗ ┛ ┣ ┫).
     ///
     /// ```
-    /// ┏━━━━━━━━┓
-    /// ┃ Title  ┃
-    /// ┣━━━━━━━━┫
-    /// ┃ Content┃
-    /// ┗━━━━━━━━┛
+    /// ┏━━━━━━━━━┓
+    /// ┃ Title   ┃
+    /// ┣━━━━━━━━━┫
+    /// ┃ Content ┃
+    /// ┗━━━━━━━━━┛
     /// ```
     public static let heavy = Self(
         topLeft: "┏",
@@ -136,41 +136,6 @@ public struct BorderStyle: Sendable, Equatable {
         leftT: "┣",
         rightT: "┫"
     )
-
-    /// Block/solid border using half-block characters for smooth edges.
-    ///
-    /// Uses ▄ (lower half) for top edge and ▀ (upper half) for bottom edge,
-    /// creating a visually smooth container appearance.
-    ///
-    /// ```
-    /// ▄▄▄▄▄▄▄▄▄▄  ← Top: lower half block
-    /// █ Title  █  ← Sides: full block
-    /// ▀▀▀▀▀▀▀▀▀▀  ← Header separator: upper half block
-    /// █ Content█
-    /// ▄▄▄▄▄▄▄▄▄▄  ← Footer separator: lower half block
-    /// █ Footer █
-    /// ▀▀▀▀▀▀▀▀▀▀  ← Bottom: upper half block
-    /// ```
-    public static let block = Self(
-        topLeft: "▄",
-        topRight: "▄",
-        bottomLeft: "▀",
-        bottomRight: "▀",
-        horizontal: "▄",  // Top edge uses lower half
-        vertical: "█",  // Sides use full block
-        leftT: "▀",  // Header/Body separator (upper half)
-        rightT: "▀"
-    )
-
-    /// The character used for the bottom edge of block style.
-    ///
-    /// Block style uses different characters for top (▄) and bottom (▀).
-    static let blockBottomHorizontal: Character = "▀"
-
-    /// The character used for body/footer separator in block style.
-    ///
-    /// Uses lower half block (▄) to create visual separation.
-    static let blockFooterSeparator: Character = "▄"
 
     /// No visible border (space characters).
     public static let none = Self(
@@ -184,26 +149,4 @@ public struct BorderStyle: Sendable, Equatable {
         rightT: " "
     )
 
-    /// ASCII-only border (+ - |).
-    ///
-    /// Maximum compatibility with all terminals, including those that
-    /// don't support Unicode box-drawing characters.
-    ///
-    /// ```
-    /// +--------+
-    /// | Title  |
-    /// +--------+
-    /// | Content|
-    /// +--------+
-    /// ```
-    public static let ascii = Self(
-        topLeft: "+",
-        topRight: "+",
-        bottomLeft: "+",
-        bottomRight: "+",
-        horizontal: "-",
-        vertical: "|",
-        leftT: "+",
-        rightT: "+"
-    )
 }

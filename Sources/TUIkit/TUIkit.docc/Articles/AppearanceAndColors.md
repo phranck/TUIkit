@@ -6,22 +6,21 @@ Control border styles, visual appearances, and the color system.
 
 TUIkit separates visual styling into two systems:
 
-- **Appearance** — Controls border characters and container styling (rounded, doubleLine, block, etc.)
+- **Appearance** — Controls border characters and container styling (rounded, doubleLine, heavy, etc.)
 - **Colors** — A palette-aware color system with semantic tokens that resolve at render time
 
 Both systems integrate with the theming pipeline described in <doc:ThemingGuide>.
 
 ## Appearances
 
-An ``Appearance`` defines the border characters used by containers and the `.border()` modifier. TUIkit ships with five built-in appearances:
+An ``Appearance`` defines the border characters used by containers and the `.border()` modifier. TUIkit ships with four built-in appearances:
 
 | Appearance | Border Characters | Example |
 |------------|-------------------|---------|
-| `.line` | `─ │ ┌ ┐ └ ┘` | Thin ASCII lines |
+| `.line` | `─ │ ┌ ┐ └ ┘` | Thin single lines |
 | `.rounded` | `─ │ ╭ ╮ ╰ ╯` | Rounded corners (default) |
 | `.doubleLine` | `═ ║ ╔ ╗ ╚ ╝` | Double-line borders |
 | `.heavy` | `━ ┃ ┏ ┓ ┗ ┛` | Bold / heavy lines |
-| `.block` | `█ ▄ ▀` | Half-block characters (smooth look) |
 
 ### Setting the Appearance
 
@@ -43,13 +42,17 @@ Users can press `a` to cycle through appearances. The ``ThemeManager`` handles t
 
 ### Custom Appearances
 
-Register additional appearances with the `AppearanceRegistry`:
+Create additional appearances with a custom ``BorderStyle``:
 
 ```swift
 let custom = Appearance(
-    id: .init("dashed"),
-    borderStyle: .line,  // or create a custom BorderStyle
-    displayName: "Dashed"
+    id: .init(rawValue: "dashed"),
+    borderStyle: BorderStyle(
+        topLeft: "+", topRight: "+",
+        bottomLeft: "+", bottomRight: "+",
+        horizontal: "-", vertical: "|",
+        leftT: "+", rightT: "+"
+    )
 )
 ```
 
@@ -73,7 +76,7 @@ TUIkit's ``Color`` type supports multiple color modes:
 ### 256-Color Palette
 
 ```swift
-Color.palette256(index: 202)  // orange
+Color.palette(202)  // orange
 ```
 
 ### True Color (RGB)
@@ -82,7 +85,7 @@ Color.palette256(index: 202)  // orange
 Color.rgb(255, 128, 0)   // orange via RGB components
 Color.hex(0xFF8000)       // orange via hex integer
 Color.hex("#FF8000")      // orange via hex string
-Color.hsl(30, 1.0, 0.5)  // orange via HSL
+Color.hsl(30, 100, 50)   // orange via HSL
 ```
 
 ### Color Manipulation
@@ -103,7 +106,7 @@ Use `Color.palette.*` — these return semantic tokens:
 ```swift
 Text("Hello")
     .foregroundColor(.palette.accent)    // resolves to palette's accent color
-    .background(.palette.surfaceBackground)
+    .background(.palette.background)
 ```
 
 Available semantic tokens include:
@@ -115,9 +118,10 @@ Available semantic tokens include:
 | `.palette.foregroundTertiary` | Disabled / muted text |
 | `.palette.accent` | Highlighted elements, titles |
 | `.palette.border` | Container borders |
-| `.palette.surfaceBackground` | Container body / content area (block appearance) |
-| `.palette.surfaceHeaderBackground` | Container header / footer (block appearance) |
-| `.palette.elevatedBackground` | Buttons, interactive surfaces (block appearance) |
+| `.palette.background` | App background |
+| `.palette.statusBarBackground` | Status bar background |
+| `.palette.appHeaderBackground` | App header background |
+| `.palette.overlayBackground` | Overlay / dimmed background |
 | `.palette.success` / `.warning` / `.error` / `.info` | Status indicators |
 
 ### In renderToBuffer (with RenderContext)
@@ -142,8 +146,8 @@ func renderToBuffer(context: RenderContext) -> FrameBuffer {
 public struct BorderStyle {
     let topLeft, topRight, bottomLeft, bottomRight: Character
     let horizontal, vertical: Character
-    let leftT, rightT, topT, bottomT, cross: Character
+    let leftT, rightT: Character
 }
 ```
 
-Built-in styles: `.line`, `.rounded`, `.doubleLine`, `.heavy`. The `.block` appearance uses special half-block rendering instead of `BorderStyle` characters.
+Built-in styles: `.line`, `.rounded`, `.doubleLine`, `.heavy`, `.none`.
