@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  CC BY-NC-SA 4.0
 
+import Foundation
+
 // MARK: - Alert Presentation
 
 extension View {
@@ -168,6 +170,41 @@ extension View {
             content: self,
             isPresented: isPresented,
             modal: content()
+        )
+    }
+}
+
+// MARK: - Notification Host
+
+extension View {
+    /// Makes this view the notification rendering host.
+    ///
+    /// Attach this modifier once at the root of your view tree. It reads
+    /// active notifications from the environment's ``NotificationService``
+    /// and renders them as a stacked overlay at the configured position.
+    ///
+    /// Notifications are posted via the service, not declared in the view tree:
+    ///
+    /// ```swift
+    /// // At the root:
+    /// ContentView()
+    ///     .notificationHost()
+    ///
+    /// // Anywhere in the hierarchy:
+    /// NotificationService.current.post("Saved!")
+    /// ```
+    ///
+    /// The base content remains fully interactive — notifications do not dim
+    /// or block the background.
+    ///
+    /// - Parameter width: Fixed width of each notification box in characters (default: 40).
+    /// - Returns: A view that renders notifications from the environment service.
+    public func notificationHost(
+        width: Int = 40
+    ) -> some View {
+        NotificationHostModifier(
+            content: self,
+            width: width
         )
     }
 }
