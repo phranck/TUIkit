@@ -25,12 +25,14 @@
 
 ### Performance
 
-(none)
+- [ ] **TupleView Equatable** — `VStack { Text("A"); Text("B") }` erzeugt `TupleView<(Text, Text)>`, braucht per-arity conditional Equatable
+- [ ] **`View._printChanges()` Equivalent** — Debug-Mechanismus der loggt warum body re-evaluiert wurde
 
 ### Infrastructure
 
 - [ ] **Example App Neugestaltung** — Feature-Katalog → mehrere kleine Example Apps
 - [ ] **GitHub → Codeberg Migration** — `gh2cb`, Woodpecker CI, DNS-Umstellung
+- [ ] **GH Actions: Social Cache Workflow** — 403 push denied, `github-actions[bot]` braucht Write-Permissions auf Repo oder PAT
 
 ### Testing & Docs
 
@@ -41,6 +43,7 @@
 
 ### 2026-02-05
 
+- [x] **Render Performance Phase 2** — Cache invalidation fix, Equatable on 15 types/views, debug tooling, example app decomposition + `.equatable()`, DocC documentation (PR #74)
 - [x] **Social Lookup Optimization** — GitHub Social API, NodeInfo instance validation, timeouts, false positives eliminated
 - [x] **Dashboard: Branches → Open Issues** — StatCard replaced with `SFBubbleLeftAndExclamationmarkBubbleRightFill` icon
 
@@ -138,4 +141,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-05 15:00
