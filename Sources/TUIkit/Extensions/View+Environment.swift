@@ -33,10 +33,10 @@ extension View {
     ///     .appearance(.rounded)
     ///
     /// // Local override
-    /// Panel("ASCII Style") {
+    /// Panel("Bold Style") {
     ///     content()
     /// }
-    /// .appearance(.ascii)
+    /// .appearance(.heavy)
     /// ```
     ///
     /// - Parameter appearance: The appearance to apply.

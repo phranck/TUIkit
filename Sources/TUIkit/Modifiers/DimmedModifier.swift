@@ -10,7 +10,7 @@
 /// When showing overlays, alerts, or dialogs, the background content
 /// should visually recede. This modifier removes all ANSI formatting
 /// (borders, backgrounds, colors) and all decorative characters
-/// (box-drawing, block elements, indicators) — then re-renders each line
+/// (box-drawing, indicators) — then re-renders each line
 /// with a dimmed foreground on `palette.overlayBackground`.
 /// The result is a flat, de-emphasized text layer with no visual ornaments.
 public struct DimmedModifier<Content: View>: View {
@@ -31,8 +31,8 @@ extension DimmedModifier: Equatable where Content: Equatable {}
 /// Characters that are purely decorative and should be replaced with spaces
 /// when flattening content for dimmed overlay backgrounds.
 ///
-/// Includes box-drawing characters (light, rounded, double, heavy),
-/// block elements (half/full blocks), and UI indicators (▸, ●, ▶).
+/// Includes box-drawing characters (light, rounded, double, heavy)
+/// and UI indicators (▸, ●, ▶).
 private enum DimmedOrnaments {
     static let characters: Set<Character> = {
         var chars = Set<Character>()
@@ -45,8 +45,6 @@ private enum DimmedOrnaments {
         chars.formUnion(["╔", "╗", "╚", "╝", "═", "║", "╠", "╣", "╦", "╩", "╬"])
         // Box-drawing: heavy
         chars.formUnion(["┏", "┓", "┗", "┛", "━", "┃", "┣", "┫", "┳", "┻", "╋"])
-        // Block elements
-        chars.formUnion(["▄", "▀", "█", "▌", "▐"])
         // UI indicators
         chars.formUnion(["▸", "◂", "▶", "◀", "●", "▪"])
 
@@ -69,8 +67,8 @@ extension DimmedModifier: Renderable {
         let background = palette.overlayBackground
 
         // Strip all ANSI codes and ornament characters, then re-apply
-        // uniform dimmed styling. This removes borders, block backgrounds,
-        // indicators — leaving only plain text on a flat background.
+        // uniform dimmed styling. This removes borders and indicators —
+        // leaving only plain text on a uniform dimmed background.
         let dimmedLines = contentBuffer.lines.map { line -> String in
             flattenLine(line, foreground: foreground, background: background, width: contentBuffer.width)
         }
