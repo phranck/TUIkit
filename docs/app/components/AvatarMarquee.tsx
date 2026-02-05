@@ -401,7 +401,7 @@ export default function AvatarMarquee<T>({
       {/* Marquee container with fade masks */}
       <div
         ref={containerRef}
-        className="relative cursor-grab overflow-visible py-4 active:cursor-grabbing"
+        className="relative cursor-grab overflow-hidden py-4 active:cursor-grabbing"
         style={{
           maskImage: FADE_GRADIENT,
           WebkitMaskImage: FADE_GRADIENT,

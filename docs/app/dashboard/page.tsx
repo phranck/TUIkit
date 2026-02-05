@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useGitHubStats } from "../hooks/useGitHubStats";
 import CloudBackground from "../components/CloudBackground";
 import RainOverlay from "../components/RainOverlay";
