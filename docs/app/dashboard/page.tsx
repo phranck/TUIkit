@@ -115,7 +115,7 @@ export default function DashboardPage() {
           {/* Stat cards — row 2 */}
           <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Commits" value={stats.totalCommits} icon="numberCircle" loading={stats.loading} />
-            <StatCard label="Branches" value={stats.branches} icon="branch" loading={stats.loading} />
+            <StatCard label="Open Issues" value={stats.openIssues} icon="issue" loading={stats.loading} />
             <StatCard label="Open PRs" value={stats.openPRs} icon="pullRequest" loading={stats.loading} />
             <StatCard label="Merged PRs" value={stats.mergedPRs} icon="merge" loading={stats.loading} />
           </div>
