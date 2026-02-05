@@ -21,7 +21,7 @@
 ///     titleColor: .cyan
 /// )
 /// ```
-struct ContainerConfig: Sendable {
+struct ContainerConfig: Sendable, Equatable {
     /// The border style (nil uses appearance default).
     var borderStyle: BorderStyle?
 
@@ -68,7 +68,7 @@ struct ContainerConfig: Sendable {
 /// Configuration options for container appearance.
 ///
 /// Controls separators, backgrounds, and other visual aspects of containers.
-struct ContainerStyle: Sendable {
+struct ContainerStyle: Sendable, Equatable {
     /// Whether to show a separator line between header and body.
     ///
     /// Note: Only applies to `Appearance.block`. For other appearances,
@@ -243,6 +243,10 @@ struct ContainerView<Content: View, Footer: View>: View {
         fatalError("ContainerView renders via Renderable")
     }
 }
+
+// MARK: - Equatable Conformance
+
+extension ContainerView: Equatable where Content: Equatable, Footer: Equatable {}
 
 // MARK: - Convenience Initializer (no footer)
 
@@ -479,7 +483,8 @@ extension ContainerView: Renderable {
 
         // === HEADER SECTION (if title present) ===
         if let titleText = title {
-            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: titleColor?.resolve(with: palette) ?? palette.accent, bold: true)
+            let resolvedColor = titleColor?.resolve(with: palette) ?? palette.accent
+            let titleStyled = ANSIRenderer.colorize(" \(titleText) ", foreground: resolvedColor, bold: true)
             lines.append(
                 BorderRenderer.blockContentLine(
                     content: titleStyled,
