@@ -24,6 +24,10 @@ public struct OverlayModifier<Base: View, Overlay: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension OverlayModifier: Equatable where Base: Equatable, Overlay: Equatable {}
+
 // MARK: - Renderable
 
 extension OverlayModifier: Renderable {

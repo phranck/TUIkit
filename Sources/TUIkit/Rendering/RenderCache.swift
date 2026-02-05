@@ -6,6 +6,19 @@
 
 // MARK: - Render Cache
 
+/// A snapshot of environment values that affect rendered output.
+///
+/// Used by ``RenderLoop`` to detect environment changes (theme, appearance)
+/// that require cache invalidation. Only tracks values that affect visual
+/// output — reference-type infrastructure services are excluded.
+struct EnvironmentSnapshot: Equatable {
+    /// The active palette identifier.
+    let paletteID: String
+
+    /// The active appearance identifier.
+    let appearanceID: String
+}
+
 /// Caches rendered ``FrameBuffer`` results for views that opt into subtree memoization.
 ///
 /// `RenderCache` is Phase 5 of TUIKit's render pipeline optimization. It stores
