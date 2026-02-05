@@ -116,10 +116,12 @@ export interface GitHubStats {
   rateLimit: { remaining: number; limit: number } | null;
 }
 
-/** Return type of the hook — stats plus a manual refresh function. */
+/** Return type of the hook — stats plus manual refresh and data-fetch functions. */
 export interface UseGitHubStatsReturn extends GitHubStats {
-  /** Re-fetch all data from the GitHub API. */
+  /** Re-fetch all data from the GitHub API (fire-and-forget, updates internal state). */
   refresh: () => void;
+  /** Fetch all data and return it as a resolved promise (for external caching). */
+  fetchData: () => Promise<GitHubStats>;
 }
 
 const initialStats: GitHubStats = {
@@ -248,20 +250,42 @@ interface GitHubStargazerResponse {
   html_url: string;
 }
 
+/** Options for configuring the `useGitHubStats` hook. */
+export interface UseGitHubStatsOptions {
+  /**
+   * When `true`, suppresses the automatic fetch on mount.
+   *
+   * Useful when a caching layer wants to decide whether to fetch based on
+   * cached data freshness. The caller can trigger a fetch manually via
+   * `fetchData()` or `refresh()`.
+   *
+   * @default false
+   */
+  skipInitialFetch?: boolean;
+}
+
 /**
  * Fetches live GitHub stats for the TUIKit repository.
  *
- * Makes ~13 parallel API requests on mount. All data comes from the
- * public GitHub REST API (no token required for public repos).
- * Rate limit: 60 requests/hour per IP.
+ * Makes ~13 parallel API requests on mount (unless `skipInitialFetch` is set).
+ * All data comes from the public GitHub REST API (no token required for
+ * public repos). Rate limit: 60 requests/hour per IP.
  *
- * Returns stats plus a `refresh()` function for manual re-fetch.
+ * Returns stats plus a `refresh()` function for manual re-fetch and a
+ * `fetchData()` function that returns a promise with the assembled stats.
  */
-export function useGitHubStats(): UseGitHubStatsReturn {
+export function useGitHubStats(options?: UseGitHubStatsOptions): UseGitHubStatsReturn {
+  const skipInitialFetch = options?.skipInitialFetch ?? false;
   const [stats, setStats] = useState<GitHubStats>(initialStats);
   const controllerRef = useRef<AbortController | null>(null);
 
-  const fetchAll = useCallback(() => {
+  /**
+   * Fetches all GitHub stats and returns the result.
+   *
+   * Updates internal state AND returns the assembled `GitHubStats` object
+   * so external consumers (e.g. a caching wrapper) can store the data.
+   */
+  const doFetch = useCallback(async (): Promise<GitHubStats> => {
     // Abort any in-flight request
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -270,196 +294,207 @@ export function useGitHubStats(): UseGitHubStatsReturn {
 
     setStats((prev) => ({ ...prev, loading: true, error: null }));
 
-    (async () => {
-      try {
-        const [
-          repoResult,
-          commitsResult,
-          languagesResult,
-          activityResult,
-          openPRsCount,
-          closedPRsCount,
-          closedIssuesCount,
-          releasesCount,
-          contributorsCount,
-          branchesCount,
-          tagsCount,
-          stargazersResult,
-        ] = await Promise.all([
-          ghFetch<GitHubRepoResponse>("", signal),
+    try {
+      const [
+        repoResult,
+        commitsResult,
+        languagesResult,
+        activityResult,
+        openPRsCount,
+        closedPRsCount,
+        closedIssuesCount,
+        releasesCount,
+        contributorsCount,
+        branchesCount,
+        tagsCount,
+        stargazersResult,
+      ] = await Promise.all([
+        ghFetch<GitHubRepoResponse>("", signal),
 
-          ghFetch<
-            Array<{
-              sha: string;
-              commit: {
-                message: string;
-                author: { name: string; date: string };
-              };
-              html_url: string;
-            }>
-          >("/commits?per_page=20", signal),
+        ghFetch<
+          Array<{
+            sha: string;
+            commit: {
+              message: string;
+              author: { name: string; date: string };
+            };
+            html_url: string;
+          }>
+        >("/commits?per_page=20", signal),
 
-          ghFetch<LanguageBreakdown>("/languages", signal),
+        ghFetch<LanguageBreakdown>("/languages", signal),
 
-          // Try fetching weekly activity; on failure or empty response, fall back to local cache if available
-          (async () => {
+        // Try fetching weekly activity; on failure or empty response, fall back to local cache if available
+        (async () => {
+          try {
+            const res = await ghFetch<WeeklyActivity[]>("/stats/commit_activity", signal);
+            // If GitHub returns an empty array, the stats endpoint may be pending (202) — try cache
+            if (Array.isArray(res.data) && res.data.length > 0) return res;
+
+            // Attempt to read cached weeklyActivity from public JSON
             try {
-              const res = await ghFetch<WeeklyActivity[]>("/stats/commit_activity", signal);
-              // If GitHub returns an empty array, the stats endpoint may be pending (202) — try cache
-              if (Array.isArray(res.data) && res.data.length > 0) return res;
-
-              // Attempt to read cached weeklyActivity from public JSON
-              try {
-                const cacheResp = await fetch('/weekly-activity-cache.json', { signal });
-                if (cacheResp.ok) {
-                  const cached = await cacheResp.json();
-                  return { data: cached as WeeklyActivity[], remaining: res.remaining, limit: res.limit };
-                }
-              } catch {
-                // ignore cache read errors
+              const cacheResp = await fetch('/weekly-activity-cache.json', { signal });
+              if (cacheResp.ok) {
+                const cached = await cacheResp.json();
+                return { data: cached as WeeklyActivity[], remaining: res.remaining, limit: res.limit };
               }
-
-              return { data: [] as WeeklyActivity[], remaining: res.remaining, limit: res.limit };
             } catch {
-              // On network/API failure, attempt cache
-              try {
-                const cacheResp = await fetch('/weekly-activity-cache.json', { signal });
-                if (cacheResp.ok) {
-                  const cached = await cacheResp.json();
-                  return { data: cached as WeeklyActivity[], remaining: 0, limit: 60 };
-                }
-              } catch {
-                // ignore
-              }
-              return { data: [] as WeeklyActivity[], remaining: 0, limit: 60 };
+              // ignore cache read errors
             }
-          })(),
 
-          ghCount("/pulls?state=open", signal),
-          ghCount("/pulls?state=closed", signal),
-          ghCount("/issues?state=closed", signal),
-          ghCount("/releases", signal),
-          ghCount("/contributors", signal),
-          ghCount("/branches", signal),
-          ghCount("/tags", signal),
+            return { data: [] as WeeklyActivity[], remaining: res.remaining, limit: res.limit };
+          } catch {
+            // On network/API failure, attempt cache
+            try {
+              const cacheResp = await fetch('/weekly-activity-cache.json', { signal });
+              if (cacheResp.ok) {
+                const cached = await cacheResp.json();
+                return { data: cached as WeeklyActivity[], remaining: 0, limit: 60 };
+              }
+            } catch {
+              // ignore
+            }
+            return { data: [] as WeeklyActivity[], remaining: 0, limit: 60 };
+          }
+        })(),
 
-          ghFetch<GitHubStargazerResponse[]>(
-            "/stargazers?per_page=100",
-            signal,
-          ).catch(() => ({ data: [] as GitHubStargazerResponse[], remaining: 0, limit: 60 })),
-        ]);
+        ghCount("/pulls?state=open", signal),
+        ghCount("/pulls?state=closed", signal),
+        ghCount("/issues?state=closed", signal),
+        ghCount("/releases", signal),
+        ghCount("/contributors", signal),
+        ghCount("/branches", signal),
+        ghCount("/tags", signal),
 
-        // Count total commits via Link header
-        const commitCountResponse = await fetch(
-          `${API}/commits?per_page=1`,
+        ghFetch<GitHubStargazerResponse[]>(
+          "/stargazers?per_page=100",
+          signal,
+        ).catch(() => ({ data: [] as GitHubStargazerResponse[], remaining: 0, limit: 60 })),
+      ]);
+
+      // Count total commits via Link header
+      const commitCountResponse = await fetch(
+        `${API}/commits?per_page=1`,
+        { signal, headers: ghHeaders() },
+      );
+      const totalCommits = extractLastPage(commitCountResponse);
+
+      // Count merged PRs (GitHub search API)
+      let mergedPRs = 0;
+      try {
+        const searchResult = await fetch(
+          `https://api.github.com/search/issues?q=repo:${OWNER}/${REPO}+is:pr+is:merged&per_page=1`,
           { signal, headers: ghHeaders() },
         );
-        const totalCommits = extractLastPage(commitCountResponse);
-
-        // Count merged PRs (GitHub search API)
-        let mergedPRs = 0;
-        try {
-          const searchResult = await fetch(
-            `https://api.github.com/search/issues?q=repo:${OWNER}/${REPO}+is:pr+is:merged&per_page=1`,
-            { signal, headers: ghHeaders() },
-          );
-          if (searchResult.ok) {
-            const searchData = await searchResult.json();
-            mergedPRs = searchData.total_count ?? 0;
-          }
-        } catch {
-          /* search API can be rate-limited separately */
+        if (searchResult.ok) {
+          const searchData = await searchResult.json();
+          mergedPRs = searchData.total_count ?? 0;
         }
-
-        // Fetch social cache to merge with stargazers
-        let socialCache: SocialCache = { generatedAt: null, entries: {} };
-        try {
-          const cacheResponse = await fetch("/social-cache.json", { signal });
-          if (cacheResponse.ok) {
-            socialCache = await cacheResponse.json();
-          }
-        } catch {
-          /* Cache not available, continue without social info */
-        }
-
-        const repo = repoResult.data;
-
-        const recentCommits: CommitEntry[] = commitsResult.data.map((commit) => {
-          const { title, body } = splitCommitMessage(commit.commit.message);
-          return {
-            sha: commit.sha.slice(0, 7),
-            title,
-            body,
-            author: commit.commit.author.name,
-            date: commit.commit.author.date,
-            url: commit.html_url,
-          };
-        });
-
-        setStats({
-          stars: repo.stargazers_count,
-          forks: repo.forks_count,
-          watchers: repo.subscribers_count,
-          openIssues: repo.open_issues_count,
-          size: repo.size,
-          defaultBranch: repo.default_branch,
-          license: repo.license?.spdx_id ?? null,
-          createdAt: repo.created_at,
-          updatedAt: repo.updated_at,
-          pushedAt: repo.pushed_at,
-          totalCommits,
-          openPRs: openPRsCount,
-          closedPRs: closedPRsCount,
-          mergedPRs,
-          closedIssues: closedIssuesCount,
-          releases: releasesCount,
-          contributors: contributorsCount,
-          branches: branchesCount,
-          tags: tagsCount,
-          recentCommits,
-          languages: languagesResult.data,
-          weeklyActivity: Array.isArray(activityResult.data)
-            ? activityResult.data
-            : [],
-          stargazers: stargazersResult.data.map((user) => {
-            const cacheEntry = socialCache.entries[user.login];
-            return {
-              login: user.login,
-              avatarUrl: user.avatar_url,
-              profileUrl: user.html_url,
-              mastodon: cacheEntry?.mastodon
-                ? { handle: cacheEntry.mastodon.handle, url: cacheEntry.mastodon.url }
-                : undefined,
-              twitter: cacheEntry?.twitter
-                ? { handle: cacheEntry.twitter.handle, url: cacheEntry.twitter.url }
-                : undefined,
-              bluesky: cacheEntry?.bluesky
-                ? { handle: cacheEntry.bluesky.handle, url: cacheEntry.bluesky.url }
-                : undefined,
-            };
-          }),
-          loading: false,
-          error: null,
-          rateLimit: {
-            remaining: repoResult.remaining,
-            limit: repoResult.limit,
-          },
-        });
-      } catch (err) {
-        if (signal.aborted) return;
-        setStats((prev) => ({
-          ...prev,
-          loading: false,
-          error: err instanceof Error ? err.message : "Unknown error",
-        }));
+      } catch {
+        /* search API can be rate-limited separately */
       }
-    })();
+
+      // Fetch social cache to merge with stargazers
+      let socialCache: SocialCache = { generatedAt: null, entries: {} };
+      try {
+        const cacheResponse = await fetch("/social-cache.json", { signal });
+        if (cacheResponse.ok) {
+          socialCache = await cacheResponse.json();
+        }
+      } catch {
+        /* Cache not available, continue without social info */
+      }
+
+      const repo = repoResult.data;
+
+      const recentCommits: CommitEntry[] = commitsResult.data.map((commit) => {
+        const { title, body } = splitCommitMessage(commit.commit.message);
+        return {
+          sha: commit.sha.slice(0, 7),
+          title,
+          body,
+          author: commit.commit.author.name,
+          date: commit.commit.author.date,
+          url: commit.html_url,
+        };
+      });
+
+      const result: GitHubStats = {
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+        watchers: repo.subscribers_count,
+        openIssues: repo.open_issues_count,
+        size: repo.size,
+        defaultBranch: repo.default_branch,
+        license: repo.license?.spdx_id ?? null,
+        createdAt: repo.created_at,
+        updatedAt: repo.updated_at,
+        pushedAt: repo.pushed_at,
+        totalCommits,
+        openPRs: openPRsCount,
+        closedPRs: closedPRsCount,
+        mergedPRs,
+        closedIssues: closedIssuesCount,
+        releases: releasesCount,
+        contributors: contributorsCount,
+        branches: branchesCount,
+        tags: tagsCount,
+        recentCommits,
+        languages: languagesResult.data,
+        weeklyActivity: Array.isArray(activityResult.data)
+          ? activityResult.data
+          : [],
+        stargazers: stargazersResult.data.map((user) => {
+          const cacheEntry = socialCache.entries[user.login];
+          return {
+            login: user.login,
+            avatarUrl: user.avatar_url,
+            profileUrl: user.html_url,
+            mastodon: cacheEntry?.mastodon
+              ? { handle: cacheEntry.mastodon.handle, url: cacheEntry.mastodon.url }
+              : undefined,
+            twitter: cacheEntry?.twitter
+              ? { handle: cacheEntry.twitter.handle, url: cacheEntry.twitter.url }
+              : undefined,
+            bluesky: cacheEntry?.bluesky
+              ? { handle: cacheEntry.bluesky.handle, url: cacheEntry.bluesky.url }
+              : undefined,
+          };
+        }),
+        loading: false,
+        error: null,
+        rateLimit: {
+          remaining: repoResult.remaining,
+          limit: repoResult.limit,
+        },
+      };
+
+      setStats(result);
+      return result;
+    } catch (err) {
+      if (signal.aborted) throw err;
+      setStats((prev) => ({
+        ...prev,
+        loading: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      }));
+      throw err;
+    }
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-    return () => controllerRef.current?.abort();
-  }, [fetchAll]);
+  /** Fire-and-forget refresh — triggers fetch but ignores the returned promise. */
+  const refresh = useCallback(() => {
+    doFetch().catch(() => {
+      /* errors are reflected in stats.error */
+    });
+  }, [doFetch]);
 
-  return { ...stats, refresh: fetchAll };
+  useEffect(() => {
+    if (!skipInitialFetch) {
+      refresh();
+    }
+    return () => controllerRef.current?.abort();
+  }, [refresh, skipInitialFetch]);
+
+  return { ...stats, refresh, fetchData: doFetch };
 }

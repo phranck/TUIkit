@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useGitHubStats } from "../hooks/useGitHubStats";
+import { useGitHubStatsCache } from "../hooks/useGitHubStatsCache";
 import CloudBackground from "../components/CloudBackground";
 import RainOverlay from "../components/RainOverlay";
 import SpinnerLights from "../components/SpinnerLights";
@@ -16,14 +16,60 @@ import CommitList from "../components/CommitList";
 import RepoInfo from "../components/RepoInfo";
 
 /**
+ * Formats a relative time string like "2 min ago" or "just now".
+ *
+ * Uses simple second/minute thresholds — no need for Intl.RelativeTimeFormat
+ * since the maximum age before auto-refresh is 5 minutes.
+ */
+function formatTimeAgo(timestampMs: number): string {
+  const seconds = Math.floor((Date.now() - timestampMs) / 1000);
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (remainingSeconds === 0) return `${minutes} min ago`;
+  return `${minutes} min ${remainingSeconds}s ago`;
+}
+
+/**
+ * Formats a countdown string like "3:12" from a future timestamp.
+ *
+ * Returns "now" if the target is in the past or within 1 second.
+ */
+function formatCountdown(targetMs: number): string {
+  const remainingSeconds = Math.max(0, Math.floor((targetMs - Date.now()) / 1000));
+  if (remainingSeconds <= 0) return "now";
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+/**
  * Project Dashboard page — displays live GitHub metrics for the TUIKit repository.
  *
- * All data is fetched client-side via the GitHub REST API (no token required).
- * Supports manual refresh via button. Rate limit is displayed in the footer.
+ * Data is cached in localStorage for 5 minutes. Page reloads within that window
+ * serve cached data without hitting the GitHub API. A background timer
+ * auto-refreshes every 5 minutes. A manual force-refresh button is available
+ * with a 60-second cooldown. Rate limit is displayed in the footer.
  */
 export default function DashboardPage() {
-  const { refresh, ...stats } = useGitHubStats();
+  const {
+    forceRefresh,
+    lastFetchedAt,
+    nextRefreshAt,
+    canForceRefresh,
+    isFromCache,
+    ...stats
+  } = useGitHubStatsCache();
+
   const [showStargazers, setShowStargazers] = useState(false);
+
+  // Tick every second to update the "last updated" and countdown displays
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick((prev) => prev + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Preload stargazer avatar images in background so the panel opens instantly
   useEffect(() => {
@@ -44,6 +90,16 @@ export default function DashboardPage() {
 
   const toggleStargazers = useCallback(() => setShowStargazers((prev) => !prev), []);
   const closeStargazers = useCallback(() => setShowStargazers(false), []);
+
+  // Compute cooldown remaining for the button tooltip
+  const cooldownRemaining = lastFetchedAt !== null
+    ? Math.max(0, Math.ceil((60_000 - (Date.now() - lastFetchedAt)) / 1000))
+    : 0;
+
+  const refreshButtonDisabled = stats.loading || !canForceRefresh;
+  const refreshButtonTitle = !canForceRefresh && cooldownRemaining > 0
+    ? `Available in ${cooldownRemaining}s`
+    : "Refresh data";
 
   return (
     <div className="relative min-h-screen">
@@ -72,10 +128,11 @@ export default function DashboardPage() {
               </p>
             </div>
             <button
-              onClick={refresh}
-              disabled={stats.loading}
+              onClick={forceRefresh}
+              disabled={refreshButtonDisabled}
+              title={refreshButtonTitle}
               className="flex cursor-pointer items-center gap-2 rounded-full border border-border px-5 py-2 text-base font-medium text-foreground transition-all hover:border-accent/40 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Refresh data"
+              aria-label={refreshButtonTitle}
             >
               <span className={stats.loading ? "animate-spin-slow" : ""}>
                 <Icon name="refresh" size={16} />
@@ -88,7 +145,7 @@ export default function DashboardPage() {
           {stats.error && (
             <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-base text-red-400">
               <strong>Error:</strong> {stats.error}
-              <button onClick={refresh} className="ml-3 text-accent underline transition-colors hover:text-foreground">
+              <button onClick={forceRefresh} className="ml-3 text-accent underline transition-colors hover:text-foreground">
                 Retry
               </button>
             </div>
@@ -141,12 +198,33 @@ export default function DashboardPage() {
             <CommitList commits={stats.recentCommits} loading={stats.loading} />
           </div>
 
-          {/* Rate limit */}
-          {stats.rateLimit && (
-            <div className="text-right font-mono text-sm text-muted/60">
-              API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
+          {/* Footer: cache status + rate limit */}
+          <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-sm text-muted/60">
+            <div className="flex items-center gap-3">
+              {lastFetchedAt && (
+                <>
+                  <span>
+                    Updated {formatTimeAgo(lastFetchedAt)}
+                    {isFromCache && (
+                      <span className="ml-1.5 rounded bg-white/5 px-1.5 py-0.5 text-xs text-muted/40">
+                        cached
+                      </span>
+                    )}
+                  </span>
+                  {nextRefreshAt && (
+                    <span className="text-muted/40">
+                      · Next refresh in {formatCountdown(nextRefreshAt)}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
-          )}
+            {stats.rateLimit && (
+              <div>
+                API rate limit: {stats.rateLimit.remaining}/{stats.rateLimit.limit} remaining
+              </div>
+            )}
+          </div>
         </main>
 
         <SiteFooter />
