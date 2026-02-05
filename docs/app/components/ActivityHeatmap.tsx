@@ -22,8 +22,10 @@ const CELL_GAP = 3;
 const LABEL_WIDTH = 32;
 /** Minimum cell size to prevent cells from becoming invisible. */
 const MIN_CELL_SIZE = 6;
-/** Minimum number of columns so the grid never produces oversized cells with sparse data. */
-const MIN_COLUMNS = 52;
+/** A full year of weekly data. */
+const WEEKS_PER_YEAR = 52;
+/** Seconds in one week. */
+const SECONDS_PER_WEEK = 7 * 86400;
 
 /**
  * Formats a Unix timestamp (seconds) + day offset into a readable date.
@@ -81,13 +83,32 @@ function intensityLevel(count: number, maxCommits: number): number {
 }
 
 /**
+ * Pads the weeks array to a full year (52 weeks) by prepending empty weeks.
+ * If the array already has 52+ entries it is returned unchanged.
+ */
+function padToFullYear(weeks: WeeklyActivity[]): WeeklyActivity[] {
+  if (weeks.length >= WEEKS_PER_YEAR) return weeks;
+
+  const emptyDays = [0, 0, 0, 0, 0, 0, 0];
+  const missing = WEEKS_PER_YEAR - weeks.length;
+  const earliestTimestamp = weeks.length > 0 ? weeks[0].week : Math.floor(Date.now() / 1000);
+
+  const padding: WeeklyActivity[] = Array.from({ length: missing }, (_, idx) => ({
+    week: earliestTimestamp - (missing - idx) * SECONDS_PER_WEEK,
+    total: 0,
+    days: emptyDays,
+  }));
+
+  return [...padding, ...weeks];
+}
+
+/**
  * Calculates the cell size that fills the available container width.
  * Formula: floor((availableWidth - LABEL_WIDTH - (colCount - 1) * CELL_GAP) / colCount)
  */
 function computeCellSize(containerWidth: number, colCount: number): number {
-  const cols = Math.max(MIN_COLUMNS, colCount);
-  const availableForCells = containerWidth - LABEL_WIDTH - (cols - 1) * CELL_GAP;
-  return Math.max(MIN_CELL_SIZE, Math.floor(availableForCells / cols));
+  const availableForCells = containerWidth - LABEL_WIDTH - (colCount - 1) * CELL_GAP;
+  return Math.max(MIN_CELL_SIZE, Math.floor(availableForCells / colCount));
 }
 
 /**
@@ -102,7 +123,8 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
   const [cellSize, setCellSize] = useState(0);
   const { hover, popover, show: showPopover, hide: hidePopover, cancelHide } = useHoverPopover<HeatmapHover>();
 
-  const colCount = weeks.length;
+  const fullYear = padToFullYear(weeks);
+  const colCount = fullYear.length;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -119,7 +141,7 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
     setCellSize(computeCellSize(container.clientWidth, colCount));
 
     return () => observer.disconnect();
-  }, [colCount]);
+  }, [colCount, loading]);
 
   if (loading) {
     return (
@@ -133,20 +155,9 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
     );
   }
 
-  if (weeks.length === 0) {
-    return (
-      <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="calendar" size={22} className="text-muted" />
-          Commit Activity
-        </h3>
-        <p className="text-lg text-muted">No activity data available yet.</p>
-      </div>
-    );
-  }
 
-  const maxCommits = Math.max(1, ...weeks.flatMap((week) => week.days));
-  const monthLabels = buildMonthLabels(weeks, cellSize);
+  const maxCommits = Math.max(1, ...fullYear.flatMap((week) => week.days));
+  const monthLabels = buildMonthLabels(fullYear, cellSize);
 
   function handleMouseEnter(event: React.MouseEvent<HTMLDivElement>, weekTimestamp: number, dayIdx: number, count: number) {
     const cell = event.currentTarget;
@@ -220,7 +231,7 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
                 gap: CELL_GAP,
               }}
             >
-              {weeks.map((week) =>
+              {fullYear.map((week) =>
                 week.days.map((count, dayIdx) => {
                   const level = intensityLevel(count, maxCommits);
                   return (
