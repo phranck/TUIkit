@@ -5,6 +5,31 @@
 //  CC BY-NC-SA 4.0  assembly, and status bar output.
 //
 
+// MARK: - Environment Snapshot
+
+/// A snapshot of environment values that affect rendered output.
+///
+/// Used by ``RenderLoop`` to detect environment changes (theme, appearance)
+/// between frames. When the snapshot differs from the previous frame, the
+/// render cache is cleared so ``EquatableView``-cached subtrees re-render
+/// with the updated values.
+///
+/// Only tracks values that affect visual output — reference-type infrastructure
+/// services (`FocusManager`, `ThemeManager`) are excluded.
+private struct EnvironmentSnapshot: Equatable {
+    /// The active palette identifier.
+    let paletteID: String
+
+    /// The active appearance identifier.
+    let appearanceID: String
+
+    /// Creates a snapshot from fully-built environment values.
+    init(from environment: EnvironmentValues) {
+        self.paletteID = environment.palette.id
+        self.appearanceID = environment.appearance.id
+    }
+}
+
 // MARK: - Render Loop
 
 /// Manages the full rendering pipeline for each frame.
@@ -154,7 +179,7 @@ extension RenderLoop {
 
         // Create render context with environment
         let environment = buildEnvironment()
-        invalidateCacheIfEnvironmentChanged()
+        invalidateCacheIfEnvironmentChanged(environment: environment)
 
         var context = RenderContext(
             availableWidth: terminalWidth,
@@ -251,6 +276,7 @@ extension RenderLoop {
         tuiContext.lifecycle.endRenderPass()
         tuiContext.stateStorage.endRenderPass()
         tuiContext.renderCache.removeInactive()
+        tuiContext.renderCache.logFrameStats()
     }
 
     /// Invalidates the diff cache, forcing a full repaint on the next render.
@@ -291,11 +317,8 @@ private extension RenderLoop {
     ///
     /// This runs once per frame (two string comparisons) and ensures developers
     /// never need to manually invalidate the cache after theme changes.
-    func invalidateCacheIfEnvironmentChanged() {
-        let currentSnapshot = EnvironmentSnapshot(
-            paletteID: paletteManager.current.id,
-            appearanceID: appearanceManager.current.id
-        )
+    func invalidateCacheIfEnvironmentChanged(environment: EnvironmentValues) {
+        let currentSnapshot = EnvironmentSnapshot(from: environment)
         if let lastSnapshot = lastEnvironmentSnapshot, lastSnapshot != currentSnapshot {
             tuiContext.renderCache.clearAll()
         }
