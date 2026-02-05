@@ -1,8 +1,8 @@
 /**
  * Shared site footer used by all pages.
  *
- * Displays location info and license link. Accepts optional children
- * for page-specific additions (e.g. API rate limit display).
+ * Displays location info. Accepts optional children for page-specific
+ * additions (e.g. API rate limit display).
  */
 export default function SiteFooter({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
@@ -18,14 +18,6 @@ export default function SiteFooter({ children, className }: { children?: React.R
           Austria
         </span>
         {children}
-        <a
-          href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-6 text-xs text-muted/70 transition-colors hover:text-foreground"
-        >
-          CC BY-NC-SA 4.0
-        </a>
       </div>
     </footer>
   );
