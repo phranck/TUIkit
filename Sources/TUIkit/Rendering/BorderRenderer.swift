@@ -10,9 +10,8 @@
 /// append to a `[String]` array for `FrameBuffer` construction.
 /// This eliminates duplicated border-assembly code across Views and Modifiers.
 ///
-/// Two style families are supported:
-/// - **Standard**: box-drawing characters (┌─┐│└─┘├─┤)
-/// - **Block**: half-block characters (▄ █ ▀) for smooth visual edges
+/// Uses standard box-drawing characters (┌─┐│└─┘├─┤) with configurable
+/// ``BorderStyle`` presets (line, rounded, doubleLine, heavy).
 enum BorderRenderer {
 
     /// The total width consumed by left + right border characters (1 + 1 = 2).
@@ -22,7 +21,7 @@ enum BorderRenderer {
     static let focusIndicator: Character = "●"
 }
 
-// MARK: - Standard Style (Box-Drawing Characters)
+// MARK: - Border Rendering
 
 extension BorderRenderer {
     /// Renders a plain top border line.
@@ -186,80 +185,4 @@ extension BorderRenderer {
     }
 }
 
-// MARK: - Block Style (Half-Block Characters)
 
-extension BorderRenderer {
-    /// Renders a block-style top border.
-    ///
-    ///     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-    ///
-    /// - Parameters:
-    ///   - innerWidth: The content width (border width = innerWidth + 2).
-    ///   - color: The foreground color (typically the section's background color).
-    /// - Returns: The top border string.
-    static func blockTopBorder(
-        innerWidth: Int,
-        color: Color
-    ) -> String {
-        let line = String(repeating: BorderStyle.block.horizontal, count: innerWidth + 2)
-        return ANSIRenderer.colorize(line, foreground: color)
-    }
-
-    /// Renders a block-style bottom border.
-    ///
-    ///     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-    ///
-    /// - Parameters:
-    ///   - innerWidth: The content width (border width = innerWidth + 2).
-    ///   - color: The foreground color (typically the section's background color).
-    /// - Returns: The bottom border string.
-    static func blockBottomBorder(
-        innerWidth: Int,
-        color: Color
-    ) -> String {
-        let line = String(repeating: BorderStyle.blockBottomHorizontal, count: innerWidth + 2)
-        return ANSIRenderer.colorize(line, foreground: color)
-    }
-
-    /// Wraps a single content line with full-block side borders
-    /// and applies a persistent background.
-    ///
-    ///     █ content █
-    ///
-    /// - Parameters:
-    ///   - content: The content string (will be padded to `innerWidth`).
-    ///   - innerWidth: The target content width.
-    ///   - sectionColor: The color for both `█` borders and content background.
-    /// - Returns: The bordered content line.
-    static func blockContentLine(
-        content: String,
-        innerWidth: Int,
-        sectionColor: Color
-    ) -> String {
-        let paddedLine = content.padToVisibleWidth(innerWidth)
-        let sideBorder = ANSIRenderer.colorize(String(BorderStyle.block.vertical), foreground: sectionColor)
-        let styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: sectionColor)
-        return sideBorder + styledContent + ANSIRenderer.reset + sideBorder
-    }
-
-    /// Renders a block-style section separator (transition between two background colors).
-    ///
-    ///     ▀▀▀▀▀▀▀▀▀▀▀▀▀▀  (header→body: FG=headerBg, BG=bodyBg)
-    ///     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄  (body→footer: FG=footerBg, BG=bodyBg)
-    ///
-    /// - Parameters:
-    ///   - innerWidth: The content width (separator width = innerWidth + 2).
-    ///   - character: The separator character (`.blockBottomHorizontal` for header→body, `.blockFooterSeparator` for body→footer).
-    ///   - foregroundColor: The FG color (the section being transitioned from or to).
-    ///   - backgroundColor: The BG color (the adjacent section).
-    /// - Returns: The separator line.
-    static func blockSeparator(
-        innerWidth: Int,
-        character: Character = BorderStyle.blockBottomHorizontal,
-        foregroundColor: Color,
-        backgroundColor: Color
-    ) -> String {
-        let line = String(repeating: character, count: innerWidth + 2)
-        return ANSIRenderer.colorize(line, foreground: foregroundColor, background: backgroundColor)
-    }
-}

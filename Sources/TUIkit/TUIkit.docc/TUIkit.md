@@ -115,15 +115,8 @@ struct MyApp: App {
 ### Theming
 
 - ``Palette``
-- ``BlockPalette``
+- ``SystemPalette``
 - ``ThemeManager``
-- ``GreenPalette``
-- ``AmberPalette``
-- ``WhitePalette``
-- ``RedPalette``
-- ``BluePalette``
-- ``VioletPalette``
-- ``GeneratedPalette``
 
 ### Colors
 

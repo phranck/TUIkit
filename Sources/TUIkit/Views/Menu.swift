@@ -234,8 +234,7 @@ extension Menu: Renderable {
                 // Selected: bold text with dimmed background, highlighted foreground
                 style.isBold = true
                 style.foregroundColor = selectedColor?.resolve(with: palette) ?? palette.accent
-                // Use a dimmed version of the accent color for background
-                style.backgroundColor = palette.blockSurfaceBackground
+                // Selected items have no special background — bold + accent is enough
             } else {
                 // Use palette foreground color if no custom itemColor is set
                 style.foregroundColor = itemColor?.resolve(with: palette) ?? palette.foreground
@@ -248,17 +247,14 @@ extension Menu: Renderable {
         // Create content buffer
         var contentBuffer = FrameBuffer(lines: lines)
 
-        // Apply border - use explicit style, or fall back to appearance default
-        let appearance = context.environment.appearance
-        let effectiveBorderStyle = borderStyle ?? appearance.borderStyle
-        let isBlockStyle = appearance.rawId == .block
+        // Apply border — use explicit style, or fall back to appearance default
+        let effectiveBorderStyle = borderStyle ?? context.environment.appearance.borderStyle
 
         contentBuffer = applyBorder(
             to: contentBuffer,
             style: effectiveBorderStyle,
             color: borderColor,
             dividerLineIndex: dividerLineIndex,
-            isBlockStyle: isBlockStyle,
             palette: palette
         )
 
@@ -332,89 +328,37 @@ extension Menu: Renderable {
     ///   - style: The border style to use.
     ///   - color: The border color (optional).
     ///   - dividerLineIndex: If set, renders a horizontal divider with T-junctions at this line index.
-    ///   - isBlockStyle: If true, uses half-block characters for smooth edges.
     private func applyBorder(
         to buffer: FrameBuffer,
         style: BorderStyle,
         color: Color?,
         dividerLineIndex: Int? = nil,
-        isBlockStyle: Bool = false,
         palette: any Palette
     ) -> FrameBuffer {
         guard !buffer.isEmpty else { return buffer }
 
         let innerWidth = buffer.width
+        let borderForeground = color?.resolve(with: palette) ?? palette.border
         var result: [String] = []
 
-        if isBlockStyle {
-            let headerFooterBg = palette.blockSurfaceHeaderBackground
-            let bodyBg = palette.blockSurfaceBackground
-            let hasHeader = dividerLineIndex != nil
+        result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 
-            // Top border
-            result.append(
-                BorderRenderer.blockTopBorder(
-                    innerWidth: innerWidth,
-                    color: hasHeader ? headerFooterBg : bodyBg
+        for (index, line) in buffer.lines.enumerated() {
+            if let dividerIndex = dividerLineIndex, index == dividerIndex {
+                result.append(BorderRenderer.standardDivider(style: style, innerWidth: innerWidth, color: borderForeground))
+            } else {
+                result.append(
+                    BorderRenderer.standardContentLine(
+                        content: line,
+                        innerWidth: innerWidth,
+                        style: style,
+                        color: borderForeground
+                    )
                 )
-            )
-
-            // Content lines with section-aware coloring
-            for (index, line) in buffer.lines.enumerated() {
-                let isHeaderLine = hasHeader && dividerLineIndex.map({ index < $0 }) ?? false
-                let isDividerLine = hasHeader && dividerLineIndex.map({ index == $0 }) ?? false
-
-                if isDividerLine {
-                    result.append(
-                        BorderRenderer.blockSeparator(
-                            innerWidth: innerWidth,
-                            foregroundColor: headerFooterBg,
-                            backgroundColor: bodyBg
-                        )
-                    )
-                } else if isHeaderLine {
-                    result.append(
-                        BorderRenderer.blockContentLine(
-                            content: line,
-                            innerWidth: innerWidth,
-                            sectionColor: headerFooterBg
-                        )
-                    )
-                } else {
-                    result.append(
-                        BorderRenderer.blockContentLine(
-                            content: line,
-                            innerWidth: innerWidth,
-                            sectionColor: bodyBg
-                        )
-                    )
-                }
             }
-
-            // Bottom border
-            result.append(BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: bodyBg))
-        } else {
-            let borderForeground = color?.resolve(with: palette) ?? palette.border
-
-            result.append(BorderRenderer.standardTopBorder(style: style, innerWidth: innerWidth, color: borderForeground))
-
-            for (index, line) in buffer.lines.enumerated() {
-                if let dividerIndex = dividerLineIndex, index == dividerIndex {
-                    result.append(BorderRenderer.standardDivider(style: style, innerWidth: innerWidth, color: borderForeground))
-                } else {
-                    result.append(
-                        BorderRenderer.standardContentLine(
-                            content: line,
-                            innerWidth: innerWidth,
-                            style: style,
-                            color: borderForeground
-                        )
-                    )
-                }
-            }
-
-            result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderForeground))
         }
+
+        result.append(BorderRenderer.standardBottomBorder(style: style, innerWidth: innerWidth, color: borderForeground))
 
         return FrameBuffer(lines: result)
     }

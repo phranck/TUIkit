@@ -78,7 +78,7 @@ extension NotificationHostModifier: Renderable {
             let fgColor = Color.palette.foreground.resolve(with: palette).opacity(opacity)
 
             // Build content lines with horizontal padding, padded to full inner width
-            // so the Box (and its block-appearance background) spans the intended width.
+            // so the Box spans the intended width.
             let wrappedLines = NotificationTiming.wordWrap(entry.message, maxWidth: textWidth)
             var contentLines: [String] = []
             for line in wrappedLines {
@@ -87,7 +87,7 @@ extension NotificationHostModifier: Renderable {
             }
 
             // Render a Box around the pre-styled lines. Box handles
-            // Standard vs. Block appearance automatically.
+            // Border style adapts to the current appearance automatically.
             let boxView = Box(lines: contentLines, color: fadedBorderColor)
             var boxContext = context
             boxContext.availableWidth = width

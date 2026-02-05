@@ -392,21 +392,6 @@ struct BorderModifierTests {
         #expect(bottomLine.hasSuffix("┛"))
     }
 
-    @Test("BorderedView with ascii style uses correct characters")
-    func borderedViewAsciiStyle() {
-        let bordered = BorderedView(content: Text("X"), style: .ascii, color: nil)
-        let context = testContext()
-        let buffer = bordered.renderToBuffer(context: context)
-
-        let topLine = buffer.lines[0].stripped
-        let bottomLine = buffer.lines[buffer.height - 1].stripped
-
-        #expect(topLine.hasPrefix("+"))
-        #expect(topLine.hasSuffix("+"))
-        #expect(bottomLine.hasPrefix("+"))
-        #expect(bottomLine.hasSuffix("+"))
-    }
-
     @Test("BorderedView adds 2 to content width")
     func borderedViewWidthOverhead() {
         let bordered = BorderedView(content: Text("ABCDE"), style: .line, color: nil)

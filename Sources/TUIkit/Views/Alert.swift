@@ -11,7 +11,7 @@
 ///
 /// ## Structure
 ///
-/// - **Header**: Title (in border for standard appearances, separate section for block)
+/// - **Header**: Title (rendered in the top border)
 /// - **Body**: Message
 /// - **Footer**: Action buttons (separated by optional separator line)
 ///

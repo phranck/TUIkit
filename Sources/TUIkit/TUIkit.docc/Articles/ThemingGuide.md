@@ -8,14 +8,16 @@ TUIkit includes a full theming system with six built-in palettes inspired by cla
 
 ## Built-in Palettes
 
-| Palette | Struct | Inspiration |
+| Palette | Preset | Inspiration |
 |---------|--------|-------------|
-| Green | ``GreenPalette`` | IBM 5151, Apple II |
-| Amber | ``AmberPalette`` | IBM 3278, Wyse 50 |
-| Red | ``RedPalette`` | Military terminals |
-| Violet | ``VioletPalette`` | Retro sci-fi displays |
-| Blue | ``BluePalette`` | VFD displays |
-| White | ``WhitePalette`` | DEC VT100, VT220 |
+| Green | `.green` | IBM 5151, Apple II |
+| Amber | `.amber` | IBM 3278, Wyse 50 |
+| Red | `.red` | Military terminals |
+| Violet | `.violet` | Retro sci-fi displays |
+| Blue | `.blue` | VFD displays |
+| White | `.white` | DEC VT100, VT220 |
+
+All built-in palettes are instances of ``SystemPalette``.
 
 ## Using Palettes
 
@@ -44,7 +46,7 @@ Set a palette for a view and all its descendants:
 
 ```swift
 ContentView()
-    .palette(AmberPalette())
+    .palette(SystemPalette(.amber))
 ```
 
 ### Palette Colors in Views
@@ -54,7 +56,7 @@ Use ``Color/palette`` to access the current palette's colors:
 ```swift
 Text("Styled text")
     .foregroundColor(.palette.foreground)
-    .backgroundColor(.palette.surfaceBackground)
+    .background(.palette.background)
 ```
 
 Or read the palette directly from the environment:
@@ -66,8 +68,6 @@ Text("Hello").foregroundColor(palette.accent)
 ```
 
 ## Creating Custom Palettes
-
-### Minimal Palette (Palette protocol)
 
 Implement the ``Palette`` protocol for a palette with just the essential colors:
 
@@ -91,41 +91,12 @@ struct MyCustomPalette: Palette {
 }
 ```
 
-### Block-Aware Palette (BlockPalette protocol)
-
-For palettes that provide block-appearance surface colors, conform to ``BlockPalette``:
-
-```swift
-struct MyBlockPalette: BlockPalette {
-    let id = "custom-block"
-    let name = "Custom Block"
-
-    // ... same required properties as Palette ...
-
-    // Optional: override computed defaults
-    // var surfaceBackground: Color { ... }
-    // var surfaceHeaderBackground: Color { ... }
-    // var elevatedBackground: Color { ... }
-}
-```
-
-The ``BlockPalette`` defaults compute surface colors from `background` using `lighter(by:)`:
-- `surfaceBackground` = `background.lighter(by: 0.08)`
-- `surfaceHeaderBackground` = `background.lighter(by: 0.05)`
-- `elevatedBackground` = `surfaceHeaderBackground.lighter(by: 0.05)`
-
 ## Palette Color Properties
-
-### Palette (Base Protocol)
 
 - **Backgrounds**: `background`, `statusBarBackground`, `appHeaderBackground`, `overlayBackground`
 - **Foregrounds**: `foreground`, `foregroundSecondary`, `foregroundTertiary`
 - **Accent**: `accent`
 - **Semantic**: `success`, `warning`, `error`, `info`
 - **UI Elements**: `border`
-
-### BlockPalette (extends Palette)
-
-- **Surfaces**: `surfaceBackground`, `surfaceHeaderBackground`, `elevatedBackground`
 
 Only 8 properties are required (`background`, `foreground`, `accent`, `border`, `success`, `warning`, `error`, `info`). All others have default implementations that derive from these.

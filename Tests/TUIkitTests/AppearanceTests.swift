@@ -22,7 +22,6 @@ struct AppearanceTests {
         #expect(Appearance.rounded.name == "Rounded")
         #expect(Appearance.doubleLine.name == "Doubleline")
         #expect(Appearance.heavy.name == "Heavy")
-        #expect(Appearance.block.name == "Block")
     }
 
     @Test("Default appearance is rounded")
@@ -43,23 +42,21 @@ struct AppearanceTests {
     @Test("AppearanceRegistry contains all predefined appearances")
     func registryContainsAll() {
         let all = AppearanceRegistry.all
-        #expect(all.count == 5)
+        #expect(all.count == 4)
         #expect(all.contains { $0.rawId == .line })
         #expect(all.contains { $0.rawId == .rounded })
         #expect(all.contains { $0.rawId == .doubleLine })
         #expect(all.contains { $0.rawId == .heavy })
-        #expect(all.contains { $0.rawId == .block })
     }
 
     @Test("AppearanceRegistry cycling order is correct")
     func registryCyclingOrder() {
         let all = AppearanceRegistry.all
-        // Order: line → rounded → doubleLine → heavy → block
+        // Order: line → rounded → doubleLine → heavy
         #expect(all[0].rawId == .line)
         #expect(all[1].rawId == .rounded)
         #expect(all[2].rawId == .doubleLine)
         #expect(all[3].rawId == .heavy)
-        #expect(all[4].rawId == .block)
     }
 
     @Test("AppearanceRegistry can find appearance by ID")
@@ -76,9 +73,6 @@ struct AppearanceTests {
         let found = AppearanceRegistry.appearance(withId: customId)
         #expect(found == nil)
     }
-
-    // MARK: - Cyclable Conformance
-
 }
 
 // MARK: - Appearance Environment Tests
@@ -103,14 +97,14 @@ struct AppearanceEnvironmentTests {
     func managerEnvironmentAccess() {
         let env = EnvironmentValues()
         let manager = env.appearanceManager
-        #expect(manager.items.count == 5)
+        #expect(manager.items.count == 4)
     }
 
     @Test("Custom AppearanceManager can be set via environment")
     func managerEnvironmentSet() {
         var env = EnvironmentValues()
         let customManager = ThemeManager(
-            items: [Appearance.line, Appearance.block] as [Appearance]
+            items: [Appearance.line, Appearance.heavy] as [Appearance]
         )
         env.appearanceManager = customManager
         #expect(env.appearanceManager.items.count == 2)

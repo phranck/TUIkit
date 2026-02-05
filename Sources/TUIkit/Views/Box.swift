@@ -42,7 +42,7 @@
 /// Box {
 ///     Text("Uses current appearance")
 /// }
-/// .environment(\.appearance, .block)  // Now renders with block characters
+/// .environment(\.appearance, .doubleLine)  // Now renders with double-line borders
 /// ```
 ///
 /// You can override both style and color:
@@ -149,7 +149,7 @@ extension Box where Content == BufferView {
 ///
 /// Used internally by ``Box/init(lines:_:color:)`` to pass already-styled
 /// content into the `Box` rendering pipeline. This lets `Box` handle border
-/// rendering (Standard vs. Block appearance) while the content is controlled
+/// rendering (border style from the current appearance) while the content is controlled
 /// externally.
 struct BufferView: View, Renderable {
     /// The pre-built buffer to return during rendering.

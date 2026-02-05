@@ -314,13 +314,6 @@ extension StatusBar: Renderable {
         let innerWidth = width - BorderRenderer.borderWidthOverhead
         let content = alignContent(itemStrings: itemStrings, width: innerWidth)
 
-        // Check if we're using block appearance for special rendering
-        let isBlockAppearance = context.environment.appearance.rawId == .block
-        if isBlockAppearance {
-            return renderBlockBordered(content: content, innerWidth: innerWidth, context: context)
-        }
-
-        // Standard bordered rendering with regular box-drawing characters
         let border = context.environment.appearance.borderStyle
         let borderColor = context.environment.palette.border
 
@@ -328,17 +321,6 @@ extension StatusBar: Renderable {
             BorderRenderer.standardTopBorder(style: border, innerWidth: innerWidth, color: borderColor),
             BorderRenderer.standardContentLine(content: content, innerWidth: innerWidth, style: border, color: borderColor),
             BorderRenderer.standardBottomBorder(style: border, innerWidth: innerWidth, color: borderColor),
-        ])
-    }
-
-    /// Renders block-style status bar with half-block characters.
-    private func renderBlockBordered(content: String, innerWidth: Int, context: RenderContext) -> FrameBuffer {
-        let statusBarBg = context.environment.palette.statusBarBackground
-
-        return FrameBuffer(lines: [
-            BorderRenderer.blockTopBorder(innerWidth: innerWidth, color: statusBarBg),
-            BorderRenderer.blockContentLine(content: content, innerWidth: innerWidth, sectionColor: statusBarBg),
-            BorderRenderer.blockBottomBorder(innerWidth: innerWidth, color: statusBarBg),
         ])
     }
 }
