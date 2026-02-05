@@ -1,5 +1,11 @@
 # Project Dashboard — Live GitHub Metrics Page
 
+## Completed
+
+Completed 2026-02-04. Dashboard live at `/dashboard` with stat cards, commit heatmap, language bar, commit list, stargazer panel, shared nav, and rate limit display.
+
+---
+
 ## Goal
 
 A `/dashboard` subpage of the Landing Page that visualizes all relevant project and GitHub metrics live. Same retro phosphor style as the Landing Page. All data fetched client-side via GitHub REST API (public, no token required).
@@ -130,37 +136,37 @@ Manual refresh button in header (next to the title). Shows loading spinner durin
 
 ### 1. GitHub API Hook
 
-- [ ] `useGitHubStats.ts` — Types, fetch logic, parallel requests, error handling
-- [ ] Rate limit tracking (remaining/limit from response headers)
-- [ ] AbortController for cleanup on unmount
-- [ ] `refresh()` function in hook return for manual re-fetch
+- [x] `useGitHubStats.ts` — Types, fetch logic, parallel requests, error handling
+- [x] Rate limit tracking (remaining/limit from response headers)
+- [x] AbortController for cleanup on unmount
+- [x] `refresh()` function in hook return for manual re-fetch
 
 ### 2. Dashboard Components
 
-- [ ] `StatCard.tsx` — Icon + number + label, loading skeleton
-- [ ] `ActivityHeatmap.tsx` — CSS Grid, 7 rows × 52 cols, tooltip with date/count
-- [ ] `LanguageBar.tsx` — Stacked bar + legend, percentage calculation
-- [ ] `CommitList.tsx` — SHA link, full message (title + expandable body), author, relative time helper
-- [ ] `RepoInfo.tsx` — Metadata grid (Created, License, Size, Last Push, Branch)
+- [x] `StatCard.tsx` — Icon + number + label, loading skeleton
+- [x] `ActivityHeatmap.tsx` — CSS Grid, 7 rows × 52 cols, tooltip with date/count
+- [x] `LanguageBar.tsx` — Stacked bar + legend, percentage calculation
+- [x] `CommitList.tsx` — SHA link, full message (title + expandable body), author, relative time helper
+- [x] `RepoInfo.tsx` — Metadata grid (Created, License, Size, Last Push, Branch)
 
 ### 3. Dashboard Page
 
-- [ ] `app/dashboard/page.tsx` — Layout with all components
-- [ ] Loading state (skeleton)
-- [ ] Error state (rate limit exceeded / network error)
-- [ ] Rate limit display in footer
+- [x] `app/dashboard/page.tsx` — Layout with all components
+- [x] Loading state (skeleton)
+- [x] Error state (rate limit exceeded / network error)
+- [x] Rate limit display in footer
 
 ### 4. Navigation
 
-- [ ] "Dashboard" link in nav (Landing Page + Dashboard)
-- [ ] Extract shared nav component (optional, if useful)
+- [x] "Dashboard" link in nav (Landing Page + Dashboard)
+- [x] Extract shared nav component (optional, if useful)
 
 ### 5. Quality
 
-- [ ] `npm run build` (static export)
-- [ ] `npm run lint` (ESLint)
-- [ ] Responsive check (mobile + desktop)
-- [ ] Theme check (all 6 phosphor themes)
+- [x] `npm run build` (static export)
+- [x] `npm run lint` (ESLint)
+- [x] Responsive check (mobile + desktop)
+- [x] Theme check (all 6 phosphor themes)
 
 ## Open Questions
 

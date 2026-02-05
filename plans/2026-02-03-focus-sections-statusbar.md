@@ -1,7 +1,10 @@
 # Focus Sections with StatusBar Cascading
 
-**Created:** 2026-02-03
-**Status:** Completed (2026-02-03)
+## Completed
+
+Completed 2026-02-03. All framework steps implemented and tested. 482 tests passing. Example App update deferred to separate redesign effort.
+
+---
 
 ## Problem
 
@@ -251,10 +254,6 @@ This eliminates the need for special modal ESC handling — it's just a focus se
 - **2026-02-03**: Default composition is `.merge` — the common case (section adds items to parent's). `.replace` is the explicit opt-in for modals/clean-slate scenarios.
 - **2026-02-03**: `.statusBarItems { ... }` without composition parameter defaults to `.merge`.
 - **2026-02-03**: Active section indicator is a **breathing ● dot** rendered inside the section's top border, one position right of the corner. Uses true 16M RGB color interpolation (sine-based fade between 20% and 100% of `palette.accent`). Driven by a dedicated framework-level `PulseTimer`, independent from Spinner and RenderLoop timers.
-
-## Completed
-
-**2026-02-03** — All framework steps implemented and tested. 482 tests passing. Example App update deferred to separate redesign effort (multiple small focused apps instead of one feature catalog).
 
 ## Open Questions (for future iterations)
 

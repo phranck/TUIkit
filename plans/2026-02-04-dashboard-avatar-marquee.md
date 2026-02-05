@@ -1,5 +1,11 @@
 # Plan: Dashboard Redesign - Avatar Marquee
 
+## Completed
+
+Completed 2026-02-04. AvatarMarquee component implemented with infinite scroll, smooth braking, fade masks, arrow targeting, and popover integration. StargazersPanel migrated.
+
+---
+
 ## Summary
 
 Redesign the dashboard stat cards layout and replace the grid-based StargazersPanel with a horizontally scrolling avatar marquee. The marquee component will be generic and reusable for both Stargazers and Contributors.
@@ -54,33 +60,33 @@ interface AvatarMarqueeProps<T> {
 ## Workplan
 
 ### Phase 1: Layout Changes
-- [ ] Reorder StatCards in `page.tsx` (Row 1: Stars, Contributors, Forks, Releases)
-- [ ] Reorder StatCards Row 2 (Commits, Branches, Open PRs, Merged PRs)
-- [ ] Unify spacing to `mb-8` for all sections
-- [ ] Add `id` attributes to StatCards for arrow targeting
+- [x] Reorder StatCards in `page.tsx` (Row 1: Stars, Contributors, Forks, Releases)
+- [x] Reorder StatCards Row 2 (Commits, Branches, Open PRs, Merged PRs)
+- [x] Unify spacing to `mb-8` for all sections
+- [x] Add `id` attributes to StatCards for arrow targeting
 
 ### Phase 2: AvatarMarquee Component
-- [ ] Create `AvatarMarquee.tsx` with generic TypeScript props
-- [ ] Implement horizontal scroll container with `overflow: hidden`
-- [ ] Add CSS gradient mask for left/right fade effect
-- [ ] Implement border lines (top with arrow, bottom plain)
-- [ ] Calculate arrow position dynamically from `arrowTargetId`
+- [x] Create `AvatarMarquee.tsx` with generic TypeScript props
+- [x] Implement horizontal scroll container with `overflow: hidden`
+- [x] Add CSS gradient mask for left/right fade effect
+- [x] Implement border lines (top with arrow, bottom plain)
+- [x] Calculate arrow position dynamically from `arrowTargetId`
 
 ### Phase 3: Scroll Animation
-- [ ] Implement infinite scroll with `requestAnimationFrame`
-- [ ] Duplicate items to create seamless loop
-- [ ] Add speed interpolation (current → target) for smooth brake/accelerate
-- [ ] On hover: target speed = 0, on leave: target speed = 1
+- [x] Implement infinite scroll with `requestAnimationFrame`
+- [x] Duplicate items to create seamless loop
+- [x] Add speed interpolation (current → target) for smooth brake/accelerate
+- [x] On hover: target speed = 0, on leave: target speed = 1
 
 ### Phase 4: Popover Integration
-- [ ] Integrate existing `HoverPopover` component
-- [ ] Calculate popover position relative to scrolling container
-- [ ] Use `renderPopover` callback for custom content
+- [x] Integrate existing `HoverPopover` component
+- [x] Calculate popover position relative to scrolling container
+- [x] Use `renderPopover` callback for custom content
 
 ### Phase 5: Migration
-- [ ] Update `StargazersPanel.tsx` to use `AvatarMarquee`
-- [ ] Extract social link popover content to separate component
-- [ ] Test with current stargazers data
+- [x] Update `StargazersPanel.tsx` to use `AvatarMarquee`
+- [x] Extract social link popover content to separate component
+- [x] Test with current stargazers data
 
 ### Phase 6: Future (Contributors)
 - [ ] Create `ContributorsPanel.tsx` using same `AvatarMarquee`
