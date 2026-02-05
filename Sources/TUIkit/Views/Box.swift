@@ -120,6 +120,50 @@ public struct Box<Content: View>: View {
     }
 }
 
+// MARK: - Internal Lines Convenience
+
+extension Box where Content == BufferView {
+    /// Creates a box from pre-styled content lines.
+    ///
+    /// SDK-internal convenience for cases where the box content is built
+    /// as an array of pre-styled strings (e.g. notifications with word-wrap
+    /// and ANSI coloring applied). Avoids the need for wrapper views when
+    /// the content is already rendered.
+    ///
+    /// - Parameters:
+    ///   - lines: Pre-styled content lines (may contain ANSI escape sequences).
+    ///   - borderStyle: The border style (default: appearance borderStyle).
+    ///   - color: The border color (default: theme border).
+    init(
+        lines: [String],
+        _ borderStyle: BorderStyle? = nil,
+        color: Color? = nil
+    ) {
+        self.content = BufferView(buffer: FrameBuffer(lines: lines))
+        self.borderStyle = borderStyle
+        self.borderColor = color
+    }
+}
+
+/// A view that returns a pre-built ``FrameBuffer`` as-is.
+///
+/// Used internally by ``Box/init(lines:_:color:)`` to pass already-styled
+/// content into the `Box` rendering pipeline. This lets `Box` handle border
+/// rendering (Standard vs. Block appearance) while the content is controlled
+/// externally.
+struct BufferView: View, Renderable {
+    /// The pre-built buffer to return during rendering.
+    let buffer: FrameBuffer
+
+    var body: Never {
+        fatalError("BufferView renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        buffer
+    }
+}
+
 // MARK: - Equatable Conformance
 
 extension Box: Equatable where Content: Equatable {}

@@ -21,7 +21,13 @@
 
 #### Low
 
-- [ ] **Toast / Notification** — Temporary message, disappears after X seconds
+(none)
+
+### Refactoring
+
+#### High
+
+- [ ] **Remove Block Appearance** — Delete all block rendering code, BorderStyle.block, BlockPalette, SemanticColor block tokens, block tests, DocC references. New branch after PR #77 merge.
 
 ### Performance
 
@@ -40,6 +46,8 @@
 ## Completed
 
 ### 2026-02-05
+
+- [x] **Notification System** — Fire-and-forget `NotificationService`, fade-in/out animation, word-wrap, top-right overlay, Box rendering. No severity styles, no Binding. (PR #77)
 
 - [x] **Render Performance Phase 2** — Cache invalidation fix, Equatable on 15 types/views, debug tooling, example app decomposition + `.equatable()`, DocC documentation (PR #74)
 - [x] **Social Lookup Optimization** — GitHub Social API, NodeInfo instance validation, timeouts, false positives eliminated
@@ -142,4 +150,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 17:00
+**Last Updated:** 2026-02-05 21:35

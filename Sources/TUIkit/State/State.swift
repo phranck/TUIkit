@@ -101,8 +101,12 @@ extension AppState {
 enum RenderNotifier {
     /// The active ``AppState`` for the running application.
     ///
-    /// Set by `AppRunner` before entering the run loop. Property wrappers
-    /// read this to trigger re-renders when values change.
+    /// This is a static accessor because `@State`, `@AppStorage`, and
+    /// ``NotificationService`` need to trigger re-renders from contexts
+    /// that have no access to `EnvironmentValues` — property wrapper
+    /// setters, button callbacks, and `onSelect` handlers all run outside
+    /// the render pipeline. A static reference is the only way to reach
+    /// the render notifier from those call sites.
     ///
     /// - Precondition: Must be set before any `@State` mutation occurs.
     ///   This is guaranteed because `AppRunner.run()` sets it before
