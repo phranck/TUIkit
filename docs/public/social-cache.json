@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-05T10:08:26.199Z",
+  "generatedAt": "2026-02-05T14:23:53.749Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -242,6 +242,36 @@
         "verified": true
       },
       "updatedAt": "2026-02-05T10:07:59.285Z"
+    },
+    "harilvfs": {
+      "login": "harilvfs",
+      "mastodon": {
+        "handle": "@harilvfs@mastodon.social",
+        "url": "https://mastodon.social/@harilvfs",
+        "source": "username-match",
+        "verified": true
+      },
+      "updatedAt": "2026-02-05T14:23:08.115Z"
+    },
+    "fgrosjean": {
+      "login": "fgrosjean",
+      "twitter": {
+        "handle": "@fgrosjean",
+        "url": "https://x.com/fgrosjean",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-05T14:23:37.170Z"
+    },
+    "yannouuuu": {
+      "login": "yannouuuu",
+      "twitter": {
+        "handle": "@y__rnd",
+        "url": "https://x.com/y__rnd",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-05T14:23:51.889Z"
     }
   }
 }
