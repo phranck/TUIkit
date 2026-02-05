@@ -1,5 +1,11 @@
 # Stargazer Mastodon Lookup — Automatic Account Discovery
 
+## Superseded
+
+Superseded by [2026-02-04-stargazer-social-lookup.md](2026-02-04-stargazer-social-lookup.md) which expands scope to multi-platform discovery (Mastodon + Twitter/X + Bluesky).
+
+---
+
 ## Goal
 
 Find Mastodon accounts for all repository stargazers and display/link them in the Dashboard popover. Multi-stage search combines GitHub profile data, username matching, and manual overrides.
