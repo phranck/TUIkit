@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-05T14:42:58.467Z",
+  "generatedAt": "2026-02-05T16:41:04.926Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -272,6 +272,16 @@
         "verified": true
       },
       "updatedAt": "2026-02-05T14:23:51.889Z"
+    },
+    "Adem68": {
+      "login": "Adem68",
+      "twitter": {
+        "handle": "@AdemOzcanTR",
+        "url": "https://x.com/AdemOzcanTR",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-05T16:41:04.925Z"
     }
   }
 }
