@@ -30,6 +30,8 @@ export interface UseGitHubStatsCacheReturn extends GitHubStats {
   canForceRefresh: boolean;
   /** Whether the currently displayed data was served from localStorage cache. */
   isFromCache: boolean;
+  /** Whether a background refresh is in progress (for showing a subtle indicator). */
+  isRefreshing: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,29 +90,35 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
   const [lastFetchedAt, setLastFetchedAt] = useState<number | null>(null);
   const [nextRefreshAt, setNextRefreshAt] = useState<number | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initializedRef = useRef(false);
 
   // The stats to expose — override (cached) data takes priority while it's set
+  // Force loading: false when we have data, so components don't show skeletons during background refresh
   const activeStats = overrideStats ?? rawStats;
+  const hasData = lastFetchedAt !== null;
 
   // -------------------------------------------------------------------------
   // Core fetch + cache-write logic
   // -------------------------------------------------------------------------
 
   const doFetchAndCache = useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const freshData = await fetchData();
       const timestamp = writeCache(freshData);
       setLastFetchedAt(timestamp);
       setNextRefreshAt(timestamp + REFRESH_INTERVAL_MS);
       setIsFromCache(false);
-      // Clear override so the live rawStats (now updated by useGitHubStats) show through
-      setOverrideStats(null);
+      // Store the fresh data as override with loading: false to prevent skeleton flash
+      setOverrideStats({ ...freshData, loading: false });
     } catch {
-      // Errors are already reflected in rawStats.error via useGitHubStats
-      setOverrideStats(null);
+      // On error, keep showing previous data (overrideStats stays as-is)
+      // Errors are also reflected in rawStats.error via useGitHubStats if needed
+    } finally {
+      setIsRefreshing(false);
     }
   }, [fetchData]);
 
@@ -169,12 +177,18 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
     }, REFRESH_INTERVAL_MS);
   }, [lastFetchedAt, doFetchAndCache]);
 
+  // Override loading to false if we already have data — prevents skeleton flash during background refresh
+  const statsWithLoadingOverride = hasData
+    ? { ...activeStats, loading: false }
+    : activeStats;
+
   return {
-    ...activeStats,
+    ...statsWithLoadingOverride,
     forceRefresh,
     lastFetchedAt,
     nextRefreshAt,
     canForceRefresh,
     isFromCache,
+    isRefreshing,
   };
 }
