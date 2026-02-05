@@ -40,7 +40,7 @@
 
 ### 2026-02-05
 
-- [x] **Remove Block/Flat Appearances** — Eliminated block, flat, and ascii appearances. 4 border-based styles remain (line, rounded, doubleLine, heavy). Removed BlockPalette, surface tokens, stale DocC. −1140 lines.
+- [x] **Remove Block/Flat Appearances** — Eliminated block, flat, and ascii appearances. 4 border-based styles remain (line, rounded, doubleLine, heavy). Removed BlockPalette, surface tokens, BorderedView (consolidated into ContainerView), stale DocC. Consistent 1-char padding in all containers.
 - [x] **Notification System** — Fire-and-forget `NotificationService`, fade-in/out animation, word-wrap, top-right overlay, Box rendering. No severity styles, no Binding. (PR #77)
 
 - [x] **Render Performance Phase 2** — Cache invalidation fix, Equatable on 15 types/views, debug tooling, example app decomposition + `.equatable()`, DocC documentation (PR #74)
@@ -144,4 +144,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 22:10
+**Last Updated:** 2026-02-05 22:30
