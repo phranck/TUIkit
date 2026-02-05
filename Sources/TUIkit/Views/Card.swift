@@ -125,6 +125,10 @@ public struct Card<Content: View, Footer: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension Card: Equatable where Content: Equatable, Footer: Equatable {}
+
 // MARK: - Rendering
 
 extension Card: Renderable {

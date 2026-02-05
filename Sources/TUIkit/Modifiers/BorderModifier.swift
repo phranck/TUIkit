@@ -23,6 +23,10 @@ public struct BorderedView<Content: View>: View {
     }
 }
 
+// MARK: - Equatable Conformance
+
+extension BorderedView: Equatable where Content: Equatable {}
+
 // MARK: - Renderable
 
 extension BorderedView: Renderable {

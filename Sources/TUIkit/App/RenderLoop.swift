@@ -5,6 +5,31 @@
 //  CC BY-NC-SA 4.0  assembly, and status bar output.
 //
 
+// MARK: - Environment Snapshot
+
+/// A snapshot of environment values that affect rendered output.
+///
+/// Used by ``RenderLoop`` to detect environment changes (theme, appearance)
+/// between frames. When the snapshot differs from the previous frame, the
+/// render cache is cleared so ``EquatableView``-cached subtrees re-render
+/// with the updated values.
+///
+/// Only tracks values that affect visual output — reference-type infrastructure
+/// services (`FocusManager`, `ThemeManager`) are excluded.
+private struct EnvironmentSnapshot: Equatable {
+    /// The active palette identifier.
+    let paletteID: String
+
+    /// The active appearance identifier.
+    let appearanceID: String
+
+    /// Creates a snapshot from fully-built environment values.
+    init(from environment: EnvironmentValues) {
+        self.paletteID = environment.palette.id
+        self.appearanceID = environment.appearance.id
+    }
+}
+
 // MARK: - Render Loop
 
 /// Manages the full rendering pipeline for each frame.
@@ -84,6 +109,15 @@ internal final class RenderLoop<A: App> {
     /// The diff writer that tracks previous frames and writes only changed lines.
     private let diffWriter = FrameDiffWriter()
 
+    /// The environment snapshot from the previous frame.
+    ///
+    /// Compared after `buildEnvironment()` each frame. When the snapshot
+    /// differs (e.g. palette or appearance changed), the render cache is
+    /// cleared automatically. This ensures ``EquatableView``-cached subtrees
+    /// never serve stale content after theme changes — without requiring
+    /// callers to manually invalidate the cache.
+    private var lastEnvironmentSnapshot: EnvironmentSnapshot?
+
     init(
         app: A,
         terminal: Terminal,
@@ -145,6 +179,7 @@ extension RenderLoop {
 
         // Create render context with environment
         let environment = buildEnvironment()
+        invalidateCacheIfEnvironmentChanged(environment: environment)
 
         var context = RenderContext(
             availableWidth: terminalWidth,
@@ -241,6 +276,7 @@ extension RenderLoop {
         tuiContext.lifecycle.endRenderPass()
         tuiContext.stateStorage.endRenderPass()
         tuiContext.renderCache.removeInactive()
+        tuiContext.renderCache.logFrameStats()
     }
 
     /// Invalidates the diff cache, forcing a full repaint on the next render.
@@ -273,6 +309,22 @@ extension RenderLoop {
 // MARK: - Private Helpers
 
 private extension RenderLoop {
+    /// Clears the render cache when environment values affecting visual output changed.
+    ///
+    /// Compares the current palette and appearance identifiers with the previous
+    /// frame's snapshot. On mismatch, all ``EquatableView``-cached subtrees are
+    /// invalidated so they re-render with the new theme/appearance.
+    ///
+    /// This runs once per frame (two string comparisons) and ensures developers
+    /// never need to manually invalidate the cache after theme changes.
+    func invalidateCacheIfEnvironmentChanged(environment: EnvironmentValues) {
+        let currentSnapshot = EnvironmentSnapshot(from: environment)
+        if let lastSnapshot = lastEnvironmentSnapshot, lastSnapshot != currentSnapshot {
+            tuiContext.renderCache.clearAll()
+        }
+        lastEnvironmentSnapshot = currentSnapshot
+    }
+
     /// Renders a scene by delegating to ``SceneRenderable``.
     func renderScene<S: Scene>(_ scene: S, context: RenderContext) -> FrameBuffer {
         if let renderable = scene as? SceneRenderable {

@@ -6,6 +6,81 @@
 
 import TUIkit
 
+/// Static row showing Card, Box, and Panel side by side.
+///
+/// Purely palette-driven, no state — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct ContainerTypesRow: View, Equatable {
+    var body: some View {
+        HStack(spacing: 2) {
+            VStack(alignment: .leading) {
+                Text("Card").bold().foregroundColor(.palette.accent)
+                Card(borderColor: .palette.border) {
+                    Text("A Card view").foregroundColor(.palette.foreground)
+                    Text("with padding").foregroundColor(.palette.foregroundSecondary)
+                }
+            }
+
+            VStack(alignment: .leading) {
+                Text("Box").bold().foregroundColor(.palette.accent)
+                Box(color: .palette.border) {
+                    Text("Simple Box").foregroundColor(.palette.foreground)
+                }
+            }
+
+            VStack(alignment: .leading) {
+                Text("Panel").bold().foregroundColor(.palette.accent)
+                Panel("Info", titleColor: .palette.accent) {
+                    Text("Title in border").foregroundColor(.palette.foreground)
+                }
+            }
+        }
+    }
+}
+
+/// Static row showing a settings panel with footer and alignment examples.
+///
+/// Purely palette-driven, no state — wrapped in `.equatable()` for
+/// subtree memoization during Spinner/Pulse animation frames.
+struct SettingsAndAlignmentRow: View, Equatable {
+    var body: some View {
+        HStack(spacing: 2) {
+            DemoSection("Panel (Header + Footer)") {
+                Panel("Settings", titleColor: .palette.accent) {
+                    Text("Primary text (foreground)").foregroundColor(.palette.foreground)
+                    Text("Secondary text (foregroundSecondary)").foregroundColor(.palette.foregroundSecondary)
+                    Text("Tertiary text (foregroundTertiary)").foregroundColor(.palette.foregroundTertiary)
+                } footer: {
+                    Text("Footer: Press Enter to confirm").foregroundColor(.palette.foreground)
+                }
+            }
+
+            DemoSection("Content Alignment") {
+                HStack(spacing: 1) {
+                    Box {
+                        VStack(alignment: .leading) {
+                            Text("Leading align").foregroundColor(.palette.foreground)
+                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                        }
+                    }
+                    Box {
+                        VStack(alignment: .center) {
+                            Text("Center align").foregroundColor(.palette.foreground)
+                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                        }
+                    }
+                    Box {
+                        VStack(alignment: .trailing) {
+                            Text("Trailing align").foregroundColor(.palette.foreground)
+                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Container views demo page.
 ///
 /// Shows various container views including:
@@ -19,70 +94,8 @@ struct ContainersPage: View {
 
     var body: some View {
         VStack(spacing: 1) {
-
-            HStack(spacing: 2) {
-                // Card example
-                VStack(alignment: .leading) {
-                    Text("Card").bold().foregroundColor(.palette.accent)
-                    Card(borderColor: .palette.border) {
-                        Text("A Card view").foregroundColor(.palette.foreground)
-                        Text("with padding").foregroundColor(.palette.foregroundSecondary)
-                    }
-                }
-
-                // Box example
-                VStack(alignment: .leading) {
-                    Text("Box").bold().foregroundColor(.palette.accent)
-                    Box(color: .palette.border) {
-                        Text("Simple Box").foregroundColor(.palette.foreground)
-                    }
-                }
-
-                // Panel example
-                VStack(alignment: .leading) {
-                    Text("Panel").bold().foregroundColor(.palette.accent)
-                    Panel("Info", titleColor: .palette.accent) {
-                        Text("Title in border").foregroundColor(.palette.foreground)
-                    }
-                }
-            }
-
-            HStack(spacing: 2) {
-                // Panel with Header and Footer (best for block appearance)
-                DemoSection("Panel (Header + Footer)") {
-                    Panel("Settings", titleColor: .palette.accent) {
-                        Text("Primary text (foreground)").foregroundColor(.palette.foreground)
-                        Text("Secondary text (foregroundSecondary)").foregroundColor(.palette.foregroundSecondary)
-                        Text("Tertiary text (foregroundTertiary)").foregroundColor(.palette.foregroundTertiary)
-                    } footer: {
-                        Text("Footer: Press Enter to confirm").foregroundColor(.palette.foreground)
-                    }
-                }
-
-                // Alignment examples - uses different text lengths to show alignment
-                DemoSection("Content Alignment") {
-                    HStack(spacing: 1) {
-                        Box {
-                            VStack(alignment: .leading) {
-                                Text("Leading align").foregroundColor(.palette.foreground)
-                                Text("short").foregroundColor(.palette.foregroundSecondary)
-                            }
-                        }
-                        Box {
-                            VStack(alignment: .center) {
-                                Text("Center align").foregroundColor(.palette.foreground)
-                                Text("short").foregroundColor(.palette.foregroundSecondary)
-                            }
-                        }
-                        Box {
-                            VStack(alignment: .trailing) {
-                                Text("Trailing align").foregroundColor(.palette.foreground)
-                                Text("short").foregroundColor(.palette.foregroundSecondary)
-                            }
-                        }
-                    }
-                }
-            }
+            ContainerTypesRow().equatable()
+            SettingsAndAlignmentRow().equatable()
 
             DemoSection("Collapsible Detail (@State)") {
                 VStack(alignment: .leading) {
