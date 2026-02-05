@@ -79,7 +79,7 @@ const rowVariants = {
   exit: { opacity: 0, y: 20, scale: 0.98 },
 };
 
-/** A single commit row with date/time, title, disclosure chevron, and SHA. */
+/** A single commit row with date/time, title, disclosure chevron, and SHA (desktop only). */
 function CommitRow({
   commit,
   isBodyExpanded,
@@ -107,18 +107,18 @@ function CommitRow({
       }}
       className="py-2.5 first:pt-0 last:pb-0"
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 sm:gap-3">
         {/* Date/time — left, stacked with icon */}
-        <div className="shrink-0 flex items-start gap-1.5">
-          <Icon name="clock" size={16} className="mt-0.5 text-muted/50" />
-          <div className="flex flex-col items-end font-mono text-xs leading-tight tabular-nums">
+        <div className="shrink-0 flex items-start gap-1 sm:gap-1.5">
+          <Icon name="clock" size={14} className="mt-0.5 text-muted/50 sm:h-4 sm:w-4" />
+          <div className="flex flex-col items-end font-mono text-[10px] leading-tight tabular-nums sm:text-xs">
             <span className="text-muted/70">{date}</span>
             <span className="text-muted/50">{time}</span>
           </div>
         </div>
 
         {/* Disclosure chevron + title — center */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+        <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden sm:gap-1.5">
           {hasBody ? (
             <button
               onClick={onToggleBody}
@@ -132,15 +132,15 @@ function CommitRow({
           ) : (
             <span className="w-5 shrink-0" />
           )}
-          <span className="block truncate text-base text-foreground/90">{commit.title}</span>
+          <span className="block truncate text-sm text-foreground/90 sm:text-base">{commit.title}</span>
         </div>
 
-        {/* SHA — right */}
+        {/* SHA — hidden on mobile, visible on sm+ */}
         <a
           href={commit.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 font-mono text-sm text-accent/70 transition-colors hover:text-accent"
+          className="hidden shrink-0 font-mono text-sm text-accent/70 transition-colors hover:text-accent sm:block"
         >
           {commit.sha}
         </a>
@@ -149,7 +149,7 @@ function CommitRow({
       {/* Expandable body */}
       {hasBody && (
         <AnimatedCollapse expanded={isBodyExpanded}>
-          <pre className="mt-2 ml-7 whitespace-pre-wrap break-words rounded-lg border border-border/20 bg-background/40 px-4 py-3 font-mono text-sm leading-relaxed text-muted/80">
+          <pre className="mt-2 ml-6 whitespace-pre-wrap break-words rounded-lg border border-border/20 bg-background/40 px-3 py-2 font-mono text-xs leading-relaxed text-muted/80 sm:ml-7 sm:px-4 sm:py-3 sm:text-sm">
             {commit.body}
           </pre>
         </AnimatedCollapse>
@@ -234,21 +234,22 @@ export default function CommitList({ commits, loading = false }: CommitListProps
   const hasMore = extraCommits.length > 0;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="listBullet" size={22} className="text-muted" />
-          Recent Commits
+    <div className="overflow-hidden rounded-xl border border-border bg-frosted-glass p-4 backdrop-blur-xl sm:p-6">
+      <div className="mb-3 flex items-center justify-between sm:mb-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground sm:text-xl">
+          <Icon name="listBullet" size={20} className="text-muted sm:h-[22px] sm:w-[22px]" />
+          <span className="whitespace-nowrap">Commits</span>
         </h3>
         {commitsWithBody.length > 0 && (
           <button
             onClick={toggleAll}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1 text-sm text-muted transition-colors hover:bg-accent/5 hover:text-foreground"
+            title={allBodiesExpanded ? "Collapse all" : "Expand all"}
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted transition-colors hover:bg-accent/5 hover:text-foreground sm:gap-1.5 sm:px-3"
           >
             <span className={`transition-transform duration-200 ${allBodiesExpanded ? "rotate-90" : ""}`}>
               <Icon name="chevronRight" size={12} />
             </span>
-            {allBodiesExpanded ? "Collapse all" : "Expand all"}
+            <span className="hidden sm:inline">{allBodiesExpanded ? "Collapse all" : "Expand all"}</span>
           </button>
         )}
       </div>
