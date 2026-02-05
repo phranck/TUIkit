@@ -32,15 +32,16 @@
 
 ### Testing & Docs
 
-- [ ] **Mobile/Tablet Docs** — Test landing page + DocC on mobile devices
+- [ ] **Mobile/Tablet Docs** — Test DocC on mobile devices (landing page done)
 - [ ] **Code Examples** — Counter, Todo List, Form, Table/List
 
 ## Completed
 
 ### 2026-02-06
 
-- [x] **Dashboard Cache + Auto-Refresh** — localStorage cache (5 min TTL), auto-refresh timer, smooth list animations with Framer Motion, no skeleton flash during background refresh (PR #80)
-- [x] **License Change** — CC BY-NC-SA 4.0 → MIT, 141 Swift files updated, LICENSE file added
+- [x] **Dashboard Cache + Auto-Refresh** — localStorage cache (5 min TTL), auto-refresh timer, Framer Motion list animations, no skeleton flash (PR #80)
+- [x] **License Change** — CC BY-NC-SA 4.0 → MIT, 141 Swift files + LICENSE file
+- [x] **Mobile Responsive** — SiteNav hamburger, StatCards vertical, heatmap hidden, CommitList compact, HeroTerminal power-button disabled on phones, footer stacked/centered
 
 ### 2026-02-05
 
@@ -149,4 +150,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-05 23:45
+**Last Updated:** 2026-02-06 01:15
