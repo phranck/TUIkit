@@ -366,8 +366,8 @@ extension RadioButtonGroup: Renderable {
         if isDisabled {
             indicatorColor = palette.foregroundTertiary
         } else if isSelected {
-            // Selected indicator: accent color, pulses only if this item is focused AND group has focus
-            if isFocused && groupHasFocus {
+            // Selected indicator: accent color, pulses if group has focus
+            if groupHasFocus {
                 let dimAccent = palette.accent.opacity(0.35)
                 indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
             } else {
