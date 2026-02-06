@@ -160,12 +160,18 @@ public struct RadioButtonGroup<Value: Hashable>: View {
 // MARK: - Radio Button Handler
 
 /// Internal handler class for radio button group focus and selection management.
+///
+/// Persisted across renders via StateStorage to maintain focusedIndex and enable
+/// Tab navigation between radio button groups.
 final class RadioButtonGroupHandler: Focusable {
     let focusID: String
-    let selection: Binding<AnyHashable>
-    let itemValues: [AnyHashable]
+    var selection: Binding<AnyHashable>
+    var itemValues: [AnyHashable]
     let orientation: RadioButtonOrientation
     var canBeFocused: Bool
+    
+    /// The currently focused item index within the group.
+    /// Persisted across renders to maintain focus position.
     var focusedIndex: Int = 0
 
     init(
@@ -250,6 +256,7 @@ extension RadioButtonGroup: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let focusManager = context.environment.focusManager
         let palette = context.environment.palette
+        let stateStorage = context.tuiContext.stateStorage
 
         // Create type-erased selection binding and item values
         let erasedSelection = Binding<AnyHashable>(
@@ -262,15 +269,28 @@ extension RadioButtonGroup: Renderable {
         )
         let itemValues = items.map { AnyHashable($0.value) }
 
-        // Register handler
-        let handler = RadioButtonGroupHandler(
-            focusID: focusID,
-            selection: erasedSelection,
-            itemValues: itemValues,
-            orientation: orientation,
-            canBeFocused: !isDisabled
+        // Get or create persistent handler from state storage.
+        // The handler maintains focusedIndex across renders, enabling Tab navigation.
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let handlerBox: StateBox<RadioButtonGroupHandler> = stateStorage.storage(
+            for: handlerKey,
+            default: RadioButtonGroupHandler(
+                focusID: focusID,
+                selection: erasedSelection,
+                itemValues: itemValues,
+                orientation: orientation,
+                canBeFocused: !isDisabled
+            )
         )
+        let handler = handlerBox.value
+        
+        // Keep handler in sync with current values (in case items changed)
+        handler.selection = erasedSelection
+        handler.itemValues = itemValues
+        handler.canBeFocused = !isDisabled
+        
         focusManager.register(handler, inSection: context.activeFocusSectionID)
+        stateStorage.markActive(context.identity)
 
         // Render items based on orientation
         let lines: [String]
