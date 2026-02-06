@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// Reusable building blocks for border rendering.
 ///
 /// Each method produces a single rendered line (`String`) that callers
@@ -19,6 +21,39 @@ enum BorderRenderer {
 
     /// The breathing focus indicator character.
     static let focusIndicator: Character = "●"
+
+    /// The width of the focus indicator prefix (indicator + space).
+    static let focusIndicatorWidth = 2
+}
+
+// MARK: - Focus Indicator
+
+extension BorderRenderer {
+    /// Renders a pulsing focus indicator for inline focusable elements.
+    ///
+    /// Uses the same `●` character and color interpolation as Focus Sections,
+    /// ensuring visual consistency across all focusable components.
+    ///
+    /// - Parameters:
+    ///   - isFocused: Whether the element is currently focused.
+    ///   - pulsePhase: The current animation phase (0–1) from `context.pulsePhase`.
+    ///   - palette: The active palette for color resolution.
+    /// - Returns: A 2-character string: `"● "` (colored) when focused, `"  "` when not.
+    static func focusIndicatorPrefix(
+        isFocused: Bool,
+        pulsePhase: Double,
+        palette: any Palette
+    ) -> String {
+        guard isFocused else {
+            return " "  // 1 space for alignment
+        }
+
+        let accentColor = palette.accent
+        let dimColor = accentColor.opacity(0.20)
+        let interpolatedColor = Color.lerp(dimColor, accentColor, phase: pulsePhase)
+
+        return ANSIRenderer.colorize(String(focusIndicator), foreground: interpolatedColor)
+    }
 }
 
 // MARK: - Border Rendering
@@ -184,5 +219,3 @@ extension BorderRenderer {
         return vertical + styledContent + ANSIRenderer.reset + vertical
     }
 }
-
-

@@ -47,11 +47,14 @@ public struct ButtonStyle: Sendable {
 
     // MARK: - Preset Styles
 
-    /// Default button style — palette border/accent, not bold.
-    public static let `default` = Self()
+    /// Default button style — dimmed foreground, not bold.
+    public static let `default` = Self(
+        foregroundColor: .palette.foregroundSecondary
+    )
 
     /// Primary button style — bold, uses palette accent.
     public static let primary = Self(
+        foregroundColor: .palette.accent,
         isBold: true
     )
 
@@ -132,14 +135,15 @@ public struct Button: View {
         _ label: String,
         style: ButtonStyle = .default,
         focusedStyle: ButtonStyle? = nil,
-        focusID: String = UUID().uuidString,
+        focusID: String? = nil,
         isDisabled: Bool = false,
         action: @escaping () -> Void
     ) {
         self.label = label
         self.action = action
         self.style = style
-        self.focusID = focusID
+        // Use label as default focusID for stability across render cycles
+        self.focusID = focusID ?? "button-\(label)"
         self.isDisabled = isDisabled
 
         // Default focused style: bold version of the normal style
@@ -219,7 +223,8 @@ extension Button: Renderable {
         // Resolve foreground color
         let foregroundColor: Color
         if isDisabled {
-            foregroundColor = palette.foregroundTertiary
+            // Use tertiary at 50% opacity for clearly disabled appearance
+            foregroundColor = palette.foregroundTertiary.opacity(0.5)
         } else {
             foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
         }
@@ -231,52 +236,35 @@ extension Button: Renderable {
 
         // Determine rendering mode
         if isPlainStyle {
-            // Plain: just the label, no decoration
+            // Plain: pulsing dot prefix + label, no brackets
+            let focusPrefix = BorderRenderer.focusIndicatorPrefix(
+                isFocused: isFocused && !isDisabled,
+                pulsePhase: context.pulsePhase,
+                palette: palette
+            )
             let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
-            return FrameBuffer(lines: [styledLabel])
+            let fullLine = focusPrefix + styledLabel
+            return FrameBuffer(lines: [fullLine])
         } else {
-            // Standard: single-line brackets [ Label ]
+            // Standard: brackets change to accent color when focused (with subtle pulse)
             let bracketColor: Color
             if isDisabled {
                 bracketColor = palette.foregroundTertiary
+            } else if isFocused {
+                // Subtle pulse: interpolate between 35% and 100% accent
+                let dimAccent = palette.accent.opacity(0.35)
+                bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
             } else {
                 bracketColor = palette.border
             }
 
-            let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor)
-            let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor)
+            let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused)
+            let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused)
             let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
 
             let line = openBracket + styledLabel + closeBracket
-
-            var buffer = FrameBuffer(lines: [line])
-
-            // Add focus indicator if focused (but not for bold/primary buttons)
-            if isFocused && !isDisabled && !currentStyle.isBold {
-                buffer = addFocusIndicator(to: buffer, palette: palette)
-            }
-
-            return buffer
+            return FrameBuffer(lines: [line])
         }
-    }
-
-    /// Adds a focus indicator (▸) to the left of the button.
-    private func addFocusIndicator(to buffer: FrameBuffer, palette: any Palette) -> FrameBuffer {
-        guard buffer.height > 0 else { return buffer }
-
-        let indicator = ANSIRenderer.render(
-            "▸ ",
-            with: {
-                var indicatorStyle = TextStyle()
-                indicatorStyle.foregroundColor = palette.accent
-                indicatorStyle.isBold = true
-                return indicatorStyle
-            }()
-        )
-
-        var lines = buffer.lines
-        lines[0] = indicator + lines[0]
-        return FrameBuffer(lines: lines)
     }
 }
 

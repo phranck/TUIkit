@@ -106,6 +106,7 @@ private enum ASCIIByte {
     static let home: UInt8 = 0x48  // 'H'
     static let end: UInt8 = 0x46  // 'F'
     static let tilde: UInt8 = 0x7E  // '~' (extended key terminator)
+    static let shiftTab: UInt8 = 0x5A  // 'Z' (Shift+Tab / backtab)
 }
 
 // MARK: - Key Parsing
@@ -212,6 +213,9 @@ extension KeyEvent {
             return KeyEvent(key: .end)
         case ASCIIByte.tilde:
             return parseExtendedKey(params)
+        case ASCIIByte.shiftTab:
+            // Shift+Tab: ESC [ Z (CSI Z / backtab)
+            return KeyEvent(key: .tab, shift: true)
         default:
             return nil
         }
