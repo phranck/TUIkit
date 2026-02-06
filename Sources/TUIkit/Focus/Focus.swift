@@ -168,7 +168,10 @@ public extension FocusManager {
         guard let section = section(id: targetID) else { return }
         section.register(element)
 
-        // Auto-focus first element in the active section
+        // Auto-activate section and auto-focus first element if needed
+        if activeSectionID == nil {
+            activeSectionID = targetID
+        }
         if targetID == activeSectionID && focusedID == nil && element.canBeFocused {
             focus(element)
         }
