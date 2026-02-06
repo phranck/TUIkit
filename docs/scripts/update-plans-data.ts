@@ -1,6 +1,6 @@
 /**
  * Extracts plan data from plans/open/ and plans/done/ directories.
- * Generates plans.json with top 5 open and top 5 done plans.
+ * Generates plans.json with all open and done plans.
  * 
  * Runs via GitHub Actions (hourly) or manual npm script.
  * Output: docs/public/data/plans.json
@@ -97,20 +97,16 @@ function main() {
   openPlans.sort(sortByDateDesc);
   donePlans.sort(sortByDateDesc);
 
-  // Get top 5 of each
-  const topOpenPlans = openPlans.slice(0, 5);
-  const topDonePlans = donePlans.slice(0, 5);
-
-  // Build output
+  // Build output with all plans
   const output = {
     generated: new Date().toISOString(),
-    open: topOpenPlans.map(({ date, slug, title, preface }) => ({
+    open: openPlans.map(({ date, slug, title, preface }) => ({
       date,
       slug,
       title,
       preface,
     })),
-    done: topDonePlans.map(({ date, slug, title, preface }) => ({
+    done: donePlans.map(({ date, slug, title, preface }) => ({
       date,
       slug,
       title,
@@ -127,7 +123,7 @@ function main() {
   fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
   console.log(
-    `✓ Generated plans.json (${topOpenPlans.length} open, ${topDonePlans.length} done)`
+    `✓ Generated plans.json (${openPlans.length} open, ${donePlans.length} done)`
   );
   console.log(`  Location: ${outputPath}`);
 }

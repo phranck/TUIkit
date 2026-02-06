@@ -6,7 +6,7 @@ Toast notifications appear and fade smoothly to communicate ephemeral messages (
 
 ## Completed
 
-**2026-02-05** — Superseded by the Notification System (PR #77). The final implementation diverged significantly: fire-and-forget `NotificationService.post()` instead of `Binding<Bool>`, no severity styles (just a notification), fixed top-right placement, `Box`-based rendering.
+**0: Superseded by the Notification System (PR #77). The final implementation diverged significantly: fire-and-forget `NotificationService.post()` instead of `Binding<Bool>`, no severity styles (just a notification), fixed top-right placement, `Box`-based rendering.
 
 ## Goal
 
@@ -30,11 +30,11 @@ content.toast("Info", isPresented: $show, style: .info, alignment: .top)
 
 ### Parameters
 
-- `message: String` — the toast text
-- `isPresented: Binding<Bool>` — controls visibility; auto-set to `false` after dismiss
-- `style: ToastStyle` — visual preset (default: `.info`)
-- `duration: TimeInterval` — how long the toast stays visible (default: 3.0)
-- `alignment: Alignment` — where to position the toast (default: `.bottom`)
+- `message: String`. Uthe toast text
+- `isPresented: Binding<Bool>`. Ucontrols visibility; auto-set to `false` after dismiss
+- `style: ToastStyle`. Uvisual preset (default: `.info`)
+- `duration: TimeInterval`. Uhow long the toast stays visible (default: 3.0)
+- `alignment: Alignment`. Uwhere to position the toast (default: `.bottom`)
 
 ### ToastStyle
 
@@ -62,7 +62,7 @@ The toast uses the same lifecycle task pattern as Spinner, but instead of cyclin
 
 The current phase and start time are stored in `StateStorage`. A lifecycle task runs at 40ms intervals (matching the run loop), calculates the current opacity from elapsed time, and calls `setNeedsRender()`.
 
-All text rendering goes through `ANSIRenderer.colorize()` which supports `Color.opacity()` — this gives us smooth fading using the existing RGB color system.
+All text rendering goes through `ANSIRenderer.colorize()` which supports `Color.opacity()`. Uthis gives us smooth fading using the existing RGB color system.
 
 ### Rendering
 
@@ -87,7 +87,7 @@ Positioned via `.overlay(alignment:)` on the base content.
 The `ToastModifier` is a `Renderable` that manages:
 - A lifecycle token (UUID-based) for the animation task
 - StateStorage entries for: phase enum, phase start time, current opacity
-- The `Binding<Bool>` for isPresented — flipped to `false` after fade-out completes
+- The `Binding<Bool>` for isPresented. Uflipped to `false` after fade-out completes
 
 ### Integration with Existing Systems
 
@@ -126,5 +126,5 @@ The `ToastModifier` is a `Renderable` that manages:
 ## Open Questions
 
 1. **Border or borderless?** Bordered box (like Alert) or minimal colored background strip?
-2. **Icon characters?** `✓` success, `⚠` warning, `✕` error, `ℹ` info — or simpler?
+2. **Icon characters?** `✓` success, `⚠` warning, `✕` error, `ℹ` info. Uor simpler?
 3. **Max width?** Fixed width or auto-sized to message length?

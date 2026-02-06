@@ -1,8 +1,8 @@
 ## RULES
 
 ### Compatibility (non-negotiable)
-- **Swift 6.0 compatible** — `swift-tools-version: 6.0`. Never use features that require a newer compiler.
-- **Cross-platform** — must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
+- **Swift 6.0 compatible**: `swift-tools-version: 6.0`. Never use features that require a newer compiler.
+- **Cross-platform**: must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
 - When in doubt, verify with the CI pipeline before merging.
 
 ### Architecture (non-negotiable)
@@ -11,17 +11,17 @@
 - No Singletons
 - **Before implementing ANYTHING NEW: Search the codebase** for similar patterns, reusable code, existing solutions
 - Consolidate and reuse before adding new functions or types
-- "Reinventing the wheel" is a code smell — investigate why it exists first
+- "Reinventing the wheel" is a code smell: investigate why it exists first
 
 #### Code Reuse Checklist
 1. Does a similar feature exist? Use it or extend it
 2. Can I reuse a helper function/extension/modifier? Do it
 3. Does a pattern already exist? Follow it exactly
 4. Am I duplicating logic? Refactor into a shared utility
-5. **Never implement features in isolation** — maximize consistency and minimize maintenance burden
+5. **Never implement features in isolation**: maximize consistency and minimize maintenance burden
 
 ### Workflow
-- **NEVER merge PRs autonomously** — stop after creating, let user merge
+- **NEVER merge PRs autonomously**: stop after creating, let user merge
 
 ### SwiftUI API Parity (non-negotiable)
 Public APIs MUST match SwiftUI signatures exactly unless terminal constraints require deviation (document why in comments).
@@ -40,10 +40,10 @@ Public APIs MUST match SwiftUI signatures exactly unless terminal constraints re
 **EVERYTHING that is visible to users must be a `View` (conform to `View` protocol).**
 
 This is CRITICAL for:
-- **View-Modifiers** — `.foregroundColor()`, `.padding()`, `.disabled()`, etc. only work on Views
-- **Environment-Value propagation** — Foreground colors, fonts, etc. inherit automatically through View hierarchy
-- **Consistency** — All public APIs look the same, follow SwiftUI patterns
-- **Performance** — Single rendering path, no special cases
+- **View-Modifiers**: `.foregroundColor()`, `.padding()`, `.disabled()`, etc. only work on Views
+- **Environment-Value propagation**: Foreground colors, fonts, etc. inherit automatically through View hierarchy
+- **Consistency**: All public APIs look the same, follow SwiftUI patterns
+- **Performance**: Single rendering path, no special cases
 
 **Structure:**
 - Public API: `struct MyControl: View { var body: some View { ... } }`
@@ -53,7 +53,7 @@ This is CRITICAL for:
 **Before implementing ANY new control:**
 1. Check if similar controls already exist in the codebase
 2. Reuse patterns, extensions, helpers from existing Views
-3. Make it a `View` first — internal rendering complexity goes in `body` or child Views
+3. Make it a `View` first: internal rendering complexity goes in `body` or child Views
 4. Verify modifiers work: `.foregroundColor()`, `.disabled()`, environment values propagate correctly
 
 **Example (CORRECT):**
@@ -92,7 +92,7 @@ extension MyControl: Renderable {
 `Box` is the reference implementation:
 - Public API: Real `View` with `body: some View`
 - Body: Applies modifiers to content (`.border()`, `.padding()`, etc.)
-- No `Renderable` in public API — modifiers do the rendering work
+- No `Renderable` in public API: modifiers do the rendering work
 - Users can chain modifiers naturally: `Box { ... }.foregroundColor(...)`
 
 This is the CORRECT pattern for ALL controls.

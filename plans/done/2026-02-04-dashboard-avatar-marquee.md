@@ -6,7 +6,7 @@ A generic `AvatarMarquee` component now displays scrolling avatar lists (stargaz
 
 ## Completed
 
-**2026-02-04** — AvatarMarquee component implemented with infinite scroll, smooth braking, fade masks, arrow targeting, and popover integration. StargazersPanel migrated.
+**0: AvatarMarquee component implemented with infinite scroll, smooth braking, fade masks, arrow targeting, and popover integration. StargazersPanel migrated.
 
 ---
 

@@ -6,8 +6,8 @@ Control border styles, visual appearances, and the color system.
 
 TUIkit separates visual styling into two systems:
 
-- **Appearance** — Controls border characters and container styling (rounded, doubleLine, heavy, etc.)
-- **Colors** — A palette-aware color system with semantic tokens that resolve at render time
+- **Appearance**: Controls border characters and container styling (rounded, doubleLine, heavy, etc.)
+- **Colors**: A palette-aware color system with semantic tokens that resolve at render time
 
 Both systems integrate with the theming pipeline described in <doc:ThemingGuide>.
 
@@ -101,7 +101,7 @@ let darker = color.darker(by: 0.3)    // 30% darker
 
 ### In View Bodies (no RenderContext)
 
-Use `Color.palette.*` — these return semantic tokens:
+Use `Color.palette.*`: these return semantic tokens:
 
 ```swift
 Text("Hello")
@@ -126,7 +126,7 @@ Available semantic tokens include:
 
 ### In renderToBuffer (with RenderContext)
 
-Use `context.environment.palette.*` directly — these return concrete colors:
+Use `context.environment.palette.*` directly: these return concrete colors:
 
 ```swift
 func renderToBuffer(context: RenderContext) -> FrameBuffer {

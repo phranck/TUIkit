@@ -38,10 +38,10 @@ Three-phase refactoring to implement proper SwiftUI-like View architecture acros
 **Risk:** Moderate (careful API design needed)
 
 ### What
-- `FocusableItemListHandler` — shared focus/navigation logic
-- `SelectionStateManager<T>` — shared selection tracking
-- `ItemStateRenderer` — styling utilities
-- `renderFocusableContainer()` — helper function
+- `FocusableItemListHandler` for shared focus/navigation logic
+- `SelectionStateManager<T>` for shared selection tracking
+- `ItemStateRenderer` for styling utilities
+- `renderFocusableContainer()` as helper function
 
 ### Why
 - List and Table share 80% of focus/selection/rendering logic
@@ -119,11 +119,11 @@ Phase 3: feat/list-table-new
 
 ## Key Principles Applied
 
-1. **Everything visible is a View** — enables modifiers, environment propagation
-2. **Composition not Inheritance** — use helpers and handlers, not class hierarchies
-3. **Maximize Code Reuse** — shared handlers/helpers before implementation
-4. **Follow Existing Patterns** — Box.swift, renderContainer() model
-5. **Test at Every Phase** — no breaking changes, all tests pass
+1. **Everything visible is a View**: enables modifiers, environment propagation
+2. **Composition not Inheritance**: use helpers and handlers, not class hierarchies
+3. **Maximize Code Reuse**: shared handlers/helpers before implementation
+4. **Follow Existing Patterns**: Box.swift, renderContainer() model
+5. **Test at Every Phase**: no breaking changes, all tests pass
 
 ---
 
@@ -133,9 +133,9 @@ All three branches start from the same commit (planning phase complete).
 They can be worked on in parallel ONLY if no dependencies.
 
 **Recommended sequence:**
-1. Phase 1 (independent) — can start immediately
-2. Phase 2 (depends on Phase 1 being merged) — start after Phase 1 PR approved
-3. Phase 3 (depends on Phase 1+2 being merged) — start after Phase 2 PR approved
+1. Phase 1 (independent): can start immediately
+2. Phase 2 (depends on Phase 1 being merged): start after Phase 1 PR approved
+3. Phase 3 (depends on Phase 1+2 being merged): start after Phase 2 PR approved
 
 ---
 

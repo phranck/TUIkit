@@ -1,4 +1,4 @@
-# Stargazer Social Account Lookup — Multi-Platform Discovery
+# Stargazer Social Account Lookup: Multi-Platform Discovery
 
 ## Preface
 
@@ -6,7 +6,7 @@ Multi-platform social lookup now discovers Mastodon, Twitter, and Bluesky accoun
 
 ## Completed
 
-**2026-02-04** — Social lookup script, GitHub Action workflow, and UI integration all functional. Supersedes [2026-02-04-stargazer-mastodon-lookup.md](2026-02-04-stargazer-mastodon-lookup.md).
+**0: Social lookup script, GitHub Action workflow, and UI integration all functional. Supersedes [2026-02-04-stargazer-mastodon-lookup.md](2026-02-04-stargazer-mastodon-lookup.md).
 
 ## Checklist
 

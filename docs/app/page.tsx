@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { IconName } from "./components/Icon";
-import IconBadge from "./components/IconBadge";
+
 import CloudBackground from "./components/CloudBackground";
 import RainOverlay from "./components/RainOverlay";
 import SpinnerLights from "./components/SpinnerLights";
@@ -24,11 +24,11 @@ const TEST_COUNT = process.env.TUIKIT_TEST_COUNT ?? "0";
 /** A single "Built right" highlight row with icon, title, and description. */
 function ArchHighlight({ icon, title, children }: { icon: IconName; title: string; children: ReactNode }) {
   return (
-    <div className="flex gap-4">
-      <IconBadge name={icon} size={24} variant="sm" className="!bg-accent/10" />
+    <div className="flex gap-3">
+      <Icon name={icon} size={20} className="text-accent mt-1" />
       <div>
         <h3 className="mb-1 text-xl font-semibold text-foreground">{title}</h3>
-        <p className="text-xl leading-relaxed text-muted">{children}</p>
+        <p className="text-lg leading-relaxed text-muted">{children}</p>
       </div>
     </div>
   );
@@ -75,8 +75,7 @@ export default function Home() {
 
             <p className="mb-10 max-w-2xl text-2xl leading-relaxed text-muted">
               A declarative, SwiftUI-like framework for building Terminal User
-              Interfaces. No ncurses, no C dependencies — pure Swift on macOS and
-              Linux.
+              Interfaces. Pure Swift on macOS and Linux, with no ncurses or C dependencies.
             </p>
 
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -94,17 +93,17 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Swift Package badge — hidden on mobile */}
+            {/* Swift Package badge (hidden on mobile) */}
             <div className="hidden sm:block">
               <p className="mt-20 mb-4 max-w-2xl text-xl leading-relaxed text-muted">
                 Getting started is simple. Add TUIkit as a dependency to your
-                Swift package — no extra configuration, no system libraries to install:
+                Swift package. No extra configuration or system libraries required:
               </p>
               <PackageBadge />
             </div>
           </section>
 
-          {/* Code Preview Section — hidden on mobile */}
+          {/* Code Preview Section (hidden on mobile) */}
           <section className="mx-auto hidden max-w-3xl px-6 pb-28 sm:block">
             <CodePreview />
           </section>
@@ -125,7 +124,7 @@ export default function Home() {
               <FeatureCard
                 icon="terminal"
                 title="Declarative Syntax"
-                description="Build UIs with VStack, HStack, Text, Button, and more — the same patterns you know from SwiftUI."
+                description="Build UIs with VStack, HStack, Text, Button, and more. The same patterns you know from SwiftUI."
               />
               <FeatureCard
                 icon="paintbrush"
@@ -140,7 +139,7 @@ export default function Home() {
               <FeatureCard
                 icon="stack"
                 title="Rich Components"
-                description="Panel, Card, Dialog, Alert, Menu, Button, ForEach — container and interactive views out of the box."
+                description="Panel, Card, Dialog, Alert, Menu, Button, and ForEach. Container and interactive views out of the box."
               />
               <FeatureCard
                 icon="bolt"
