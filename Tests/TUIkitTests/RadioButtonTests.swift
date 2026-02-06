@@ -235,7 +235,7 @@ struct RadioButtonGroupTests {
 @Suite("RadioButtonGroupHandler Tests")
 struct RadioButtonGroupHandlerTests {
 
-    @Test("Handler handles arrow down to navigate items")
+    @Test("Handler handles arrow down to navigate items (vertical)")
     func handleArrowDown() {
         var selection = AnyHashable("opt1")
         let binding = Binding(
@@ -248,6 +248,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: true
         )
 
@@ -259,7 +260,7 @@ struct RadioButtonGroupHandlerTests {
         #expect(selection == AnyHashable("opt2"))
     }
 
-    @Test("Handler handles arrow up to navigate items")
+    @Test("Handler handles arrow up to navigate items (vertical)")
     func handleArrowUp() {
         var selection = AnyHashable("opt2")
         let binding = Binding(
@@ -272,6 +273,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: true
         )
         handler.focusedIndex = 1
@@ -283,7 +285,7 @@ struct RadioButtonGroupHandlerTests {
         #expect(handler.focusedIndex == 0)
     }
 
-    @Test("Handler handles arrow right (horizontal navigation)")
+    @Test("Handler handles arrow right (horizontal only)")
     func handleArrowRight() {
         var selection = AnyHashable("a")
         let binding = Binding(
@@ -296,6 +298,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .horizontal,
             canBeFocused: true
         )
 
@@ -307,7 +310,7 @@ struct RadioButtonGroupHandlerTests {
         #expect(selection == AnyHashable("b"))
     }
 
-    @Test("Handler handles arrow left (horizontal navigation)")
+    @Test("Handler handles arrow left (horizontal only)")
     func handleArrowLeft() {
         var selection = AnyHashable("b")
         let binding = Binding(
@@ -320,6 +323,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .horizontal,
             canBeFocused: true
         )
         handler.focusedIndex = 1
@@ -345,6 +349,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: true
         )
         handler.focusedIndex = 1
@@ -369,6 +374,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: true
         )
         handler.focusedIndex = 1
@@ -393,6 +399,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: true
         )
 
@@ -417,6 +424,7 @@ struct RadioButtonGroupHandlerTests {
             focusID: "test",
             selection: binding,
             itemValues: itemValues,
+            orientation: .vertical,
             canBeFocused: false
         )
 
