@@ -135,15 +135,13 @@ extension Toggle: Renderable {
         let isFocused = focusManager.isFocused(id: focusID)
         let palette = context.environment.palette
 
-        // Build the toggle indicator
-        let toggleIndicator: String
+        // Build the toggle content (indicator inside brackets)
+        let indicatorContent: String
         switch style {
         case .toggle:
-            let indicator = isOn.wrappedValue ? "●○" : "○●"
-            toggleIndicator = "[\(indicator)]"
+            indicatorContent = isOn.wrappedValue ? "●○" : "○●"
         case .checkbox:
-            let indicator = isOn.wrappedValue ? "●" : " "
-            toggleIndicator = "[\(indicator)]"
+            indicatorContent = isOn.wrappedValue ? "●" : " "
         }
 
         // Determine bracket color: pulsing accent when focused, border when unfocused
@@ -158,10 +156,23 @@ extension Toggle: Renderable {
             bracketColor = palette.border
         }
 
-        // Color the entire toggle indicator (including brackets)
-        let styledToggle = ANSIRenderer.colorize(toggleIndicator, foreground: bracketColor, bold: isFocused && !isDisabled)
+        // Render brackets with pulse, content without pulse
+        let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused && !isDisabled)
+        let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused && !isDisabled)
 
-        // Combine: [toggle/checkbox] label (no focus dot prefix)
+        // Indicator color: accent if focused, foreground if not focused/disabled
+        let indicatorColor: Color
+        if isDisabled {
+            indicatorColor = palette.foregroundTertiary
+        } else if isFocused {
+            indicatorColor = palette.accent
+        } else {
+            indicatorColor = palette.foregroundSecondary
+        }
+        let styledContent = ANSIRenderer.colorize(indicatorContent, foreground: indicatorColor)
+
+        // Combine: [indicator] label
+        let styledToggle = openBracket + styledContent + closeBracket
         let combinedLine = styledToggle + " " + label
 
         // Return frame buffer with the combined line
