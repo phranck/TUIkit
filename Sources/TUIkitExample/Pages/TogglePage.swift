@@ -59,11 +59,11 @@ struct TogglePage: View {
                     }
                     HStack(spacing: 1) {
                         Text("Hidden Files:").foregroundColor(.palette.foregroundSecondary)
-                        Text(advancedOptionsEnabled ? "[\u{25FE}]" : "[ ]").foregroundColor(.palette.accent)
+                        Text(advancedOptionsEnabled ? "[\u{25FC}]" : "[ ]").foregroundColor(.palette.accent)
                     }
                     HStack(spacing: 1) {
                         Text("Analytics:").foregroundColor(.palette.foregroundSecondary)
-                        Text(analitycsEnabled ? "[\u{25FE}]" : "[ ]").foregroundColor(.palette.accent)
+                        Text(analitycsEnabled ? "[\u{25FC}]" : "[ ]").foregroundColor(.palette.accent)
                     }
                 }
             }
