@@ -52,7 +52,7 @@ const DRIFT_FACTOR = 0.35;
  * pulse softly, then fade out and reappear elsewhere.
  *
  * Some lights drift slowly toward the viewport center while shrinking,
- * creating the illusion of flying into the scene — like distant Blade
+ * creating the illusion of flying into the scene: like distant Blade
  * Runner spinner craft approaching through rain and haze.
  */
 export default function SpinnerLights() {

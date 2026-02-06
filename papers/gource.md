@@ -1,4 +1,4 @@
-# Gource — Git History Visualization
+# Gource: Git History Visualization
 
 Gource visualizes Git history as an animated tree. Files are nodes, committers fly through the repo as avatars. A classic for project timelapses.
 

@@ -28,7 +28,7 @@ Built-in views include ``Text``, ``Button``, ``Menu``, ``Alert``, ``Dialog``, ``
 
 ### 3. Modifier Layer
 
-View modifiers implement the ``ViewModifier`` protocol and operate at the ``FrameBuffer`` level. They transform rendered output — adding padding, borders, frames, backgrounds, or overlays.
+View modifiers implement the ``ViewModifier`` protocol and operate at the ``FrameBuffer`` level. They transform rendered output: adding padding, borders, frames, backgrounds, or overlays.
 
 ```swift
 Text("Hello")
@@ -39,19 +39,19 @@ Text("Hello")
 
 ### 4. State & Environment Layer
 
-- **``State``** — Mutable per-view state that triggers re-renders
-- **``Binding``** — Two-way connection to a value owned elsewhere
-- **``EnvironmentValues``** — Values propagated down the view tree
-- **``AppStorage``** — Persistent key-value storage via `UserDefaults`
+- **``State``**: Mutable per-view state that triggers re-renders
+- **``Binding``**: Two-way connection to a value owned elsewhere
+- **``EnvironmentValues``**: Values propagated down the view tree
+- **``AppStorage``**: Persistent key-value storage via `UserDefaults`
 
 ### 5. Rendering Layer
 
 The rendering pipeline converts the view tree into terminal output:
 
-1. **View tree traversal** — Each view produces a ``FrameBuffer``
-2. **Modifier application** — Modifiers transform buffers
-3. **ANSI rendering** — The `ANSIRenderer` converts colors and styles to escape codes
-4. **Terminal output** — The ``FrameBuffer`` lines are written to the terminal
+1. **View tree traversal**: Each view produces a ``FrameBuffer``
+2. **Modifier application**: Modifiers transform buffers
+3. **ANSI rendering**: The `ANSIRenderer` converts colors and styles to escape codes
+4. **Terminal output**: The ``FrameBuffer`` lines are written to the terminal
 
 ## Event Loop
 

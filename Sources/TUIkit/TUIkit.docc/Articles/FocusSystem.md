@@ -6,13 +6,13 @@ Navigate between interactive elements using the keyboard.
 
 TUIkit provides a focus system that lets users move between interactive views (buttons, menus, text fields) using Tab, Shift+Tab, or arrow keys. The system consists of three parts:
 
-- **``FocusManager``** — Tracks which element is focused, handles navigation
-- **``Focusable``** — Protocol that views adopt to receive focus
-- **``FocusState``** — Lightweight state object that views use to query and request focus
+- **``FocusManager``**: Tracks which element is focused, handles navigation
+- **``Focusable``**: Protocol that views adopt to receive focus
+- **``FocusState``**: Lightweight state object that views use to query and request focus
 
 ## How Focus Works
 
-Every frame, the ``FocusManager`` is cleared and interactive views re-register themselves during rendering. This means focus registrations are always in sync with the current view tree — removed views are automatically unregistered.
+Every frame, the ``FocusManager`` is cleared and interactive views re-register themselves during rendering. This means focus registrations are always in sync with the current view tree: removed views are automatically unregistered.
 
 The focus order follows the rendering order: the first focusable view rendered is first in the Tab cycle.
 
@@ -30,11 +30,11 @@ protocol Focusable: AnyObject {
 }
 ```
 
-- **`focusID`** — Unique identifier for this focusable element
-- **`canBeFocused`** — Whether focus can move to this element (default: `true`)
-- **`onFocusReceived()`** — Called when this element gains focus (default: no-op)
-- **`onFocusLost()`** — Called when this element loses focus (default: no-op)
-- **`handleKeyEvent(_:)`** — Handle a key event while focused; return `true` if consumed
+- **`focusID`**: Unique identifier for this focusable element
+- **`canBeFocused`**: Whether focus can move to this element (default: `true`)
+- **`onFocusReceived()`**: Called when this element gains focus (default: no-op)
+- **`onFocusLost()`**: Called when this element loses focus (default: no-op)
+- **`handleKeyEvent(_:)`**: Handle a key event while focused; return `true` if consumed
 
 ## Using FocusState
 
@@ -52,7 +52,7 @@ if focusState.isFocused {
 focusState.requestFocus()
 ```
 
-Built-in views like ``Button`` and ``Menu`` create their own `FocusState` internally — you only need it when building custom focusable views.
+Built-in views like ``Button`` and ``Menu`` create their own `FocusState` internally: you only need it when building custom focusable views.
 
 ## Navigation Keys
 
@@ -67,7 +67,7 @@ The ``FocusManager`` responds to these keys during dispatch:
 
 ## Focus Indicator
 
-The currently focused element is rendered with **bold** text styling. There is no arrow or marker — bold is the sole visual indicator.
+The currently focused element is rendered with **bold** text styling. There is no arrow or marker: bold is the sole visual indicator.
 
 ## Focus in the Event Loop
 

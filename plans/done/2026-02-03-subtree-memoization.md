@@ -1,12 +1,16 @@
 # Render Pipeline Phase 5: Subtree Memoization
 
+## Preface
+
+Subtree memoization caches rendered FrameBuffers by view identity: when a view conforms to `Equatable` and is wrapped in `.equatable()`, the framework compares the new view with the cached one. If equal (and available size hasn't changed), the cached FrameBuffer is reused. Uskipping the entire subtree's re-rendering. `RenderCache` stores buffers keyed by `ViewIdentity`, invalidated when `@State` changes or environment changes. Between state changes, identical views like Spinners skip rendering entirely.
+
 ## Completed
 
-Completed 2026-02-04. PR #71 merged. 18 tests (11 RenderCache + 7 EquatableView), 503 total.
+**0: PR #71 merged. 18 tests (11 RenderCache + 7 EquatableView), 503 total.
 
 ## Problem
 
-After phases 1–4 optimized terminal I/O (line diffing, output buffering, caching), the view tree is still **fully reconstructed every frame**. Every `body` is evaluated, every `renderToBuffer()` runs, every FrameBuffer is allocated — even when nothing changed.
+After phases 1–4 optimized terminal I/O (line diffing, output buffering, caching), the view tree is still **fully reconstructed every frame**. Every `body` is evaluated, every `renderToBuffer()` runs, every FrameBuffer is allocated. Ueven when nothing changed.
 
 For a UI with 30 views and a single animating Spinner, ~29 views produce identical output. The entire subtree is re-rendered for nothing.
 
@@ -191,6 +195,6 @@ renderToBuffer(view, context)
 
 ## Open Questions
 
-1. **Should `EquatableView` also check environment values?** Currently only checking view equality + context size. If a parent changes `.foregroundColor()`, the cached buffer would be stale. For now: no environment check — the full-clear-on-state-change covers most cases, and environment changes typically accompany state changes. Can add later if needed.
+1. **Should `EquatableView` also check environment values?** Currently only checking view equality + context size. If a parent changes `.foregroundColor()`, the cached buffer would be stale. For now: no environment check. Uthe full-clear-on-state-change covers most cases, and environment changes typically accompany state changes. Can add later if needed.
 
 2. **Should we expose cache statistics?** A `RenderCache.Stats` struct (hits, misses, entries) could help developers optimize. Low priority, easy to add.
