@@ -17,6 +17,8 @@ enum DemoPage: Int, CaseIterable {
     case overlays
     case layout
     case buttons
+    case toggles
+    case radioButtons
     case spinners
 }
 
@@ -39,18 +41,25 @@ struct ContentView: View {
         // Note: Background color is set by AppRunner using theme.background
         pageContent(for: currentPage, pageSetter: pageSetter)
             .onKeyPress { event in
-                switch event.key {
-                case .escape:
-                    // ESC goes back to menu (or exits if already on menu)
-                    if currentPage != .menu {
-                        pageSetter.wrappedValue = .menu
-                        return true  // Consumed
-                    }
-                    return false  // Let default handler exit the app
-
-                default:
-                    return false  // Let other handlers process
-                }
+                 switch event.key {
+                 case .escape:
+                     // ESC goes back to menu (or exits if already on menu)
+                     if currentPage != .menu {
+                         pageSetter.wrappedValue = .menu
+                         return true  // Consumed
+                     }
+                     return false  // Let default handler exit the app
+                 case .character("8"):
+                     // Quick jump to Radio Buttons
+                     currentPage = .radioButtons
+                     return true
+                 case .character("9"):
+                     // Quick jump to Spinners
+                     currentPage = .spinners
+                     return true
+                 default:
+                     return false  // Let other handlers process
+                 }
             }
     }
 
@@ -78,12 +87,18 @@ struct ContentView: View {
         case .layout:
             LayoutPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
-        case .buttons:
-            ButtonsPage()
-                .statusBarItems(subPageItems(pageSetter: pageSetter))
-        case .spinners:
-            SpinnersPage()
-                .statusBarItems(subPageItems(pageSetter: pageSetter))
+         case .buttons:
+             ButtonsPage()
+                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+         case .toggles:
+             TogglePage()
+                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+         case .radioButtons:
+             RadioButtonPage()
+                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+         case .spinners:
+             SpinnersPage()
+                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }
 

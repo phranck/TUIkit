@@ -168,7 +168,10 @@ public extension FocusManager {
         guard let section = section(id: targetID) else { return }
         section.register(element)
 
-        // Auto-focus first element in the active section
+        // Auto-activate section and auto-focus first element if needed
+        if activeSectionID == nil {
+            activeSectionID = targetID
+        }
         if targetID == activeSectionID && focusedID == nil && element.canBeFocused {
             focus(element)
         }
@@ -308,6 +311,14 @@ public extension FocusManager {
     /// - Returns: True if the event was handled.
     @discardableResult
     func dispatchKeyEvent(_ event: KeyEvent) -> Bool {
+        // Dispatch to focused element first — let it handle keys like Up/Down/Left/Right.
+        // If element consumes the event, stop here.
+        if let focused = currentFocused {
+            if focused.handleKeyEvent(event) {
+                return true
+            }
+        }
+
         // Tab navigation: cycle sections (or elements within single section)
         if event.key == .tab {
             if event.shift {
@@ -318,7 +329,7 @@ public extension FocusManager {
             return true
         }
 
-        // Up/Down arrows: navigate within the active section
+        // Up/Down arrows: navigate within the active section (fallback if element didn't handle)
         if event.key == .up {
             focusPreviousInSection()
             return true
@@ -326,11 +337,6 @@ public extension FocusManager {
         if event.key == .down {
             focusNextInSection()
             return true
-        }
-
-        // Dispatch to focused element (Enter, Space, other keys)
-        if let focused = currentFocused {
-            return focused.handleKeyEvent(event)
         }
 
         return false
