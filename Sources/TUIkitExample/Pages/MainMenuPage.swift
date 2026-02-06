@@ -60,7 +60,8 @@ struct MainMenuPage: View {
                          MenuItem(label: "Layout System", shortcut: "5"),
                          MenuItem(label: "Buttons & Focus", shortcut: "6"),
                          MenuItem(label: "Toggles & Checkboxes", shortcut: "7"),
-                         MenuItem(label: "Spinners", shortcut: "8"),
+                         MenuItem(label: "Radio Buttons", shortcut: "8"),
+                         MenuItem(label: "Spinners", shortcut: "9"),
                      ],
                      selection: $menuSelection,
                      onSelect: { index in
