@@ -201,35 +201,35 @@ extension RadioButtonGroupHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
         case .up:
-            // Up/Down only work for vertical orientation
-            guard orientation == .vertical else { return false }
-            // Wrap around: go to last item if at beginning
-            focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
-            selection.wrappedValue = itemValues[focusedIndex]
+            // Vertical: navigate up; Horizontal: consume but do nothing (prevent group switching)
+            if orientation == .vertical {
+                focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
+                selection.wrappedValue = itemValues[focusedIndex]
+            }
             return true
 
         case .down:
-            // Up/Down only work for vertical orientation
-            guard orientation == .vertical else { return false }
-            // Wrap around: go to first item if at end
-            focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
-            selection.wrappedValue = itemValues[focusedIndex]
+            // Vertical: navigate down; Horizontal: consume but do nothing (prevent group switching)
+            if orientation == .vertical {
+                focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
+                selection.wrappedValue = itemValues[focusedIndex]
+            }
             return true
 
         case .left:
-            // Left/Right only work for horizontal orientation
-            guard orientation == .horizontal else { return false }
-            // Wrap around: go to last item if at beginning
-            focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
-            selection.wrappedValue = itemValues[focusedIndex]
+            // Horizontal: navigate left; Vertical: consume but do nothing (prevent group switching)
+            if orientation == .horizontal {
+                focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
+                selection.wrappedValue = itemValues[focusedIndex]
+            }
             return true
 
         case .right:
-            // Left/Right only work for horizontal orientation
-            guard orientation == .horizontal else { return false }
-            // Wrap around: go to first item if at end
-            focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
-            selection.wrappedValue = itemValues[focusedIndex]
+            // Horizontal: navigate right; Vertical: consume but do nothing (prevent group switching)
+            if orientation == .horizontal {
+                focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
+                selection.wrappedValue = itemValues[focusedIndex]
+            }
             return true
 
         case .enter, .character(" "):
