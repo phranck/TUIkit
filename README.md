@@ -2,7 +2,7 @@
 ![Tests](https://img.shields.io/badge/Tests-552_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
-![License](https://img.shields.io/badge/License-CC--BY--NC--SA%204.0-lightgrey?style=flat)
+![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
 
 ![TUIkit Banner](.github/assets/github-banner.png)
 
@@ -82,7 +82,7 @@ struct ContentView: View {
 
 - **Text styling** — bold, italic, underline, strikethrough, dim, blink, inverted
 - **Full color support** — ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
-- **Theming** — 7 predefined palettes (Green, Amber, White, Red, NCurses, Generated)
+- **Theming** — 6 predefined palettes (Green, Amber, Red, Violet, Blue, White)
 - **Border styles** — rounded, line, double, thick, ASCII, and more
 
 ### Advanced
@@ -136,12 +136,12 @@ struct MyApp: App {
 ```
 
 Available palettes (all via `SystemPalette`):
-- `.green` — Classic green CRT (default)
-- `.amber` — Amber monochrome
-- `.white` — White on black
-- `.red` — Red terminal
-- `.violet` — Retro sci-fi
-- `.blue` — VFD displays
+- `.green` — Classic P1 phosphor CRT (default)
+- `.amber` — P3 phosphor monochrome
+- `.red` — IBM 3279 plasma
+- `.violet` — Retro sci-fi terminal
+- `.blue` — VFD/LCD displays
+- `.white` — DEC VT100/VT220 (P4 phosphor)
 
 ## Architecture
 
