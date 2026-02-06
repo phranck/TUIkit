@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **Button Focus Indicator** — Pulsing accent brackets, Shift+Tab parsing, style refinements (PR #81)
+- [ ] **List & Table Architecture** — Define shared focus/selection/rendering patterns BEFORE implementing (see: plans/open/2026-02-06-list-table-shared-architecture.md)
 
 ## Open
 
@@ -11,11 +11,12 @@
 #### High
 
 - [ ] **TextInput / TextField** — Single-line text input with cursor, backspace, delete, scrolling
-- [ ] **Table** — Column alignment with ANSI-aware padding
 
 #### Medium
 
-- [ ] **List (scrollable)** — Scrollable list with selection for arbitrary views
+- [ ] **List & Table** — Shared architecture (focus handler, selection state, rendering). BLOCKED: Wait for architecture plan finalization
+- [ ] **List (scrollable)** — Implement after shared architecture is finalized
+- [ ] **Table** — Implement after shared architecture is finalized
 
 
 #### Low
