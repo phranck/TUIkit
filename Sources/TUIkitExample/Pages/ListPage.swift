@@ -9,11 +9,11 @@ import TUIkit
 /// Scrollable list demo page showing keyboard navigation and selection.
 struct ListPage: View {
     @State var selectedItem: String?
-    
+
     var body: some View {
         VStack(spacing: 1) {
             DemoSection("Basic List") {
-                List(height: 8) {
+                List("Items", height: 8) {
                     Text("Item 1").foregroundColor(.palette.foreground)
                     Text("Item 2").foregroundColor(.palette.foreground)
                     Text("Item 3").foregroundColor(.palette.foreground)
@@ -21,16 +21,16 @@ struct ListPage: View {
                     Text("Item 5").foregroundColor(.palette.foreground)
                 }
             }
-            
+
             DemoSection("List with Selection") {
-                List(selection: $selectedItem, height: 6) {
+                List("Options", selection: $selectedItem, height: 6) {
                     Text("Option A").foregroundColor(.palette.foreground).tag("a")
                     Text("Option B").foregroundColor(.palette.foreground).tag("b")
                     Text("Option C").foregroundColor(.palette.foreground).tag("c")
                     Text("Option D").foregroundColor(.palette.foreground).tag("d")
                 }
             }
-            
+
             DemoSection("Current Selection") {
                 if let selected = selectedItem {
                     HStack(spacing: 1) {
@@ -41,7 +41,7 @@ struct ListPage: View {
                     Text("(none selected)").dim()
                 }
             }
-            
+
             DemoSection("Keyboard Navigation") {
                 VStack {
                     Text("Use [↑/↓] to navigate items").dim()
@@ -51,7 +51,7 @@ struct ListPage: View {
                     Text("Use [Tab] to exit list").dim()
                 }
             }
-            
+
             Spacer()
         }
         .appHeader {
