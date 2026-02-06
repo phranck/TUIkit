@@ -2,7 +2,7 @@
 
 ## In Progress
 
-(none)
+- [ ] **Toggle / Checkbox** — Boolean toggle with Space/Enter, two visual styles ([plan](plans/open/2026-02-06-toggle.md))
 
 ## Open
 
@@ -16,7 +16,7 @@
 #### Medium
 
 - [ ] **List (scrollable)** — Scrollable list with selection for arbitrary views
-- [ ] **Checkbox / Toggle** — `[x]`/`[ ]` with keyboard toggle
+
 
 #### Low
 

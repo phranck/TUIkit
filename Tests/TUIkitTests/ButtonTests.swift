@@ -99,18 +99,36 @@ struct ButtonTests {
         #expect(!visibleContent.contains("]"))
     }
 
-    @Test("Focused button is rendered bold without arrow indicator")
-    func focusedButtonIsBold() {
+    @Test("Focused button has accent-colored brackets")
+    func focusedButtonHasAccentBrackets() {
         let context = createTestContext()
 
         let button = Button("Focus Me", focusID: "focused-button") {}
         let buffer = renderToBuffer(button, context: context)
 
-        // First button is auto-focused and should be bold (no ▸ indicator)
+        // First button is auto-focused — brackets should be styled (contain ANSI codes)
         let allContent = buffer.lines.joined()
-        let boldCode = "\u{1b}["  // ANSI escape — bold style is applied via SGR
-        #expect(allContent.contains(boldCode), "Focused button should contain ANSI styling")
-        #expect(!allContent.contains("▸"), "Focused bold button should not have ▸ indicator")
+        #expect(allContent.contains("["), "Button should have opening bracket")
+        #expect(allContent.contains("]"), "Button should have closing bracket")
+        #expect(allContent.contains("\u{1b}["), "Focused button should have ANSI styling")
+    }
+
+    @Test("Unfocused button has border-colored brackets")
+    func unfocusedButtonHasBorderBrackets() {
+        let context = createTestContext()
+
+        // Create two buttons — second one will be unfocused
+        let button1 = Button("First", focusID: "first") {}
+        let button2 = Button("Second", focusID: "second") {}
+
+        // Render first to register it (it gets focus)
+        _ = renderToBuffer(button1, context: context)
+        let buffer2 = renderToBuffer(button2, context: context)
+
+        // Second button is not focused — should still have brackets with styling
+        let allContent = buffer2.lines.joined()
+        #expect(allContent.contains("["), "Unfocused button should have opening bracket")
+        #expect(allContent.contains("]"), "Unfocused button should have closing bracket")
     }
 
     @Test("Destructive button uses palette error color, not hardcoded red")

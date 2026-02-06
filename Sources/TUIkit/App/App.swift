@@ -133,6 +133,11 @@ extension AppRunner {
             signals.requestRerender()
         }
 
+        // Reset pulse animation when focus changes
+        focusManager.onFocusChange = { [weak pulseTimer] in
+            pulseTimer?.reset()
+        }
+
         isRunning = true
 
         // Start the breathing focus indicator animation

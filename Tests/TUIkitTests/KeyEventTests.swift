@@ -284,9 +284,16 @@ struct KeyEventParseTests {
         #expect(event == nil)
     }
 
+    @Test("Parse Shift+Tab (CSI Z) returns tab with shift")
+    func parseShiftTab() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x5A])  // ESC [ Z
+        #expect(event?.key == .tab)
+        #expect(event?.shift == true)
+    }
+
     @Test("Parse unknown CSI final byte returns nil")
     func parseUnknownCSI() {
-        let event = KeyEvent.parse([0x1B, 0x5B, 0x5A])
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x58])  // ESC [ X (not a valid sequence)
         #expect(event == nil)
     }
 
