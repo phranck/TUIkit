@@ -108,7 +108,7 @@ function CommitRow({
       className="py-2.5 first:pt-0 last:pb-0"
     >
       <div className="flex items-center gap-2 min-w-0 sm:gap-3">
-        {/* Date/time — left, stacked with icon */}
+        {/* Date/time: left, stacked with icon */}
         <div className="shrink-0 flex items-start gap-1 sm:gap-1.5">
           <Icon name="clock" size={14} className="mt-0.5 text-muted/50 sm:h-4 sm:w-4" />
           <div className="flex flex-col items-end font-mono text-[10px] leading-tight tabular-nums sm:text-xs">
@@ -117,7 +117,7 @@ function CommitRow({
           </div>
         </div>
 
-        {/* Disclosure chevron + title — center */}
+        {/* Disclosure chevron + title: center */}
         <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden sm:gap-1.5">
           {hasBody ? (
             <button
@@ -135,7 +135,7 @@ function CommitRow({
           <span className="block truncate text-sm text-foreground/90 sm:text-base">{commit.title}</span>
         </div>
 
-        {/* SHA — hidden on mobile, visible on sm+ */}
+        {/* SHA: hidden on mobile, visible on sm+ */}
         <a
           href={commit.url}
           target="_blank"
@@ -201,9 +201,9 @@ export default function CommitList({ commits, loading = false }: CommitListProps
   if (loading) {
     return (
       <div className="overflow-hidden rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="listBullet" size={22} className="text-muted" />
-          Recent Commits
+<h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="listBullet" size={20} className="text-accent" />
+          <span className="whitespace-nowrap">Commits</span>
         </h3>
         <div className="flex flex-col gap-3">
           {Array.from({ length: INITIAL_COUNT }).map((_, idx) => (
@@ -220,8 +220,8 @@ export default function CommitList({ commits, loading = false }: CommitListProps
   if (commits.length === 0) {
     return (
       <div className="overflow-hidden rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="listBullet" size={22} className="text-muted" />
+        <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="listBullet" size={20} className="text-accent" />
           Recent Commits
         </h3>
         <p className="text-lg text-muted">No commits found.</p>
@@ -236,9 +236,9 @@ export default function CommitList({ commits, loading = false }: CommitListProps
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-frosted-glass p-4 backdrop-blur-xl sm:p-6">
       <div className="mb-3 flex items-center justify-between sm:mb-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground sm:text-xl">
-          <Icon name="listBullet" size={20} className="text-muted sm:h-[22px] sm:w-[22px]" />
-          <span className="whitespace-nowrap">Commits</span>
+<h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="listBullet" size={20} className="text-accent" />
+          Recent Commits
         </h3>
         {commitsWithBody.length > 0 && (
           <button

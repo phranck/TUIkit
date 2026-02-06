@@ -38,7 +38,7 @@ struct StatusHeader: View {
 }
 ```
 
-The `body` property is annotated with `@ViewBuilder` at the protocol level, so you can use all result builder features — conditionals, optionals, loops:
+The `body` property is annotated with `@ViewBuilder` at the protocol level, so you can use all result builder features: conditionals, optionals, loops:
 
 ```swift
 struct UserCard: View {
@@ -160,7 +160,7 @@ Text("Important!").highlighted(.yellow)
 
 ### When to Use ViewModifier
 
-Use ``ViewModifier`` when your transformation is a pure buffer-to-buffer operation — adding visual effects, changing backgrounds, or adjusting layout after rendering. The ``RenderContext`` gives you access to:
+Use ``ViewModifier`` when your transformation is a pure buffer-to-buffer operation: adding visual effects, changing backgrounds, or adjusting layout after rendering. The ``RenderContext`` gives you access to:
 
 | Property | Description |
 |----------|-------------|

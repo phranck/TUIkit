@@ -1,8 +1,12 @@
-# Stargazer Mastodon Lookup — Automatic Account Discovery
+# Stargazer Mastodon Lookup: Automatic Account Discovery
 
-## Superseded
+## Preface
 
-Superseded by [2026-02-04-stargazer-social-lookup.md](2026-02-04-stargazer-social-lookup.md) which expands scope to multi-platform discovery (Mastodon + Twitter/X + Bluesky).
+A scheduled GitHub Action discovers Mastodon accounts for stargazers: searches GitHub bios/blogs for Mastodon handles using regex, tries usernames on known instances, caches results in `mastodon-cache.json`, and merges with live stargazers at runtime. Dashboard popover shows the Mastodon icon + link. Incremental updates (every 2h) find new stargazers; weekly full refresh catches updated bios. (Later expanded to Twitter and Bluesky in the multi-platform social lookup plan.)
+
+## Completed
+
+**0: Superseded by [2026-02-04-stargazer-social-lookup.md](2026-02-04-stargazer-social-lookup.md) which expands scope to multi-platform discovery (Mastodon + Twitter/X + Bluesky).
 
 ---
 
@@ -64,7 +68,7 @@ Find Mastodon accounts for all repository stargazers and display/link them in th
 1. **Stargazers** are fetched **live** from GitHub API on every page load (existing behavior)
 2. **Mastodon data** is loaded from a cached JSON file (fetched once, updated daily)
 3. **Merge at runtime**: Match stargazers by `login` with Mastodon cache entries
-4. **New stargazers** appear immediately — just without Mastodon info until next scheduled run
+4. **New stargazers** appear immediately. Ujust without Mastodon info until next scheduled run
 
 ### Update Strategy: Incremental + Weekly Full Refresh
 

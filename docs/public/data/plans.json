@@ -1,0 +1,151 @@
+{
+  "generated": "2026-02-06T23:18:53.097Z",
+  "open": [
+    {
+      "date": "2026-02-06",
+      "slug": "containerization-composition",
+      "title": "Containerization: Composition NOT Inheritance in Swift",
+      "preface": "Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions. Utrue to SwiftUI/TUIKit's design philosophy."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "containerview-refactor",
+      "title": "ContainerView Refactoring Plan",
+      "preface": "ContainerView is being refactored from the broken `body: Never` + Renderable pattern to a proper View with `body: some View` that returns an internal `_ContainerViewCore`. This fix enables modifiers to work naturally and becomes the template for fixing List, Box, and other components. Once done, `.foregroundColor()`, `.padding()`, and other standard modifiers will compose correctly instead of being silently ignored."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-containerview",
+      "title": "Implementation Plan: ContainerView Refactoring",
+      "preface": "ContainerView is fixed by extracting its 400+ lines of rendering logic into a private `_ContainerViewCore` struct, making `ContainerView` a simple public View with `body: some View` that creates the core. This restores modifier support, enables proper view composition, and establishes the correct pattern for refactoring List, Box, and all other components in the framework."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-list-table",
+      "title": "Implementation Plan: List & Table (Refactored)",
+      "preface": "List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus navigation via `FocusableItemListHandler` and selection state via `SelectionStateManager`, with helpers like `renderFocusableContainer()` preventing code duplication. This establishes the consistent, reusable pattern for List and Table while becoming a reference for future components."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-shared-handlers",
+      "title": "Implementation Plan: Shared Focus/Selection Handlers & Helpers",
+      "preface": "Shared focus/selection infrastructure is extracted so both List and Table reuse the same pieces: `FocusableItemListHandler` for keyboard navigation (Up/Down/Home/End), `SelectionStateManager<T>` for tracking selected values, `ItemStateRenderer` for styling based on focus/selection state, and `renderFocusableContainer()` helper that orchestrates layout + styling + scrolling."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "list-scrollable",
+      "title": "List (Scrollable)",
+      "preface": "List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. Uthey come later once the API is proven."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "list-table-shared-architecture",
+      "title": "List & Table: Shared Architecture Analysis",
+      "preface": "This analysis identifies the shared architecture between List and Table before implementation: both need focus management, keyboard navigation (Up/Down/Home/End), selection binding, scrolling, and item state rendering. Navigation logic and selection state are identical; rendering differs (List = vertical stack, Table = grid). Extract shared components (handlers, helpers, state managers) to eliminate duplication while letting each component specialize in layout."
+    },
+    {
+      "date": "2026-02-02",
+      "slug": "state-persistence",
+      "title": "State Persistence (Session Continuity / Crash Recovery)",
+      "preface": "Session state now survives app crashes with `@RestoredState`. Ua disk-persisted wrapper around `@State`. Values auto-save on change (debounced) and auto-restore on startup. Signal handlers (SIGTERM/SIGINT) flush state before shutdown so no data is lost. Perfect for file managers, editors, or any app tracking last directory, scroll position, or open files. Builds on the State Storage Identity system to keep state stable across renders while adding optional persistence."
+    }
+  ],
+  "done": [
+    {
+      "date": "2026-02-06",
+      "slug": "toggle",
+      "title": "Toggle Component",
+      "preface": "`Toggle` adds interactive on/off controls to TUI apps with SwiftUI API parity: `Binding<Bool>`, label as ViewBuilder or String, two styles (toggle slider `[●○]`/`[○●]` and checkbox `[x]`/`[ ]`). Space/Enter toggles the value. Focused indicators show via pulsing ● dot. Supports `.disabled()` modifier. Works perfectly alongside Button and Menu as part of the core input component set."
+    },
+    {
+      "date": "2026-02-05",
+      "slug": "flat-appearance",
+      "title": "Remove Block/Flat Appearances: Simplify to Border-Only Rendering",
+      "preface": "Block and Flat appearances are both removed (36 files changed). The framework now offers four border-based appearances: line, rounded, doubleLine, heavy. Uall using standard Unicode box-drawing characters. Surface color tokens are consolidated into `Palette` directly (no more `BlockPalette` protocol). Simplified architecture, eliminated half-block complexity that broke on many terminals, and gained universal compatibility using only ANSI backgrounds and standard borders."
+    },
+    {
+      "date": "2026-02-05",
+      "slug": "progress-view",
+      "title": "ProgressView: Determinate Progress Bar",
+      "preface": "`ProgressView` adds progress bars to TUI apps: horizontal bars that fill to a percentage (0–100), with five Unicode styles (block, blockFine, shade, bar, dot), optional labels, and SwiftUI API parity. Supports `BinaryFloatingPoint` values with total, ViewBuilder label closures, and currentValueLabel for custom percentage display. Optional `.disabled()` modifier, proper width clamping, and edge-case handling for nil/negative/overflow values."
+    },
+    {
+      "date": "2026-02-05",
+      "slug": "render-performance-phase2",
+      "title": "Render Performance Phase 2: Memoization Activation & Debug Tooling",
+      "preface": "Subtree memoization is activated: environment snapshot comparison in `RenderLoop` automatically invalidates cache on theme/palette changes; core types (Text, Alignment, ContainerConfig, etc.) gain `Equatable` conformance; example app extracts view subcomponents and applies `.equatable()` for real cache benefit. Debug logging (via `TUIKIT_DEBUG_RENDER` env var) tracks cache hits/misses per identity. Between state changes, identical views now skip re-rendering entirely."
+    },
+    {
+      "date": "2026-02-05",
+      "slug": "social-lookup-optimization",
+      "title": "Social Lookup Script: Matching Algorithm Optimization",
+      "preface": "Social lookup script is optimized to eliminate false positives: instance validation via NodeInfo (confirms domains run ActivityPub software), expanded blocklist for link-in-bio services, leading-`@` requirement for Mastodon handles (rejects corporate emails), and preservation of `verified: true` for authoritative sources (GitHub profile, Keybase, manual overrides). Full refresh overwrites stale entries. 21 known Mastodon instances searched. Cleaner cache, no manual corrections needed."
+    },
+    {
+      "date": "2026-02-04",
+      "slug": "dashboard-avatar-marquee",
+      "title": "Plan: Dashboard Redesign - Avatar Marquee",
+      "preface": "A generic `AvatarMarquee` component now displays scrolling avatar lists (stargazers, contributors, etc.) with smooth infinite scroll, fade edges, and hover popovers. The marquee arrow targets the relevant stat card above (Stars, Contributors, etc.). Hover decelerates scroll smoothly; mouseleave accelerates it back. Generic TypeScript props make it reusable for any avatar collection. The Stargazers panel now uses this component, replacing a static grid."
+    },
+    {
+      "date": "2026-02-04",
+      "slug": "project-dashboard",
+      "title": "Project Dashboard: Live GitHub Metrics Page",
+      "preface": "A `/dashboard` page now displays live GitHub metrics: stat cards (commits, stars, forks, PRs, contributors, branches, tags, releases), a 52-week commit heatmap (GitHub-style), language breakdown bar, recent commits with expandable messages, and repo metadata. All data fetched client-side via GitHub REST API (no token required). Manual refresh button + rate limit display in footer. Phosphor-themed retro styling matches the landing page. Everything loads in parallel for snappy performance."
+    },
+    {
+      "date": "2026-02-04",
+      "slug": "stargazer-mastodon-lookup",
+      "title": "Stargazer Mastodon Lookup: Automatic Account Discovery",
+      "preface": "A scheduled GitHub Action discovers Mastodon accounts for stargazers: searches GitHub bios/blogs for Mastodon handles using regex, tries usernames on known instances, caches results in `mastodon-cache.json`, and merges with live stargazers at runtime. Dashboard popover shows the Mastodon icon + link. Incremental updates (every 2h) find new stargazers; weekly full refresh catches updated bios. (Later expanded to Twitter and Bluesky in the multi-platform social lookup plan.)"
+    },
+    {
+      "date": "2026-02-04",
+      "slug": "stargazer-social-lookup",
+      "title": "Stargazer Social Account Lookup: Multi-Platform Discovery",
+      "preface": "Multi-platform social lookup now discovers Mastodon, Twitter, and Bluesky accounts for stargazers: searches GitHub bios/blogs/profile fields, validates domains via NodeInfo, searches usernames on known instances, and caches results. Scheduled GitHub Action runs every 2h (incremental for new stargazers) and weekly (full refresh for updated bios). Dashboard popover shows social icons + links for all three platforms. Better validation eliminates false positives (corporate emails, link-in-bio services)."
+    },
+    {
+      "date": "2026-02-03",
+      "slug": "focus-sections-statusbar",
+      "title": "Focus Sections with StatusBar Cascading",
+      "preface": "Focus Sections enable multi-panel TUIs where Tab switches between named focusable areas and the StatusBar displays context-sensitive shortcuts for each. StatusBar items cascade from the active section up to parents (merge) or stop cleanly (replace for modals). A breathing ● dot in the section border pulses via a dedicated PulseTimer, providing clear visual feedback on which section is active. Cascading composition and per-section shortcuts make complex layouts intuitive."
+    },
+    {
+      "date": "2026-02-03",
+      "slug": "palette-consolidation",
+      "title": "Palette Consolidation: Replace 6 Palette Structs with SystemPalette.Preset Enum",
+      "preface": "Six palette files are consolidated into one: a `SystemPalette.Preset` enum with `.green`, `.amber`, `.red`, `.violet`, `.blue`, `.white` cases, backed by hand-tuned HSL parameters. All boilerplate (init, color generation, helpers) is shared; only the tuning data differs. Six files → one file, 545 LOC → 150 LOC. Convenience accessors like `BlockPalette.amber` still work, user-defined custom palettes still conform to `Palette` normally."
+    },
+    {
+      "date": "2026-02-03",
+      "slug": "subtree-memoization",
+      "title": "Render Pipeline Phase 5: Subtree Memoization",
+      "preface": "Subtree memoization caches rendered FrameBuffers by view identity: when a view conforms to `Equatable` and is wrapped in `.equatable()`, the framework compares the new view with the cached one. If equal (and available size hasn't changed), the cached FrameBuffer is reused. Uskipping the entire subtree's re-rendering. `RenderCache` stores buffers keyed by `ViewIdentity`, invalidated when `@State` changes or environment changes. Between state changes, identical views like Spinners skip rendering entirely."
+    },
+    {
+      "date": "2026-02-02",
+      "slug": "render-pipeline-optimization",
+      "title": "Render Pipeline Optimization",
+      "preface": "The render pipeline is optimized across four phases: (1) line-level diffing compares output with previous frame and only writes changed lines (eliminates ~90% of terminal writes), (2) output buffering batches all writes into one syscall, (3) caching eliminates repeated ioctl and regex evaluations on terminal size and FrameBuffer width, (4) architecture cleanup extracts ChildInfo for future subtree memoization. Spinner animations now run smoothly because unchanged regions don't get redrawn."
+    },
+    {
+      "date": "2026-02-02",
+      "slug": "spinner-view",
+      "title": "Spinner View",
+      "preface": "Spinners now animate loading states with three styles: rotating dots (braille), rotating line (ASCII), and bouncing Knight-Rider dot with fade trail. Each style runs at calibrated speed (110ms, 140ms, 100ms), uses time-based frame calculation (no drift), and triggers re-renders at ~25 FPS via lifecycle tasks. Simple API: `Spinner()`, `Spinner(\"Loading...\", style: .line)`, or `Spinner(\"...\", style: .bouncing, color: .cyan)`. Works everywhere with smooth, jitter-free animation."
+    },
+    {
+      "date": "2026-02-02",
+      "slug": "toast-view",
+      "title": "Toast View",
+      "preface": "Toast notifications appear and fade smoothly to communicate ephemeral messages (\"Saved!\", \"Error\", etc.) without blocking the UI. Multiple severity styles (info, success, warning, error) with themed colors, smooth fade-in/fade-out animation (~200ms each), auto-dismiss after a configurable duration, and positioning (top/bottom) via `.overlay()`. Later evolved into the Notification Service for greater power, but the core ephemeral message pattern remains."
+    },
+    {
+      "date": "2026-02-01",
+      "slug": "state-storage-identity",
+      "title": "State Storage Identity",
+      "preface": "State now survives **any** view reconstruction via structural identity: each view gets a stable key (its position in the tree), and state values live in external `StateStorage` indexed by that key. Self-hydrating `@State.init` checks the active context during `body` evaluation and retrieves persistent storage immediately. This foundation enables components like RadioButtonGroup, List, and any control with persistent local state to work reliably across all render passes."
+    }
+  ]
+}

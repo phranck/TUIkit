@@ -66,7 +66,7 @@ const sfIcons = {
 
 /** Custom SVG icons not available in SF Symbols. */
 const customIcons = {
-  /** Three horizontal lines — hamburger menu icon. */
+  /** Three horizontal lines: hamburger menu icon. */
   line3Horizontal: (size: number) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ const customIcons = {
       <line x1="4" y1="18" x2="20" y2="18" />
     </svg>
   ),
-  /** X mark — close icon. */
+  /** X mark: close icon. */
   xmark: (size: number) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@ const customIcons = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
-  /** Two overlapping rectangles — standard copy-to-clipboard metaphor. */
+  /** Two overlapping rectangles: standard copy-to-clipboard metaphor. */
   copy: (size: number) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -164,7 +164,7 @@ interface IconProps {
   className?: string;
 }
 
-/** Decorative icon wrapper — hidden from screen readers since adjacent text conveys meaning. */
+/** Decorative icon wrapper: hidden from screen readers since adjacent text conveys meaning. */
 export default function Icon({ name, size = 20, className }: IconProps) {
   if (name in customIcons) {
     return (

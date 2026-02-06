@@ -116,7 +116,7 @@ export interface GitHubStats {
   rateLimit: { remaining: number; limit: number } | null;
 }
 
-/** Return type of the hook — stats plus manual refresh and data-fetch functions. */
+/** Return type of the hook: stats plus manual refresh and data-fetch functions. */
 export interface UseGitHubStatsReturn extends GitHubStats {
   /** Re-fetch all data from the GitHub API (fire-and-forget, updates internal state). */
   refresh: () => void;
@@ -328,7 +328,7 @@ export function useGitHubStats(options?: UseGitHubStatsOptions): UseGitHubStatsR
         (async () => {
           try {
             const res = await ghFetch<WeeklyActivity[]>("/stats/commit_activity", signal);
-            // If GitHub returns an empty array, the stats endpoint may be pending (202) — try cache
+            // If GitHub returns an empty array, the stats endpoint may be pending (202): try cache
             if (Array.isArray(res.data) && res.data.length > 0) return res;
 
             // Attempt to read cached weeklyActivity from public JSON
@@ -484,7 +484,7 @@ export function useGitHubStats(options?: UseGitHubStatsOptions): UseGitHubStatsR
     }
   }, []);
 
-  /** Fire-and-forget refresh — triggers fetch but ignores the returned promise. */
+  /** Fire-and-forget refresh: triggers fetch but ignores the returned promise. */
   const refresh = useCallback(() => {
     doFetch().catch(() => {
       /* errors are reflected in stats.error */

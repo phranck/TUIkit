@@ -1,8 +1,16 @@
 # List (Scrollable)
 
-## Specification
+## Preface
 
-A scrollable list component that displays arbitrary views in a vertical scrollable container. Supports single selection, keyboard navigation, and dynamic content.
+List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. Uthey come later once the API is proven.
+
+## Context / Problem
+
+Terminal applications need a scrollable list component that supports keyboard navigation, optional selection binding, and dynamic content from ViewBuilder closures.
+
+## Specification / Goal
+
+A scrollable list component that displays arbitrary views in a vertical scrollable container with single selection support, keyboard navigation, and dynamic content.
 
 ## SwiftUI Reference
 
@@ -84,7 +92,7 @@ List {
 }
 ```
 
-**Sections deferred to Phase 2** — complexity of section headers/footers can wait.
+**Sections deferred to Phase 2**. Ucomplexity of section headers/footers can wait.
 
 ### API
 
@@ -120,14 +128,14 @@ public init(
 ### Visual Behavior
 
 ```
-┌─────────────────────┐
-│ ● Item 1            │  ← focused row (pulsing ●)
-│   Item 2            │
-│   Item 3            │
-│   Item 4            │
-│   Item 5            │
-│ ↓ (scroll indicator) │
-└─────────────────────┘
+┌──────────────────────┐
+│ ● Item 1             │  ← focused row (pulsing ●)
+│   Item 2             │
+│   Item 3             │
+│   Item 4             │
+│   Item 5             │
+↓   (scroll indicator) │
+└──────────────────────┘
 ```
 
 **Focus Behavior:**
@@ -137,7 +145,7 @@ public init(
 - Tab moves to next element outside list
 
 **Scroll Behavior:**
-- Scroll window shows 5–10 items at a time (configurable via height)
+- Scroll window shows 5–10 items at a time (configurable via height, default behavior without height setting: it consumes the evailable height)
 - Focused item always visible (auto-scroll into view)
 - Scroll indicator (↑/↓) shows when content extends beyond viewport
 
@@ -170,6 +178,16 @@ Each row is rendered independently:
 | Enter/Space | Select focused row (if selection enabled) |
 | Tab | Exit list, focus next element |
 
+## Design
+
+### Component Architecture
+
+The List component uses ViewBuilder for content, identity-based row tracking, keyboard event handling via ListHandler, and optional selection binding. Core features include focus management, scrolling with auto-focus-into-view behavior, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown).
+
+### Rendering Strategy
+
+Each row is rendered independently, with focus/selection state determining visual styling (pulsing indicator for focus, different background for selection).
+
 ## Implementation Plan
 
 ### Phase 1: Core List (MVP)
@@ -201,6 +219,19 @@ Each row is rendered independently:
   - Empty list handling
 - [ ] Build & lint verification
 - [ ] Add to example app (ListPage with multiple scenarios)
+
+## Checklist
+
+- [ ] Create ListRow internal structure
+- [ ] Create List struct with selection binding and content builder
+- [ ] Create ListHandler for keyboard navigation and selection
+- [ ] Implement row identity resolution from @ViewBuilder
+- [ ] Implement Renderable extension with visible window rendering
+- [ ] Add .disabled() modifier
+- [ ] Write 25+ comprehensive tests
+- [ ] Build & lint verification
+- [ ] Add to example app
+- [ ] Documentation complete
 
 ### Phase 2: Enhancements (future)
 
@@ -350,9 +381,9 @@ List(selection: $selected) {
 
 ## Files
 
-- `Sources/TUIkit/Views/List.swift` — List component + ListHandler
-- `Tests/TUIkitTests/ListTests.swift` — 25+ tests
-- `Sources/TUIkitExample/Pages/ListPage.swift` — Example page
+- `Sources/TUIkit/Views/List.swift`: List component + ListHandler
+- `Tests/TUIkitTests/ListTests.swift`: 25+ tests
+- `Sources/TUIkitExample/Pages/ListPage.swift`: Example page
 
 ## Dependencies
 
@@ -392,7 +423,7 @@ Key insight (like RadioButtonGroup):
 
 ### Initial MVP
 
-- Render all rows (even off-screen) — simple, correct semantics
+- Render all rows (even off-screen). Usimple, correct semantics
 - Cache rendered buffers in RenderContext if available
 - Measure: 100 rows should render in <50ms
 
