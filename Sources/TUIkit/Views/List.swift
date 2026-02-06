@@ -257,9 +257,10 @@ extension List: Renderable {
         let palette = context.environment.palette
         let stateStorage = context.tuiContext.stateStorage
         
-        // Resolve children from content builder
-        let childInfos = resolveChildInfos(from: AnyView(content), context: context)
-        let rowCount = childInfos.count
+        // Render content and extract rows from the buffer
+        let contentBuffer = TUIkit.renderToBuffer(content, context: context)
+        let rows = contentBuffer.lines
+        let rowCount = rows.count
         
         // Early exit for empty list
         guard rowCount > 0 else {
@@ -323,13 +324,13 @@ extension List: Renderable {
         var lines: [String] = []
         
         for index in visibleRange {
-            guard index < childInfos.count else { break }
-            let childInfo = childInfos[index]
+            guard index < rows.count else { break }
+            let rowText = rows[index]
             let isFocused = index == handler.focusedIndex && listHasFocus
             
             // Render row with focus indicator
             let rowLine = renderRow(
-                childInfo: childInfo,
+                rowText: rowText,
                 isFocused: isFocused,
                 context: context,
                 palette: palette
@@ -354,7 +355,7 @@ extension List: Renderable {
     }
     
     private func renderRow(
-        childInfo: ChildInfo,
+        rowText: String,
         isFocused: Bool,
         context: RenderContext,
         palette: Palette
@@ -374,9 +375,6 @@ extension List: Renderable {
         }
         
         let styledIndicator = ANSIRenderer.colorize(focusIndicator, foreground: indicatorColor)
-        
-        // Get row content
-        let rowText = childInfo.buffer?.lines.first ?? ""
         
         return styledIndicator + " " + rowText
     }
