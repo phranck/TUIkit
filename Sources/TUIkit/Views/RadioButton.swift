@@ -195,6 +195,17 @@ final class RadioButtonGroupHandler: Focusable {
     }
 }
 
+// MARK: - Focus Lifecycle
+
+extension RadioButtonGroupHandler {
+    func onFocusLost() {
+        // Reset focusedIndex to the selected item when the group loses focus
+        if let selectedIndex = itemValues.firstIndex(of: selection.wrappedValue) {
+            focusedIndex = selectedIndex
+        }
+    }
+}
+
 // MARK: - Key Event Handling
 
 extension RadioButtonGroupHandler {
@@ -315,7 +326,7 @@ extension RadioButtonGroup: Renderable {
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: handler.focusedIndex == index,
+                isFocused: handler.focusedIndex == index && groupHasFocus,
                 groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
@@ -334,7 +345,7 @@ extension RadioButtonGroup: Renderable {
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: handler.focusedIndex == index,
+                isFocused: handler.focusedIndex == index && groupHasFocus,
                 groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
