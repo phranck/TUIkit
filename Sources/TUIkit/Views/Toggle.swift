@@ -146,24 +146,23 @@ extension Toggle: Renderable {
             toggleIndicator = "[\(indicator)]"
         }
 
-        // Apply color to the toggle indicator
-        let indicatorColor: Color
+        // Determine bracket color: pulsing accent when focused, border when unfocused
+        let bracketColor: Color
         if isDisabled {
-            indicatorColor = palette.foregroundTertiary
+            bracketColor = palette.foregroundTertiary
+        } else if isFocused {
+            // Subtle pulse: interpolate between 35% and 100% accent
+            let dimAccent = palette.accent.opacity(0.35)
+            bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
         } else {
-            indicatorColor = palette.accent
+            bracketColor = palette.border
         }
-        let styledToggle = ANSIRenderer.colorize(toggleIndicator, foreground: indicatorColor)
 
-        // Build focus indicator
-        let focusPrefix = BorderRenderer.focusIndicatorPrefix(
-            isFocused: isFocused && !isDisabled,
-            pulsePhase: context.pulsePhase,
-            palette: palette
-        )
+        // Color the entire toggle indicator (including brackets)
+        let styledToggle = ANSIRenderer.colorize(toggleIndicator, foreground: bracketColor, bold: isFocused && !isDisabled)
 
-        // Combine: [focus●] [toggle/checkbox] label
-        let combinedLine = focusPrefix + styledToggle + " " + label
+        // Combine: [toggle/checkbox] label (no focus dot prefix)
+        let combinedLine = styledToggle + " " + label
 
         // Return frame buffer with the combined line
         return FrameBuffer(lines: [combinedLine])
