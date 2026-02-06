@@ -407,17 +407,19 @@ export function useGitHubStats(options?: UseGitHubStatsOptions): UseGitHubStatsR
 
       const repo = repoResult.data;
 
-      const recentCommits: CommitEntry[] = commitsResult.data.map((commit) => {
-        const { title, body } = splitCommitMessage(commit.commit.message);
-        return {
-          sha: commit.sha.slice(0, 7),
-          title,
-          body,
-          author: commit.commit.author.name,
-          date: commit.commit.author.date,
-          url: commit.html_url,
-        };
-      });
+      const recentCommits: CommitEntry[] = commitsResult.data
+        .filter((commit) => !commit.commit.message.includes("[skip ci]"))
+        .map((commit) => {
+          const { title, body } = splitCommitMessage(commit.commit.message);
+          return {
+            sha: commit.sha.slice(0, 7),
+            title,
+            body,
+            author: commit.commit.author.name,
+            date: commit.commit.author.date,
+            url: commit.html_url,
+          };
+        });
 
       const result: GitHubStats = {
         stars: repo.stargazers_count,

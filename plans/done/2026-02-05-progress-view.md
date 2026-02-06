@@ -63,15 +63,14 @@ Downloading        50%
 
 ### Styles
 
-6 built-in styles via `.progressBarStyle(_:)` modifier:
+5 built-in styles via `.progressBarStyle(_:)` modifier:
 
 ```
-line:       ████████████████░░░░░░░░░░░░░░░░       (whole blocks)
-lineSmooth: ████████████████▍░░░░░░░░░░░░░░░       (sub-character precision via ▉▊▋▌▍▎▏)
-thin:       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░
-half:       ▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌────────────────
-braille:    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀
-dot:        ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●────────────────       (● head in accent color)
+block:     ████████████████░░░░░░░░░░░░░░░░       (whole blocks)
+blockFine: ████████████████▍░░░░░░░░░░░░░░░       (sub-character precision via ▉▊▋▌▍▎▏)
+shade:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░
+bar:       ▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌────────────────
+dot:       ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●────────────────       (● head in accent color)
 ```
 
 ### Width
@@ -102,7 +101,7 @@ dot:        ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●──────�
 - [x] Implement all 4 initializers with SwiftUI-matching signatures
 - [x] Implement `Renderable` with bar rendering
 - [x] Add `Equatable` conformance
-- [x] Implement 6 bar styles via `ProgressBarStyle` enum + `.progressBarStyle(_:)` modifier
-- [x] Create tests in `Tests/TUIkitTests/ProgressViewTests.swift` (27 tests / 3 suites)
+- [x] Implement 5 bar styles via `ProgressBarStyle` enum + `.progressBarStyle(_:)` modifier
+- [x] Create tests in `Tests/TUIkitTests/ProgressViewTests.swift` (26 tests / 3 suites)
 - [x] Add to example app (ContainersPage — ProgressViewRow)
 - [x] `swift build` + `swiftlint` + `swift test`
