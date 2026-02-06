@@ -203,42 +203,34 @@ extension RadioButtonGroupHandler {
         case .up:
             // Up/Down only work for vertical orientation
             guard orientation == .vertical else { return false }
-            if focusedIndex > 0 {
-                focusedIndex -= 1
-                selection.wrappedValue = itemValues[focusedIndex]
-                return true
-            }
-            return false
+            // Wrap around: go to last item if at beginning
+            focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
+            selection.wrappedValue = itemValues[focusedIndex]
+            return true
 
         case .down:
             // Up/Down only work for vertical orientation
             guard orientation == .vertical else { return false }
-            if focusedIndex < itemValues.count - 1 {
-                focusedIndex += 1
-                selection.wrappedValue = itemValues[focusedIndex]
-                return true
-            }
-            return false
+            // Wrap around: go to first item if at end
+            focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
+            selection.wrappedValue = itemValues[focusedIndex]
+            return true
 
         case .left:
             // Left/Right only work for horizontal orientation
             guard orientation == .horizontal else { return false }
-            if focusedIndex > 0 {
-                focusedIndex -= 1
-                selection.wrappedValue = itemValues[focusedIndex]
-                return true
-            }
-            return false
+            // Wrap around: go to last item if at beginning
+            focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
+            selection.wrappedValue = itemValues[focusedIndex]
+            return true
 
         case .right:
             // Left/Right only work for horizontal orientation
             guard orientation == .horizontal else { return false }
-            if focusedIndex < itemValues.count - 1 {
-                focusedIndex += 1
-                selection.wrappedValue = itemValues[focusedIndex]
-                return true
-            }
-            return false
+            // Wrap around: go to first item if at end
+            focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
+            selection.wrappedValue = itemValues[focusedIndex]
+            return true
 
         case .enter, .character(" "):
             // Select current focused item

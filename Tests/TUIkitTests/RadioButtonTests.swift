@@ -386,7 +386,7 @@ struct RadioButtonGroupHandlerTests {
         #expect(selection == AnyHashable("y"))
     }
 
-    @Test("Handler ignores boundary navigation")
+    @Test("Handler wraps navigation at boundaries")
     func boundaryNavigation() {
         var selection = AnyHashable("opt1")
         let binding = Binding(
@@ -403,12 +403,13 @@ struct RadioButtonGroupHandlerTests {
             canBeFocused: true
         )
 
-        // Try to go up from first item
+        // Try to go up from first item — should wrap to last
         let upEvent = KeyEvent(key: .up)
         let handled = handler.handleKeyEvent(upEvent)
 
-        #expect(handled == false)
-        #expect(handler.focusedIndex == 0)
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 1)  // Wrapped to last item
+        #expect(selection == AnyHashable("opt2"))
     }
 
     @Test("Handler respects canBeFocused property")
