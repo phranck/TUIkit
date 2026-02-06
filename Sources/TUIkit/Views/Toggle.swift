@@ -141,8 +141,7 @@ extension Toggle: Renderable {
         case .toggle:
             indicatorContent = isOn.wrappedValue ? "●○" : "○●"
         case .checkbox:
-            // U+25FC: Black small square
-            indicatorContent = isOn.wrappedValue ? "\u{25FC}" : " "
+            indicatorContent = isOn.wrappedValue ? "●" : " "
         }
 
         // Determine bracket color: pulsing accent when focused, border when unfocused
