@@ -164,6 +164,7 @@ final class RadioButtonGroupHandler: Focusable {
     let focusID: String
     let selection: Binding<AnyHashable>
     let itemValues: [AnyHashable]
+    let orientation: RadioButtonOrientation
     var canBeFocused: Bool
     var focusedIndex: Int = 0
 
@@ -171,11 +172,13 @@ final class RadioButtonGroupHandler: Focusable {
         focusID: String,
         selection: Binding<AnyHashable>,
         itemValues: [AnyHashable],
+        orientation: RadioButtonOrientation,
         canBeFocused: Bool
     ) {
         self.focusID = focusID
         self.selection = selection
         self.itemValues = itemValues
+        self.orientation = orientation
         self.canBeFocused = canBeFocused
 
         // Find current focused index based on selection
@@ -191,6 +194,8 @@ extension RadioButtonGroupHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
         case .up:
+            // Up/Down only work for vertical orientation
+            guard orientation == .vertical else { return false }
             if focusedIndex > 0 {
                 focusedIndex -= 1
                 selection.wrappedValue = itemValues[focusedIndex]
@@ -199,6 +204,8 @@ extension RadioButtonGroupHandler {
             return false
 
         case .down:
+            // Up/Down only work for vertical orientation
+            guard orientation == .vertical else { return false }
             if focusedIndex < itemValues.count - 1 {
                 focusedIndex += 1
                 selection.wrappedValue = itemValues[focusedIndex]
@@ -207,6 +214,8 @@ extension RadioButtonGroupHandler {
             return false
 
         case .left:
+            // Left/Right only work for horizontal orientation
+            guard orientation == .horizontal else { return false }
             if focusedIndex > 0 {
                 focusedIndex -= 1
                 selection.wrappedValue = itemValues[focusedIndex]
@@ -215,6 +224,8 @@ extension RadioButtonGroupHandler {
             return false
 
         case .right:
+            // Left/Right only work for horizontal orientation
+            guard orientation == .horizontal else { return false }
             if focusedIndex < itemValues.count - 1 {
                 focusedIndex += 1
                 selection.wrappedValue = itemValues[focusedIndex]
@@ -256,6 +267,7 @@ extension RadioButtonGroup: Renderable {
             focusID: focusID,
             selection: erasedSelection,
             itemValues: itemValues,
+            orientation: orientation,
             canBeFocused: !isDisabled
         )
         focusManager.register(handler, inSection: context.activeFocusSectionID)
@@ -321,19 +333,19 @@ extension RadioButtonGroup: Renderable {
         // Radio indicator: ● if selected, ◯ if not
         let indicator = isSelected ? "●" : "◯"
 
-        // Determine indicator color
+        // Determine indicator color (static, no pulsing)
         let indicatorColor: Color
         if isDisabled {
             indicatorColor = palette.foregroundTertiary
-        } else if isFocused {
-            // Subtle pulse on focus
-            let dimAccent = palette.accent.opacity(0.35)
-            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+        } else if isSelected {
+            // Selected indicator uses accent color
+            indicatorColor = palette.accent
         } else {
+            // Unselected indicator uses border color
             indicatorColor = palette.border
         }
 
-        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor, bold: isFocused && !isDisabled)
+        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor, bold: isSelected && !isDisabled)
 
         // Render label
         let labelView = item.labelBuilder()
