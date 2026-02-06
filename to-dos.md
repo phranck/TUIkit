@@ -2,7 +2,10 @@
 
 ## In Progress
 
-- [ ] **List & Table Architecture** — Define shared focus/selection/rendering patterns BEFORE implementing (see: plans/open/2026-02-06-list-table-shared-architecture.md)
+- [ ] **Architecture Alignment** — Refactor core components to follow View pattern
+  - [ ] ContainerView refactor (body: some View, move Renderable to _ContainerViewCore)
+  - [ ] List & Table architecture finalization (shared handlers, helpers)
+  - [ ] Verify modifiers work on all controls
 
 ## Open
 
