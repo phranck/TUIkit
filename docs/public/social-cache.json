@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-06T08:35:48.736Z",
+  "generatedAt": "2026-02-06T10:35:50.032Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -328,6 +328,16 @@
         "verified": true
       },
       "updatedAt": "2026-02-06T08:35:48.735Z"
+    },
+    "bjarkehs": {
+      "login": "bjarkehs",
+      "twitter": {
+        "handle": "@bjarkehs",
+        "url": "https://x.com/bjarkehs",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-06T10:35:26.021Z"
     }
   }
 }
