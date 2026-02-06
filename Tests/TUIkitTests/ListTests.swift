@@ -350,6 +350,31 @@ struct ListRenderingTests {
         #expect(content.contains("Item 1"))
     }
     
+    @Test("List renders multiple items vertically")
+    func renderMultipleItems() {
+        let context = createTestContext()
+        
+        let list = List {
+            Text("Item 1")
+            Text("Item 2")
+            Text("Item 3")
+            Text("Item 4")
+            Text("Item 5")
+        }
+        
+        let buffer = TUIkit.renderToBuffer(list, context: context)
+        
+        // Should have at least 5 lines (one per item)
+        #expect(buffer.height >= 5)
+        
+        let content = buffer.lines.joined()
+        #expect(content.contains("Item 1"))
+        #expect(content.contains("Item 2"))
+        #expect(content.contains("Item 3"))
+        #expect(content.contains("Item 4"))
+        #expect(content.contains("Item 5"))
+    }
+    
     @Test("List shows focus indicator on focused item")
     func renderFocusIndicator() {
         let context = createTestContext()
