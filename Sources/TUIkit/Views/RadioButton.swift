@@ -201,39 +201,35 @@ extension RadioButtonGroupHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
         case .up:
-            // Vertical: navigate up; Horizontal: consume but do nothing (prevent group switching)
+            // Vertical: navigate focus up (don't change selection); Horizontal: consume but do nothing
             if orientation == .vertical {
                 focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
-                selection.wrappedValue = itemValues[focusedIndex]
             }
             return true
 
         case .down:
-            // Vertical: navigate down; Horizontal: consume but do nothing (prevent group switching)
+            // Vertical: navigate focus down (don't change selection); Horizontal: consume but do nothing
             if orientation == .vertical {
                 focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
-                selection.wrappedValue = itemValues[focusedIndex]
             }
             return true
 
         case .left:
-            // Horizontal: navigate left; Vertical: consume but do nothing (prevent group switching)
+            // Horizontal: navigate focus left (don't change selection); Vertical: consume but do nothing
             if orientation == .horizontal {
                 focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : itemValues.count - 1
-                selection.wrappedValue = itemValues[focusedIndex]
             }
             return true
 
         case .right:
-            // Horizontal: navigate right; Vertical: consume but do nothing (prevent group switching)
+            // Horizontal: navigate focus right (don't change selection); Vertical: consume but do nothing
             if orientation == .horizontal {
                 focusedIndex = focusedIndex < itemValues.count - 1 ? focusedIndex + 1 : 0
-                selection.wrappedValue = itemValues[focusedIndex]
             }
             return true
 
         case .enter, .character(" "):
-            // Select current focused item
+            // Select the currently focused item (make it the selection)
             selection.wrappedValue = itemValues[focusedIndex]
             return true
 
@@ -360,15 +356,15 @@ extension RadioButtonGroup: Renderable {
         context: RenderContext,
         palette: Palette
     ) -> String {
-        // Radio indicator: ● if selected, ◯ if not
-        let indicator = isSelected ? "●" : "◯"
+        // Radio indicator: ● if selected OR focused, ◯ if neither
+        let indicator = (isSelected || isFocused) ? "●" : "◯"
 
         // Determine indicator color based on state
         let indicatorColor: Color
         if isDisabled {
             indicatorColor = palette.foregroundTertiary
         } else if isSelected {
-            // Selected indicator: accent color, pulses if group has focus
+            // Selected: accent color, pulses if group has focus
             if groupHasFocus {
                 let dimAccent = palette.accent.opacity(0.35)
                 indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
@@ -376,8 +372,8 @@ extension RadioButtonGroup: Renderable {
                 indicatorColor = palette.accent
             }
         } else if isFocused {
-            // Focused but not selected: accent (static, no pulse)
-            indicatorColor = palette.accent
+            // Focused but not selected: dimmed accent (static, no pulse)
+            indicatorColor = palette.accent.opacity(0.5)
         } else {
             // Unselected and unfocused: tertiary (dimmed)
             indicatorColor = palette.foregroundTertiary
