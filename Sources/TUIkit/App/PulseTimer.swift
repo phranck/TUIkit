@@ -35,11 +35,11 @@ final class PulseTimer {
     /// The number of discrete steps in a half-cycle (dim → bright).
     ///
     /// A full breathing cycle (dim → bright → dim) is `totalHalfSteps * 2` steps.
-    /// At 150ms per step and 10 half-steps: full cycle = 20 × 150ms = 3 seconds.
+    /// At 100ms per step and 10 half-steps: full cycle = 20 × 100ms = 2 seconds.
     private let totalHalfSteps = 10
 
     /// The interval between steps in milliseconds.
-    private let stepIntervalMs = 150
+    private let stepIntervalMs = 100
 
     /// The current step in the full cycle (0 ..< totalHalfSteps * 2).
     private var currentStep = 0
@@ -104,5 +104,14 @@ extension PulseTimer {
         timer?.cancel()
         timer = nil
         currentStep = 0
+    }
+
+    /// Resets the animation to the brightest point (phase = 1).
+    ///
+    /// Called when focus changes to make the indicator immediately visible
+    /// on the newly focused element instead of continuing mid-cycle.
+    func reset() {
+        // Set to peak brightness (step = totalHalfSteps → phase = 1.0)
+        currentStep = totalHalfSteps
     }
 }
