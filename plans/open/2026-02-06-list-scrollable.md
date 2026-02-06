@@ -2,7 +2,7 @@
 
 ## Preface
 
-List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections — they come later once the API is proven.
+List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. Uthey come later once the API is proven.
 
 ## Context / Problem
 
@@ -92,7 +92,7 @@ List {
 }
 ```
 
-**Sections deferred to Phase 2** — complexity of section headers/footers can wait.
+**Sections deferred to Phase 2**. Ucomplexity of section headers/footers can wait.
 
 ### API
 
@@ -381,9 +381,9 @@ List(selection: $selected) {
 
 ## Files
 
-- `Sources/TUIkit/Views/List.swift` — List component + ListHandler
-- `Tests/TUIkitTests/ListTests.swift` — 25+ tests
-- `Sources/TUIkitExample/Pages/ListPage.swift` — Example page
+- `Sources/TUIkit/Views/List.swift`: List component + ListHandler
+- `Tests/TUIkitTests/ListTests.swift`: 25+ tests
+- `Sources/TUIkitExample/Pages/ListPage.swift`: Example page
 
 ## Dependencies
 
@@ -423,7 +423,7 @@ Key insight (like RadioButtonGroup):
 
 ### Initial MVP
 
-- Render all rows (even off-screen) — simple, correct semantics
+- Render all rows (even off-screen). Usimple, correct semantics
 - Cache rendered buffers in RenderContext if available
 - Measure: 100 rows should render in <50ms
 

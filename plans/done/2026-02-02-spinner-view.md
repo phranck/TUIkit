@@ -6,7 +6,7 @@ Spinners now animate loading states with three styles: rotating dots (braille), 
 
 ## Completed
 
-**2026-02-02** — PR #61 merged. Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
+**0: PR #61 merged. Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
 
 ## Checklist
 
@@ -34,13 +34,13 @@ Spinner("Processing...", style: .bouncing, color: .cyan)
 
 ### Key Design Decisions
 
-- **Radically simplified API** — Removed `SpinnerSpeed`, `BouncingTrackWidth`, `BouncingTrailLength` enums. One init with 3 parameters.
-- **Uniform dot character (●)** — All track positions use the same character. Visual distinction comes purely from opacity fade. Avoids Unicode alignment issues between different dot characters.
-- **Edge overshoot (2 positions)** — Highlight travels from -2 to trackWidth+1, so the trail fades smoothly at edges instead of being cut off.
-- **6-step trail** — Opacities: [1.0, 0.75, 0.5, 0.35, 0.22, 0.15]. Last step matches inactive dot opacity (0.15) for seamless blend.
-- **Fixed intervals** — Dots: 110ms, Line: 140ms, Bouncing: 100ms. Calibrated by user testing.
-- **Time-based frames** — Frame index calculated from elapsed time, not counter-based. Prevents drift.
-- **VTIME=0 run loop** — Non-blocking stdin read + usleep(40ms) for ~25 FPS. Benefits all future animations.
+- **Radically simplified API**: Removed `SpinnerSpeed`, `BouncingTrackWidth`, `BouncingTrailLength` enums. One init with 3 parameters.
+- **Uniform dot character (●)**: All track positions use the same character. Visual distinction comes purely from opacity fade. Avoids Unicode alignment issues between different dot characters.
+- **Edge overshoot (2 positions)**: Highlight travels from -2 to trackWidth+1, so the trail fades smoothly at edges instead of being cut off.
+- **6-step trail**: Opacities: [1.0, 0.75, 0.5, 0.35, 0.22, 0.15]. Last step matches inactive dot opacity (0.15) for seamless blend.
+- **Fixed intervals**: Dots: 110ms, Line: 140ms, Bouncing: 100ms. Calibrated by user testing.
+- **Time-based frames**: Frame index calculated from elapsed time, not counter-based. Prevents drift.
+- **VTIME=0 run loop**: Non-blocking stdin read + usleep(40ms) for ~25 FPS. Benefits all future animations.
 
 ## Goal
 

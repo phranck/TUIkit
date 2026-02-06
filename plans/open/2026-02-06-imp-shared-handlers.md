@@ -21,10 +21,10 @@ Extract and formalize reusable components needed by both List and Table includin
 - Rendering patterns ad-hoc per control
 
 ### Target State
-- `FocusableItemListHandler` — shared focus/navigation logic
-- `SelectionStateManager<T>` — shared selection tracking
-- `renderFocusableContainer()` — helper similar to `renderContainer()`
-- `ItemStateRenderer` — utilities for styling items based on focus/selection
+- `FocusableItemListHandler`. Ushared focus/navigation logic
+- `SelectionStateManager<T>`. Ushared selection tracking
+- `renderFocusableContainer()`. Uhelper similar to `renderContainer()`
+- `ItemStateRenderer`. Uutilities for styling items based on focus/selection
 
 ## Implementation Steps
 
@@ -44,8 +44,8 @@ Extract and formalize reusable components needed by both List and Table includin
    - `binding: Binding<AnyHashable>?`
    - `selectedValue: AnyHashable?`
 4. Methods:
-   - `select(index: Int)` — select by index
-   - `select(value: SelectionValue)` — select by value
+   - `select(index: Int)`. Uselect by index
+   - `select(value: SelectionValue)`. Uselect by value
    - `isSelected(index: Int) -> Bool`
    - `isSelected(value: SelectionValue) -> Bool`
 5. Type-erasure utilities for `Binding<SelectionValue>` → `Binding<AnyHashable>`

@@ -56,10 +56,10 @@ Before the main loop starts, `run()` prepares the terminal:
 
 In raw mode, the terminal delivers every keystroke immediately without waiting for Enter. TUIkit configures:
 
-- **No echo** — typed characters are not displayed
-- **No canonical mode** — input is byte-by-byte, not line-by-line
-- **No signal processing** — Ctrl+C is handled by TUIkit, not the OS
-- **100ms read timeout** — non-blocking input polling
+- **No echo**: typed characters are not displayed
+- **No canonical mode**: input is byte-by-byte, not line-by-line
+- **No signal processing**: Ctrl+C is handled by TUIkit, not the OS
+- **100ms read timeout**: non-blocking input polling
 
 The original terminal settings are saved and restored during cleanup.
 
@@ -73,9 +73,9 @@ The main loop is synchronous and runs until shutdown:
 
 Three things cause a new frame to be rendered:
 
-- **SIGWINCH** — the terminal was resized
-- **``AppState``** — a `@State` property was mutated
-- **`SignalManager`** — `requestRerender()` was called (used by the state observer)
+- **SIGWINCH**: the terminal was resized
+- **``AppState``**: a `@State` property was mutated
+- **`SignalManager`**: `requestRerender()` was called (used by the state observer)
 
 All triggers set boolean flags that the main loop checks. The actual rendering always happens on the main thread.
 
@@ -88,7 +88,7 @@ All triggers set boolean flags that the main loop checks. The actual rendering a
 | `SIGINT` | Ctrl+C | Sets a shutdown flag → main loop exits |
 | `SIGWINCH` | Terminal resize | Sets a re-render flag → next iteration re-renders |
 
-Signal handlers only set `nonisolated(unsafe)` boolean flags — no allocations, no locks. The main loop reads these flags each iteration and acts accordingly.
+Signal handlers only set `nonisolated(unsafe)` boolean flags: no allocations, no locks. The main loop reads these flags each iteration and acts accordingly.
 
 ## Key Event Dispatch
 
@@ -100,7 +100,7 @@ When the terminal delivers a key event, the `InputHandler` dispatches it through
 
 ### Layer 2: View-Registered Handlers
 
-The `KeyEventDispatcher` iterates handlers registered via `onKeyPress()` modifiers — in reverse order (newest first). If a handler returns `true`, dispatch stops.
+The `KeyEventDispatcher` iterates handlers registered via `onKeyPress()` modifiers: in reverse order (newest first). If a handler returns `true`, dispatch stops.
 
 ### Layer 3: Default Bindings
 
@@ -137,7 +137,7 @@ Steps 8–11 are the output optimization layer: line-level diffing reduces write
 
 ## Cleanup
 
-When the main loop exits — via Ctrl+C, the quit key, or programmatic shutdown — `cleanup()` restores the terminal:
+When the main loop exits: via Ctrl+C, the quit key, or programmatic shutdown: `cleanup()` restores the terminal:
 
 | Step | What | Why |
 |------|------|-----|

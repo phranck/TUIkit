@@ -6,10 +6,10 @@ The render pipeline is optimized across four phases: (1) line-level diffing comp
 
 ## Completed
 
-**2026-02-02** — Phases 1–4 completed. All phases implemented across three branches:
-- `refactor/render-pipeline-phase1` — Phase 1 (line-level diffing) + Phase 2 (output buffering) + CI fix. PR #62.
-- `refactor/render-pipeline-phase3` — Phase 3 (caching). PR #63.
-- `refactor/render-pipeline-phase4` — Phase 4 (architecture cleanup, renamed from "subtree memoization").
+**0: Phases 1–4 completed. All phases implemented across three branches:
+- `refactor/render-pipeline-phase1`: Phase 1 (line-level diffing) + Phase 2 (output buffering) + CI fix. PR #62.
+- `refactor/render-pipeline-phase3`: Phase 3 (caching). PR #63.
+- `refactor/render-pipeline-phase4`: Phase 4 (architecture cleanup, renamed from "subtree memoization").
 
 Note: The original Phase 4 (subtree memoization) was replaced with architecture cleanup. Subtree memoization remains a future project.
 
@@ -28,7 +28,7 @@ Note: The original Phase 4 (subtree memoization) was replaced with architecture 
 
 ## Problem
 
-Every frame in TUIKit reconstructs the entire view tree, re-renders every view into fresh FrameBuffers, and rewrites every terminal line — regardless of whether anything changed. This causes visible stuttering/jerkiness in animations (Spinner) and will get worse as the UI grows.
+Every frame in TUIKit reconstructs the entire view tree, re-renders every view into fresh FrameBuffers, and rewrites every terminal line. Uregardless of whether anything changed. This causes visible stuttering/jerkiness in animations (Spinner) and will get worse as the UI grows.
 
 ### Current per-frame cost (for a 30-view app on a 50-line terminal)
 
@@ -46,12 +46,12 @@ Every frame in TUIKit reconstructs the entire view tree, re-renders every view i
 
 ### Root causes
 
-1. **Full tree reconstruction** — `App.body` is evaluated every frame. Every view struct, TupleView, Stack, and modifier is created fresh. Every `@ViewBuilder` closure re-executes.
-2. **Full screen repaint** — `WindowGroup.renderScene` writes every terminal line every frame via individual POSIX `write()` calls, even if nothing changed.
-3. **Uncached computed properties** — `FrameBuffer.width` runs the ANSI regex on every line every time it's accessed. Called hundreds of times per frame.
-4. **Uncached terminal size** — `terminal.width`/`height` call `ioctl()` every time (~5× per frame).
-5. **No output buffering** — Each terminal line produces 2 `write()` syscalls (cursor move + content). No batching.
-6. **Redundant string operations** — Every content line goes through regex stripping, `replacingOccurrences`, padding concatenation.
+1. **Full tree reconstruction**: `App.body` is evaluated every frame. Every view struct, TupleView, Stack, and modifier is created fresh. Every `@ViewBuilder` closure re-executes.
+2. **Full screen repaint**: `WindowGroup.renderScene` writes every terminal line every frame via individual POSIX `write()` calls, even if nothing changed.
+3. **Uncached computed properties**: `FrameBuffer.width` runs the ANSI regex on every line every time it's accessed. Called hundreds of times per frame.
+4. **Uncached terminal size**: `terminal.width`/`height` call `ioctl()` every time (~5× per frame).
+5. **No output buffering**: Each terminal line produces 2 `write()` syscalls (cursor move + content). No batching.
+6. **Redundant string operations**: Every content line goes through regex stripping, `replacingOccurrences`, padding concatenation.
 
 ## Goal
 
@@ -70,12 +70,12 @@ SwiftUI maintains a persistent **Attribute Graph** that tracks dependencies betw
 
 ### What's applicable to TUIKit (incremental approach)
 
-We adopt a **phased approach** — each phase is independently valuable and shippable:
+We adopt a **phased approach**. Ueach phase is independently valuable and shippable:
 
-1. **Phase 1: Line-level diffing** — highest ROI. Store previous frame, only write changed lines. Eliminates >90% of terminal writes for mostly-static UI.
-2. **Phase 2: Output buffering** — batch all terminal output into one `write()` call.
-3. **Phase 3: Caching** — cache `FrameBuffer.width`, terminal size, avoid redundant regex.
-4. **Phase 4: Subtree memoization** — skip re-rendering subtrees whose inputs haven't changed.
+1. **Phase 1: Line-level diffing**. Uhighest ROI. Store previous frame, only write changed lines. Eliminates >90% of terminal writes for mostly-static UI.
+2. **Phase 2: Output buffering**. Ubatch all terminal output into one `write()` call.
+3. **Phase 3: Caching**. Ucache `FrameBuffer.width`, terminal size, avoid redundant regex.
+4. **Phase 4: Subtree memoization**. Uskip re-rendering subtrees whose inputs haven't changed.
 
 Phase 1–3 are mechanical optimizations that don't change the architecture. Phase 4 is the structural change toward SwiftUI-style incremental rendering.
 
@@ -108,7 +108,7 @@ func writeFrame(_ buffer: FrameBuffer, terminal: Terminal) {
 
 **Key decisions:**
 - Compare the **final output strings** (with ANSI codes), not stripped text. This is a simple `==` comparison, O(1) amortized for equal strings (Swift uses hash-based comparison for long strings).
-- Store `previousFrame` in `RenderLoop` (not global, injected via constructor — no singletons).
+- Store `previousFrame` in `RenderLoop` (not global, injected via constructor. Uno singletons).
 - On terminal resize (SIGWINCH), invalidate the entire previous frame to force a full repaint.
 - The status bar gets its own `previousStatusBarLines` for independent diffing.
 
@@ -223,7 +223,7 @@ public struct FrameBuffer {
 
 During `WindowGroup.renderScene`, each content line goes through `strippedLength` (regex) + `replacingOccurrences` + padding. We can pre-compute the stripped length when the FrameBuffer is built, avoiding the regex in the output phase entirely.
 
-This is a natural extension of 3b — if `FrameBuffer` tracks `width`, individual line lengths could be tracked too.
+This is a natural extension of 3b. Uif `FrameBuffer` tracks `width`, individual line lengths could be tracked too.
 
 ### Phase 4: Subtree Memoization (Future)
 
@@ -283,7 +283,7 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
 
 - [x] 10. Single `terminal.getSize()` call per frame in `RenderLoop.render()` (instead of 2 ioctl calls)
 - [x] 11. `FrameBuffer.width` as stored `public private(set) var` with `didSet` recomputation
-- [x] 12. All `FrameBuffer.width` call sites audited — all read-only, no external mutation
+- [x] 12. All `FrameBuffer.width` call sites audited. Uall read-only, no external mutation
 - [x] 13. `strippedLength` counts visible chars without intermediate string allocation
 
 ### Phase 4: Architecture Cleanup (replaced original "Subtree Memoization")
@@ -310,7 +310,7 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
 
 | Phase | What it eliminates | Estimated improvement |
 |-------|---|---|
-| Phase 1 | ~94% of terminal write syscalls for mostly-static UI | **Biggest visual improvement** — less flicker, smoother animations |
+| Phase 1 | ~94% of terminal write syscalls for mostly-static UI | **Biggest visual improvement**. Uless flicker, smoother animations |
 | Phase 2 | Remaining per-line syscall overhead | ~100 syscalls → 1 per frame |
 | Phase 3a | ioctl syscalls | ~5 syscalls → 0 per frame (except resize) |
 | Phase 3b | Regex evaluations for width | ~100–200 regex calls → 0 per frame |
@@ -320,8 +320,8 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
 
 1. **FrameBuffer as value type vs reference type?** Width caching is awkward with a value type (`mutating get` won't work on `let` bindings). Options: (a) stored `width` property updated by mutation methods, (b) switch to reference type (class), (c) internal `_Storage` class wrapper. Option (a) is simplest.
 
-2. **String comparison cost for line diffing?** Swift Strings use UTF-8 storage. Equality check is O(N) in the worst case but O(1) for pointer-equal strings. Since we rebuild strings every frame, they won't be pointer-equal. For 50-line terminal with ~120 chars per line, that's ~6KB of comparison per frame — negligible.
+2. **String comparison cost for line diffing?** Swift Strings use UTF-8 storage. Equality check is O(N) in the worst case but O(1) for pointer-equal strings. Since we rebuild strings every frame, they won't be pointer-equal. For 50-line terminal with ~120 chars per line, that's ~6KB of comparison per frame. Unegligible.
 
 3. **Status bar diffing separately or unified?** The status bar renders on its own pass with its own context. Keeping its diffing separate (own `previousLines`) is cleaner and avoids coupling.
 
-4. **Should `buildOutputLines` handle the background color replacement?** Yes — this isolates the "raw FrameBuffer → terminal-ready strings" transformation into a testable pure function.
+4. **Should `buildOutputLines` handle the background color replacement?** Yes. Uthis isolates the "raw FrameBuffer → terminal-ready strings" transformation into a testable pure function.

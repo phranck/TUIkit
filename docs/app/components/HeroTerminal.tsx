@@ -6,7 +6,7 @@ import { Howl } from "howler";
 import TerminalScreen from "./TerminalScreen";
 
 /**
- * CRT layer geometry — centralizes the repeated calc() strings used
+ * CRT layer geometry: centralizes the repeated calc() strings used
  * to position backing, content, glow, and glass layers over the logo.
  */
 const CRT = {
@@ -22,7 +22,7 @@ const CRT = {
  * CRT power-on animation timing.
  * The vertical deflection coils need a moment to reach full amplitude,
  * so the image starts as a bright horizontal line and expands vertically.
- * Less dramatic than power-off — no visible dot phase.
+ * Less dramatic than power-off: no visible dot phase.
  */
 const CRT_EXPAND_VERTICAL_MS = 300;
 
@@ -79,7 +79,7 @@ export default function HeroTerminal() {
   const bootAudioRef = useRef<Howl | null>(null);
   const spinAudioRef = useRef<Howl | null>(null);
   const powerOffAudioRef = useRef<Howl | null>(null);
-  /** Reusable seek sound — avoids creating new Howl instances per seek. */
+  /** Reusable seek sound: avoids creating new Howl instances per seek. */
   const seekAudioRef = useRef<Howl | null>(null);
   /** Tracks all pending setTimeout handles for cleanup on power-off/unmount. */
   const pendingTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -124,7 +124,7 @@ export default function HeroTerminal() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    // Check if phone (< 768px) — tablets and larger keep the power button
+    // Check if phone (< 768px): tablets and larger keep the power button
     const checkPhone = () => setIsPhone(window.innerWidth < 768);
     checkPhone();
     window.addEventListener("resize", checkPhone);
@@ -177,7 +177,7 @@ export default function HeroTerminal() {
         spinAudioRef.current?.play();
       }, SPIN_START_DELAY_MS);
       
-      // Recursive seek scheduling — each invocation picks a fresh random delay.
+      // Recursive seek scheduling: each invocation picks a fresh random delay.
       // All timeouts go through scheduleTimer so clearAllTimers catches them.
       const scheduleNextSeek = () => {
         scheduleTimer(() => {
@@ -234,7 +234,7 @@ export default function HeroTerminal() {
     );
     
     // Complete: kill power immediately (screen is already black),
-    // then zoom back. Order matters — powered must be false before
+    // then zoom back. Order matters: powered must be false before
     // shutdownPhase clears, otherwise the content flashes back briefly.
     scheduleTimer(() => {
       setPowered(false);
@@ -255,7 +255,7 @@ export default function HeroTerminal() {
 
   return (
     <>
-      {/* Dimming overlay — behind the zoomed terminal */}
+      {/* Dimming overlay: behind the zoomed terminal */}
       <div
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-opacity duration-500"
         style={{
@@ -265,7 +265,7 @@ export default function HeroTerminal() {
         onClick={handlePowerOff}
       />
 
-      {/* Terminal container — uses transform for smooth zoom from inline position */}
+      {/* Terminal container: uses transform for smooth zoom from inline position */}
       <div
         ref={containerRef}
         className="relative transition-all duration-500 ease-in-out"
@@ -278,7 +278,7 @@ export default function HeroTerminal() {
             : "translate(0, 0) scale(1)",
         }}
       >
-        {/* Layer 1: Black backing surface — behind the transparent frame center */}
+        {/* Layer 1: Black backing surface: behind the transparent frame center */}
         <div
           className="absolute"
           style={{
@@ -288,7 +288,7 @@ export default function HeroTerminal() {
           }}
         />
 
-        {/* Layer 2: Terminal content — above backing, below glow.
+        {/* Layer 2: Terminal content: above backing, below glow.
             Boot-up: starts as bright horizontal line (scaleY≈0), expands vertically.
             Shutdown: collapses vertically → horizontally → afterglow dot. */}
         <div
@@ -322,7 +322,7 @@ export default function HeroTerminal() {
           <TerminalScreen powered={powered} />
         </div>
 
-        {/* CRT afterglow dot — bright phosphor dot that fades after the image collapses */}
+        {/* CRT afterglow dot: bright phosphor dot that fades after the image collapses */}
         {shutdownPhase === 3 && (
           <div
             className="pointer-events-none absolute"
@@ -347,7 +347,7 @@ export default function HeroTerminal() {
           </div>
         )}
 
-        {/* Layer 3: CRT edge glow + scanline sweep — above content, below frame.
+        {/* Layer 3: CRT edge glow + scanline sweep: above content, below frame.
             Inner glow simulates the edge darkening of a real CRT monitor.
             Only visible when powered on and not shutting down. */}
         <div
@@ -362,7 +362,7 @@ export default function HeroTerminal() {
             transition: `box-shadow ${CRT_COLLAPSE_VERTICAL_MS}ms ease-out`,
           }}
         >
-          {/* Scanline sweep — cathode ray with sharp bottom edge, trailing upward */}
+          {/* Scanline sweep: cathode ray with sharp bottom edge, trailing upward */}
           {powered && (
             <div
               style={{
@@ -402,22 +402,22 @@ export default function HeroTerminal() {
           )}
         </div>
 
-        {/* Layer 4: CRT glass sheen — permanent specular highlight on curved glass */}
+        {/* Layer 4: CRT glass sheen: permanent specular highlight on curved glass */}
         <div
           className="pointer-events-none absolute"
           style={{
             ...CRT.backing,
             background: [
-              /* Diagonal specular highlight — light reflecting off convex glass with theme tint */
+              /* Diagonal specular highlight: light reflecting off convex glass with theme tint */
               "linear-gradient(135deg, rgba(var(--accent-glow), 0.15) 0%, rgba(var(--accent-glow), 0.05) 35%, transparent 60%)",
-              /* Soft edge vignette — darkens toward edges like curved glass */
+              /* Soft edge vignette: darkens toward edges like curved glass */
               "radial-gradient(ellipse 80% 80% at 48% 45%, rgba(var(--accent-glow), 0.03) 0%, rgba(60,60,70,0.4) 100%)",
             ].join(", "),
             zIndex: 4,
           }}
         />
 
-        {/* CRT Monitor frame — on top of everything, transparent center reveals content */}
+        {/* CRT Monitor frame: on top of everything, transparent center reveals content */}
         <Image
           src="/tuikit-logo.png"
           alt="TUIkit Logo"
@@ -428,7 +428,7 @@ export default function HeroTerminal() {
           priority
         />
 
-        {/* Red power button — positioned over the physical button in the logo.
+        {/* Red power button: positioned over the physical button in the logo.
             Disabled on phones (< 768px) to prevent the zoomed view on small screens. */}
         {mounted && !isPhone && (
           <button

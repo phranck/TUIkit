@@ -30,7 +30,7 @@ TUIkit is a well-architected declarative Swift framework for building terminal U
 
 ## A. Redundancies
 
-### A.1 `applyBackground()` — Identical in 4 Files (High)
+### A.1 `applyBackground()`: Identical in 4 Files (High)
 
 The exact same method exists in 4 files:
 
@@ -54,7 +54,7 @@ private func applyBackground(_ string: String, background: Color) -> String {
 
 ---
 
-### A.2 `colorize` / `colorizeBorder` — 8+ Implementations (High)
+### A.2 `colorize` / `colorizeBorder`: 8+ Implementations (High)
 
 Almost every View and Modifier has its own colorize variant:
 
@@ -70,13 +70,13 @@ Almost every View and Modifier has its own colorize variant:
 | `StatusBar.swift` | `colorizeBorder(_:color:)` |
 | `StatusBar.swift` | `colorizeBorderWithForeground(_:foreground:)` |
 
-Additionally, `StatusBar.swift`'s `colorizeBorder` and `colorizeBorderWithForeground` have **identical bodies** — only the names differ.
+Additionally, `StatusBar.swift`'s `colorizeBorder` and `colorizeBorderWithForeground` have **identical bodies**: only the names differ.
 
 **Recommendation:** Create a single `ANSIRenderer.colorize(string:foreground:background:bold:)` method.
 
 ---
 
-### A.3 Block-Style Border Rendering — 4x Nearly Identical (High)
+### A.3 Block-Style Border Rendering: 4x Nearly Identical (High)
 
 The block-style rendering pattern (`▄`/`█`/`▀` characters for top/body/bottom) is duplicated in:
 
@@ -94,7 +94,7 @@ All follow the identical pattern:
 
 ---
 
-### A.4 Standard Border Rendering — 3x Nearly Identical (High)
+### A.4 Standard Border Rendering: 3x Nearly Identical (High)
 
 `buildBorderLine` + content loop + top/bottom border in:
 
@@ -102,11 +102,11 @@ All follow the identical pattern:
 - `BorderModifier.swift` (`renderStandardStyle`)
 - `Menu.swift` (standard branch of `applyBorder`)
 
-**Recommendation:** Same as above — consolidate into a `BorderRenderer` utility.
+**Recommendation:** Same as above: consolidate into a `BorderRenderer` utility.
 
 ---
 
-### A.5 `let reset = "\u{1B}[0m"` — Hardcoded 8+ Times (Medium)
+### A.5 `let reset = "\u{1B}[0m"`: Hardcoded 8+ Times (Medium)
 
 Instead of using `ANSIRenderer.reset`, the raw ANSI escape string is hardcoded in at least 8 locations:
 
@@ -119,7 +119,7 @@ Instead of using `ANSIRenderer.reset`, the raw ANSI escape string is hardcoded i
 
 ---
 
-### A.6 ThemeManager / AppearanceManager — Near-Identical Classes (High)
+### A.6 ThemeManager / AppearanceManager: Near-Identical Classes (High)
 
 `ThemeManager` (Theme.swift) and `AppearanceManager` (Appearance.swift) share almost identical logic:
 
@@ -132,7 +132,7 @@ Instead of using `ANSIRenderer.reset`, the raw ANSI escape string is hardcoded i
 
 ---
 
-### A.7 Theme Structs — 5x Identical Structure (Medium)
+### A.7 Theme Structs: 5x Identical Structure (Medium)
 
 `GreenPhosphorTheme`, `AmberPhosphorTheme`, `WhitePhosphorTheme`, `RedPhosphorTheme`, and `NCursesTheme` all have the exact same structure with only different color values.
 
@@ -148,13 +148,13 @@ public struct ColorTheme: Theme {
 }
 ```
 
-`ThemeColors` (Theme.swift ~201-275) is also pure mechanical 1:1 forwarding of all Theme protocol properties — ~75 lines of boilerplate that must be manually updated when the protocol changes.
+`ThemeColors` (Theme.swift ~201-275) is also pure mechanical 1:1 forwarding of all Theme protocol properties: ~75 lines of boilerplate that must be manually updated when the protocol changes.
 
 **Recommendation:** Replace 5 structs with one configurable `ColorTheme` struct.
 
 ---
 
-### A.8 TupleView / ViewBuilder Boilerplate — ~500 Lines (Medium)
+### A.8 TupleView / ViewBuilder Boilerplate: ~500 Lines (Medium)
 
 `TupleViews.swift` has 10 nearly identical structs (`TupleView2`..`TupleView10`), and `ViewBuilder.swift` has 10 nearly identical `buildBlock` overloads. `ViewRenderer.swift` has 9 copies of `Renderable` + `ChildInfoProvider` extensions.
 
@@ -168,13 +168,13 @@ struct TupleView<each V: View>: View { ... }
 
 ---
 
-### A.9 Alert Preset Methods — 100% Redundant (Medium)
+### A.9 Alert Preset Methods: 100% Redundant (Medium)
 
 The `warning`, `error`, `info`, `success` presets are defined **twice** each (with and without actions), totaling 8 methods with nearly identical bodies (Alert.swift ~168-296). The version without actions could simply call the version with actions using `EmptyView`.
 
 ---
 
-### A.10 Render-to-ContainerView Delegation — Repeated Pattern (Low)
+### A.10 Render-to-ContainerView Delegation: Repeated Pattern (Low)
 
 Alert, Dialog, Panel, and Card all have the same if/else pattern in `renderToBuffer`:
 
@@ -200,7 +200,7 @@ if let footerView = footer {
 
 ---
 
-### A.12 `render()` Environment Setup — Duplicated in AppRunner (Medium)
+### A.12 `render()` Environment Setup: Duplicated in AppRunner (Medium)
 
 `AppRunner.render()` (App.swift ~493-499) builds an environment object with 7 properties. The **identical code** exists in `renderStatusBar()` (~548-554).
 
@@ -208,13 +208,13 @@ if let footerView = footer {
 
 ---
 
-### A.13 `Color.lighter(by:)` / `darker(by:)` — Near Identical (Low)
+### A.13 `Color.lighter(by:)` / `darker(by:)`: Near Identical (Low)
 
 Both methods in `Color.swift` (~216-242) have the same structure, differing only in addition vs. subtraction. Could be a shared `adjusted(by:)` method.
 
 ---
 
-### A.14 `focusNext()` / `focusPrevious()` — Near Identical (Low)
+### A.14 `focusNext()` / `focusPrevious()`: Near Identical (Low)
 
 `Focus.swift` (~150-183): Both methods have almost identical structure. Could be refactored to `moveFocus(direction:)`.
 
@@ -267,13 +267,13 @@ Alert, Dialog, Card, and Panel could all use `ContainerConfig` instead of declar
 
 ---
 
-### B.4 Split `AppRunner` — God Class (Medium)
+### B.4 Split `AppRunner`: God Class (Medium)
 
 `AppRunner` (App.swift) has too many responsibilities: setup, rendering, event handling, cleanup, signal handling, status bar rendering, scene rendering. Should be split into:
 
-- `InputHandler` — keyboard/signal event processing
-- `RenderLoop` — frame rendering pipeline
-- `SignalManager` — signal handler registration and cleanup
+- `InputHandler`: keyboard/signal event processing
+- `RenderLoop`: frame rendering pipeline
+- `SignalManager`: signal handler registration and cleanup
 
 ---
 
@@ -287,7 +287,7 @@ Alert, Dialog, Card, and Panel could all use `ContainerConfig` instead of declar
 
 ## C. Dead / Unused Code
 
-### C.1 `BorderModifier` (Legacy) — `BorderModifier.swift:201-270` (High)
+### C.1 `BorderModifier` (Legacy): `BorderModifier.swift:201-270` (High)
 
 Explicitly marked as `// MARK: - Legacy ViewModifier (kept for compatibility)`. The new implementation is `BorderedView`. This legacy code duplicates the entire rendering logic of `BorderedView` but does **not** handle block-style rendering.
 
@@ -295,7 +295,7 @@ Explicitly marked as `// MARK: - Legacy ViewModifier (kept for compatibility)`. 
 
 ---
 
-### C.2 `FrameModifier` (Legacy) — `FrameModifier.swift:174-247` (Medium)
+### C.2 `FrameModifier` (Legacy): `FrameModifier.swift:174-247` (Medium)
 
 Marked as "Fixed Frame Modifier (Legacy)". `FlexibleFrameView` is the active implementation. `FrameModifier` is still used by `View.frame(width:height:alignment:)`, but `FlexibleFrameView` can handle the same cases.
 
@@ -303,7 +303,7 @@ Marked as "Fixed Frame Modifier (Legacy)". `FlexibleFrameView` is the active imp
 
 ---
 
-### C.3 Panel `body` Property — Dead Code (Medium)
+### C.3 Panel `body` Property: Dead Code (Medium)
 
 `Panel.swift` implements both `body` (returns `ContainerView`) and `Renderable.renderToBuffer`. Since `Renderable` takes precedence, `body` is **never called**. The `body` also contains a force-unwrap (`footer!`) that would crash if ever executed.
 
@@ -311,7 +311,7 @@ Marked as "Fixed Frame Modifier (Legacy)". `FlexibleFrameView` is the active imp
 
 ---
 
-### C.4 Common Preference Keys — Likely Unused (Low)
+### C.4 Common Preference Keys: Likely Unused (Low)
 
 `Preferences.swift` defines `NavigationTitleKey`, `TabBadgeKey`, and `AnchorPreferenceKey` as "Common Preference Keys", but no internal Views use them. These appear to be forward-looking definitions with no current consumers.
 
@@ -319,7 +319,7 @@ Marked as "Fixed Frame Modifier (Legacy)". `FlexibleFrameView` is the active imp
 
 ---
 
-### C.5 TODO Placeholder — `TUIkit.swift` (Low)
+### C.5 TODO Placeholder: `TUIkit.swift` (Low)
 
 ```swift
 return 0 // TODO: Return actual line count
@@ -357,7 +357,7 @@ Both branches are **identical**.
 
 ---
 
-### C.8 `_ = self // Silence warning` — Anti-Pattern (Low)
+### C.8 `_ = self // Silence warning`: Anti-Pattern (Low)
 
 `App.swift` (~453): This capture-silencing pattern should be resolved properly (e.g., remove `[weak self]` if not needed, or use `self` meaningfully).
 
@@ -384,7 +384,7 @@ No entirely unused files were identified. All `.swift` files contribute to eithe
 | `KeyPressModifier.swift` | `content`, `keys`, `handler` properties | Low |
 | `OverlayModifier.swift` | `base`, `overlay`, `alignment` properties | Low |
 | `StatusBarItemsModifier.swift` | `content`, `items`, `context` properties | Low |
-| `ViewModifier.swift` | `ModifiedView.content` and `ModifiedView.modifier` — public but minimal docs | Medium |
+| `ViewModifier.swift` | `ModifiedView.content` and `ModifiedView.modifier`: public but minimal docs | Medium |
 
 ### E.2 Complex Logic Without Inline Comments
 
@@ -421,7 +421,7 @@ The example app has significant gaps in demonstrating framework capabilities:
 
 ## F. Constant Namespacing
 
-### F.1 ANSI Escape Codes in `KeyEvent.swift` — 60+ Magic Hex Values (High)
+### F.1 ANSI Escape Codes in `KeyEvent.swift`: 60+ Magic Hex Values (High)
 
 The entire key event parsing system uses raw hex values:
 
@@ -504,11 +504,11 @@ enum BlockCharacters {
 
 | File | Code | Meaning |
 |------|------|---------|
-| `ContainerView.swift` | `$0.count + 4` | Title padding width — unclear why 4 |
+| `ContainerView.swift` | `$0.count + 4` | Title padding width: unclear why 4 |
 | `Menu.swift` | `+ 2` | Content padding |
 | `Button.swift` | `horizontalPadding: 2` | Default button padding |
 | `Alert.swift` | `EdgeInsets(horizontal: 2, vertical: 1)` | Standard alert padding |
-| `Dialog.swift` | `EdgeInsets(horizontal: 2, vertical: 1)` | Same as alert — should be shared constant |
+| `Dialog.swift` | `EdgeInsets(horizontal: 2, vertical: 1)` | Same as alert: should be shared constant |
 | `StatusBar.swift` | `- 2` | Border width subtraction |
 | `BorderModifier.swift` | `- 2` | Border width subtraction |
 
@@ -527,13 +527,13 @@ enum LayoutConstants {
 
 ### F.5 `DemoPage` Explicit Raw Values (Low)
 
-`AppState.swift` (~13-21): `case menu = 0, textStyles = 1, ...` — Int-based enums number automatically. The explicit values are redundant.
+`AppState.swift` (~13-21): `case menu = 0, textStyles = 1, ...`: Int-based enums number automatically. The explicit values are redundant.
 
 ---
 
 ## G. Short Variable / Constant / Parameter Names
 
-### G.1 Core Framework — Color.swift HSL Conversion
+### G.1 Core Framework: Color.swift HSL Conversion
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
@@ -547,7 +547,7 @@ enum LayoutConstants {
 | `Color.swift` | `hueToRGB` function | `t` (param) | `hueComponent` |
 | `Color.swift` | `hueToRGB` function | `t` (shadow var) | `adjustedHue` |
 
-### G.2 Core Framework — TupleViews.swift
+### G.2 Core Framework: TupleViews.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
@@ -556,16 +556,16 @@ enum LayoutConstants {
 
 *Note: SwiftUI itself uses short generic names for TupleViews. This is an accepted Swift convention for result builders. Pragmatically acceptable.*
 
-### G.3 Core Framework — ViewBuilder.swift
+### G.3 Core Framework: ViewBuilder.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `ViewBuilder.swift` | All `buildBlock` methods | `C0`..`C9` (generics) | `View0`..`View9` |
 | `ViewBuilder.swift` | All `buildBlock` methods | `c0`..`c9` (params) | `view0`..`view9` |
 
-*Same note as TupleViews — standard Swift convention for result builders.*
+*Same note as TupleViews: standard Swift convention for result builders.*
 
-### G.4 Modifiers — FrameModifier.swift
+### G.4 Modifiers: FrameModifier.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
@@ -574,39 +574,39 @@ enum LayoutConstants {
 | `FrameModifier.swift` | Local bindings | `minW` | `minimumWidth` |
 | `FrameModifier.swift` | Local bindings | `minH` | `minimumHeight` |
 
-### G.5 Modifiers — OverlayModifier.swift
+### G.5 Modifiers: OverlayModifier.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `OverlayModifier.swift` | Overlay positioning | `xOffset` | `horizontalOffset` |
 | `OverlayModifier.swift` | Overlay positioning | `yOffset` | `verticalOffset` |
 
-### G.6 Modifiers — BackgroundModifier.swift
+### G.6 Modifiers: BackgroundModifier.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `BackgroundModifier.swift` | Switch cases | `ansi` | `ansiColor` |
 | `BackgroundModifier.swift` | Switch case | `index` (in `.palette256`) | `paletteIndex` |
 
-### G.7 Rendering — Terminal.swift
+### G.7 Rendering: Terminal.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `Terminal.swift` | readByte method | `char` | `readByte` |
 
-### G.8 Example App — HeaderView.swift
+### G.8 Example App: HeaderView.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `HeaderView.swift` | `if let sub = subtitle` | `sub` | `subtitleText` |
 
-### G.9 Views — Menu.swift
+### G.9 Views: Menu.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
 | `Menu.swift` | Key event handling | `char` | `characterValue` |
 
-### G.10 Core Framework — Focus.swift
+### G.10 Core Framework: Focus.swift
 
 | File | Context | Name | Suggested Name |
 |------|---------|------|----------------|
@@ -618,7 +618,7 @@ enum LayoutConstants {
 
 ## H. Code Quality & Architecture
 
-### H.1 Singleton Overuse — 8+ `shared` Instances (Critical)
+### H.1 Singleton Overuse: 8+ `shared` Instances (Critical)
 
 The framework relies on at least 8 singletons:
 
@@ -639,9 +639,9 @@ The framework relies on at least 8 singletons:
 
 ---
 
-### H.2 Dual Rendering System (`body` vs. `Renderable`) — Inconsistent (Medium)
+### H.2 Dual Rendering System (`body` vs. `Renderable`): Inconsistent (Medium)
 
-Some Views implement `body` (Box, Spacer), some implement `Renderable` (Alert, Dialog, Button), and some implement **both** (Panel — where `body` is dead code). The relationship between these two systems is not documented.
+Some Views implement `body` (Box, Spacer), some implement `Renderable` (Alert, Dialog, Button), and some implement **both** (Panel: where `body` is dead code). The relationship between these two systems is not documented.
 
 **Recommendation:** Document the contract clearly. If a View implements `Renderable`, `body` should either not exist or be explicitly marked as unreachable.
 
@@ -765,7 +765,7 @@ The same bug exists in `AppearanceManager.setAppearance()`.
 
 ---
 
-### I.5 `needsRerender` Global Variable — Data Race (Medium)
+### I.5 `needsRerender` Global Variable: Data Race (Medium)
 
 `App.swift` (~409): `nonisolated(unsafe) var needsRerender` is a global mutable Bool written by a signal handler and read by the main loop. This is technically a data race (even if practically harmless for Bool). Should use `Atomic<Bool>` or `os_unfair_lock`.
 
@@ -785,7 +785,7 @@ The same bug exists in `AppearanceManager.setAppearance()`.
 
 ---
 
-### I.8 `deinit` on Singleton — Never Called (Low)
+### I.8 `deinit` on Singleton: Never Called (Low)
 
 `Terminal.swift`: The `deinit` disables raw mode, but since `Terminal` is a singleton, `deinit` is never called. Cleanup relies entirely on `cleanup()` being called by `AppRunner`. The `deinit` gives a false sense of safety.
 
@@ -853,29 +853,29 @@ The same bug exists in `AppearanceManager.setAppearance()`.
 
 ### Strengths
 
-1. **Clean API Design** — The SwiftUI-inspired declarative API is well-designed, consistent, and idiomatic Swift.
-2. **Zero Dependencies** — Pure Swift with no C library dependencies is a strong selling point.
-3. **Good Documentation Foundation** — DocC catalog with articles, hosted on GitHub Pages with custom domain.
-4. **Comprehensive Theme System** — 5 built-in themes with proper protocol-based extensibility.
-5. **Solid Focus Management** — FocusManager with keyboard navigation, wrapping, and disabled element support.
-6. **Well-Tested Focus & StatusBar** — These two areas have thorough test coverage.
-7. **Proper Environment System** — `@Environment`, `@State`, `@AppStorage` following SwiftUI patterns.
+1. **Clean API Design**: The SwiftUI-inspired declarative API is well-designed, consistent, and idiomatic Swift.
+2. **Zero Dependencies**: Pure Swift with no C library dependencies is a strong selling point.
+3. **Good Documentation Foundation**: DocC catalog with articles, hosted on GitHub Pages with custom domain.
+4. **Comprehensive Theme System**: 5 built-in themes with proper protocol-based extensibility.
+5. **Solid Focus Management**: FocusManager with keyboard navigation, wrapping, and disabled element support.
+6. **Well-Tested Focus & StatusBar**: These two areas have thorough test coverage.
+7. **Proper Environment System**: `@Environment`, `@State`, `@AppStorage` following SwiftUI patterns.
 
 ### Weaknesses
 
-1. **Massive Code Duplication** — Border rendering, colorization, and background application are copied across 4-8 files. This is the single biggest maintenance burden.
-2. **Singleton Addiction** — 8+ global shared instances make the framework nearly untestable and fragile for concurrent use.
-3. **Thread-Safety Gaps** — Multiple `@unchecked Sendable` types with no synchronization under Swift 6 strict concurrency.
-4. **Test Coverage Holes** — Views, Modifiers, and the rendering pipeline are largely untested. Most tests are smoke tests.
-5. **Legacy Code Retained** — `BorderModifier` and `FrameModifier` legacy implementations add confusion without adding value.
-6. **Signal Handler Safety** — The SIGINT handler is not async-signal-safe and could crash in edge cases.
+1. **Massive Code Duplication**: Border rendering, colorization, and background application are copied across 4-8 files. This is the single biggest maintenance burden.
+2. **Singleton Addiction**: 8+ global shared instances make the framework nearly untestable and fragile for concurrent use.
+3. **Thread-Safety Gaps**: Multiple `@unchecked Sendable` types with no synchronization under Swift 6 strict concurrency.
+4. **Test Coverage Holes**: Views, Modifiers, and the rendering pipeline are largely untested. Most tests are smoke tests.
+5. **Legacy Code Retained**: `BorderModifier` and `FrameModifier` legacy implementations add confusion without adding value.
+6. **Signal Handler Safety**: The SIGINT handler is not async-signal-safe and could crash in edge cases.
 
 ### Priority Recommendations
 
-1. **Extract `BorderRenderer` + `ANSIRenderer.colorize()`** — Eliminates ~60% of all duplication.
-2. **Fix `@unchecked Sendable` types** — Add locks or convert to actors.
-3. **Fix ThemeManager/AppearanceManager state bug** — Actual functional bug.
-4. **Remove legacy `BorderModifier` and `FrameModifier`** — Reduce confusion.
-5. **Add constants namespacing for hex values and ANSI codes** — Improve readability.
-6. **Expand test coverage** — Especially for Views and Modifiers at the rendering level.
-7. **Plan singleton migration** — Introduce `TUIContext` for dependency injection (longer-term).
+1. **Extract `BorderRenderer` + `ANSIRenderer.colorize()`**: Eliminates ~60% of all duplication.
+2. **Fix `@unchecked Sendable` types**: Add locks or convert to actors.
+3. **Fix ThemeManager/AppearanceManager state bug**: Actual functional bug.
+4. **Remove legacy `BorderModifier` and `FrameModifier`**: Reduce confusion.
+5. **Add constants namespacing for hex values and ANSI codes**: Improve readability.
+6. **Expand test coverage**: Especially for Views and Modifiers at the rendering level.
+7. **Plan singleton migration**: Introduce `TUIContext` for dependency injection (longer-term).

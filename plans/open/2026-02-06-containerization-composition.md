@@ -2,7 +2,7 @@
 
 ## Preface
 
-Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions — true to SwiftUI/TUIKit's design philosophy.
+Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions. Utrue to SwiftUI/TUIKit's design philosophy.
 
 ## Context / Problem
 
@@ -129,8 +129,8 @@ This would be shared between List and Table!
 
 ## Implementation Plan
 
-1. **Document composition pattern** — establish guidelines
-2. **Review current container components** — verify consistency
+1. **Document composition pattern**. Uestablish guidelines
+2. **Review current container components**. Uverify consistency
 3. **Create/refactor renderListWithFocus() helper** for List and Table
 4. **Extract shared state management** into `FocusableItemListHandler`
 5. **Verify all components use composition** via renderContainer()
@@ -149,10 +149,10 @@ This would be shared between List and Table!
 
 **DO NOT inherit from ContainerView.** Instead:
 
-1. **Create `renderListWithFocus()` helper** — similar to `renderContainer()`
+1. **Create `renderListWithFocus()` helper**. Usimilar to `renderContainer()`
 2. **Extract common focus logic** into `FocusableItemListHandler`
 3. **Extract common container logic** into configuration structs
-4. **Both List and Table use the helper** — maximum code reuse
+4. **Both List and Table use the helper**. Umaximum code reuse
 
 This follows SwiftUI/TUIKit patterns:
 - Composition over inheritance

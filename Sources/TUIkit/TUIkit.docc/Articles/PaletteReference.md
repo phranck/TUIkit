@@ -4,7 +4,7 @@ A visual reference for all built-in color palettes with their exact color values
 
 ## Overview
 
-TUIkit ships with **6 palettes** — all generated from hand-tuned HSL parameters via ``SystemPalette``. Each palette defines semantic color tokens that the framework resolves at render time.
+TUIkit ships with **6 palettes**: all generated from hand-tuned HSL parameters via ``SystemPalette``. Each palette defines semantic color tokens that the framework resolves at render time.
 
 Users access palette colors via `Color.palette.*`:
 
@@ -24,7 +24,7 @@ environment.paletteManager.setCurrent(SystemPalette(.amber))
 
 TUIkit uses a single palette protocol:
 
-- **``Palette``** — 13 essential color tokens (8 required, 5 with defaults)
+- **``Palette``**: 13 essential color tokens (8 required, 5 with defaults)
 
 ```
 Palette (13 properties)
@@ -46,7 +46,7 @@ All 6 built-in palettes are instances of ``SystemPalette``, which conforms to ``
 | **Semantic** | `success`, `warning`, `error`, `info` | Status indicators |
 | **UI Elements** | `border` | Borders |
 
-Only 8 tokens are required — the remaining have sensible defaults. See <doc:ThemingGuide> for details on creating custom palettes.
+Only 8 tokens are required: the remaining have sensible defaults. See <doc:ThemingGuide> for details on creating custom palettes.
 
 ## Green (Default)
 
@@ -165,10 +165,10 @@ An algorithmically generated palette based on HSL color theory with a base hue o
 
 The violet preset takes a base hue (270°) and derives all color tokens using HSL relationships:
 
-- **Background** — Base hue at very low lightness (3%) with reduced saturation
-- **Foregrounds** — Base hue at medium-high lightness (40–70%)
-- **Accent** — Base hue at high lightness (78%) with high saturation
-- **Semantic colors** — Derived from color theory offsets:
+- **Background**: Base hue at very low lightness (3%) with reduced saturation
+- **Foregrounds**: Base hue at medium-high lightness (40–70%)
+- **Accent**: Base hue at high lightness (78%) with high saturation
+- **Semantic colors**: Derived from color theory offsets:
   - `success` = base + 120° (triadic)
   - `warning` = base + 60° (analogous warm)
   - `error` = base + 180° (complementary)
@@ -232,12 +232,12 @@ When pressing `t` to cycle themes, palettes rotate in this order:
 
 When you write `.foregroundColor(.palette.accent)`, TUIkit resolves the actual color at render time:
 
-1. **Declaration** — `Color.palette.accent` creates a `Color` with a semantic token (`.accent`)
-2. **Render pass** — The current palette is read from `context.environment.palette`
-3. **Resolution** — The semantic token maps to the palette's `accent` property
-4. **ANSI output** — The resolved RGB color is converted to terminal escape codes
+1. **Declaration**: `Color.palette.accent` creates a `Color` with a semantic token (`.accent`)
+2. **Render pass**: The current palette is read from `context.environment.palette`
+3. **Resolution**: The semantic token maps to the palette's `accent` property
+4. **ANSI output**: The resolved RGB color is converted to terminal escape codes
 
-This means the same view code produces different colors depending on the active palette — no code changes needed when switching themes.
+This means the same view code produces different colors depending on the active palette: no code changes needed when switching themes.
 
 ## Topics
 

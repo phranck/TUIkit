@@ -6,7 +6,7 @@ Subtree memoization is activated: environment snapshot comparison in `RenderLoop
 
 ## Completed
 
-**2026-02-05** — All 6 phases implemented. PR #74 with environment snapshot comparison, core type Equatable conformances, and debug statistics.
+**2026-02-05**: All 6 phases implemented. PR #74 with environment snapshot comparison, core type Equatable conformances, and debug statistics.
 
 ## Checklist
 
@@ -29,7 +29,7 @@ Subtree memoization is activated: environment snapshot comparison in `RenderLoop
 
 ## Goal
 
-Make the existing subtree memoization (Phase 5, PR #71) actually effective. Currently `EquatableView` + `RenderCache` are fully implemented but **unused in production**: zero views call `.equatable()`, and only 3 trivial views (`Spacer`, `Divider`, `EmptyView`) conform to `Equatable`. Additionally, environment changes bypass cache invalidation — a latent bug that becomes real the moment `.equatable()` is used.
+Make the existing subtree memoization (Phase 5, PR #71) actually effective. Currently `EquatableView` + `RenderCache` are fully implemented but **unused in production**: zero views call `.equatable()`, and only 3 trivial views (`Spacer`, `Divider`, `EmptyView`) conform to `Equatable`. Additionally, environment changes bypass cache invalidation. This is a latent bug that becomes real the moment `.equatable()` is used.
 
 This plan closes the gaps:
 1. Fix the environment/cache invalidation bug
@@ -48,7 +48,7 @@ This plan closes the gaps:
 - `HorizontalAlignment`, `VerticalAlignment` (simple enums, implicit)
 - `Spacer`, `Divider`, `EmptyView`
 
-### Need `Equatable` Conformance (trivial — add declaration, auto-synthesis works)
+### Need `Equatable` Conformance (trivial, add declaration, auto-synthesis works)
 - `TextStyle` (9 properties: `Color?` × 2, `Bool` × 7)
 - `Alignment` (2 properties: `HorizontalAlignment`, `VerticalAlignment`)
 - `ContainerConfig` (5 properties: `BorderStyle?`, `Color?` × 2, `EdgeInsets`, `Bool`)
@@ -57,12 +57,12 @@ This plan closes the gaps:
 - `StateBox.value.didSet` → `renderCache.clearAll()` ✅
 - `ThemeManager.applyCurrentItem()` → `appState.setNeedsRender()` only ❌
 - `StatusBarState` (6 call sites) → `appState.setNeedsRender()` only ❌
-- `PulseTimer` / `Spinner` → `setNeedsRender()` only — **correct**, these don't change view content
-- **Fix**: Environment snapshot comparison in `RenderLoop` — see Phase 1
+- `PulseTimer` / `Spinner` → `setNeedsRender()` only. This is **correct**, as these don't change view content.
+- **Fix**: Environment snapshot comparison in `RenderLoop`. See Phase 1.
 
 ### Where Cache Helps Most
 - **Spinner frames** (~25 FPS): `setNeedsRender()` without `@State` change → cache stays valid between state changes. Static views next to spinners benefit fully.
-- **Pulse animation**: Same pattern — `PulseTimer` triggers renders, cache survives.
+- **Pulse animation**: Same pattern. `PulseTimer` triggers renders, cache survives.
 - **After any state change**: One full render repopulates cache, subsequent frames reuse it until next state change.
 
 ### Closure Problem
@@ -73,29 +73,29 @@ This plan closes the gaps:
 
 ### Phase 1: Fix Cache Invalidation Bug (High Priority)
 
-**Principle: The SDK handles invalidation — developers never think about it.**
+**Principle: The SDK handles invalidation. Developers never think about it.**
 
 #### The Problem
 
-Environment changes (theme, palette, appearance) bypass `renderCache.clearAll()`. Only `StateBox.value.didSet` clears the cache. `ThemeManager`, `StatusBarState`, and other framework services call `appState.setNeedsRender()` directly — the cache serves stale content.
+Environment changes (theme, palette, appearance) bypass `renderCache.clearAll()`. Only `StateBox.value.didSet` clears the cache. `ThemeManager`, `StatusBarState`, and other framework services call `appState.setNeedsRender()` directly, causing the cache to serve stale content.
 
 #### Rejected Approaches
 
-- **Option A**: `clearAll()` in `AppState.setNeedsRender()` — kills cache during Spinner/Pulse frames (~25 FPS of wasted memoization)
-- **Option B**: `clearAll()` in specific callers (`ThemeManager`, etc.) — fragile, easy to forget for future callers
+- **Option A**: `clearAll()` in `AppState.setNeedsRender()`. This kills cache during Spinner/Pulse frames (~25 FPS of wasted memoization).
+- **Option B**: `clearAll()` in specific callers (`ThemeManager`, etc.). This is fragile and easy to forget for future callers.
 - **Generation counter on `EnvironmentValues`**: `buildEnvironment()` creates a fresh instance every frame and sets the same N keys → mutation count is identical regardless of whether values changed. Values are `Any` → can't compare.
 
 #### Chosen Approach: Environment Snapshot Comparison in RenderLoop
 
 `RenderLoop` tracks the identity of environment values that affect visual output. After `buildEnvironment()`, it compares the current snapshot with the previous frame. If different → `clearAll()`.
 
-The snapshot tracks **only values that affect rendered output**: palette name and appearance name. Reference-type services (`FocusManager`, `ThemeManager`) don't affect cached content — they're infrastructure.
+The snapshot tracks **only values that affect rendered output**: palette name and appearance name. Reference-type services (`FocusManager`, `ThemeManager`) don't affect cached content because they're infrastructure.
 
 This is:
-- **Automatic** — developer never thinks about it
-- **Spinner/Pulse safe** — environment doesn't change between their frames → no clear
-- **Correct** — any theme/appearance change triggers clear
-- **Cheap** — two string comparisons per frame
+- **Automatic**: developer never thinks about it
+- **Spinner/Pulse safe**: environment doesn't change between their frames → no clear
+- **Correct**: any theme/appearance change triggers clear
+- **Cheap**: two string comparisons per frame
 
 #### Implementation
 
@@ -115,14 +115,14 @@ This is:
 
 #### 2a. Types (prerequisites for views)
 
-- [x] `TextStyle: Equatable` — auto-synthesis
-- [x] `Alignment: Equatable` — auto-synthesis
-- [x] `ContainerConfig: Equatable` — auto-synthesis
-- [x] `ContainerStyle: Equatable` — auto-synthesis (added during implementation)
+- [x] `TextStyle: Equatable` with auto-synthesis
+- [x] `Alignment: Equatable` with auto-synthesis
+- [x] `ContainerConfig: Equatable` with auto-synthesis
+- [x] `ContainerStyle: Equatable` with auto-synthesis (added during implementation)
 
 #### 2b. Leaf Views
 
-- [x] `Text: Equatable` — stored properties: `content: String`, `style: TextStyle`
+- [x] `Text: Equatable` with stored properties: `content: String`, `style: TextStyle`
 - [x] Test: existing EquatableView tests cover Text equality
 
 #### 2c. Container Views (conditional conformance)
@@ -143,10 +143,10 @@ This is:
 - [x] `FlexibleFrameView: Equatable where Content: Equatable`
 - [x] `OverlayModifier: Equatable where Base: Equatable, Overlay: Equatable`
 - [x] `DimmedModifier: Equatable where Content: Equatable`
-- Skipped: `EnvironmentModifier` — `WritableKeyPath` is not `Equatable`
-- Skipped: `PaddingModifier`, `BackgroundModifier` — these are `ViewModifier` (buffer transform), not `View`, so not relevant for `EquatableView` comparison
+- Skipped: `EnvironmentModifier` because `WritableKeyPath` is not `Equatable`
+- Skipped: `PaddingModifier`, `BackgroundModifier` because these are `ViewModifier` (buffer transform), not `View`, so not relevant for `EquatableView` comparison
 
-Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `TaskModifier`, etc.) **cannot** be made `Equatable` — this is expected and matches SwiftUI behavior.
+Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `TaskModifier`, etc.) **cannot** be made `Equatable`. This is expected and matches SwiftUI behavior.
 
 ### Phase 3: Debug Tooling (Medium Priority)
 
@@ -154,19 +154,19 @@ Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `Tas
 - [x] Increment counters in `lookup` (hit/miss), `clearAll` (clears), `store`
 - [x] `private(set) var stats` + `statsAtFrameStart` for per-frame deltas
 - [x] `TUIKIT_DEBUG_RENDER=1` env var: per-identity HIT/MISS/STORE logs + FRAME summary
-- [x] `logDebug(@autoclosure)` — zero cost when disabled, stderr output
+- [x] `logDebug(@autoclosure)` with zero cost when disabled, stderr output
 - [x] 11 new tests for stats counting, delta, reset
-- Deferred: `View._printChanges()` equivalent — future work
+- Deferred: `View._printChanges()` equivalent for future work
 
-### Phase 4: Example App — View Decomposition (Medium Priority)
+### Phase 4: Example App View Decomposition (Medium Priority)
 
-- [x] `ContainerTypesRow` — Card/Box/Panel comparison row (from ContainersPage)
-- [x] `SettingsAndAlignmentRow` — settings panel + alignment demos (from ContainersPage)
-- [x] `FeatureBox` — extracted from MainMenuPage's private `featureBox()` method
-- Skipped: ButtonsPage — nearly all sections depend on `@State clickCount` via Button closures, decomposition ineffective for memoization
-- Skipped: CollapsibleSection — depends on `@State showDetails`, must stay in parent
+- [x] `ContainerTypesRow` for Card/Box/Panel comparison row (from ContainersPage)
+- [x] `SettingsAndAlignmentRow` for settings panel + alignment demos (from ContainersPage)
+- [x] `FeatureBox` extracted from MainMenuPage's private `featureBox()` method
+- Skipped: ButtonsPage because nearly all sections depend on `@State clickCount` via Button closures, making decomposition ineffective for memoization
+- Skipped: CollapsibleSection because it depends on `@State showDetails` and must stay in parent
 
-### Phase 5: Example App — Apply `.equatable()` (Medium Priority)
+### Phase 5: Example App Apply `.equatable()` (Medium Priority)
 
 - [x] `FeatureBox: View, Equatable` + `.equatable()` on 3 instances in MainMenuPage
 - [x] `ContainerTypesRow: View, Equatable` + `.equatable()` in ContainersPage
@@ -174,7 +174,7 @@ Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `Tas
 
 ### Phase 6: Documentation (Low Priority)
 
-- [x] Update `RenderCycle.md` — new "Subtree Memoization" section with how-it-works, invalidation, decision guide, type list, debug logging
+- [x] Update `RenderCycle.md` with new "Subtree Memoization" section covering how-it-works, invalidation, decision guide, type list, debug logging
 - [x] Add `EquatableView` to Renderable lists in existing sections
 - [x] Correct "no subtree memoization" claim
 - [x] Code example using real `FeatureBox` from example app
@@ -202,13 +202,13 @@ Note: Modifier views with closures (`KeyPressModifier`, `OnAppearModifier`, `Tas
 
 | Risk | Mitigation |
 |---|---|
-| Auto-synthesized `Equatable` on generic views may not compile if `Content` has constraints | Conditional conformance `where Content: Equatable` — standard Swift pattern |
+| Auto-synthesized `Equatable` on generic views may not compile if `Content` has constraints | Conditional conformance `where Content: Equatable`. This is the standard Swift pattern. |
 | Over-caching after environment changes (stale colors/borders) | Phase 1 fixes this before any `.equatable()` usage |
 | Debug logging performance overhead | Gated behind environment variable, zero cost when disabled |
-| `TupleView` Equatable — `(A, B, C, ...)` tuples up to arity 6 are Equatable in Swift, but TUIKit's `TupleView` may need explicit conformance | Investigate during Phase 2c, add if needed |
+| `TupleView` Equatable: `(A, B, C, ...)` tuples up to arity 6 are Equatable in Swift, but TUIKit's `TupleView` may need explicit conformance | Investigate during Phase 2c, add if needed |
 
 ## Open Questions
 
-1. **`TupleView` Equatable**: `VStack { Text("A"); Text("B") }` creates a `TupleView<(Text, Text)>`. Is `TupleView` `Equatable` when its elements are? Needs investigation — may need explicit conditional conformance for each arity.
-2. **Granular cache invalidation**: Instead of `clearAll()`, could we invalidate only entries that depend on changed environment keys? Complex but would maximize cache effectiveness. Probably not worth it now — `clearAll()` is simple and correct.
+1. **`TupleView` Equatable**: `VStack { Text("A"); Text("B") }` creates a `TupleView<(Text, Text)>`. Is `TupleView` `Equatable` when its elements are? Needs investigation and may need explicit conditional conformance for each arity.
+2. **Granular cache invalidation**: Instead of `clearAll()`, could we invalidate only entries that depend on changed environment keys? Complex but would maximize cache effectiveness. Probably not worth it now because `clearAll()` is simple and correct.
 3. **Automatic `.equatable()`**: Should the framework automatically wrap views in `EquatableView` when they conform to `Equatable`? SwiftUI does NOT do this (requires explicit `.equatable()`). Recommend keeping opt-in for now.

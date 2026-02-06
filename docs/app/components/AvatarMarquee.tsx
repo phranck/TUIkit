@@ -206,7 +206,7 @@ export default function AvatarMarquee<T>({
   }, []);
 
   const handleMouseLeave = useCallback((event?: React.MouseEvent) => {
-    // If leaving to a child (popover), do nothing here — the popover handlers manage hide.
+    // If leaving to a child (popover), do nothing here: the popover handlers manage hide.
     if (event) {
       const related = event.relatedTarget as Node | null;
       const popoverRoot = wrapperRef.current?.querySelector('.hover-popover-root') as Node | null;

@@ -3,7 +3,7 @@
 import { useTheme, themes, type Theme } from "./ThemeProvider";
 
 /**
- * Fixed foreground color per theme — used for the color dots so each dot
+ * Fixed foreground color per theme: used for the color dots so each dot
  * always shows its own theme color regardless of the currently active theme.
  * Values mirror the --foreground CSS variables in globals.css.
  */
