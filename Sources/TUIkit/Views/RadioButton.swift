@@ -353,20 +353,27 @@ extension RadioButtonGroup: Renderable {
         // Radio indicator: ● if selected, ◯ if not
         let indicator = isSelected ? "●" : "◯"
 
-        // Determine indicator color
+        // Determine indicator color based on state
         let indicatorColor: Color
         if isDisabled {
             indicatorColor = palette.foregroundTertiary
+        } else if isSelected {
+            // Selected indicator: accent color, pulses if group is focused
+            if isFocused {
+                let dimAccent = palette.accent.opacity(0.35)
+                indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            } else {
+                indicatorColor = palette.accent
+            }
         } else if isFocused {
-            // Focused indicator pulses with accent color
-            let dimAccent = palette.accent.opacity(0.35)
-            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            // Focused but not selected: accent (static, no pulse)
+            indicatorColor = palette.accent
         } else {
-            // Unfocused indicator uses border color
-            indicatorColor = palette.border
+            // Unselected and unfocused: tertiary (dimmed)
+            indicatorColor = palette.foregroundTertiary
         }
 
-        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor, bold: isFocused && !isDisabled)
+        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
 
         // Render label with theme color
         let labelView = item.labelBuilder()
