@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **Toggle / Checkbox** — Boolean toggle with Space/Enter, two visual styles ([plan](plans/open/2026-02-06-toggle.md))
+- [ ] **Button Focus Indicator** — Pulsing accent brackets, Shift+Tab parsing, style refinements (PR #81)
 
 ## Open
 
@@ -39,6 +39,7 @@
 
 ### 2026-02-06
 
+- [x] **Toggle / Checkbox** — Boolean toggle with Space/Enter, slider + checkbox styles, focus indicator, disabled state, 17 tests, example page with menu integration
 - [x] **Dashboard Cache + Auto-Refresh** — localStorage cache (5 min TTL), auto-refresh timer, Framer Motion list animations, no skeleton flash (PR #80)
 - [x] **License Change** — CC BY-NC-SA 4.0 → MIT, 141 Swift files + LICENSE file
 - [x] **Mobile Responsive** — SiteNav hamburger, StatCards vertical, heatmap hidden, CommitList compact, HeroTerminal power-button disabled on phones, footer stacked/centered
@@ -150,4 +151,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-06 01:15
+**Last Updated:** 2026-02-06 16:00
