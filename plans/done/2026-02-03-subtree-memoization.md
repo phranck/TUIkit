@@ -1,8 +1,12 @@
 # Render Pipeline Phase 5: Subtree Memoization
 
+## Preface
+
+Subtree memoization caches rendered FrameBuffers by view identity: when a view conforms to `Equatable` and is wrapped in `.equatable()`, the framework compares the new view with the cached one. If equal (and available size hasn't changed), the cached FrameBuffer is reused — skipping the entire subtree's re-rendering. `RenderCache` stores buffers keyed by `ViewIdentity`, invalidated when `@State` changes or environment changes. Between state changes, identical views like Spinners skip rendering entirely.
+
 ## Completed
 
-Completed 2026-02-04. PR #71 merged. 18 tests (11 RenderCache + 7 EquatableView), 503 total.
+**2026-02-04** — PR #71 merged. 18 tests (11 RenderCache + 7 EquatableView), 503 total.
 
 ## Problem
 

@@ -1,23 +1,44 @@
 # State Storage Identity
 
+## Preface
+
+State now survives **any** view reconstruction via structural identity: each view gets a stable key (its position in the tree), and state values live in external `StateStorage` indexed by that key. Self-hydrating `@State.init` checks the active context during `body` evaluation and retrieves persistent storage immediately. This foundation enables components like RadioButtonGroup, List, and any control with persistent local state to work reliably across all render passes.
+
 ## Completed
 
-Completed on 2026-02-02. All five phases implemented. Self-hydrating `@State` with structural identity, persistent `StateStorage`, GC, branch invalidation, and root context hydration in `RenderLoop`. Dead code (Mirror-based `hydrateState`, `_hydrateField`, `StateHydratable`) removed.
+**2026-02-02** — All five phases implemented. Self-hydrating `@State` with structural identity, persistent `StateStorage`, garbage collection, branch invalidation, and root context hydration in `RenderLoop`. Dead code (Mirror-based `hydrateState`, `_hydrateField`, `StateHydratable`) removed.
 
-## Problem
+## Checklist
 
-`@State` in TUIKit only survives render passes because the top-level scene is cached in
-`RenderLoop.scene`. Once a view sits deeper in the tree and gets reconstructed during a
-`body` call, a new `Storage` object is allocated and the previous value is lost.
+- [x] Create ViewIdentity type for stable view keys
+- [x] Create StateStorage class for persistent state
+- [x] Add StateRegistration counter enum
+- [x] Extend RenderContext with identity and helper methods
+- [x] Extend TUIContext with stateStorage
+- [x] Update renderToBuffer for identity propagation
+- [x] Update TupleView.childInfos for child index tracking
+- [x] Update ViewArray.childInfos for enumeration
+- [x] Implement State<Value> self-hydration
+- [x] Set/clear active context around body evaluation
+- [x] Update RenderLoop root context setup
+- [x] Update ConditionalView for branch invalidation
+- [x] Remove scene cache from RenderLoop
+- [x] Implement garbage collection in StateStorage
+- [x] Write comprehensive tests (12 tests)
+- [x] Update DocC documentation
+- [x] Inline documentation on all new types
 
-In SwiftUI, `@State` survives **every** reconstruction because state values live in an
-external storage graph, indexed by the view's **structural position** in the tree
-(Structural Identity).
+---
 
-## Goal
+## Context / Problem
 
-Every `@State` in TUIKit must survive render passes — regardless of whether the view is
-reconstructed on every frame. The user-facing API (`@State var count = 0`) remains unchanged.
+`@State` in TUIKit only survives render passes because the top-level scene is cached in `RenderLoop.scene`. Once a view sits deeper in the tree and gets reconstructed during a `body` call, a new `Storage` object is allocated and the previous value is lost.
+
+In SwiftUI, `@State` survives **every** reconstruction because state values live in an external storage graph, indexed by the view's **structural position** in the tree (Structural Identity).
+
+## Specification / Goal
+
+Every `@State` in TUIKit must survive render passes — regardless of whether the view is reconstructed on every frame. The user-facing API (`@State var count = 0`) remains unchanged.
 
 ## Design
 

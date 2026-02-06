@@ -1,6 +1,20 @@
 # ContainerView Refactoring Plan
 
-## Current (WRONG) Pattern
+## Preface
+
+ContainerView is being refactored from the broken `body: Never` + Renderable pattern to a proper View with `body: some View` that returns an internal `_ContainerViewCore`. This fix enables modifiers to work naturally and becomes the template for fixing List, Box, and other components. Once done, `.foregroundColor()`, `.padding()`, and other standard modifiers will compose correctly instead of being silently ignored.
+
+## Context / Problem
+
+ContainerView currently uses the wrong pattern with `body: Never` + Renderable, preventing view modifiers from working correctly.
+
+## Specification / Goal
+
+Refactor ContainerView to proper View architecture with `body: some View` returning an internal `_ContainerViewCore`, enabling modifiers and proper view composition.
+
+## Design
+
+### Current (WRONG) Pattern
 ```swift
 public struct ContainerView: View {
     var body: Never { fatalError() }
@@ -17,7 +31,7 @@ extension ContainerView: Renderable {
 - Implementation detail exposed to public API
 - Inconsistent with SwiftUI/Box pattern
 
-## New (CORRECT) Pattern
+### New (CORRECT) Pattern
 
 ```swift
 public struct ContainerView<Content: View, Footer: View>: View {
@@ -69,7 +83,7 @@ These are already using `renderContainer()` helper, so they won't be directly af
 - Direct users are unlikely, but need to check
 - The helper function `renderContainer()` doesn't need to change
 
-## Refactoring Steps
+## Implementation Plan
 
 1. **Create _ContainerViewCore** — private struct with Renderable
 2. **Move all rendering logic** from ContainerView to _ContainerViewCore
@@ -77,6 +91,16 @@ These are already using `renderContainer()` helper, so they won't be directly af
 4. **Verify modifiers work** — test `.foregroundColor()`, `.padding()`, etc.
 5. **Check all users** — Card, Panel, Alert, Dialog still work
 6. **Update tests** if needed
+
+## Checklist
+
+- [ ] Create _ContainerViewCore private struct
+- [ ] Move rendering logic to _ContainerViewCore
+- [ ] Update ContainerView with body: some View
+- [ ] Verify modifiers work (.foregroundColor, .padding, etc.)
+- [ ] Check Card, Panel, Alert, Dialog render correctly
+- [ ] Update tests
+- [ ] Build & lint verification
 
 ## Benefits After Refactoring
 
@@ -89,5 +113,4 @@ These are already using `renderContainer()` helper, so they won't be directly af
 
 ## Timeline Note
 
-This is NOT urgent but IMPORTANT for long-term consistency.
-Should be done BEFORE List & Table implementation, so they follow the correct pattern from the start.
+This is NOT urgent but IMPORTANT for long-term consistency. Should be done BEFORE List & Table implementation, so they follow the correct pattern from the start.
