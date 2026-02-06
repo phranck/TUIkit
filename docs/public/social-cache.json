@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-06T06:46:21.405Z",
+  "generatedAt": "2026-02-06T08:35:48.736Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -308,6 +308,26 @@
         "verified": true
       },
       "updatedAt": "2026-02-06T06:45:56.953Z"
+    },
+    "Fogh": {
+      "login": "Fogh",
+      "twitter": {
+        "handle": "@f0gh",
+        "url": "https://x.com/f0gh",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-06T08:35:46.664Z"
+    },
+    "uraimo": {
+      "login": "uraimo",
+      "twitter": {
+        "handle": "@uraimo",
+        "url": "https://x.com/uraimo",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-06T08:35:48.735Z"
     }
   }
 }
