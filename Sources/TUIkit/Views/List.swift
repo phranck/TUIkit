@@ -192,12 +192,20 @@ extension ListHandler {
             return true
             
         case .enter, .character(" "):
-            // Selection handled by parent List via tag checking
-            return false  // Let parent handle selection
+            // Select focused item by index
+            selectFocused()
+            return true
             
         default:
             return false
         }
+    }
+    
+    private func selectFocused() {
+        guard let selection = selection, focusedIndex >= 0 else { return }
+        // Set selection to row index for now
+        // TODO: Support proper tag-based selection
+        selection.wrappedValue = AnyHashable(focusedIndex)
     }
     
     private func focusUp() {
@@ -328,10 +336,14 @@ extension List: Renderable {
             let rowText = rows[index]
             let isFocused = index == handler.focusedIndex && listHasFocus
             
-            // Render row with focus indicator
+            // Check if this row is selected (by index)
+            let isSelected = (erasedSelection?.wrappedValue ?? AnyHashable("")) == AnyHashable(index)
+            
+            // Render row with selection background bar
             let rowLine = renderRow(
                 rowText: rowText,
                 isFocused: isFocused,
+                isSelected: isSelected,
                 context: context,
                 palette: palette
             )
@@ -357,26 +369,30 @@ extension List: Renderable {
     private func renderRow(
         rowText: String,
         isFocused: Bool,
+        isSelected: Bool,
         context: RenderContext,
         palette: Palette
     ) -> String {
-        let focusIndicator: String
-        let indicatorColor: Color
-        
-        if isFocused {
-            // Focused row: pulsing accent dot
-            let dimAccent = palette.accent.opacity(0.35)
-            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-            focusIndicator = "●"
-        } else {
-            // Unfocused row: space for alignment
-            focusIndicator = " "
-            indicatorColor = palette.foregroundTertiary
+        // Selection: background bar (full width)
+        if isSelected {
+            let selectedBg = ANSIRenderer.colorize(
+                rowText,
+                foreground: palette.background,
+                background: palette.accent
+            )
+            return selectedBg
         }
         
-        let styledIndicator = ANSIRenderer.colorize(focusIndicator, foreground: indicatorColor)
+        // Focused but not selected: simple text with pulsing dot prefix
+        if isFocused {
+            let dimAccent = palette.accent.opacity(0.35)
+            let dotColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            let styledDot = ANSIRenderer.colorize("●", foreground: dotColor)
+            return styledDot + " " + rowText
+        }
         
-        return styledIndicator + " " + rowText
+        // Unfocused and not selected: just text
+        return "  " + rowText
     }
 }
 
