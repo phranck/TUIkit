@@ -444,18 +444,8 @@ struct RadioButtonOrientationTests {
         let vertical: RadioButtonOrientation = .vertical
         let horizontal: RadioButtonOrientation = .horizontal
 
-        switch vertical {
-        case .vertical:
-            break
-        case .horizontal:
-            #expect(false, "Should be vertical")
-        }
-
-        switch horizontal {
-        case .vertical:
-            #expect(false, "Should be horizontal")
-        case .horizontal:
-            break
-        }
+        #expect(vertical == .vertical)
+        #expect(horizontal == .horizontal)
+        #expect(vertical != horizontal)
     }
 }
