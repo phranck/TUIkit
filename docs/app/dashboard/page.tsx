@@ -12,6 +12,7 @@ import SiteFooter from "../components/SiteFooter";
 import StatCard from "../components/StatCard";
 import StargazersPanel from "../components/StargazersPanel";
 import ActivityHeatmap from "../components/ActivityHeatmap";
+import PlansCard from "../components/PlansCard";
 import LanguageBar from "../components/LanguageBar";
 import CommitList from "../components/CommitList";
 import RepoInfo from "../components/RepoInfo";
@@ -172,6 +173,11 @@ export default function DashboardPage() {
           {/* Activity heatmap — hidden on mobile */}
           <div className="mb-8 hidden sm:block">
             <ActivityHeatmap weeks={stats.weeklyActivity} loading={stats.loading} />
+          </div>
+
+          {/* Plans Card */}
+          <div className="mb-8">
+            <PlansCard />
           </div>
 
           {/* Languages + Repo Info + Commits */}

@@ -1,10 +1,28 @@
 # Spinner View
 
+## Preface
+
+Spinners now animate loading states with three styles: rotating dots (braille), rotating line (ASCII), and bouncing Knight-Rider dot with fade trail. Each style runs at calibrated speed (110ms, 140ms, 100ms), uses time-based frame calculation (no drift), and triggers re-renders at ~25 FPS via lifecycle tasks. Simple API: `Spinner()`, `Spinner("Loading...", style: .line)`, or `Spinner("...", style: .bouncing, color: .cyan)`. Works everywhere with smooth, jitter-free animation.
+
 ## Completed
 
-Completed on 2026-02-02. PR #61 merged.
+**2026-02-02** — PR #61 merged. Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
 
-Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
+## Checklist
+
+- [x] Create SpinnerStyle enum with dots, line, bouncing cases
+- [x] Implement frame generation with bounce positions and edge overshoot
+- [x] Set fixed intervals: dots 110ms, line 140ms, bouncing 100ms
+- [x] Create Spinner struct with label, style, color properties
+- [x] Implement Renderable conformance with time-based frame calculation
+- [x] Implement lifecycle-based timer (startTask/cancelTask pattern)
+- [x] Implement start time persistence via StateStorage
+- [x] Simplify API (remove speed/track/trail enums)
+- [x] Switch to uniform ● dot character with opacity-only fade
+- [x] Add edge overshoot for smooth trail fade
+- [x] Add Spinner to Example App (SpinnersPage)
+- [x] Write comprehensive tests (frame generation, bounce positions, rendering output)
+- [x] Add DocC topic entry
 
 ### Final API
 

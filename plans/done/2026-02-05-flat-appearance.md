@@ -1,12 +1,35 @@
 # Remove Block/Flat Appearances — Simplify to Border-Only Rendering
 
-## Completed — 2026-02-05
+## Preface
 
-Outcome changed from the original plan: instead of replacing Block with Flat, **both were removed entirely**. The framework now has 4 standard border-based appearances only (line, rounded, doubleLine, heavy). BorderStyle.ascii was also removed. Surface color tokens (surfaceBackground, surfaceHeaderBackground, elevatedBackground) eliminated. 36 files changed, +225 / −1140 lines. 526 tests / 84 suites passing.
+Block and Flat appearances are both removed (36 files changed). The framework now offers four border-based appearances: line, rounded, doubleLine, heavy — all using standard Unicode box-drawing characters. Surface color tokens are consolidated into `Palette` directly (no more `BlockPalette` protocol). Simplified architecture, eliminated half-block complexity that broke on many terminals, and gained universal compatibility using only ANSI backgrounds and standard borders.
 
-**Created:** 2026-02-05
-**Branch:** `refactor/flat-appearance` (from `main`)
-**Supersedes:** "Remove Block Appearance" task in to-dos.md
+## Completed
+
+**2026-02-05** — Both Block and Flat were removed entirely. The framework now has 4 standard border-based appearances only (line, rounded, doubleLine, heavy). BorderStyle.ascii was also removed. Surface color tokens consolidated into Palette. 36 files changed, +225 / −1140 lines. 526 tests passing.
+
+## Checklist
+
+- [x] Move surface colors from BlockPalette into Palette
+- [x] Remove BlockPalette protocol entirely
+- [x] Change SystemPalette: BlockPalette → SystemPalette: Palette
+- [x] Remove Palette convenience accessors for block colors
+- [x] Update SemanticColor to use Palette directly (no cast)
+- [x] Rename Appearance.block → Appearance.flat
+- [x] Remove BorderStyle.block, .blockBottomHorizontal, .blockFooterSeparator
+- [x] Set Appearance.flat to use BorderStyle.none
+- [x] Update AppearanceRegistry and cycling order
+- [x] Remove BorderRenderer block methods
+- [x] Add flatContentLine helper
+- [x] Rewrite BorderModifier renderFlatStyle
+- [x] Rewrite ContainerView renderFlatStyle
+- [x] Rewrite StatusBar renderFlat
+- [x] Rewrite AppHeader renderFlat
+- [x] Rewrite Menu flat branch
+- [x] Clean up DimmedModifier ornament set
+- [x] Rename BlockThemePage → FlatThemePage
+- [x] Update all tests and doc comments
+- [x] Full swift build + swiftlint + swift test (536 tests passing)
 
 ## Original Goal
 

@@ -1,8 +1,12 @@
 # Palette Consolidation — Replace 6 Palette Structs with SystemPalette.Preset Enum
 
+## Preface
+
+Six palette files are consolidated into one: a `SystemPalette.Preset` enum with `.green`, `.amber`, `.red`, `.violet`, `.blue`, `.white` cases, backed by hand-tuned HSL parameters. All boilerplate (init, color generation, helpers) is shared; only the tuning data differs. Six files → one file, 545 LOC → 150 LOC. Convenience accessors like `BlockPalette.amber` still work, user-defined custom palettes still conform to `Palette` normally.
+
 ## Completed
 
-Completed on 2026-02-03. PR #70 merged.
+**2026-02-03** — PR #70 merged. Six palette files consolidated into single `SystemPalette.Preset` enum with shared implementation.
 
 ## Problem
 

@@ -1,6 +1,20 @@
 # Containerization: Composition NOT Inheritance in Swift
 
-## Current Pattern in TUIKit: ContainerView
+## Preface
+
+Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions — true to SwiftUI/TUIKit's design philosophy.
+
+## Context / Problem
+
+Current container-like components might use inheritance or ad-hoc patterns. We need a unified, composition-based approach that works consistently across Alert, Dialog, Panel, and Card.
+
+## Specification / Goal
+
+Establish a composition-based architecture for all container components using shared rendering helpers, ensuring consistency and reducing code duplication.
+
+## Design
+
+### Current Pattern in TUIKit: ContainerView
 
 ContainerView is NOT inherited. Instead:
 
@@ -112,6 +126,24 @@ internal func renderFocusableContainer<SelectionValue, Content: View>(
 ```
 
 This would be shared between List and Table!
+
+## Implementation Plan
+
+1. **Document composition pattern** — establish guidelines
+2. **Review current container components** — verify consistency
+3. **Create/refactor renderListWithFocus() helper** for List and Table
+4. **Extract shared state management** into `FocusableItemListHandler`
+5. **Verify all components use composition** via renderContainer()
+
+## Checklist
+
+- [ ] Document composition pattern guidelines
+- [ ] Review Alert, Dialog, Panel, Card for consistency
+- [ ] Create renderListWithFocus() helper function
+- [ ] Extract FocusableItemListHandler for shared logic
+- [ ] Verify renderContainer() usage across components
+- [ ] Write tests for helpers
+- [ ] Update documentation
 
 ## Recommendation
 

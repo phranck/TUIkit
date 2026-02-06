@@ -1,9 +1,24 @@
 # ProgressView — Determinate Progress Bar
 
+## Preface
+
+`ProgressView` adds progress bars to TUI apps: horizontal bars that fill to a percentage (0–100), with five Unicode styles (block, blockFine, shade, bar, dot), optional labels, and SwiftUI API parity. Supports `BinaryFloatingPoint` values with total, ViewBuilder label closures, and currentValueLabel for custom percentage display. Optional `.disabled()` modifier, proper width clamping, and edge-case handling for nil/negative/overflow values.
+
 ## Completed
 
-**Completed:** 2026-02-05
-**Branch:** `feature/progress-view` (from `main`)
+**2026-02-05** — PR merged with all progress bar styles, full SwiftUI API parity, and 26 tests passing.
+
+## Checklist
+
+- [x] Create ProgressView struct with all 4 initializer variants
+- [x] Implement Equatable conformance
+- [x] Implement 5 bar styles (block, blockFine, shade, bar, dot)
+- [x] Create .progressBarStyle(_:) modifier
+- [x] Implement Renderable with bar rendering
+- [x] Add .disabled() modifier
+- [x] Write 26 comprehensive tests
+- [x] Add to example app (ContainersPage)
+- [x] swift build + swiftlint + swift test
 
 ## Goal
 

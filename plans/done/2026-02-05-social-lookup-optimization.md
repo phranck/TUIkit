@@ -1,6 +1,24 @@
+## Preface
+
+Social lookup script is optimized to eliminate false positives: instance validation via NodeInfo (confirms domains run ActivityPub software), expanded blocklist for link-in-bio services, leading-`@` requirement for Mastodon handles (rejects corporate emails), and preservation of `verified: true` for authoritative sources (GitHub profile, Keybase, manual overrides). Full refresh overwrites stale entries. 21 known Mastodon instances searched. Cleaner cache, no manual corrections needed.
+
 ## Completed
 
-2026-02-05. All 8 implementation steps done. Commits: `fb4eef0`, `032bcc7`.
+**2026-02-05** — All 8 implementation steps done. Commits: `fb4eef0`, `032bcc7`.
+
+## Checklist
+
+- [x] Implement instance validation via NodeInfo
+- [x] Replace email blocklist with positive identification (leading @)
+- [x] Expand blog URL blocklist with link-in-bio services
+- [x] Make bio/blog Mastodon parsers async with validation
+- [x] Preserve verified: true for authoritative sources (github, keybase, manual)
+- [x] Fix full refresh to overwrite stale entries
+- [x] Expand Mastodon instance list (12 → 21 instances)
+- [x] Test script locally
+- [x] Regenerate cache with full refresh
+- [x] Verify no false positives
+- [x] Commit updated social-cache.json
 
 # Social Lookup Script — Matching Algorithm Optimization
 

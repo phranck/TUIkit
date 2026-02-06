@@ -1,5 +1,9 @@
 # List & Table: Shared Architecture Analysis
 
+## Preface
+
+This analysis identifies the shared architecture between List and Table before implementation: both need focus management, keyboard navigation (Up/Down/Home/End), selection binding, scrolling, and item state rendering. Navigation logic and selection state are identical; rendering differs (List = vertical stack, Table = grid). Extract shared components (handlers, helpers, state managers) to eliminate duplication while letting each component specialize in layout.
+
 ## Similarities (Redundancy Risk)
 
 ### Core Concepts
@@ -94,9 +98,19 @@ Extract `SelectionStateManager<T>` for consistent selection binding.
 - **Option B**: Single generic base (e.g., `_FocusableItemList`) that List and Table wrap
 - **Option C**: Trait-based design (protocols for Focus, Selection, Rendering)
 
-## Critical: DO NOT IMPLEMENT YET
-Just keep this analysis for reference before implementing either List or Table.
-Search for:
+## Context / Problem
+
+Both List and Table need focus management, item navigation, selection binding, scrolling, and keyboard handlers. Without careful planning, the implementations will duplicate effort and diverge in behavior.
+
+## Specification / Goal
+
+Analyze shared patterns between List and Table to establish common architecture before implementing either component.
+
+## Design
+
+### Shared Concepts Analysis (No Implementation)
+
+Just analyze for reference before implementing either List or Table. Areas to investigate:
 1. How Box handles modifiers
 2. How existing focus management works
 3. How Focusable interface is used elsewhere
@@ -104,3 +118,14 @@ Search for:
 5. Container rendering patterns
 
 Then design List & Table to maximize code reuse.
+
+## Implementation Plan
+
+This is an analysis document only. No implementation tasks.
+
+## Checklist
+
+- [ ] Architecture decisions documented
+- [ ] Shared patterns identified
+- [ ] Reference provided for List & Table implementation
+- [ ] No code changes required

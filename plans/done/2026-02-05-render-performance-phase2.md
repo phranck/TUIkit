@@ -1,8 +1,31 @@
 # Render Performance Phase 2: Memoization Activation & Debug Tooling
 
+## Preface
+
+Subtree memoization is activated: environment snapshot comparison in `RenderLoop` automatically invalidates cache on theme/palette changes; core types (Text, Alignment, ContainerConfig, etc.) gain `Equatable` conformance; example app extracts view subcomponents and applies `.equatable()` for real cache benefit. Debug logging (via `TUIKIT_DEBUG_RENDER` env var) tracks cache hits/misses per identity. Between state changes, identical views now skip re-rendering entirely.
+
 ## Completed
 
-2026-02-05 — All 6 phases implemented. PR #74 on `feature/render-performance-phase2`.
+**2026-02-05** — All 6 phases implemented. PR #74 with environment snapshot comparison, core type Equatable conformances, and debug statistics.
+
+## Checklist
+
+- [x] Add EnvironmentSnapshot struct for cache invalidation
+- [x] Implement environment snapshot comparison in RenderLoop
+- [x] Add TextStyle: Equatable
+- [x] Add Alignment: Equatable
+- [x] Add ContainerConfig: Equatable
+- [x] Add Text: Equatable
+- [x] Add conditional Equatable to VStack, HStack, ZStack
+- [x] Add conditional Equatable to Box, BorderedView
+- [x] Add conditional Equatable to ContainerView, Panel, Card, Dialog
+- [x] Add conditional Equatable to FlexibleFrameView, OverlayModifier, DimmedModifier
+- [x] Add RenderCache.Stats struct
+- [x] Implement debug logging with TUIKIT_DEBUG_RENDER env var
+- [x] Extract view subcomponents for memoization (FeatureBox, ContainerTypesRow, SettingsAndAlignmentRow)
+- [x] Apply .equatable() in MainMenuPage and ContainersPage
+- [x] Update RenderCycle.md DocC article
+- [x] All tests passing (520+)
 
 ## Goal
 

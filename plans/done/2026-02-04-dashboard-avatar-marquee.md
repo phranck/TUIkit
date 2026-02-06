@@ -1,8 +1,28 @@
 # Plan: Dashboard Redesign - Avatar Marquee
 
+## Preface
+
+A generic `AvatarMarquee` component now displays scrolling avatar lists (stargazers, contributors, etc.) with smooth infinite scroll, fade edges, and hover popovers. The marquee arrow targets the relevant stat card above (Stars, Contributors, etc.). Hover decelerates scroll smoothly; mouseleave accelerates it back. Generic TypeScript props make it reusable for any avatar collection. The Stargazers panel now uses this component, replacing a static grid.
+
 ## Completed
 
-Completed 2026-02-04. AvatarMarquee component implemented with infinite scroll, smooth braking, fade masks, arrow targeting, and popover integration. StargazersPanel migrated.
+**2026-02-04** — AvatarMarquee component implemented with infinite scroll, smooth braking, fade masks, arrow targeting, and popover integration. StargazersPanel migrated.
+
+---
+
+## Checklist
+
+- [x] Reorder StatCards in dashboard
+- [x] Unify spacing to mb-8
+- [x] Create AvatarMarquee.tsx with generic TypeScript props
+- [x] Implement horizontal scroll container
+- [x] Add CSS gradient mask for fade effect
+- [x] Implement border lines (top with arrow, bottom plain)
+- [x] Implement infinite scroll with requestAnimationFrame
+- [x] Add speed interpolation for smooth brake/accelerate
+- [x] Integrate HoverPopover component
+- [x] Update StargazersPanel to use AvatarMarquee
+- [x] Test with current stargazers data
 
 ---
 
