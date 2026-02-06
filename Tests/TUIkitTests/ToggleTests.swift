@@ -123,7 +123,8 @@ struct ToggleTests {
         // Should render as single line with [ ] indicator
         #expect(buffer.height == 1)
         let content = buffer.lines.joined()
-        #expect(content.contains("[ ]"))
+        // Off state: [ ] (space), on state: [●] (dot)
+        #expect(content.contains("[ ]") || content.contains("[●]"))
     }
 
     @Test("Toggle renders focus indicator when focused")

@@ -142,7 +142,7 @@ extension Toggle: Renderable {
             let indicator = isOn.wrappedValue ? "●○" : "○●"
             toggleIndicator = "[\(indicator)]"
         case .checkbox:
-            let indicator = isOn.wrappedValue ? "x" : " "
+            let indicator = isOn.wrappedValue ? "●" : " "
             toggleIndicator = "[\(indicator)]"
         }
 
