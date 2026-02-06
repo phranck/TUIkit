@@ -19,15 +19,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  title: "TUIkit — Terminal UI Framework for Swift",
+  title: "TUIkit: Terminal UI Framework for Swift",
   description:
-    "A declarative, SwiftUI-like framework for building Terminal User Interfaces in Swift. No ncurses, no C dependencies — pure Swift.",
+    "A declarative, SwiftUI-like framework for building Terminal User Interfaces in Swift. Pure Swift with no ncurses or C dependencies.",
   keywords: [
     "swift", "terminal", "TUI", "framework", "SwiftUI", "CLI",
     "ncurses alternative", "macOS", "Linux", "terminal UI", "declarative",
   ],
   openGraph: {
-    title: "TUIkit — Terminal UI Framework for Swift",
+    title: "TUIkit: Terminal UI Framework for Swift",
     description:
       "Build terminal apps with SwiftUI-like syntax. Pure Swift, no ncurses.",
     url: "https://tuikit.layered.work",
@@ -38,13 +38,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "TUIkit — Terminal UI Framework for Swift",
+        alt: "TUIkit: Terminal UI Framework for Swift",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TUIkit — Terminal UI Framework for Swift",
+    title: "TUIkit: Terminal UI Framework for Swift",
     description:
       "Build terminal apps with SwiftUI-like syntax. Pure Swift, no ncurses.",
     images: ["/og-image.png"],

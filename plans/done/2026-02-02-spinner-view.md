@@ -1,10 +1,28 @@
 # Spinner View
 
+## Preface
+
+Spinners now animate loading states with three styles: rotating dots (braille), rotating line (ASCII), and bouncing Knight-Rider dot with fade trail. Each style runs at calibrated speed (110ms, 140ms, 100ms), uses time-based frame calculation (no drift), and triggers re-renders at ~25 FPS via lifecycle tasks. Simple API: `Spinner()`, `Spinner("Loading...", style: .line)`, or `Spinner("...", style: .bouncing, color: .cyan)`. Works everywhere with smooth, jitter-free animation.
+
 ## Completed
 
-Completed on 2026-02-02. PR #61 merged.
+**0: PR #61 merged. Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
 
-Three styles (dots, line, bouncing Knight Rider with ● dot fade trail). Simplified API: `Spinner("Label", style: .bouncing, color: .green)`. Fixed calibrated intervals, 9-position track with 2-position edge overshoot for smooth trail fade-in/out. Run loop upgraded to ~25 FPS (VTIME=0 + usleep 40ms).
+## Checklist
+
+- [x] Create SpinnerStyle enum with dots, line, bouncing cases
+- [x] Implement frame generation with bounce positions and edge overshoot
+- [x] Set fixed intervals: dots 110ms, line 140ms, bouncing 100ms
+- [x] Create Spinner struct with label, style, color properties
+- [x] Implement Renderable conformance with time-based frame calculation
+- [x] Implement lifecycle-based timer (startTask/cancelTask pattern)
+- [x] Implement start time persistence via StateStorage
+- [x] Simplify API (remove speed/track/trail enums)
+- [x] Switch to uniform ● dot character with opacity-only fade
+- [x] Add edge overshoot for smooth trail fade
+- [x] Add Spinner to Example App (SpinnersPage)
+- [x] Write comprehensive tests (frame generation, bounce positions, rendering output)
+- [x] Add DocC topic entry
 
 ### Final API
 
@@ -16,13 +34,13 @@ Spinner("Processing...", style: .bouncing, color: .cyan)
 
 ### Key Design Decisions
 
-- **Radically simplified API** — Removed `SpinnerSpeed`, `BouncingTrackWidth`, `BouncingTrailLength` enums. One init with 3 parameters.
-- **Uniform dot character (●)** — All track positions use the same character. Visual distinction comes purely from opacity fade. Avoids Unicode alignment issues between different dot characters.
-- **Edge overshoot (2 positions)** — Highlight travels from -2 to trackWidth+1, so the trail fades smoothly at edges instead of being cut off.
-- **6-step trail** — Opacities: [1.0, 0.75, 0.5, 0.35, 0.22, 0.15]. Last step matches inactive dot opacity (0.15) for seamless blend.
-- **Fixed intervals** — Dots: 110ms, Line: 140ms, Bouncing: 100ms. Calibrated by user testing.
-- **Time-based frames** — Frame index calculated from elapsed time, not counter-based. Prevents drift.
-- **VTIME=0 run loop** — Non-blocking stdin read + usleep(40ms) for ~25 FPS. Benefits all future animations.
+- **Radically simplified API**: Removed `SpinnerSpeed`, `BouncingTrackWidth`, `BouncingTrailLength` enums. One init with 3 parameters.
+- **Uniform dot character (●)**: All track positions use the same character. Visual distinction comes purely from opacity fade. Avoids Unicode alignment issues between different dot characters.
+- **Edge overshoot (2 positions)**: Highlight travels from -2 to trackWidth+1, so the trail fades smoothly at edges instead of being cut off.
+- **6-step trail**: Opacities: [1.0, 0.75, 0.5, 0.35, 0.22, 0.15]. Last step matches inactive dot opacity (0.15) for seamless blend.
+- **Fixed intervals**: Dots: 110ms, Line: 140ms, Bouncing: 100ms. Calibrated by user testing.
+- **Time-based frames**: Frame index calculated from elapsed time, not counter-based. Prevents drift.
+- **VTIME=0 run loop**: Non-blocking stdin read + usleep(40ms) for ~25 FPS. Benefits all future animations.
 
 ## Goal
 

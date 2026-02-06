@@ -67,7 +67,7 @@ export function useHoverPopover<T>(showDelay = 300, hideDelay = 150) {
   }, []);
 
   return {
-    /** Current hover state — null when not hovering. */
+    /** Current hover state: null when not hovering. */
     hover,
     /** Last known state for rendering (stable position during fade-out). */
     popover: hover ?? lastRef.current,

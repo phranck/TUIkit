@@ -34,8 +34,8 @@ export default function LanguageBar({ languages, loading = false }: LanguageBarP
   if (loading) {
     return (
       <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="swift" size={22} className="text-muted" />
+        <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="swift" size={20} className="text-accent" />
           Languages
         </h3>
         <div className="h-4 w-full rounded-full bg-accent/10 animate-skeleton" />
@@ -53,8 +53,8 @@ export default function LanguageBar({ languages, loading = false }: LanguageBarP
   if (totalBytes === 0) {
     return (
       <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="swift" size={22} className="text-muted" />
+        <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="swift" size={20} className="text-accent" />
           Languages
         </h3>
         <p className="text-lg text-muted">No language data available.</p>
@@ -64,8 +64,8 @@ export default function LanguageBar({ languages, loading = false }: LanguageBarP
 
   return (
     <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-      <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-        <Icon name="swift" size={22} className="text-muted" />
+      <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+        <Icon name="swift" size={20} className="text-accent" />
         Languages
       </h3>
 

@@ -1,10 +1,10 @@
 # Render Cycle
 
-Understand how TUIkit turns your view tree into terminal output — one frame at a time.
+Understand how TUIkit turns your view tree into terminal output: one frame at a time.
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written — and all writes are collected in a frame buffer and flushed as a **single `write()` syscall**.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written: and all writes are collected in a frame buffer and flushed as a **single `write()` syscall**.
 
 ## What Triggers a Frame
 
@@ -16,7 +16,7 @@ Three things cause `RenderLoop` to produce a new frame:
 | State mutation | `@State` property change | ``AppState`` notifies its observer via ``RenderNotifier``, which sets the rerender flag |
 | Programmatic | `appState.setNeedsRender()` | Same observer path as above (services receive `AppState` via constructor injection) |
 
-All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread — signal handlers never render directly.
+All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread: signal handlers never render directly.
 
 ## The Render Pipeline
 
@@ -28,9 +28,9 @@ Each call to `RenderLoop.render()` executes these steps in order:
 
 Three subsystems are reset at the start of every frame:
 
-- **`KeyEventDispatcher`** — All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
-- **`PreferenceStorage`** — All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
-- **``FocusManager``** — All focus registrations are cleared. Focusable views re-register during rendering.
+- **`KeyEventDispatcher`**: All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
+- **`PreferenceStorage`**: All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
+- **``FocusManager``**: All focus registrations are cleared. Focusable views re-register during rendering.
 
 This ensures that views which disappeared between frames don't leave stale handlers or registrations behind.
 
@@ -61,21 +61,21 @@ A ``RenderContext`` bundles everything a view needs to render:
 
 | Property | What |
 |----------|------|
-| `availableWidth` | Terminal width (mutable — containers reduce this for children) |
+| `availableWidth` | Terminal width (mutable: containers reduce this for children) |
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
 | `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences, state storage) |
 | `identity` | The current view's structural identity (``ViewIdentity``) |
 
-`RenderContext` is a pure data container — it does not hold a reference to `Terminal`. All terminal I/O happens after the view tree has been rendered into a ``FrameBuffer``.
+`RenderContext` is a pure data container: it does not hold a reference to `Terminal`. All terminal I/O happens after the view tree has been rendered into a ``FrameBuffer``.
 
-The context is passed down the view tree. Each view can create a modified copy for its children — for example, a border reduces `availableWidth` by 2 before rendering its content. Container views extend the `identity` path for each child.
+The context is passed down the view tree. Each view can create a modified copy for its children: for example, a border reduces `availableWidth` by 2 before rendering its content. Container views extend the `identity` path for each child.
 
 ### Step 5: Evaluate Scene
 
 `app.body` is evaluated fresh each frame, producing a ``WindowGroup`` that wraps the root view. The `WindowGroup` implements `SceneRenderable` and bridges from the scene layer to the view layer.
 
-> Note: Views are fully reconstructed on every frame. `@State` values survive because `State.init` self-hydrates from `StateStorage` — looking up the persistent value by the view's structural identity.
+> Note: Views are fully reconstructed on every frame. `@State` values survive because `State.init` self-hydrates from `StateStorage`: looking up the persistent value by the view's structural identity.
 
 ### Step 6: Render View Tree
 
@@ -112,8 +112,8 @@ The status bar renders in a separate pass (see below) but writes into the **same
 
 The `LifecycleManager` compares the current frame's tokens with the previous frame's:
 
-- **Disappeared views** — tokens present last frame but absent now. Their `onDisappear` callbacks fire, and their tokens are removed from the appeared set (allowing future `onAppear` if they return).
-- **Visible views** — the current token set becomes the baseline for the next frame.
+- **Disappeared views**: tokens present last frame but absent now. Their `onDisappear` callbacks fire, and their tokens are removed from the appeared set (allowing future `onAppear` if they return).
+- **Visible views**: the current token set becomes the baseline for the next frame.
 
 The `StateStorage` performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
 
@@ -125,7 +125,7 @@ The status bar renders in a separate pass but within the same buffered frame:
 
 1. A ``StatusBar`` view is created with resolved palette colors
 2. A dedicated ``RenderContext`` is created with `availableHeight` set to the status bar's height
-3. `renderToBuffer()` runs on the status bar view — same dispatch as the main content
+3. `renderToBuffer()` runs on the status bar view: same dispatch as the main content
 4. `FrameDiffWriter.writeStatusBarDiff()` diffs the status bar independently from the main content
 5. Changed lines are written into the same frame buffer as the content
 
@@ -140,19 +140,19 @@ TUIkit has two ways for a view to produce output:
 Views that conform to `Renderable` implement `renderToBuffer(context:)` and produce a ``FrameBuffer`` directly. Their `body` property is **never called**.
 
 This path is used by:
-- **Leaf views** — ``Text``, ``Spacer``, `Divider`, ``EmptyView``
-- **Layout containers** — `VStack`, `HStack`, `ZStack`
-- **Interactive views** — ``Button``, ``ButtonRow``, ``Menu``
-- **Container views** — ``Panel``, ``Card``, ``Alert``, ``Dialog``
-- **Modifier wrappers** — `ModifiedView`, `BorderedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
+- **Leaf views**: ``Text``, ``Spacer``, `Divider`, ``EmptyView``
+- **Layout containers**: `VStack`, `HStack`, `ZStack`
+- **Interactive views**: ``Button``, ``ButtonRow``, ``Menu``
+- **Container views**: ``Panel``, ``Card``, ``Alert``, ``Dialog``
+- **Modifier wrappers**: `ModifiedView`, `BorderedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
 
 ### Path 2: Composition (body)
 
 Views that are **not** `Renderable` declare their content through `body`. The rendering system recursively renders the body until it hits a `Renderable` leaf.
 
 This path is used by:
-- **Composite views** — ``Box`` returns `content.border(...)`, which wraps in a `BorderedView` (which is `Renderable`)
-- **User-defined views** — Your custom views compose other views in `body`
+- **Composite views**: ``Box`` returns `content.border(...)`, which wraps in a `BorderedView` (which is `Renderable`)
+- **User-defined views**: Your custom views compose other views in `body`
 
 ### The Dispatch Function
 
@@ -165,7 +165,7 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         return renderable.renderToBuffer(context: context)
     }
 
-    // Priority 2: Composite — set up hydration context and recurse into body.
+    // Priority 2: Composite: set up hydration context and recurse into body.
     // @State.init self-hydrates from StateStorage during body evaluation.
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
@@ -175,14 +175,14 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         return renderToBuffer(body, context: childContext)
     }
 
-    // Priority 3: No rendering path — empty buffer
+    // Priority 3: No rendering path: empty buffer
     return FrameBuffer()
 }
 ```
 
 @Image(source: "render-cycle-dispatch.png", alt: "Decision tree showing the dual rendering dispatch: renderToBuffer checks Renderable conformance first, then body recursion, then returns an empty buffer as fallback.")
 
-> Important: If a view conforms to `Renderable`, its `body` is never evaluated. This is intentional — `Renderable` views produce output directly and don't need compositional decomposition.
+> Important: If a view conforms to `Renderable`, its `body` is never evaluated. This is intentional: `Renderable` views produce output directly and don't need compositional decomposition.
 
 ## FrameBuffer
 
@@ -192,9 +192,9 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
 
 Views create buffers in their `renderToBuffer(context:)`:
 
-- ``Text`` — single line with ANSI style codes
-- ``Spacer`` — empty lines
-- ``EmptyView`` — empty buffer (no lines)
+- ``Text``: single line with ANSI style codes
+- ``Spacer``: empty lines
+- ``EmptyView``: empty buffer (no lines)
 
 ### Combination
 
@@ -235,17 +235,17 @@ The `EnvironmentModifier` (created by `.environment(_:_:)`) works by:
 2. Creating a new `RenderContext` with that environment via `context.withEnvironment()`
 3. Rendering its content with the new context
 
-There is no global environment — everything flows through the context parameter.
+There is no global environment: everything flows through the context parameter.
 
 ## Preference Collection
 
-Preferences flow **bottom-up** — the reverse of environment values. Child views set values that parent views observe.
+Preferences flow **bottom-up**: the reverse of environment values. Child views set values that parent views observe.
 
 `PreferenceStorage` uses a stack-based collection mechanism:
 
-1. `OnPreferenceChangeModifier` calls `push()` — creates a new collection scope
+1. `OnPreferenceChangeModifier` calls `push()`: creates a new collection scope
 2. Its child tree renders, and `PreferenceModifier` calls `setValue()` on the current scope
-3. `OnPreferenceChangeModifier` calls `pop()` — merges collected values into the parent scope and fires the callback
+3. `OnPreferenceChangeModifier` calls `pop()`: merges collected values into the parent scope and fires the callback
 
 The `reduce(value:nextValue:)` function on ``PreferenceKey`` controls how multiple values from different children are combined. The default behavior: last value wins.
 
@@ -263,21 +263,21 @@ public protocol ViewModifier {
 }
 ```
 
-`ModifiedView` wraps a view and a modifier — it renders the content first, then calls `modify(buffer:context:)`. Examples:
+`ModifiedView` wraps a view and a modifier: it renders the content first, then calls `modify(buffer:context:)`. Examples:
 
-- **`PaddingModifier`** — Adds empty lines (top/bottom) and spaces (leading/trailing) around the buffer
-- **`BackgroundModifier`** — Wraps each line with background ANSI codes, padded to full width
+- **`PaddingModifier`**: Adds empty lines (top/bottom) and spaces (leading/trailing) around the buffer
+- **`BackgroundModifier`**: Wraps each line with background ANSI codes, padded to full width
 
 ### View-Level Modifiers (Renderable)
 
 More complex modifiers are full `View + Renderable` implementations that control when and how their content renders:
 
-- **`BorderedView`** — Reduces `availableWidth` by 2, renders content, adds border characters via `BorderRenderer`
-- **`FlexibleFrameView`** — Modifies `availableWidth`/`availableHeight` before rendering, applies min/max constraints and alignment after
-- **`OverlayModifier`** — Renders base and overlay separately, composites via `FrameBuffer.composited(with:at:)`
-- **`DimmedModifier`** — Renders content, then applies ANSI dim code to every line
-- **`EnvironmentModifier`** — Creates modified context, renders content with it
-- **``EquatableView``** — Checks ``RenderCache`` before rendering; returns cached buffer on hit, renders and stores on miss (see <doc:RenderCycle#Subtree-Memoization>)
+- **`BorderedView`**: Reduces `availableWidth` by 2, renders content, adds border characters via `BorderRenderer`
+- **`FlexibleFrameView`**: Modifies `availableWidth`/`availableHeight` before rendering, applies min/max constraints and alignment after
+- **`OverlayModifier`**: Renders base and overlay separately, composites via `FrameBuffer.composited(with:at:)`
+- **`DimmedModifier`**: Renders content, then applies ANSI dim code to every line
+- **`EnvironmentModifier`**: Creates modified context, renders content with it
+- **``EquatableView``**: Checks ``RenderCache`` before rendering; returns cached buffer on hit, renders and stores on miss (see <doc:RenderCycle#Subtree-Memoization>)
 
 ## Lifecycle Tracking
 
@@ -291,7 +291,7 @@ The `OnAppearModifier` calls `lifecycle.recordAppear(token, action)` during rend
 - If the token has **never appeared before**: it's added to `appearedTokens` and the action fires
 - If it **has** appeared before: the action does **not** fire (prevents repeated triggers)
 
-> Note: `onAppear` fires **synchronously** during the render traversal — not after the frame completes. This is because TUIkit uses single-pass rendering with no layout phase.
+> Note: `onAppear` fires **synchronously** during the render traversal: not after the frame completes. This is because TUIkit uses single-pass rendering with no layout phase.
 
 ### onDisappear
 
@@ -328,7 +328,7 @@ All terminal writes during a frame are collected in an internal `[UInt8]` buffer
 
 ### What Is NOT Diffed
 
-The view tree is re-evaluated each frame — there is no virtual DOM. However, views wrapped in ``EquatableView`` (via `.equatable()`) can skip subtree rendering when their properties are unchanged. See <doc:RenderCycle#Subtree-Memoization> below.
+The view tree is re-evaluated each frame: there is no virtual DOM. However, views wrapped in ``EquatableView`` (via `.equatable()`) can skip subtree rendering when their properties are unchanged. See <doc:RenderCycle#Subtree-Memoization> below.
 
 The alternate screen buffer (entered during setup) ensures that the user's previous terminal content is preserved and restored on exit.
 
@@ -343,11 +343,11 @@ When a view is wrapped in `.equatable()`, the rendering system:
 1. Looks up the cached ``FrameBuffer`` for this view's ``ViewIdentity``
 2. Compares the **current view value** with the cached snapshot via `Equatable.==`
 3. Checks that the available **width and height** haven't changed
-4. On **cache hit**: returns the cached buffer — the entire subtree is skipped
+4. On **cache hit**: returns the cached buffer: the entire subtree is skipped
 5. On **cache miss**: renders normally and stores the result
 
 ```swift
-// A static info box — title and subtitle are the only inputs.
+// A static info box: title and subtitle are the only inputs.
 struct FeatureBox: View, Equatable {
     let title: String
     let subtitle: String
@@ -362,7 +362,7 @@ struct FeatureBox: View, Equatable {
     }
 }
 
-// In a parent view — cached between frames when title/subtitle are unchanged:
+// In a parent view: cached between frames when title/subtitle are unchanged:
 FeatureBox("Pure Swift", "No ncurses").equatable()
 ```
 
@@ -375,7 +375,7 @@ The ``RenderCache`` is **fully cleared** in two situations:
 | Any `@State` change | `StateBox.value.didSet` calls `renderCache.clearAll()` |
 | Environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
 
-Between these events — for example during Spinner animation frames at 25 FPS — the cache is fully active. Static subtrees are rendered once and reused for every subsequent frame.
+Between these events: for example during Spinner animation frames at 25 FPS: the cache is fully active. Static subtrees are rendered once and reused for every subsequent frame.
 
 ### When to Use `.equatable()`
 
@@ -387,7 +387,7 @@ Between these events — for example during Spinner animation frames at 25 FPS �
 
 | Bad candidates | Why |
 |---------------|-----|
-| Views that read `@State` directly | State lives in a reference-type box — the view struct compares as equal even when state changed |
+| Views that read `@State` directly | State lives in a reference-type box: the view struct compares as equal even when state changed |
 | Views that change every frame | Cache overhead with no benefit |
 | Tiny views (single `Text`) | Rendering cost is already minimal |
 
@@ -413,7 +413,7 @@ Set `TUIKIT_DEBUG_RENDER=1` to enable per-frame cache statistics on stderr:
 [RenderCache] STORE Root/MainMenuPage/FeatureBox
 [RenderCache] HIT Root/MainMenuPage/FeatureBox
 [RenderCache] MISS (no entry) Root/SpinnersPage/Spinner
-[RenderCache] FRAME — hits: 3, misses: 2, stores: 2, clears: 0, entries: 3, hit rate: 60%
+[RenderCache] FRAME: hits: 3, misses: 2, stores: 2, clears: 0, entries: 3, hit rate: 60%
 ```
 
 Redirect with `2>render.log` to capture without interfering with the TUI.

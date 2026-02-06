@@ -1,6 +1,6 @@
 # Copilot Instructions for TUIkit
 
-TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure Swift — no ncurses or C dependencies.
+TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure Swift: no ncurses or C dependencies.
 
 ## Build, Test & Lint
 
@@ -30,8 +30,8 @@ swift-format format -i -r Sources Tests
 
 TUIkit uses two rendering paths:
 
-1. **Composite views** — Implement `body` to compose other views. The renderer recurses into `body`.
-2. **Primitive views** — Conform to `Renderable` protocol and produce a `FrameBuffer` directly. Set `body: Never` (with `fatalError()`).
+1. **Composite views**: Implement `body` to compose other views. The renderer recurses into `body`.
+2. **Primitive views**: Conform to `Renderable` protocol and produce a `FrameBuffer` directly. Set `body: Never` (with `fatalError()`).
 
 The `renderToBuffer(_:context:)` function checks `Renderable` first, then falls back to `body`.
 
@@ -41,10 +41,10 @@ The `renderToBuffer(_:context:)` function checks `Renderable` first, then falls 
 
 ### Key Components
 
-- **`FrameBuffer`** — 2D grid of styled cells representing terminal output
-- **`RenderContext`** — Carries layout constraints, environment values, and `TUIContext`
-- **`TUIContext`** — Central DI container for lifecycle, key events, preferences, state storage
-- **`ViewIdentity`** — Structural identity path for `@State` persistence across renders
+- **`FrameBuffer`**: 2D grid of styled cells representing terminal output
+- **`RenderContext`**: Carries layout constraints, environment values, and `TUIContext`
+- **`TUIContext`**: Central DI container for lifecycle, key events, preferences, state storage
+- **`ViewIdentity`**: Structural identity path for `@State` persistence across renders
 
 ### Directory Structure
 
@@ -79,9 +79,9 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 
 ### Architecture Rules
 
-- **No singletons** — All state flows through the Environment system
+- **No singletons**: All state flows through the Environment system
 - **Consolidate existing functions** before adding new ones
-- **Never merge PRs autonomously** — Stop after creating, let the user merge
+- **Never merge PRs autonomously**: Stop after creating, let the user merge
 
 ### Testing
 

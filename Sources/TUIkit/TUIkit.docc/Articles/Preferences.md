@@ -4,13 +4,13 @@ Pass data from child views up to their ancestors.
 
 ## Overview
 
-TUIkit's preference system enables **bottom-up data flow** — the reverse of environment values. While the environment passes data down from parent to child, preferences let child views publish values that ancestors can observe and react to.
+TUIkit's preference system enables **bottom-up data flow**: the reverse of environment values. While the environment passes data down from parent to child, preferences let child views publish values that ancestors can observe and react to.
 
 The system mirrors SwiftUI's preference API and consists of three parts:
 
-- **``PreferenceKey``** — Protocol that defines a named value type with a default and a reduce strategy
-- **``PreferenceValues``** — Type-safe storage that holds all preference values for a scope
-- **`PreferenceStorage`** — Stack-based collector that manages preference contexts per render pass
+- **``PreferenceKey``**: Protocol that defines a named value type with a default and a reduce strategy
+- **``PreferenceValues``**: Type-safe storage that holds all preference values for a scope
+- **`PreferenceStorage`**: Stack-based collector that manages preference contexts per render pass
 
 A built-in example is ``NavigationTitleKey``: a child view sets `.navigationTitle("Settings")`, and the enclosing navigation container reads that preference to render the title bar.
 
@@ -28,8 +28,8 @@ struct CounterKey: PreferenceKey {
 }
 ```
 
-- **`defaultValue`** — Returned when no child has set this preference
-- **`reduce(value:nextValue:)`** — Combines values when multiple children set the same key
+- **`defaultValue`**: Returned when no child has set this preference
+- **`reduce(value:nextValue:)`**: Combines values when multiple children set the same key
 
 The default `reduce` implementation simply takes the last value. Override it when you need additive behavior (summing counts), array collection, or other merge strategies.
 
@@ -90,11 +90,11 @@ struct SettingsPage: View {
 
 Preferences are collected fresh every frame. Here's the lifecycle within a single render pass:
 
-1. **Reset** — `RenderLoop.render()` calls `preferences.beginRenderPass()`, clearing all callbacks and resetting the stack to a single empty context
-2. **Set** — As the view tree renders top-down, `PreferenceModifier` views call `setValue(_:forKey:)`, which reduces values into the current stack frame
-3. **Scope** — `OnPreferenceChangeModifier` pushes a new context before rendering its subtree, isolating child preferences
-4. **Collect** — After the subtree finishes, the modifier pops the context (merging into the parent) and fires the callback with the scoped result
-5. **Discard** — At the start of the next frame, everything resets — stale preferences never persist
+1. **Reset**: `RenderLoop.render()` calls `preferences.beginRenderPass()`, clearing all callbacks and resetting the stack to a single empty context
+2. **Set**: As the view tree renders top-down, `PreferenceModifier` views call `setValue(_:forKey:)`, which reduces values into the current stack frame
+3. **Scope**: `OnPreferenceChangeModifier` pushes a new context before rendering its subtree, isolating child preferences
+4. **Collect**: After the subtree finishes, the modifier pops the context (merging into the parent) and fires the callback with the scoped result
+5. **Discard**: At the start of the next frame, everything resets: stale preferences never persist
 
 This per-frame reset ensures preferences always reflect the current view tree. Removed views stop contributing automatically.
 
@@ -104,7 +104,7 @@ The `reduce` function determines how multiple children's values combine. Common 
 
 | Strategy | Implementation | Use Case |
 |----------|---------------|----------|
-| Last value wins | `value = nextValue()` (default) | Titles, labels — deepest child wins |
+| Last value wins | `value = nextValue()` (default) | Titles, labels: deepest child wins |
 | Additive | `value += nextValue()` | Counting items, summing heights |
 | Array collection | `value.append(contentsOf: nextValue())` | Gathering menu items, breadcrumbs |
 

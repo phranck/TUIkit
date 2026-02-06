@@ -1,12 +1,30 @@
+## Preface
+
+Social lookup script is optimized to eliminate false positives: instance validation via NodeInfo (confirms domains run ActivityPub software), expanded blocklist for link-in-bio services, leading-`@` requirement for Mastodon handles (rejects corporate emails), and preservation of `verified: true` for authoritative sources (GitHub profile, Keybase, manual overrides). Full refresh overwrites stale entries. 21 known Mastodon instances searched. Cleaner cache, no manual corrections needed.
+
 ## Completed
 
-2026-02-05. All 8 implementation steps done. Commits: `fb4eef0`, `032bcc7`.
+**2026-02-05**: All 8 implementation steps done. Commits: `fb4eef0`, `032bcc7`.
 
-# Social Lookup Script — Matching Algorithm Optimization
+## Checklist
+
+- [x] Implement instance validation via NodeInfo
+- [x] Replace email blocklist with positive identification (leading @)
+- [x] Expand blog URL blocklist with link-in-bio services
+- [x] Make bio/blog Mastodon parsers async with validation
+- [x] Preserve verified: true for authoritative sources (github, keybase, manual)
+- [x] Fix full refresh to overwrite stale entries
+- [x] Expand Mastodon instance list (12 → 21 instances)
+- [x] Test script locally
+- [x] Regenerate cache with full refresh
+- [x] Verify no false positives
+- [x] Commit updated social-cache.json
+
+# Social Lookup Script: Matching Algorithm Optimization
 
 ## Goal
 
-Reduce false positives and increase true matches in `docs/scripts/update-social-cache.ts`. The script discovers Mastodon, Twitter, and Bluesky accounts for GitHub stargazers — but currently produces several false positives and misses verifiable matches.
+Reduce false positives and increase true matches in `docs/scripts/update-social-cache.ts`. The script discovers Mastodon, Twitter, and Bluesky accounts for GitHub stargazers, but currently produces several false positives and misses verifiable matches.
 
 ## Findings
 
@@ -14,16 +32,16 @@ Reduce false positives and increase true matches in `docs/scripts/update-social-
 
 | User | Platform | Match | Root Cause |
 |---|---|---|---|
-| `sqwu` | Mastodon | `@menghang@bento.me` | Blog URL `bento.me/@menghang` matched by `MASTODON_URL_REGEX` — bento.me is a link-in-bio service, not a Mastodon instance |
-| `gahms` | Mastodon | `@henriksen@knowit.dk` | Bio contains `henriksen@knowit.dk` (corporate email) — matched by `MASTODON_HANDLE_REGEX` because `knowit.dk` is not on the email provider blocklist |
-| `jtvargas` | Mastodon | `@apps@go.jrtv.space` | Blog URL `go.jrtv.space/@apps` matched — personal redirect service, not Mastodon |
+| `sqwu` | Mastodon | `@menghang@bento.me` | Blog URL `bento.me/@menghang` matched by `MASTODON_URL_REGEX`. However, bento.me is a link-in-bio service, not a Mastodon instance. |
+| `gahms` | Mastodon | `@henriksen@knowit.dk` | Bio contains `henriksen@knowit.dk` (corporate email). Matched by `MASTODON_HANDLE_REGEX` because `knowit.dk` is not on the email provider blocklist. |
+| `jtvargas` | Mastodon | `@apps@go.jrtv.space` | Blog URL `go.jrtv.space/@apps` matched. This is a personal redirect service, not Mastodon. |
 
 ### Bug: `verified` Flag Always `false`
 
 All 33 social entries in the cache show `verified: false`, including:
 
-- **7 Twitter entries with `source: "github"`** — `getTwitterFromGitHubProfile()` sets `verified: true` (line 532), but the cache shows `false`. Likely cause: entries were written by an earlier script version that did not set the flag, and incremental runs skip already-cached users.
-- **All `username-match` entries** — Avatar comparison never matched (different images due to resizing/compression), cross-verification found no backlink, but the entry was not deleted. Suggests the deletion logic may not be working as intended, or these entries predate it.
+- **7 Twitter entries with `source: "github"`**: `getTwitterFromGitHubProfile()` sets `verified: true` (line 532), but the cache shows `false`. Likely cause: entries were written by an earlier script version that did not set the flag, and incremental runs skip already-cached users.
+- **All `username-match` entries**: Avatar comparison never matched (different images due to resizing/compression), cross-verification found no backlink, but the entry was not deleted. This suggests the deletion logic may not be working as intended, or these entries predate it.
 
 ### Systematic Weaknesses
 
@@ -41,7 +59,7 @@ The blocklist has only 7 entries. **No instance validation** is performed.
 
 `MASTODON_HANDLE_REGEX` matches `user@domain.tld`. The email filter only blocks 12 common providers. Any corporate email (`user@company.dk`, `user@firm.io`) gets misidentified as a Mastodon handle.
 
-The fundamental problem: `user@domain` is ambiguous — it could be a Mastodon handle OR an email. The current approach (blocklist) cannot scale. Need a positive identification strategy instead.
+The fundamental problem: `user@domain` is ambiguous. It could be a Mastodon handle or an email. The current approach (blocklist) cannot scale. A positive identification strategy is needed instead.
 
 #### 3. Avatar Hash Too Fragile (Medium Impact)
 
@@ -123,7 +141,7 @@ Ensure that entries from high-trust sources keep their verified flag:
 - `source: "keybase"` (cryptographically verified) → always `verified: true`
 - `source: "manual"` (manual override) → always `verified: true`
 
-The `crossPlatformVerify()` function must skip entries that are already `verified: true` from authoritative sources. Currently it checks `!accounts.mastodon.verified` which should work — but add the same guard for Twitter defensively.
+The `crossPlatformVerify()` function must skip entries that are already `verified: true` from authoritative sources. Currently it checks `!accounts.mastodon.verified` which should work. Add the same guard for Twitter defensively.
 
 #### 2b. Full Refresh Overwrites Stale Entries
 
@@ -148,7 +166,7 @@ Current hash is too strict. Options:
 2. **Accept close file sizes**: If sizes differ by <5% and hash matches, accept.
 3. **Leave as-is**: Backlink verification is the better signal. Avatar matching is nice-to-have.
 
-Recommendation: Option 3 — rely on backlink verification. Avatar comparison is unreliable across CDNs.
+Recommendation: Option 3. Rely on backlink verification, as avatar comparison is unreliable across CDNs.
 
 ### Phase 4: Cache Cleanup (Medium Priority)
 
@@ -177,6 +195,6 @@ After script changes are applied, run `--full` refresh to regenerate the cache. 
 | Risk | Mitigation |
 |---|---|
 | NodeInfo requests add latency | Cached per domain, only hit once per unknown domain per run |
-| NodeInfo endpoint down on some instances | Timeout (5s), fall back to rejection — better to miss than false-match |
+| NodeInfo endpoint down on some instances | Timeout (5s), fall back to rejection. Better to miss than false-match. |
 | Stricter bio regex misses real Mastodon handles | Instance validation as fallback for bare `user@domain` patterns |
 | Full refresh hits GitHub API rate limit | Script already uses `GITHUB_TOKEN` (5000 req/h), processes sequentially with 200ms delay |

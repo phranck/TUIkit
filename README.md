@@ -11,7 +11,7 @@
 > [!TIP]
 > **☕ Support TUIkit Development**
 >
-> If you enjoy TUIkit and find it useful, consider supporting its development! Your donations help cover ongoing costs like hosting, tooling, and the countless cups of coffee that fuel late-night coding sessions. Every contribution — big or small — is greatly appreciated and keeps this project alive. Thank you! 💙
+> If you enjoy TUIkit and find it useful, consider supporting its development! Your donations help cover ongoing costs like hosting, tooling, and the countless cups of coffee that fuel late-night coding sessions. Every contribution: big or small: is greatly appreciated and keeps this project alive. Thank you! 💙
 >
 > [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue?logo=paypal&logoColor=white)](https://paypal.me/LAYEREDwork)
 > [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/layeredwork)
@@ -19,7 +19,7 @@
 > [!IMPORTANT]
 > **This project is currently a WORK IN PROGRESS! I strongly advise against using it in a production environment because APIs are subject to change at any time.**
 
-A SwiftUI-like framework for building Terminal User Interfaces in Swift — no ncurses, no C dependencies, just pure Swift.
+A SwiftUI-like framework for building Terminal User Interfaces in Swift: no ncurses, no C dependencies, just pure Swift.
 
 ## What is this?
 
@@ -63,34 +63,34 @@ struct ContentView: View {
 
 ### Core
 
-- **`View` protocol** — the core building block, mirroring SwiftUI's `View`
-- **`@ViewBuilder`** — result builder for declarative view composition
-- **`@State`** — reactive state management with automatic re-rendering
-- **`@Environment`** — dependency injection for theme, focus manager, status bar
-- **`App` protocol** — app lifecycle with signal handling and run loop
+- **`View` protocol**: the core building block, mirroring SwiftUI's `View`
+- **`@ViewBuilder`**: result builder for declarative view composition
+- **`@State`**: reactive state management with automatic re-rendering
+- **`@Environment`**: dependency injection for theme, focus manager, status bar
+- **`App` protocol**: app lifecycle with signal handling and run loop
 
 ### Views & Components
 
-- **Primitive views** — `Text`, `EmptyView`, `Spacer`, `Divider`
-- **Layout containers** — `VStack`, `HStack`, `ZStack` with alignment and spacing
-- **Interactive** — `Button` with focus states, `Menu` with keyboard navigation
-- **Containers** — `Alert`, `Dialog`, `Panel`, `Box`, `Card`
-- **`StatusBar`** — context-sensitive keyboard shortcuts
-- **`ForEach`** — iterate over collections, ranges, or `Identifiable` data
+- **Primitive views**: `Text`, `EmptyView`, `Spacer`, `Divider`
+- **Layout containers**: `VStack`, `HStack`, `ZStack` with alignment and spacing
+- **Interactive**: `Button` with focus states, `Menu` with keyboard navigation
+- **Containers**: `Alert`, `Dialog`, `Panel`, `Box`, `Card`
+- **`StatusBar`**: context-sensitive keyboard shortcuts
+- **`ForEach`**: iterate over collections, ranges, or `Identifiable` data
 
 ### Styling
 
-- **Text styling** — bold, italic, underline, strikethrough, dim, blink, inverted
-- **Full color support** — ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
-- **Theming** — 6 predefined palettes (Green, Amber, Red, Violet, Blue, White)
-- **Border styles** — rounded, line, double, thick, ASCII, and more
+- **Text styling**: bold, italic, underline, strikethrough, dim, blink, inverted
+- **Full color support**: ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
+- **Theming**: 6 predefined palettes (Green, Amber, Red, Violet, Blue, White)
+- **Border styles**: rounded, line, double, thick, ASCII, and more
 
 ### Advanced
 
-- **Lifecycle modifiers** — `.onAppear()`, `.onDisappear()`, `.task()`
-- **Storage** — `@AppStorage`, `@SceneStorage` with JSON backend
-- **Preferences** — bottom-up data flow with `PreferenceKey`
-- **Focus system** — Tab/Shift+Tab navigation between interactive elements
+- **Lifecycle modifiers**: `.onAppear()`, `.onDisappear()`, `.task()`
+- **Storage**: `@AppStorage`, `@SceneStorage` with JSON backend
+- **Preferences**: bottom-up data flow with `PreferenceKey`
+- **Focus system**: Tab/Shift+Tab navigation between interactive elements
 
 ## Run the Example App
 
@@ -136,19 +136,19 @@ struct MyApp: App {
 ```
 
 Available palettes (all via `SystemPalette`):
-- `.green` — Classic P1 phosphor CRT (default)
-- `.amber` — P3 phosphor monochrome
-- `.red` — IBM 3279 plasma
-- `.violet` — Retro sci-fi terminal
-- `.blue` — VFD/LCD displays
-- `.white` — DEC VT100/VT220 (P4 phosphor)
+- `.green`: Classic P1 phosphor CRT (default)
+- `.amber`: P3 phosphor monochrome
+- `.red`: IBM 3279 plasma
+- `.violet`: Retro sci-fi terminal
+- `.blue`: VFD/LCD displays
+- `.white`: DEC VT100/VT220 (P4 phosphor)
 
 ## Architecture
 
-- **No singletons for state** — All state flows through the Environment system
-- **Pure ANSI rendering** — No ncurses or other C dependencies
-- **Linux compatible** — Works on macOS and Linux (XDG paths supported)
-- **Value types** — Views are structs, just like SwiftUI
+- **No singletons for state**: All state flows through the Environment system
+- **Pure ANSI rendering**: No ncurses or other C dependencies
+- **Linux compatible**: Works on macOS and Linux (XDG paths supported)
+- **Value types**: Views are structs, just like SwiftUI
 
 ## Project Structure
 
@@ -173,7 +173,7 @@ Tests/
 
 ## Developer Notes
 
-- Tests use Swift Testing (`@Test`, `#expect`) — run with `swift test`
+- Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
 - All 591 tests run in parallel
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 

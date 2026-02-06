@@ -1,4 +1,4 @@
-# WarGames — WOPR/Joshua Terminal Dialog
+# WarGames: WOPR/Joshua Terminal Dialog
 
 ## Scene: First Contact with the Mystery System
 
@@ -25,7 +25,7 @@ GAMES:
 
 ---
 
-## Scene: Failed Login Attempts — "Falken's Maze"
+## Scene: Failed Login Attempts: "Falken's Maze"
 
 **Context:** After learning the system designer was Stephen Falken (now deceased), David tries the name of Falken's game as a password. It fails. He tries multiple variations over several nights.
 
@@ -36,7 +36,7 @@ IDENTIFICATON NOT RECOGNIZED BY SYSTEM.
 YOU HAVE BEEN DISCONNECTED.
 ```
 
-## Scene: "Joshua" — Breaking In
+## Scene: "Joshua": Breaking In
 
 **Context:** After days of research, David watches a videotape about Falken and learns his deceased son was named Joshua. Jennifer reads the name from an obituary. David types it as the password.
 
@@ -73,7 +73,7 @@ David and Jennifer pick Las Vegas and Seattle as targets, unknowingly triggering
 
 ## Scene: Joshua Calls Back
 
-**Context:** After the FBI visits and David realizes the "game" may have triggered a real military alert, he tears down all his Falken research. The phone rings — it's a computer tone. He routinely places it into the modem.
+**Context:** After the FBI visits and David realizes the "game" may have triggered a real military alert, he tears down all his Falken research. The phone rings: it's a computer tone. He routinely places it into the modem.
 
 ```
 GREETINGS PROFESSOR FALKEN
@@ -94,7 +94,7 @@ David hangs up. The phone rings again almost instantly. He hangs up again. It ke
 
 ---
 
-## Scene: David Logs In at NORAD — McKittrick's Office
+## Scene: David Logs In at NORAD: McKittrick's Office
 
 **Context:** David has been captured and brought to NORAD. While left alone in McKittrick's office, he watches the DEFCON level change from 4 to 3. He sits at McKittrick's terminal.
 

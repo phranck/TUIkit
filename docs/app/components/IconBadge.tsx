@@ -20,7 +20,7 @@ const variantClasses = {
   lg: "h-12 w-12",
 } as const;
 
-/** Icon badge with background — unified display for SF Symbols across the dashboard and pages. */
+/** Icon badge with background: unified display for SF Symbols across the dashboard and pages. */
 export default function IconBadge({
   name,
   size = 24,

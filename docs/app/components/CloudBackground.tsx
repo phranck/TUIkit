@@ -25,7 +25,7 @@ function cloudGradient(
 export default function CloudBackground() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* Large cloud — top left */}
+      {/* Large cloud: top left */}
       <div
         className="absolute -left-32 -top-32 h-[800px] w-[800px] rounded-full blur-[150px] transition-[background] duration-700"
         style={{
@@ -34,7 +34,7 @@ export default function CloudBackground() {
         }}
       />
 
-      {/* Medium cloud — top right */}
+      {/* Medium cloud: top right */}
       <div
         className="absolute -right-20 top-1/4 h-[700px] w-[700px] rounded-full blur-[130px] transition-[background] duration-700"
         style={{
@@ -43,7 +43,7 @@ export default function CloudBackground() {
         }}
       />
 
-      {/* Accent cloud — center */}
+      {/* Accent cloud: center */}
       <div
         className="absolute left-1/3 top-1/2 h-[600px] w-[600px] rounded-full blur-[120px] transition-[background] duration-700"
         style={{
@@ -72,7 +72,7 @@ export default function CloudBackground() {
         }}
       />
 
-      {/* Extra cloud — bottom right */}
+      {/* Extra cloud: bottom right */}
       <div
         className="absolute -bottom-20 -right-32 h-[600px] w-[600px] rounded-full blur-[130px] transition-[background] duration-700"
         style={{

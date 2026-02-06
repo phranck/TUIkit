@@ -1,5 +1,5 @@
 /**
- * Prebuild script — runs before `next build` via the `prebuild` npm script.
+ * Prebuild script: runs before `next build` via the `prebuild` npm script.
  *
  * 1. Generates terminal-data.ts from terminal-script.md
  * 2. Counts Swift @Test and @Suite annotations to produce project-stats.json

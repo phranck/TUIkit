@@ -19,6 +19,7 @@ enum DemoPage: Int, CaseIterable {
     case buttons
     case toggles
     case radioButtons
+    case list
     case spinners
 }
 
@@ -49,14 +50,18 @@ struct ContentView: View {
                          return true  // Consumed
                      }
                      return false  // Let default handler exit the app
-                 case .character("8"):
-                     // Quick jump to Radio Buttons
-                     currentPage = .radioButtons
-                     return true
-                 case .character("9"):
-                     // Quick jump to Spinners
-                     currentPage = .spinners
-                     return true
+                  case .character("8"):
+                      // Quick jump to Radio Buttons
+                      currentPage = .radioButtons
+                      return true
+                  case .character("9"):
+                      // Quick jump to List
+                      currentPage = .list
+                      return true
+                  case .character("0"):
+                      // Quick jump to Spinners
+                      currentPage = .spinners
+                      return true
                  default:
                      return false  // Let other handlers process
                  }
@@ -68,11 +73,11 @@ struct ContentView: View {
         switch page {
         case .menu:
             MainMenuPage(currentPage: $currentPage, menuSelection: $menuSelection)
-                .statusBarItems {
-                    StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
-                    StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
-                    StatusBarItem(shortcut: Shortcut.range("1", "8"), label: "jump")
-                }
+                 .statusBarItems {
+                     StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
+                     StatusBarItem(shortcut: Shortcut.enter, label: "select", key: .enter)
+                     StatusBarItem(shortcut: Shortcut.range("1", "9") + ", 0", label: "jump")
+                 }
         case .textStyles:
             TextStylesPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
@@ -95,6 +100,9 @@ struct ContentView: View {
                  .statusBarItems(subPageItems(pageSetter: pageSetter))
          case .radioButtons:
              RadioButtonPage()
+                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+         case .list:
+             ListPage()
                  .statusBarItems(subPageItems(pageSetter: pageSetter))
          case .spinners:
              SpinnersPage()

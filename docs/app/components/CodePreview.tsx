@@ -56,7 +56,7 @@ export default function CodePreview() {
   );
 }
 
-/** Syntax highlight color palette — One Dark inspired. */
+/** Syntax highlight color palette: One Dark inspired. */
 const HIGHLIGHT = {
   comment: "#6a737d",
   decorator: "#d19a66",
@@ -66,7 +66,7 @@ const HIGHLIGHT = {
   type: "#e5c07b",
 } as const;
 
-/** Minimal Swift syntax highlighter — no external dependency. */
+/** Minimal Swift syntax highlighter: no external dependency. */
 function Highlight({ code }: { code: string }) {
   const lines = code.split("\n");
 
@@ -130,7 +130,7 @@ function tokenizeSegment(segment: string) {
         </span>
       );
     } else if (match[3]) {
-      // Modifier (.bold, .foregroundColor) — add dot+name, then the ( back
+      // Modifier (.bold, .foregroundColor): add dot+name, then the ( back
       parts.push(
         <span key={match.index} style={{ color: HIGHLIGHT.modifier }}>
           {match[3]}
