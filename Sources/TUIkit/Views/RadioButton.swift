@@ -292,7 +292,7 @@ extension RadioButtonGroup: Renderable {
         focusManager.register(handler, inSection: context.activeFocusSectionID)
         stateStorage.markActive(context.identity)
 
-        // Check if this group has focus
+        // Check if this group has focus (after registering, so isFocused works correctly)
         let groupHasFocus = focusManager.isFocused(id: focusID)
 
         // Render items based on orientation
@@ -317,7 +317,7 @@ extension RadioButtonGroup: Renderable {
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: groupHasFocus && handler.focusedIndex == index,
+                isFocused: handler.focusedIndex == index,
                 groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
@@ -336,7 +336,7 @@ extension RadioButtonGroup: Renderable {
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: groupHasFocus && handler.focusedIndex == index,
+                isFocused: handler.focusedIndex == index,
                 groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
