@@ -42,7 +42,7 @@ The refactoring moves all rendering logic to an internal `_ContainerViewCore` st
 4. Verify `ContainerConfig` and `ContainerStyle` helpers still work
 
 ### Phase 3: Testing & Verification
-1. Run all tests — verify no breakage
+1. Run all tests. Uverify no breakage
 2. Check users: Card, Panel, Alert, Dialog still render correctly
 3. Verify modifiers work: test `.foregroundColor()` on ContainerView
 4. Test environment propagation to nested content
@@ -66,7 +66,7 @@ The refactoring moves all rendering logic to an internal `_ContainerViewCore` st
 4. Verify `ContainerConfig` and `ContainerStyle` helpers still work
 
 ### Phase 3: Testing & Verification
-1. Run all tests — verify no breakage
+1. Run all tests. Uverify no breakage
 2. Check users: Card, Panel, Alert, Dialog still render correctly
 3. Verify modifiers work: test `.foregroundColor()` on ContainerView
 4. Test environment propagation to nested content

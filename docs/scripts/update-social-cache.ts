@@ -475,7 +475,7 @@ interface GitHubSocialAccount {
 
 /**
  * Fetches social accounts from GitHub's `/users/{login}/social_accounts` endpoint.
- * These are user-provided and authoritative — highest trust after manual overrides.
+ * These are user-provided and authoritative: highest trust after manual overrides.
  */
 async function fetchGitHubSocialAccounts(login: string): Promise<ProfileSocialAccounts> {
   const accounts: ProfileSocialAccounts = {};
@@ -615,7 +615,7 @@ async function searchMastodonByUsername(username: string, githubAvatarUrl: strin
       if (response.ok) {
         const data = (await response.json()) as { username: string; url: string; avatar: string };
 
-        // Avatar match is a bonus signal — if it matches, we're confident immediately
+        // Avatar match is a bonus signal: if it matches, we're confident immediately
         const avatarMatch = await avatarsMatch(githubAvatarUrl, data.avatar);
         if (avatarMatch) {
           console.log(`    Found Mastodon @${username} on ${instance} (avatar verified ✓)`);
@@ -627,7 +627,7 @@ async function searchMastodonByUsername(username: string, githubAvatarUrl: strin
           };
         }
 
-        // No avatar match — accept as unverified candidate.
+        // No avatar match: accept as unverified candidate.
         // Cross-verification will check for back-links and either verify or remove it.
         console.log(`    Found Mastodon @${username} on ${instance} (pending cross-verification)`);
         return {
@@ -764,7 +764,7 @@ async function searchBlueskyByUsername(username: string, githubAvatarUrl: string
     if (response.ok) {
       const data = (await response.json()) as { handle: string; avatar?: string };
 
-      // Avatar match is a bonus signal — if it matches, we're confident immediately
+      // Avatar match is a bonus signal: if it matches, we're confident immediately
       if (data.avatar) {
         const avatarMatch = await avatarsMatch(githubAvatarUrl, data.avatar);
         if (avatarMatch) {
@@ -778,7 +778,7 @@ async function searchBlueskyByUsername(username: string, githubAvatarUrl: string
         }
       }
 
-      // No avatar match — accept as unverified candidate.
+      // No avatar match: accept as unverified candidate.
       // Cross-verification will check for back-links and either verify or remove it.
       console.log(`    Found Bluesky @${data.handle} (pending cross-verification)`);
       return {
@@ -899,7 +899,7 @@ async function crossPlatformVerify(accounts: ProfileSocialAccounts, user: GitHub
       accounts.mastodon.verified = true;
       validationResults.push("Mastodon→GitHub ✓");
     } else if (accounts.mastodon.source === "username-match") {
-      // Unverified username-match without back-link — remove to avoid false positives
+      // Unverified username-match without back-link: remove to avoid false positives
       console.log(`    Removing unverified Mastodon match (no back-link to GitHub)`);
       delete accounts.mastodon;
     }
@@ -912,7 +912,7 @@ async function crossPlatformVerify(accounts: ProfileSocialAccounts, user: GitHub
       accounts.bluesky.verified = true;
       validationResults.push("Bluesky→GitHub ✓");
     } else if (accounts.bluesky.source === "username-match") {
-      // Unverified username-match without back-link — remove
+      // Unverified username-match without back-link: remove
       console.log(`    Removing unverified Bluesky match (no back-link to GitHub)`);
       delete accounts.bluesky;
     }
@@ -1062,7 +1062,7 @@ async function main() {
 
   // On full refresh, clear all entries so stale false positives don't survive
   if (isFullRefresh) {
-    console.log("Full refresh — clearing all cached entries");
+    console.log("Full refresh: clearing all cached entries");
     cache.entries = {};
   }
 

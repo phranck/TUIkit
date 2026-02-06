@@ -12,7 +12,7 @@ interface StatCardProps {
   icon: IconName;
   /** Whether data is still loading (shows skeleton). */
   loading?: boolean;
-  /** Optional click handler — makes the card interactive. */
+  /** Optional click handler: makes the card interactive. */
   onClick?: () => void;
   /** Whether this card is currently in active/expanded state. */
   active?: boolean;

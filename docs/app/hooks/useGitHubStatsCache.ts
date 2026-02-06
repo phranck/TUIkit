@@ -35,7 +35,7 @@ export interface UseGitHubStatsCacheReturn extends GitHubStats {
 }
 
 // ---------------------------------------------------------------------------
-// localStorage helpers — all reads/writes are wrapped in try/catch to handle
+// localStorage helpers: all reads/writes are wrapped in try/catch to handle
 // Safari Private Mode, full storage, or disabled storage gracefully.
 // ---------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ function readCache(): CacheEntry | null {
     }
     return parsed;
   } catch {
-    // Corrupt data or storage unavailable — clear and move on
+    // Corrupt data or storage unavailable: clear and move on
     try {
       localStorage.removeItem(CACHE_KEY);
     } catch {
@@ -67,7 +67,7 @@ function writeCache(data: GitHubStats): number {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt }));
   } catch {
-    /* Storage full or unavailable — silently continue without cache */
+    /* Storage full or unavailable: silently continue without cache */
   }
   return fetchedAt;
 }
@@ -76,14 +76,14 @@ function writeCache(data: GitHubStats): number {
  * Caching wrapper around `useGitHubStats` that prevents redundant API calls.
  *
  * On mount the hook checks localStorage for a recent cache entry (< 5 min old).
- * If valid cached data exists it is served immediately — no GitHub API call.
+ * If valid cached data exists it is served immediately: no GitHub API call.
  * A background interval automatically refreshes data every 5 minutes.
  *
  * The `forceRefresh` function bypasses the cache but enforces a 60-second
  * cooldown to prevent accidental rate-limit exhaustion.
  */
 export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
-  // Skip the automatic fetch on mount — we decide whether to fetch based on cache freshness
+  // Skip the automatic fetch on mount: we decide whether to fetch based on cache freshness
   const { fetchData, ...rawStats } = useGitHubStats({ skipInitialFetch: true });
 
   const [overrideStats, setOverrideStats] = useState<GitHubStats | null>(null);
@@ -95,7 +95,7 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const initializedRef = useRef(false);
 
-  // The stats to expose — override (cached) data takes priority while it's set
+  // The stats to expose: override (cached) data takes priority while it's set
   // Force loading: false when we have data, so components don't show skeletons during background refresh
   const activeStats = overrideStats ?? rawStats;
   const hasData = lastFetchedAt !== null;
@@ -123,7 +123,7 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
   }, [fetchData]);
 
   // -------------------------------------------------------------------------
-  // Mount: check cache — serve cached data or trigger a fresh fetch
+  // Mount: check cache: serve cached data or trigger a fresh fetch
   // -------------------------------------------------------------------------
 
   useEffect(() => {
@@ -134,13 +134,13 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
     const now = Date.now();
 
     if (cached && now - cached.fetchedAt < REFRESH_INTERVAL_MS) {
-      // Cache is fresh — serve it immediately, no API call needed
+      // Cache is fresh: serve it immediately, no API call needed
       setOverrideStats({ ...cached.data, loading: false, error: null });
       setLastFetchedAt(cached.fetchedAt);
       setNextRefreshAt(cached.fetchedAt + REFRESH_INTERVAL_MS);
       setIsFromCache(true);
     } else {
-      // No valid cache — fetch fresh data now
+      // No valid cache: fetch fresh data now
       doFetchAndCache();
     }
   }, [doFetchAndCache]);
@@ -188,7 +188,7 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
 
   const forceRefresh = useCallback(() => {
     if (lastFetchedAt !== null && Date.now() - lastFetchedAt < FORCE_REFRESH_COOLDOWN_MS) {
-      return; // Cooldown active — ignore
+      return; // Cooldown active: ignore
     }
     // Reset the interval so the next auto-refresh is a full REFRESH_INTERVAL_MS from now
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -198,7 +198,7 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
     }, REFRESH_INTERVAL_MS);
   }, [lastFetchedAt, doFetchAndCache]);
 
-  // Override loading to false if we already have data — prevents skeleton flash during background refresh
+  // Override loading to false if we already have data: prevents skeleton flash during background refresh
   const statsWithLoadingOverride = hasData
     ? { ...activeStats, loading: false }
     : activeStats;

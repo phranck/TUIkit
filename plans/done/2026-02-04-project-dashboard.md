@@ -1,4 +1,4 @@
-# Project Dashboard — Live GitHub Metrics Page
+# Project Dashboard: Live GitHub Metrics Page
 
 ## Preface
 
@@ -6,7 +6,7 @@ A `/dashboard` page now displays live GitHub metrics: stat cards (commits, stars
 
 ## Completed
 
-**2026-02-04** — Dashboard live at `/dashboard` with stat cards, commit heatmap, language bar, commit list, stargazer panel, shared nav, and rate limit display.
+**0: Dashboard live at `/dashboard` with stat cards, commit heatmap, language bar, commit list, stargazer panel, shared nav, and rate limit display.
 
 ## Checklist
 
@@ -36,7 +36,7 @@ A `/dashboard` subpage of the Landing Page that visualizes all relevant project 
 - Next.js App Router (new route `app/dashboard/page.tsx`)
 - Tailwind CSS v4 (existing theme variables)
 - GitHub REST API (client-side fetch, 60 req/h unauthenticated)
-- No chart library — custom SVG/CSS visualizations (consistent with retro style)
+- No chart library. Ucustom SVG/CSS visualizations (consistent with retro style)
 
 ## Data Strategy
 
@@ -66,11 +66,11 @@ All client-side via `useGitHubStats()` hook. A `useEffect` on mount fires ~12 pa
 
 - Display remaining rate limit in footer
 - Graceful degradation: On 403 → error message instead of crash
-- No auto-refresh — only on page load + manual refresh button
+- No auto-refresh. Uonly on page load + manual refresh button
 
 ### Refresh
 
-Manual refresh button in header (next to the title). Shows loading spinner during fetch. No auto-refresh — with 13 req per fetch and 60 req/h limit, manual is the safest option.
+Manual refresh button in header (next to the title). Shows loading spinner during fetch. No auto-refresh. Uwith 13 req per fetch and 60 req/h limit, manual is the safest option.
 
 ## Layout
 
@@ -157,22 +157,22 @@ Manual refresh button in header (next to the title). Shows loading spinner durin
 
 ### 1. GitHub API Hook
 
-- [x] `useGitHubStats.ts` — Types, fetch logic, parallel requests, error handling
+- [x] `useGitHubStats.ts`: Types, fetch logic, parallel requests, error handling
 - [x] Rate limit tracking (remaining/limit from response headers)
 - [x] AbortController for cleanup on unmount
 - [x] `refresh()` function in hook return for manual re-fetch
 
 ### 2. Dashboard Components
 
-- [x] `StatCard.tsx` — Icon + number + label, loading skeleton
-- [x] `ActivityHeatmap.tsx` — CSS Grid, 7 rows × 52 cols, tooltip with date/count
-- [x] `LanguageBar.tsx` — Stacked bar + legend, percentage calculation
-- [x] `CommitList.tsx` — SHA link, full message (title + expandable body), author, relative time helper
-- [x] `RepoInfo.tsx` — Metadata grid (Created, License, Size, Last Push, Branch)
+- [x] `StatCard.tsx`: Icon + number + label, loading skeleton
+- [x] `ActivityHeatmap.tsx`: CSS Grid, 7 rows × 52 cols, tooltip with date/count
+- [x] `LanguageBar.tsx`: Stacked bar + legend, percentage calculation
+- [x] `CommitList.tsx`: SHA link, full message (title + expandable body), author, relative time helper
+- [x] `RepoInfo.tsx`: Metadata grid (Created, License, Size, Last Push, Branch)
 
 ### 3. Dashboard Page
 
-- [x] `app/dashboard/page.tsx` — Layout with all components
+- [x] `app/dashboard/page.tsx`: Layout with all components
 - [x] Loading state (skeleton)
 - [x] Error state (rate limit exceeded / network error)
 - [x] Rate limit display in footer
@@ -191,6 +191,6 @@ Manual refresh button in header (next to the title). Shows loading spinner durin
 
 ## Open Questions
 
-1. **Auto-Refresh?** Timer that re-fetches every 5 minutes? For now no — only on page load. Can be added later.
-2. **Shared Nav?** The nav is currently inline in `page.tsx`. Should be extracted as its own component so Dashboard has the same nav. But: minimal-invasive — could also be copied.
-3. **Chart Library?** Recharts, Chart.js? No — custom SVG/CSS fits the retro style better and avoids a dependency.
+1. **Auto-Refresh?** Timer that re-fetches every 5 minutes? For now no. Uonly on page load. Can be added later.
+2. **Shared Nav?** The nav is currently inline in `page.tsx`. Should be extracted as its own component so Dashboard has the same nav. But: minimal-invasive. Ucould also be copied.
+3. **Chart Library?** Recharts, Chart.js? No. Ucustom SVG/CSS fits the retro style better and avoids a dependency.

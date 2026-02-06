@@ -280,7 +280,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     };
   }, [powered]);
 
-  /** Main animation loop — only runs when powered. */
+  /** Main animation loop: only runs when powered. */
   useEffect(() => {
     if (!powered) return;
 
@@ -385,13 +385,13 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
 
         let delay: number;
         if (char === " " || char === "." || char === "," || char === "?") {
-          /* Pause after word boundary or punctuation — thinking time. */
+          /* Pause after word boundary or punctuation: thinking time. */
           delay = 250 + Math.random() * 350;
         } else if (nextChar === " " || charIdx === text.length - 1) {
-          /* Slightly slower on last char of a word — finger lifting. */
+          /* Slightly slower on last char of a word: finger lifting. */
           delay = 100 + Math.random() * 120;
         } else if (Math.random() < 0.15) {
-          /* Occasional mid-word hesitation — hunting for the right key. */
+          /* Occasional mid-word hesitation: hunting for the right key. */
           delay = 180 + Math.random() * 170;
         } else {
           /* Fast burst within a word. */
@@ -575,7 +575,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
           await sleep(PAUSE_AFTER_OUTPUT_MS);
         }
       } catch {
-        /* AbortError — powered off or unmounted. */
+        /* AbortError: powered off or unmounted. */
       }
     };
 
@@ -588,7 +588,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
   }, [powered, pickInteraction, pushLine, updateLastLine, clearScreen]);
 
   /**
-   * CRT scanline glitch — randomly shifts multiple text lines
+   * CRT scanline glitch: randomly shifts multiple text lines
    * horizontally in independent directions for a few frames,
    * simulating an unstable electron beam. Each glitched line
    * gets its own random offset. Fires every 3–8 seconds.
@@ -643,7 +643,7 @@ export default function TerminalScreen({ powered }: TerminalScreenProps) {
     };
   }, [powered]);
 
-  /* Powered off — no content, just dark glass. */
+  /* Powered off: no content, just dark glass. */
   if (!powered) return null;
 
   return (

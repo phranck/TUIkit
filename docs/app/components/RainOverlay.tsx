@@ -68,7 +68,7 @@ export default function RainOverlay() {
       strokeWidth: 0.8 + Math.random() * 0.5,
     });
 
-    /** Initialize drop pool — spread across the full viewport. */
+    /** Initialize drop pool: spread across the full viewport. */
     const drops: Raindrop[] = Array.from({ length: DROP_COUNT }, () => createDrop(false));
 
     /**
@@ -93,7 +93,7 @@ export default function RainOverlay() {
       attributeFilter: ["data-theme"],
     });
 
-    /** Animation loop — clear, update, draw. Capped at ~30fps. */
+    /** Animation loop: clear, update, draw. Capped at ~30fps. */
     const frame = (timestamp: number) => {
       if (timestamp - lastFrameTime < FRAME_INTERVAL_MS) {
         animationId = requestAnimationFrame(frame);

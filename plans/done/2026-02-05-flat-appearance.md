@@ -1,12 +1,12 @@
-# Remove Block/Flat Appearances — Simplify to Border-Only Rendering
+# Remove Block/Flat Appearances: Simplify to Border-Only Rendering
 
 ## Preface
 
-Block and Flat appearances are both removed (36 files changed). The framework now offers four border-based appearances: line, rounded, doubleLine, heavy — all using standard Unicode box-drawing characters. Surface color tokens are consolidated into `Palette` directly (no more `BlockPalette` protocol). Simplified architecture, eliminated half-block complexity that broke on many terminals, and gained universal compatibility using only ANSI backgrounds and standard borders.
+Block and Flat appearances are both removed (36 files changed). The framework now offers four border-based appearances: line, rounded, doubleLine, heavy. Uall using standard Unicode box-drawing characters. Surface color tokens are consolidated into `Palette` directly (no more `BlockPalette` protocol). Simplified architecture, eliminated half-block complexity that broke on many terminals, and gained universal compatibility using only ANSI backgrounds and standard borders.
 
 ## Completed
 
-**2026-02-05** — Both Block and Flat were removed entirely. The framework now has 4 standard border-based appearances only (line, rounded, doubleLine, heavy). BorderStyle.ascii was also removed. Surface color tokens consolidated into Palette. 36 files changed, +225 / −1140 lines. 526 tests passing.
+**0: Both Block and Flat were removed entirely. The framework now has 4 standard border-based appearances only (line, rounded, doubleLine, heavy). BorderStyle.ascii was also removed. Surface color tokens consolidated into Palette. 36 files changed, +225 / −1140 lines. 526 tests passing.
 
 ## Checklist
 
@@ -39,7 +39,7 @@ Replace the fragile Block Appearance (half-block Unicode characters `▄▀█` 
 
 ### What stays
 
-- **Three surface color tokens**: `surfaceBackground`, `surfaceHeaderBackground`, `elevatedBackground` — these define the visual hierarchy and are the core of the "flat" look.
+- **Three surface color tokens**: `surfaceBackground`, `surfaceHeaderBackground`, `elevatedBackground`. Uthese define the visual hierarchy and are the core of the "flat" look.
 - **Color hierarchy**: background (darkest) → surfaceHeaderBackground → surfaceBackground → elevatedBackground (brightest).
 - **Per-view section coloring**: ContainerView header/footer use `surfaceHeaderBackground`, body uses `surfaceBackground`. Buttons use `elevatedBackground`.
 
@@ -47,19 +47,19 @@ Replace the fragile Block Appearance (half-block Unicode characters `▄▀█` 
 
 | Aspect | Block (old) | Flat (new) |
 |--------|-------------|------------|
-| Border characters | `▄▀█` half/full blocks | None — `BorderStyle.none` (spaces) |
-| Section transitions | `blockSeparator` with FG/BG trick | No separator — sections distinguished by background color only |
-| Side borders | `█` full blocks | No side borders — content fills full width with background color |
-| Top/bottom edges | `▄▄▄` / `▀▀▀` rows | No edge rows — background starts/ends with content |
-| Terminal compat | Broken in many terminals | Universal — only requires ANSI background color support |
+| Border characters | `▄▀█` half/full blocks | None: `BorderStyle.none` (spaces) |
+| Section transitions | `blockSeparator` with FG/BG trick | No separator. Usections distinguished by background color only |
+| Side borders | `█` full blocks | No side borders. Ucontent fills full width with background color |
+| Top/bottom edges | `▄▄▄` / `▀▀▀` rows | No edge rows. Ubackground starts/ends with content |
+| Terminal compat | Broken in many terminals | Universal. Uonly requires ANSI background color support |
 
 ### What gets removed
 
-- `BlockPalette` protocol — the 3 color properties move into `Palette` directly
+- `BlockPalette` protocol. Uthe 3 color properties move into `Palette` directly
 - `BorderStyle.block` preset + `blockBottomHorizontal` + `blockFooterSeparator` statics
 - `BorderRenderer` block methods: `blockTopBorder`, `blockBottomBorder`, `blockContentLine`, `blockSeparator`
-- All `appearance.rawId == .block` branches in views — replaced with `== .flat` branches
-- `BlockThemePage.swift` example page — replace with `FlatThemePage.swift` or integrate into existing demo
+- All `appearance.rawId == .block` branches in views. Ureplaced with `== .flat` branches
+- `BlockThemePage.swift` example page. Ureplace with `FlatThemePage.swift` or integrate into existing demo
 
 ### Migration: `BlockPalette` → `Palette`
 
@@ -84,7 +84,7 @@ protocol Palette {
 
 This eliminates the `as? BlockPalette` casts and fallbacks throughout the codebase.
 
-### Flat Rendering — Per Component
+### Flat Rendering: Per Component
 
 All flat-rendered sections use **1 character horizontal padding** (left and right) so content doesn't stick to the edges. This replaces the `█` side borders from block rendering with simple space padding inside the background fill.
 
@@ -92,7 +92,7 @@ All flat-rendered sections use **1 character horizontal padding** (left and righ
 - Header lines: persistent background = `surfaceHeaderBackground`, 1-char padding left/right. No top border row.
 - Body lines: persistent background = `surfaceBackground`, 1-char padding left/right. No side borders.
 - Footer lines: persistent background = `surfaceHeaderBackground`, 1-char padding left/right. No bottom border row.
-- No separator rows between sections — color change alone provides visual distinction.
+- No separator rows between sections. Ucolor change alone provides visual distinction.
 
 **BorderModifier (Box, `.border()`):**
 - All content lines: persistent background = `surfaceBackground`, 1-char padding left/right.
@@ -108,7 +108,7 @@ All flat-rendered sections use **1 character horizontal padding** (left and righ
 
 **AppHeader:**
 - Full-width content with persistent background = `appHeaderBackground`, 1-char padding left/right.
-- Bottom divider: thin line using `─` (standard divider, not `▀`), or no divider at all — TBD.
+- Bottom divider: thin line using `─` (standard divider, not `▀`), or no divider at all: TBD.
 
 **Menu:**
 - Header lines: persistent background = `surfaceHeaderBackground`, 1-char padding left/right.
@@ -117,16 +117,16 @@ All flat-rendered sections use **1 character horizontal padding** (left and righ
 
 ## Steps
 
-## Completed — 2026-02-05
+## Completed: 2026-02-05
 
 ### Phase 1: Palette Refactoring
 
 - [x] Move `surfaceBackground`, `surfaceHeaderBackground`, `elevatedBackground` from `BlockPalette` into `Palette` with default implementations
 - [x] Remove `BlockPalette` protocol entirely
 - [x] Change `SystemPalette: BlockPalette` → `SystemPalette: Palette`
-- [x] Remove `Palette` convenience accessors (`blockSurfaceBackground` etc.) — use direct property access
-- [x] Update `SemanticColor` — keep the 3 surface cases, simplify `resolve()` to use `Palette` directly (no cast)
-- [x] Keep `Color.Semantic` accessors — renamed comments from "BlockPalette" to "Surface"
+- [x] Remove `Palette` convenience accessors (`blockSurfaceBackground` etc.). Uuse direct property access
+- [x] Update `SemanticColor`. Ukeep the 3 surface cases, simplify `resolve()` to use `Palette` directly (no cast)
+- [x] Keep `Color.Semantic` accessors. Urenamed comments from "BlockPalette" to "Surface"
 - [x] Update related tests
 
 ### Phase 2: Appearance & BorderStyle Cleanup
@@ -140,7 +140,7 @@ All flat-rendered sections use **1 character horizontal padding** (left and righ
 ### Phase 3: Rendering Simplification
 
 - [x] Remove `BorderRenderer` block methods (4 methods)
-- [x] Add `flatContentLine(content:innerWidth:backgroundColor:)` — persistent BG + 1-char padding
+- [x] Add `flatContentLine(content:innerWidth:backgroundColor:)`. Upersistent BG + 1-char padding
 - [x] Rewrite `BorderModifier` → `renderFlatStyle` (background-only, no borders)
 - [x] Rewrite `ContainerView` → `renderFlatStyle` (header/body/footer sections)
 - [x] Rewrite `Button` flat branch (rename check only)
@@ -154,16 +154,16 @@ All flat-rendered sections use **1 character horizontal padding** (left and righ
 - [x] Rename `BlockThemePage` → `FlatThemePage`
 - [x] Replace `BorderRendererBlockTests` with `BorderRendererFlatTests` (3 tests)
 - [x] Update `PaletteDefaultTests` → `PaletteSurfaceDefaultTests`
-- [x] Update `PredefinedPaletteTests` — renamed luminance order tests
-- [x] Full `swift build` + `swiftlint` + `swift test` — 536 tests / 88 suites passing
+- [x] Update `PredefinedPaletteTests`. Urenamed luminance order tests
+- [x] Full `swift build` + `swiftlint` + `swift test`: 536 tests / 88 suites passing
 
 ### Phase 5: Cleanup
 
-- [x] Grep for "block" references in Sources/ and Tests/ — updated 11 doc comments
+- [x] Grep for "block" references in Sources/ and Tests/. Uupdated 11 doc comments
 - [x] PR (pending)
 
 ## Risk Assessment
 
 - **Low risk**: The rendering is simpler than what it replaces. ANSI background colors work everywhere.
 - **Migration**: Purely internal refactoring. No public API surface changes beyond renaming `.block` → `.flat`.
-- **Visual difference**: Flat will look slightly different from Block — no smooth half-block transitions. But that's the point: simpler, universal, still visually distinct from bordered appearances.
+- **Visual difference**: Flat will look slightly different from Block. Uno smooth half-block transitions. But that's the point: simpler, universal, still visually distinct from bordered appearances.

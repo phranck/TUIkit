@@ -85,11 +85,11 @@ These are already using `renderContainer()` helper, so they won't be directly af
 
 ## Implementation Plan
 
-1. **Create _ContainerViewCore** — private struct with Renderable
+1. **Create _ContainerViewCore**. Uprivate struct with Renderable
 2. **Move all rendering logic** from ContainerView to _ContainerViewCore
 3. **Make ContainerView a simple View** with body that creates _ContainerViewCore
-4. **Verify modifiers work** — test `.foregroundColor()`, `.padding()`, etc.
-5. **Check all users** — Card, Panel, Alert, Dialog still work
+4. **Verify modifiers work**. Utest `.foregroundColor()`, `.padding()`, etc.
+5. **Check all users**: Card, Panel, Alert, Dialog still work
 6. **Update tests** if needed
 
 ## Checklist

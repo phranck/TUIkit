@@ -2,7 +2,7 @@
 
 ## Preface
 
-Session state now survives app crashes with `@RestoredState` — a disk-persisted wrapper around `@State`. Values auto-save on change (debounced) and auto-restore on startup. Signal handlers (SIGTERM/SIGINT) flush state before shutdown so no data is lost. Perfect for file managers, editors, or any app tracking last directory, scroll position, or open files. Builds on the State Storage Identity system to keep state stable across renders while adding optional persistence.
+Session state now survives app crashes with `@RestoredState`. Ua disk-persisted wrapper around `@State`. Values auto-save on change (debounced) and auto-restore on startup. Signal handlers (SIGTERM/SIGINT) flush state before shutdown so no data is lost. Perfect for file managers, editors, or any app tracking last directory, scroll position, or open files. Builds on the State Storage Identity system to keep state stable across renders while adding optional persistence.
 
 ## Context / Problem
 
@@ -10,9 +10,9 @@ Builds on the State Storage Identity refactoring. `StateStorage` keeps `@State` 
 
 ### Use Cases in Terminal Apps
 
-1. **Crash Recovery** — SIGTERM/SIGINT: write last state to disk, restore on restart
-2. **Session Continuity** — e.g. a TUI file manager remembers current directory, scroll position
-3. **Explicit Save/Restore** — user-triggered (keybinding for "Save Session")
+1. **Crash Recovery**: SIGTERM/SIGINT: write last state to disk, restore on restart
+2. **Session Continuity**. Ue.g. a TUI file manager remembers current directory, scroll position
+3. **Explicit Save/Restore**. Uuser-triggered (keybinding for "Save Session")
 
 **Not a use case:** iOS-style background killing (does not exist in terminal apps).
 

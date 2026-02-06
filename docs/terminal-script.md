@@ -347,7 +347,7 @@ pause_after_output: 1200
 
 **Trigger:** After 12 seconds of UNIX commands (after school scene)
 
-### First Contact — HELP GAMES
+### First Contact: HELP GAMES
 
 ```terminal
 [CLEAR]
@@ -436,7 +436,7 @@ pause_after_output: 1200
 [DELAY 2400ms]
 ```
 
-### "Joshua" — Breaking In
+### "Joshua": Breaking In
 
 ```terminal
 [CLEAR]
@@ -459,7 +459,7 @@ pause_after_output: 1200
 [DELAY 1500ms]
 ```
 
-### GREETINGS — First Conversation
+### GREETINGS: First Conversation
 
 ```terminal
 [SYSTEM] GREETINGS PROFESSOR FALKEN
@@ -591,7 +591,7 @@ pause_after_output: 1200
 [DELAY 3200ms]
 ```
 
-### NORAD — McKittrick's Office
+### NORAD: McKittrick's Office
 
 ```terminal
 [CLEAR]
@@ -683,7 +683,7 @@ pause_after_output: 1200
 [DELAY 3000ms]
 ```
 
-### Finale — A STRANGE GAME
+### Finale: A STRANGE GAME
 
 ```terminal
 [CLEAR]

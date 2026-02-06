@@ -100,12 +100,12 @@ struct SettingsView: View {
 ## How State Survives Re-Rendering
 
 TUIkit re-evaluates the entire view tree on every frame. When `body` is called, views are
-reconstructed from scratch. Despite this, `@State` values persist — they are never reset
+reconstructed from scratch. Despite this, `@State` values persist: they are never reset
 to their initial value.
 
 ### Structural Identity
 
-Each view in the tree has a **structural identity** — a path like `"ContentView/VStack.0/Menu"`.
+Each view in the tree has a **structural identity**: a path like `"ContentView/VStack.0/Menu"`.
 This path is built automatically during rendering based on:
 - The view's type name
 - Its position among siblings (child index)
@@ -126,7 +126,7 @@ When a ``State`` value changes:
 
 1. The ``StateBox`` triggers ``RenderNotifier/current`` → ``AppState/setNeedsRender()``
 2. The observer registered by `AppRunner` requests a re-render
-3. The main loop re-evaluates `app.body` fresh — reconstructing all views
+3. The main loop re-evaluates `app.body` fresh: reconstructing all views
 4. Each `@State.init` self-hydrates from `StateStorage`, recovering persisted values
 5. The new ``FrameBuffer`` output is written to the terminal
 
@@ -136,4 +136,4 @@ Views that disappear from the tree (e.g., a conditional branch switches) have th
 automatically cleaned up at the end of each render pass. `ConditionalView` also immediately
 invalidates the inactive branch's state to prevent stale values.
 
-This is simple and predictable — the view tree is fully re-evaluated each frame (no virtual DOM), with persistent state. Terminal output is then diffed at the line level — only changed lines are written. See <doc:RenderCycle> for details on the output optimization pipeline.
+This is simple and predictable: the view tree is fully re-evaluated each frame (no virtual DOM), with persistent state. Terminal output is then diffed at the line level: only changed lines are written. See <doc:RenderCycle> for details on the output optimization pipeline.

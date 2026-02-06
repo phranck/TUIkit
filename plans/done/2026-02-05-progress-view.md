@@ -1,4 +1,4 @@
-# ProgressView — Determinate Progress Bar
+# ProgressView: Determinate Progress Bar
 
 ## Preface
 
@@ -6,7 +6,7 @@
 
 ## Completed
 
-**2026-02-05** — PR merged with all progress bar styles, full SwiftUI API parity, and 26 tests passing.
+**0: PR merged with all progress bar styles, full SwiftUI API parity, and 26 tests passing.
 
 ## Checklist
 
@@ -118,5 +118,5 @@ dot:       ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●───────
 - [x] Add `Equatable` conformance
 - [x] Implement 5 bar styles via `ProgressBarStyle` enum + `.progressBarStyle(_:)` modifier
 - [x] Create tests in `Tests/TUIkitTests/ProgressViewTests.swift` (26 tests / 3 suites)
-- [x] Add to example app (ContainersPage — ProgressViewRow)
+- [x] Add to example app (ContainersPage: ProgressViewRow)
 - [x] `swift build` + `swiftlint` + `swift test`

@@ -20,7 +20,7 @@ import RepoInfo from "../components/RepoInfo";
 /**
  * Formats a relative time string like "2 min ago" or "just now".
  *
- * Uses simple second/minute thresholds — no need for Intl.RelativeTimeFormat
+ * Uses simple second/minute thresholds: no need for Intl.RelativeTimeFormat
  * since the maximum age before auto-refresh is 5 minutes.
  */
 function formatTimeAgo(timestampMs: number): string {
@@ -47,7 +47,7 @@ function formatCountdown(targetMs: number): string {
 }
 
 /**
- * Project Dashboard page — displays live GitHub metrics for the TUIKit repository.
+ * Project Dashboard page: displays live GitHub metrics for the TUIKit repository.
  *
  * Data is cached in localStorage for 5 minutes. Page reloads within that window
  * serve cached data without hitting the GitHub API. A background timer
@@ -117,7 +117,7 @@ export default function DashboardPage() {
                 Live metrics · <a href="https://github.com/phranck/TUIkit" target="_blank" rel="noopener noreferrer" className="text-accent transition-colors hover:text-foreground">phranck/TUIkit</a>
               </p>
             </div>
-            {/* Animated refresh icon — fades in while refreshing, spins, then fades out */}
+            {/* Animated refresh icon: fades in while refreshing, spins, then fades out */}
             <AnimatePresence>
               {isRefreshing && (
                 <motion.div
@@ -144,7 +144,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Stat cards — row 1 */}
+          {/* Stat cards: row 1 */}
           <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard id="stat-card-stars" label="Stars" value={stats.stars} icon="star" loading={stats.loading} onClick={toggleStargazers} active={showStargazers} />
             <StatCard id="stat-card-contributors" label="Contributors" value={stats.contributors} icon="person2" loading={stats.loading} />
@@ -152,7 +152,7 @@ export default function DashboardPage() {
             <StatCard label="Releases" value={stats.releases} icon="shippingbox" loading={stats.loading} />
           </div>
 
-          {/* Stargazers panel — expands between the two rows */}
+          {/* Stargazers panel: expands between the two rows */}
           <div className={showStargazers ? "mb-4" : ""}>
             <StargazersPanel
               stargazers={stats.stargazers}
@@ -162,7 +162,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Stat cards — row 2 */}
+          {/* Stat cards: row 2 */}
           <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Commits" value={stats.totalCommits} icon="numberCircle" loading={stats.loading} />
             <StatCard label="Open Issues" value={stats.openIssues} icon="issue" loading={stats.loading} />
@@ -170,7 +170,7 @@ export default function DashboardPage() {
             <StatCard label="Merged PRs" value={stats.mergedPRs} icon="merge" loading={stats.loading} />
           </div>
 
-          {/* Activity heatmap — hidden on mobile */}
+          {/* Activity heatmap: hidden on mobile */}
           <div className="mb-8 hidden sm:block">
             <ActivityHeatmap weeks={stats.weeklyActivity} loading={stats.loading} />
           </div>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
             <CommitList commits={stats.recentCommits} loading={stats.loading} />
           </div>
 
-          {/* Footer: cache status + rate limit — stacked and centered on phones/tablets, side-by-side on desktop */}
+          {/* Footer: cache status + rate limit: stacked and centered on phones/tablets, side-by-side on desktop */}
           <div className="flex flex-col items-center gap-2 font-mono text-xs text-muted/60 lg:flex-row lg:justify-between lg:text-sm">
             <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center lg:justify-start lg:text-left">
               {lastFetchedAt && (

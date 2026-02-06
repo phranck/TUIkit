@@ -28,7 +28,7 @@ export function useCopyToClipboard(resetDelayMs = 2000) {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setCopied(false), resetDelayMs);
     } catch {
-      // Clipboard API unavailable or permission denied — silently degrade
+      // Clipboard API unavailable or permission denied: silently degrade
     }
   }, [resetDelayMs]);
 

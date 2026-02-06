@@ -1,10 +1,10 @@
 # Keyboard Shortcuts
 
-How keyboard input flows through TUIkit — from raw terminal bytes to your view handlers.
+How keyboard input flows through TUIkit: from raw terminal bytes to your view handlers.
 
 ## Overview
 
-TUIkit uses a layered event dispatch system. When a key is pressed, it passes through up to three layers. The first layer that consumes the event wins — remaining layers are skipped.
+TUIkit uses a layered event dispatch system. When a key is pressed, it passes through up to three layers. The first layer that consumes the event wins: remaining layers are skipped.
 
 ```
 Terminal raw bytes
@@ -28,7 +28,7 @@ Terminal raw bytes
  └─────────────────────────────┘
 ```
 
-Additionally, `Ctrl+C` (SIGINT) is handled at the OS signal level **before** any of these layers — it always terminates the application.
+Additionally, `Ctrl+C` (SIGINT) is handled at the OS signal level **before** any of these layers: it always terminates the application.
 
 ## Available Keys
 
@@ -89,9 +89,9 @@ public struct KeyEvent {
 
 The terminal encodes modifiers differently from GUI frameworks:
 
-- **Ctrl+letter** — Detected from ASCII control codes (0x01–0x1A). For example, `Ctrl+C` produces byte `0x03`.
-- **Alt+key** — Detected from ESC prefix sequences (`ESC` followed by the key byte).
-- **Shift** — Only auto-detected for uppercase letters. The terminal does not send distinct shift codes for most keys.
+- **Ctrl+letter**: Detected from ASCII control codes (0x01–0x1A). For example, `Ctrl+C` produces byte `0x03`.
+- **Alt+key**: Detected from ESC prefix sequences (`ESC` followed by the key byte).
+- **Shift**: Only auto-detected for uppercase letters. The terminal does not send distinct shift codes for most keys.
 
 ## Registering Key Handlers
 
@@ -104,9 +104,9 @@ Text("Press any key")
     .onKeyPress { event in
         if event.key == .enter {
             doSomething()
-            return true   // consumed — stops propagation
+            return true   // consumed: stops propagation
         }
-        return false      // not consumed — passes to next handler
+        return false      // not consumed: passes to next handler
     }
 ```
 
@@ -134,7 +134,7 @@ Text("Press Enter to continue")
 
 ### Handler Priority
 
-Handlers are dispatched in **reverse registration order** — the deepest view in the tree (most recently registered) gets the event first. This means inner views can intercept events before outer views see them.
+Handlers are dispatched in **reverse registration order**: the deepest view in the tree (most recently registered) gets the event first. This means inner views can intercept events before outer views see them.
 
 ```swift
 VStack {
@@ -164,7 +164,7 @@ The ``FocusManager`` handles two navigation keys:
 
 When an element is focused, all other key events are delegated to it first via `handleKeyEvent(_:)`. Only if the focused element doesn't consume the event does it propagate further.
 
-Arrow keys are **not** handled by `FocusManager` itself — individual views (like ``Menu`` and ``Button``) handle arrows in their own key event handlers.
+Arrow keys are **not** handled by `FocusManager` itself: individual views (like ``Menu`` and ``Button``) handle arrows in their own key event handlers.
 
 For more details, see <doc:FocusSystem>.
 
@@ -187,7 +187,7 @@ The ``QuitBehavior`` enum controls when `q` is allowed to quit:
 | `.always` | `q` quits from any screen (default) |
 | `.rootOnly` | `q` only quits when no status bar context is pushed |
 
-`.rootOnly` is useful for modal dialogs — push a status bar context for the dialog, and `q` will be blocked until the user dismisses it:
+`.rootOnly` is useful for modal dialogs: push a status bar context for the dialog, and `q` will be blocked until the user dismisses it:
 
 ```swift
 Dialog(title: "Confirm") {
@@ -285,7 +285,7 @@ StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "nav")
 
 ## Status Bar Context Stack
 
-The status bar supports a context stack for temporary shortcut overrides — useful for modals and nested navigation:
+The status bar supports a context stack for temporary shortcut overrides: useful for modals and nested navigation:
 
 ```swift
 // Set global items

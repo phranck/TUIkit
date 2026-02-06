@@ -6,15 +6,15 @@ Configure the shortcut bar at the bottom of the terminal.
 
 The status bar is a persistent row at the bottom of the terminal that shows keyboard shortcuts and contextual information. It is always visible and updates every frame.
 
-TUIkit provides two status bar styles — ``StatusBarStyle/compact`` (single-line, shortcuts only) and ``StatusBarStyle/bordered`` (bordered with title support).
+TUIkit provides two status bar styles: ``StatusBarStyle/compact`` (single-line, shortcuts only) and ``StatusBarStyle/bordered`` (bordered with title support).
 
 ## Architecture
 
 The status bar system has three parts:
 
-- **``StatusBarState``** — Manages the item stack, style, and event handling
-- **``StatusBarItem``** — A single shortcut entry (key + label + action)
-- **``StatusBar``** — The view that renders items into a ``FrameBuffer``
+- **``StatusBarState``**: Manages the item stack, style, and event handling
+- **``StatusBarItem``**: A single shortcut entry (key + label + action)
+- **``StatusBar``**: The view that renders items into a ``FrameBuffer``
 
 ## Defining Status Bar Items
 
@@ -84,11 +84,11 @@ These appear on the right side of the status bar. You can configure quit behavio
 
 Two styles are available:
 
-- **``StatusBarStyle/compact``** — Items rendered as `key Label` pairs in a single line, no border
-- **``StatusBarStyle/bordered``** — Items inside a bordered container
+- **``StatusBarStyle/compact``**: Items rendered as `key Label` pairs in a single line, no border
+- **``StatusBarStyle/bordered``**: Items inside a bordered container
 
 Set the style during app configuration or at runtime via the status bar state.
 
 ## Event Dispatch Priority
 
-Status bar items are dispatched in **Layer 1** of the key event pipeline — they take priority over view-registered handlers and default bindings. See <doc:AppLifecycle> for the full dispatch order.
+Status bar items are dispatched in **Layer 1** of the key event pipeline: they take priority over view-registered handlers and default bindings. See <doc:AppLifecycle> for the full dispatch order.

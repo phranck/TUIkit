@@ -167,8 +167,8 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
   if (loading) {
     return (
       <div className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-        <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-          <Icon name="calendar" size={22} className="text-muted" />
+        <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+          <Icon name="calendar" size={20} className="text-accent" />
           Commit Activity
         </h3>
         <div className="h-32 w-full rounded-md bg-accent/10 animate-skeleton" />
@@ -199,8 +199,8 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
 
   return (
     <div ref={containerRef} className="rounded-xl border border-border bg-frosted-glass p-6 backdrop-blur-xl">
-      <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground">
-        <Icon name="calendar" size={22} className="text-muted" />
+      <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
+        <Icon name="calendar" size={20} className="text-accent" />
         Commit Activity
       </h3>
 
@@ -209,7 +209,7 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
 
           {/* Scrollable wrapper for mobile */}
           <div className={scrollMode ? "overflow-x-auto pb-2" : ""}>
-            {/* Month labels — absolutely positioned above the cell grid */}
+            {/* Month labels: absolutely positioned above the cell grid */}
             <div className="relative h-5" style={{ marginLeft: LABEL_WIDTH, minWidth: scrollMode ? colCount * (cellSize + CELL_GAP) : undefined }}>
               {monthLabels.map(({ label, offset }) => (
                 <span
@@ -244,7 +244,7 @@ export default function ActivityHeatmap({ weeks, loading = false }: ActivityHeat
                 ))}
               </div>
 
-              {/* Cell grid — column-flow: 7 rows, columns auto-created per week */}
+              {/* Cell grid: column-flow: 7 rows, columns auto-created per week */}
               <div
                 className="grid"
                 style={{
