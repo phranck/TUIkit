@@ -120,14 +120,14 @@ public init(
 ### Visual Behavior
 
 ```
-┌─────────────────────┐
-│ ● Item 1            │  ← focused row (pulsing ●)
-│   Item 2            │
-│   Item 3            │
-│   Item 4            │
-│   Item 5            │
-│ ↓ (scroll indicator) │
-└─────────────────────┘
+┌──────────────────────┐
+│ ● Item 1             │  ← focused row (pulsing ●)
+│   Item 2             │
+│   Item 3             │
+│   Item 4             │
+│   Item 5             │
+↓   (scroll indicator) │
+└──────────────────────┘
 ```
 
 **Focus Behavior:**
@@ -137,7 +137,7 @@ public init(
 - Tab moves to next element outside list
 
 **Scroll Behavior:**
-- Scroll window shows 5–10 items at a time (configurable via height)
+- Scroll window shows 5–10 items at a time (configurable via height, default behavior without height setting: it consumes the evailable height)
 - Focused item always visible (auto-scroll into view)
 - Scroll indicator (↑/↓) shows when content extends beyond viewport
 
