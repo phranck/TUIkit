@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-06T04:11:52.332Z",
+  "generatedAt": "2026-02-06T06:46:21.405Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -292,6 +292,22 @@
         "verified": true
       },
       "updatedAt": "2026-02-06T04:11:37.426Z"
+    },
+    "keinEntwickler": {
+      "login": "keinEntwickler",
+      "twitter": {
+        "handle": "@keinEntwickler",
+        "url": "https://x.com/keinEntwickler",
+        "source": "github",
+        "verified": true
+      },
+      "bluesky": {
+        "handle": "@keinentwickler.bsky.social",
+        "url": "https://bsky.app/profile/keinentwickler.bsky.social",
+        "source": "username-match",
+        "verified": true
+      },
+      "updatedAt": "2026-02-06T06:45:56.953Z"
     }
   }
 }
