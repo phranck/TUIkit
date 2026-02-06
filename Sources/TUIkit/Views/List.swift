@@ -373,7 +373,7 @@ extension List: Renderable {
         context: RenderContext,
         palette: Palette
     ) -> String {
-        // Selected: dimmed background, accent text (no dot, full width bar)
+        // Selected: dimmed background (accent), accent text (full width bar)
         if isSelected {
             let dimmedBg = palette.accent.opacity(0.2)
             let selectedRow = ANSIRenderer.colorize(
@@ -384,16 +384,18 @@ extension List: Renderable {
             return selectedRow
         }
         
-        // Focused but not selected: pulsing dot indicator
+        // Focused but not selected: dimmed background, normal text
         if isFocused {
-            let dimAccent = palette.accent.opacity(0.35)
-            let dotColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-            let styledDot = ANSIRenderer.colorize("●", foreground: dotColor)
-            return styledDot + " " + rowText
+            let focusedBg = palette.foregroundSecondary.opacity(0.15)
+            let focusedRow = ANSIRenderer.colorize(
+                rowText,
+                background: focusedBg
+            )
+            return focusedRow
         }
         
-        // Unfocused and not selected: just text with padding
-        return "  " + rowText
+        // Unfocused and not selected: just text
+        return rowText
     }
 }
 
