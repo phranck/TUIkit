@@ -76,3 +76,12 @@ extension MyControl: Renderable {
     func renderToBuffer() { ... }  // Exposes implementation, breaks modifiers
 }
 ```
+
+**Pattern to follow: `Box.swift`**
+`Box` is the reference implementation:
+- Public API: Real `View` with `body: some View`
+- Body: Applies modifiers to content (`.border()`, `.padding()`, etc.)
+- No `Renderable` in public API — modifiers do the rendering work
+- Users can chain modifiers naturally: `Box { ... }.foregroundColor(...)`
+
+This is the CORRECT pattern for ALL controls.
