@@ -5,9 +5,20 @@
 - **Cross-platform** — must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
 - When in doubt, verify with the CI pipeline before merging.
 
-### Architecture
+### Architecture (non-negotiable)
+
+#### General Principles
 - No Singletons
-- Consolidate existing functions before adding new ones
+- **Before implementing ANYTHING NEW: Search the codebase** for similar patterns, reusable code, existing solutions
+- Consolidate and reuse before adding new functions or types
+- "Reinventing the wheel" is a code smell — investigate why it exists first
+
+#### Code Reuse Checklist
+1. Does a similar feature exist? Use it or extend it
+2. Can I reuse a helper function/extension/modifier? Do it
+3. Does a pattern already exist? Follow it exactly
+4. Am I duplicating logic? Refactor into a shared utility
+5. **Never implement features in isolation** — maximize consistency and minimize maintenance burden
 
 ### Workflow
 - **NEVER merge PRs autonomously** — stop after creating, let user merge
