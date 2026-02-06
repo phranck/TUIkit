@@ -1,0 +1,360 @@
+//  🖥️ TUIKit — Terminal UI Kit for Swift
+//  RadioButton.swift
+//
+//  Created by LAYERED.work
+//  License: MIT
+
+import Foundation
+
+// MARK: - Radio Button Orientation
+
+/// Defines the layout direction of a radio button group.
+public enum RadioButtonOrientation: Sendable {
+    /// Items stacked vertically (default).
+    case vertical
+
+    /// Items arranged horizontally.
+    case horizontal
+}
+
+// MARK: - Radio Button Item
+
+/// A single option in a radio button group.
+///
+/// Contains a value (for selection binding) and a label view.
+public struct RadioButtonItem<Value: Hashable> {
+    /// The value associated with this option.
+    let value: Value
+
+    /// The label view builder.
+    let labelBuilder: () -> AnyView
+
+    /// Creates a radio button item with a view label.
+    ///
+    /// - Parameters:
+    ///   - value: The value for this option.
+    ///   - label: A view builder closure that returns the label.
+    public init<Label: View>(
+        _ value: Value,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.value = value
+        self.labelBuilder = { AnyView(label()) }
+    }
+
+    /// Creates a radio button item with a string label.
+    ///
+    /// - Parameters:
+    ///   - value: The value for this option.
+    ///   - label: The label text.
+    public init(
+        _ value: Value,
+        _ label: String
+    ) {
+        self.value = value
+        self.labelBuilder = { AnyView(Text(label)) }
+    }
+}
+
+// MARK: - Radio Button Group Builder
+
+/// Result builder for radio button items.
+@resultBuilder
+public enum RadioButtonGroupBuilder<Value: Hashable> {
+    public static func buildBlock(_ items: RadioButtonItem<Value>...) -> [RadioButtonItem<Value>] {
+        Array(items)
+    }
+
+    public static func buildOptional(_ items: [RadioButtonItem<Value>]?) -> [RadioButtonItem<Value>] {
+        items ?? []
+    }
+
+    public static func buildEither(first items: [RadioButtonItem<Value>]) -> [RadioButtonItem<Value>] {
+        items
+    }
+
+    public static func buildEither(second items: [RadioButtonItem<Value>]) -> [RadioButtonItem<Value>] {
+        items
+    }
+
+    public static func buildArray(_ itemGroups: [[RadioButtonItem<Value>]]) -> [RadioButtonItem<Value>] {
+        itemGroups.flatMap { $0 }
+    }
+}
+
+// MARK: - Radio Button Group
+
+/// An interactive radio button group for single-selection from multiple options.
+///
+/// Radio buttons can be arranged vertically or horizontally. Each option is focusable
+/// and supports keyboard navigation with arrow keys. Selection can be changed with Enter or Space.
+///
+/// ## Rendering
+///
+/// Vertical layout:
+/// ```
+/// ◯ Option 1
+/// ● Option 2  (selected)
+/// ◯ Option 3
+/// ```
+///
+/// Horizontal layout:
+/// ```
+/// ◯ Option 1  ● Option 2  ◯ Option 3
+/// ```
+///
+/// # Basic Example
+///
+/// ```swift
+/// @State var selection: String = "option1"
+///
+/// RadioButtonGroup(selection: $selection) {
+///     RadioButtonItem("option1") { Text("First Choice") }
+///     RadioButtonItem("option2") { Text("Second Choice") }
+///     RadioButtonItem("option3") { Text("Third Choice") }
+/// }
+/// ```
+public struct RadioButtonGroup<Value: Hashable>: View {
+    /// The binding to the selected value.
+    let selection: Binding<Value>
+
+    /// The items in the group.
+    let items: [RadioButtonItem<Value>]
+
+    /// The layout orientation.
+    let orientation: RadioButtonOrientation
+
+    /// The unique focus identifier for the group.
+    let focusID: String
+
+    /// Whether the group is disabled.
+    var isDisabled: Bool
+
+    /// Creates a radio button group with items and a selection binding.
+    ///
+    /// - Parameters:
+    ///   - selection: A binding to the selected value.
+    ///   - orientation: The layout orientation (default: `.vertical`).
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - isDisabled: Whether the group is disabled (default: false).
+    ///   - builder: A builder closure that returns radio button items.
+    public init(
+        selection: Binding<Value>,
+        orientation: RadioButtonOrientation = .vertical,
+        focusID: String? = nil,
+        isDisabled: Bool = false,
+        @RadioButtonGroupBuilder<Value> builder: () -> [RadioButtonItem<Value>]
+    ) {
+        self.selection = selection
+        self.items = builder()
+        self.orientation = orientation
+        self.focusID = focusID ?? "radio-group-\(UUID().uuidString)"
+        self.isDisabled = isDisabled
+    }
+
+    public var body: Never {
+        fatalError("RadioButtonGroup renders via Renderable")
+    }
+}
+
+// MARK: - Radio Button Handler
+
+/// Internal handler class for radio button group focus and selection management.
+final class RadioButtonGroupHandler: Focusable {
+    let focusID: String
+    let selection: Binding<AnyHashable>
+    let itemValues: [AnyHashable]
+    var canBeFocused: Bool
+    var focusedIndex: Int = 0
+
+    init(
+        focusID: String,
+        selection: Binding<AnyHashable>,
+        itemValues: [AnyHashable],
+        canBeFocused: Bool
+    ) {
+        self.focusID = focusID
+        self.selection = selection
+        self.itemValues = itemValues
+        self.canBeFocused = canBeFocused
+
+        // Find current focused index based on selection
+        if let currentIndex = itemValues.firstIndex(of: selection.wrappedValue) {
+            self.focusedIndex = currentIndex
+        }
+    }
+}
+
+// MARK: - Key Event Handling
+
+extension RadioButtonGroupHandler {
+    func handleKeyEvent(_ event: KeyEvent) -> Bool {
+        switch event.key {
+        case .up:
+            if focusedIndex > 0 {
+                focusedIndex -= 1
+                selection.wrappedValue = itemValues[focusedIndex]
+                return true
+            }
+            return false
+
+        case .down:
+            if focusedIndex < itemValues.count - 1 {
+                focusedIndex += 1
+                selection.wrappedValue = itemValues[focusedIndex]
+                return true
+            }
+            return false
+
+        case .left:
+            if focusedIndex > 0 {
+                focusedIndex -= 1
+                selection.wrappedValue = itemValues[focusedIndex]
+                return true
+            }
+            return false
+
+        case .right:
+            if focusedIndex < itemValues.count - 1 {
+                focusedIndex += 1
+                selection.wrappedValue = itemValues[focusedIndex]
+                return true
+            }
+            return false
+
+        case .enter, .character(" "):
+            // Select current focused item
+            selection.wrappedValue = itemValues[focusedIndex]
+            return true
+
+        default:
+            return false
+        }
+    }
+}
+
+// MARK: - Radio Button Group Rendering
+
+extension RadioButtonGroup: Renderable {
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let focusManager = context.environment.focusManager
+        let palette = context.environment.palette
+
+        // Create type-erased selection binding and item values
+        let erasedSelection = Binding<AnyHashable>(
+            get: { AnyHashable(selection.wrappedValue) },
+            set: { newValue in
+                if let typedValue = newValue.base as? Value {
+                    selection.wrappedValue = typedValue
+                }
+            }
+        )
+        let itemValues = items.map { AnyHashable($0.value) }
+
+        // Register handler
+        let handler = RadioButtonGroupHandler(
+            focusID: focusID,
+            selection: erasedSelection,
+            itemValues: itemValues,
+            canBeFocused: !isDisabled
+        )
+        focusManager.register(handler, inSection: context.activeFocusSectionID)
+
+        // Render items based on orientation
+        let lines: [String]
+        switch orientation {
+        case .vertical:
+            lines = renderVertical(context: context, handler: handler, palette: palette)
+        case .horizontal:
+            lines = renderHorizontal(context: context, handler: handler, palette: palette)
+        }
+
+        return FrameBuffer(lines: lines)
+    }
+
+    private func renderVertical(
+        context: RenderContext,
+        handler: RadioButtonGroupHandler,
+        palette: Palette
+    ) -> [String] {
+        items.enumerated().map { index, item in
+            renderRadioButton(
+                index: index,
+                item: item,
+                isFocused: handler.focusedIndex == index,
+                isSelected: selection.wrappedValue == item.value,
+                context: context,
+                palette: palette
+            )
+        }
+    }
+
+    private func renderHorizontal(
+        context: RenderContext,
+        handler: RadioButtonGroupHandler,
+        palette: Palette
+    ) -> [String] {
+        let itemLines = items.enumerated().map { index, item in
+            renderRadioButton(
+                index: index,
+                item: item,
+                isFocused: handler.focusedIndex == index,
+                isSelected: selection.wrappedValue == item.value,
+                context: context,
+                palette: palette
+            )
+        }
+
+        // Join horizontally with spacing
+        let spacing = "  "
+        return [itemLines.joined(separator: spacing)]
+    }
+
+    private func renderRadioButton(
+        index: Int,
+        item: RadioButtonItem<Value>,
+        isFocused: Bool,
+        isSelected: Bool,
+        context: RenderContext,
+        palette: Palette
+    ) -> String {
+        // Radio indicator: ● if selected, ◯ if not
+        let indicator = isSelected ? "●" : "◯"
+
+        // Determine indicator color
+        let indicatorColor: Color
+        if isDisabled {
+            indicatorColor = palette.foregroundTertiary
+        } else if isFocused {
+            // Subtle pulse on focus
+            let dimAccent = palette.accent.opacity(0.35)
+            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+        } else {
+            indicatorColor = palette.border
+        }
+
+        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor, bold: isFocused && !isDisabled)
+
+        // Render label
+        let labelView = item.labelBuilder()
+        let labelBuffer = labelView.renderToBuffer(context: context)
+        let labelText = labelBuffer.lines.first ?? ""
+
+        // Combine: indicator + label
+        return styledIndicator + " " + labelText
+    }
+}
+
+// MARK: - Radio Button Group Convenience Modifiers
+
+extension RadioButtonGroup {
+    /// Creates a disabled version of this radio button group.
+    ///
+    /// - Parameter disabled: Whether the group is disabled.
+    /// - Returns: A new group with the disabled state.
+    public func disabled(_ disabled: Bool = true) -> RadioButtonGroup<Value> {
+        var newGroup = self
+        newGroup.isDisabled = disabled
+        return newGroup
+    }
+}
