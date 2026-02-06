@@ -14,20 +14,20 @@ struct ListPage: View {
         VStack(spacing: 1) {
             DemoSection("Basic List") {
                 List(height: 8) {
-                    Text("Item 1")
-                    Text("Item 2")
-                    Text("Item 3")
-                    Text("Item 4")
-                    Text("Item 5")
+                    Text("Item 1").foregroundColor(.palette.foreground)
+                    Text("Item 2").foregroundColor(.palette.foreground)
+                    Text("Item 3").foregroundColor(.palette.foreground)
+                    Text("Item 4").foregroundColor(.palette.foreground)
+                    Text("Item 5").foregroundColor(.palette.foreground)
                 }
             }
             
             DemoSection("List with Selection") {
                 List(selection: $selectedItem, height: 6) {
-                    Text("Option A").tag("a")
-                    Text("Option B").tag("b")
-                    Text("Option C").tag("c")
-                    Text("Option D").tag("d")
+                    Text("Option A").foregroundColor(.palette.foreground).tag("a")
+                    Text("Option B").foregroundColor(.palette.foreground).tag("b")
+                    Text("Option C").foregroundColor(.palette.foreground).tag("c")
+                    Text("Option D").foregroundColor(.palette.foreground).tag("d")
                 }
             }
             
