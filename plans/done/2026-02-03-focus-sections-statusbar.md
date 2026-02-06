@@ -1,8 +1,12 @@
 # Focus Sections with StatusBar Cascading
 
+## Preface
+
+Focus Sections enable multi-panel TUIs where Tab switches between named focusable areas and the StatusBar displays context-sensitive shortcuts for each. StatusBar items cascade from the active section up to parents (merge) or stop cleanly (replace for modals). A breathing ● dot in the section border pulses via a dedicated PulseTimer, providing clear visual feedback on which section is active. Cascading composition and per-section shortcuts make complex layouts intuitive.
+
 ## Completed
 
-Completed 2026-02-03. All framework steps implemented and tested. 482 tests passing. Example App update deferred to separate redesign effort.
+**2026-02-03** — All framework steps implemented and tested. 482 tests passing. Example App update deferred to separate redesign effort.
 
 ---
 

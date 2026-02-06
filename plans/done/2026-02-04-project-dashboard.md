@@ -1,8 +1,29 @@
 # Project Dashboard — Live GitHub Metrics Page
 
+## Preface
+
+A `/dashboard` page now displays live GitHub metrics: stat cards (commits, stars, forks, PRs, contributors, branches, tags, releases), a 52-week commit heatmap (GitHub-style), language breakdown bar, recent commits with expandable messages, and repo metadata. All data fetched client-side via GitHub REST API (no token required). Manual refresh button + rate limit display in footer. Phosphor-themed retro styling matches the landing page. Everything loads in parallel for snappy performance.
+
 ## Completed
 
-Completed 2026-02-04. Dashboard live at `/dashboard` with stat cards, commit heatmap, language bar, commit list, stargazer panel, shared nav, and rate limit display.
+**2026-02-04** — Dashboard live at `/dashboard` with stat cards, commit heatmap, language bar, commit list, stargazer panel, shared nav, and rate limit display.
+
+## Checklist
+
+- [x] Create useGitHubStats.ts hook
+- [x] Implement all GitHub API requests (~13 endpoints)
+- [x] Create StatCard.tsx component
+- [x] Create ActivityHeatmap.tsx with 52-week grid
+- [x] Create LanguageBar.tsx with stacked bar chart
+- [x] Create CommitList.tsx with expandable commit messages
+- [x] Create RepoInfo.tsx with metadata grid
+- [x] Create app/dashboard/page.tsx layout
+- [x] Implement loading skeleton states
+- [x] Implement error handling and rate limit display
+- [x] Add refresh button and manual re-fetch
+- [x] Update nav with Dashboard link
+- [x] Test responsive design (mobile + desktop)
+- [x] Test all 6 phosphor themes
 
 ---
 

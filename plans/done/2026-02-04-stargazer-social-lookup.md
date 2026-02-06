@@ -1,8 +1,35 @@
 # Stargazer Social Account Lookup — Multi-Platform Discovery
 
+## Preface
+
+Multi-platform social lookup now discovers Mastodon, Twitter, and Bluesky accounts for stargazers: searches GitHub bios/blogs/profile fields, validates domains via NodeInfo, searches usernames on known instances, and caches results. Scheduled GitHub Action runs every 2h (incremental for new stargazers) and weekly (full refresh for updated bios). Dashboard popover shows social icons + links for all three platforms. Better validation eliminates false positives (corporate emails, link-in-bio services).
+
 ## Completed
 
-Completed 2026-02-04. Social lookup script, GitHub Action workflow, and UI integration all functional. Supersedes [2026-02-04-stargazer-mastodon-lookup.md](2026-02-04-stargazer-mastodon-lookup.md).
+**2026-02-04** — Social lookup script, GitHub Action workflow, and UI integration all functional. Supersedes [2026-02-04-stargazer-mastodon-lookup.md](2026-02-04-stargazer-mastodon-lookup.md).
+
+## Checklist
+
+- [x] Define SocialCacheEntry type with all three platforms
+- [x] Create empty social-overrides.json
+- [x] Create empty public/social-cache.json
+- [x] Update useGitHubStats.ts to fetch and merge social cache
+- [x] Create scripts/update-social-cache.ts
+- [x] Fetch GitHub user details (bio, blog, twitter_username)
+- [x] Parse Twitter from GitHub profile + bio/blog
+- [x] Parse Mastodon handle from bio/blog with validation
+- [x] Parse Bluesky handle from bio/blog
+- [x] Search username on known Mastodon instances
+- [x] Search username via Bluesky API
+- [x] Merge with manual overrides
+- [x] Create update-social-cache.yml workflow
+- [x] Configure incremental (2h) + full (weekly) schedule
+- [x] Add Mastodon, Twitter, Bluesky icons to Icon.tsx
+- [x] Update StargazersPanel.tsx popover with icon row
+- [x] Link icons to social profiles
+- [x] Fix TypeScript errors in script
+- [x] Test popover in browser
+- [x] Add manual overrides for known stargazers
 
 ---
 

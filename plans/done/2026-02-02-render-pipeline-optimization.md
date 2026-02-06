@@ -1,13 +1,30 @@
 # Render Pipeline Optimization
 
+## Preface
+
+The render pipeline is optimized across four phases: (1) line-level diffing compares output with previous frame and only writes changed lines (eliminates ~90% of terminal writes), (2) output buffering batches all writes into one syscall, (3) caching eliminates repeated ioctl and regex evaluations on terminal size and FrameBuffer width, (4) architecture cleanup extracts ChildInfo for future subtree memoization. Spinner animations now run smoothly because unchanged regions don't get redrawn.
+
 ## Completed
 
-Phases 1–4 completed on 2026-02-02. All phases implemented across three branches:
+**2026-02-02** — Phases 1–4 completed. All phases implemented across three branches:
 - `refactor/render-pipeline-phase1` — Phase 1 (line-level diffing) + Phase 2 (output buffering) + CI fix. PR #62.
 - `refactor/render-pipeline-phase3` — Phase 3 (caching). PR #63.
 - `refactor/render-pipeline-phase4` — Phase 4 (architecture cleanup, renamed from "subtree memoization").
 
 Note: The original Phase 4 (subtree memoization) was replaced with architecture cleanup. Subtree memoization remains a future project.
+
+## Checklist
+
+- [x] Phase 1: Line-level diffing in RenderLoop
+- [x] Phase 2: Output buffering in Terminal
+- [x] Phase 3: Caching of terminal size and FrameBuffer width
+- [x] Phase 4: Architecture cleanup (ChildInfo extraction)
+- [x] Line diffing tests (13 tests)
+- [x] Output buffering tests (6 tests)
+- [x] FrameBuffer width caching validation
+- [x] Spinner animation verification
+- [x] Full test suite passing (455 tests)
+- [x] Documentation updated (RenderCycle.md, AppLifecycle.md, StateManagement.md)
 
 ## Problem
 
