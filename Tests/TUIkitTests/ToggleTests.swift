@@ -140,9 +140,9 @@ struct ToggleTests {
 
         let buffer = renderToBuffer(toggle, context: context)
 
-        // Focused toggle should have ANSI codes and the dot indicator
+        // Focused toggle should have ANSI codes (pulsing brackets, no dot)
         let content = buffer.lines.joined()
-        #expect(content.contains("\u{1b}["), "Focused toggle should have ANSI styling")
+        #expect(content.contains("\u{1b}["), "Focused toggle should have ANSI styling for pulsing brackets")
     }
 
     @Test("Toggle renders without focus indicator when unfocused")
