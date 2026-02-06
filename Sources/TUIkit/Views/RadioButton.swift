@@ -125,7 +125,8 @@ public struct RadioButtonGroup<Value: Hashable>: View {
     let orientation: RadioButtonOrientation
 
     /// The unique focus identifier for the group.
-    let focusID: String
+    /// Auto-generated if not provided, but must be stable across renders.
+    let focusID: String?
 
     /// Whether the group is disabled.
     var isDisabled: Bool
@@ -135,7 +136,7 @@ public struct RadioButtonGroup<Value: Hashable>: View {
     /// - Parameters:
     ///   - selection: A binding to the selected value.
     ///   - orientation: The layout orientation (default: `.vertical`).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - focusID: The unique focus identifier (default: auto-generated from identity).
     ///   - isDisabled: Whether the group is disabled (default: false).
     ///   - builder: A builder closure that returns radio button items.
     public init(
@@ -148,7 +149,7 @@ public struct RadioButtonGroup<Value: Hashable>: View {
         self.selection = selection
         self.items = builder()
         self.orientation = orientation
-        self.focusID = focusID ?? "radio-group-\(UUID().uuidString)"
+        self.focusID = focusID
         self.isDisabled = isDisabled
     }
 
@@ -269,13 +270,22 @@ extension RadioButtonGroup: Renderable {
         )
         let itemValues = items.map { AnyHashable($0.value) }
 
+        // Get or create persistent focusID from state storage.
+        // focusID must be stable across renders for focus state to persist.
+        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
+        let focusIDBox: StateBox<String> = stateStorage.storage(
+            for: focusIDKey,
+            default: focusID ?? "radio-group-\(context.identity.path)"
+        )
+        let persistedFocusID = focusIDBox.value
+
         // Get or create persistent handler from state storage.
         // The handler maintains focusedIndex across renders, enabling Tab navigation.
         let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
         let handlerBox: StateBox<RadioButtonGroupHandler> = stateStorage.storage(
             for: handlerKey,
             default: RadioButtonGroupHandler(
-                focusID: focusID,
+                focusID: persistedFocusID,
                 selection: erasedSelection,
                 itemValues: itemValues,
                 orientation: orientation,
@@ -293,7 +303,7 @@ extension RadioButtonGroup: Renderable {
         stateStorage.markActive(context.identity)
 
         // Check if this group has focus (after registering, so isFocused works correctly)
-        let groupHasFocus = focusManager.isFocused(id: focusID)
+        let groupHasFocus = focusManager.isFocused(id: persistedFocusID)
 
         // Render items based on orientation
         let lines: [String]
