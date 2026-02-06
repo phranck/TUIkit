@@ -146,15 +146,36 @@ export function useGitHubStatsCache(): UseGitHubStatsCacheReturn {
   }, [doFetchAndCache]);
 
   // -------------------------------------------------------------------------
-  // Auto-refresh interval
+  // Auto-refresh: schedule based on remaining TTL, then repeat every interval
   // -------------------------------------------------------------------------
 
+  const timerInitializedRef = useRef(false);
+
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
+    // Only set up the timer once on mount
+    if (timerInitializedRef.current) return;
+    timerInitializedRef.current = true;
+
+    // Calculate delay until first refresh based on cache age
+    const cached = readCache();
+    let initialDelay = REFRESH_INTERVAL_MS;
+    if (cached) {
+      const elapsed = Date.now() - cached.fetchedAt;
+      const remaining = REFRESH_INTERVAL_MS - elapsed;
+      initialDelay = Math.max(0, remaining);
+    }
+
+    // First refresh after remaining TTL
+    const timeoutId = setTimeout(() => {
       doFetchAndCache();
-    }, REFRESH_INTERVAL_MS);
+      // Then repeat every REFRESH_INTERVAL_MS
+      intervalRef.current = setInterval(() => {
+        doFetchAndCache();
+      }, REFRESH_INTERVAL_MS);
+    }, initialDelay);
 
     return () => {
+      clearTimeout(timeoutId);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [doFetchAndCache]);
