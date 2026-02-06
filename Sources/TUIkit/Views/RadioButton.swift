@@ -292,13 +292,16 @@ extension RadioButtonGroup: Renderable {
         focusManager.register(handler, inSection: context.activeFocusSectionID)
         stateStorage.markActive(context.identity)
 
+        // Check if this group has focus
+        let groupHasFocus = focusManager.isFocused(id: focusID)
+
         // Render items based on orientation
         let lines: [String]
         switch orientation {
         case .vertical:
-            lines = renderVertical(context: context, handler: handler, palette: palette)
+            lines = renderVertical(context: context, handler: handler, groupHasFocus: groupHasFocus, palette: palette)
         case .horizontal:
-            lines = renderHorizontal(context: context, handler: handler, palette: palette)
+            lines = renderHorizontal(context: context, handler: handler, groupHasFocus: groupHasFocus, palette: palette)
         }
 
         return FrameBuffer(lines: lines)
@@ -307,13 +310,15 @@ extension RadioButtonGroup: Renderable {
     private func renderVertical(
         context: RenderContext,
         handler: RadioButtonGroupHandler,
+        groupHasFocus: Bool,
         palette: Palette
     ) -> [String] {
         items.enumerated().map { index, item in
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: handler.focusedIndex == index,
+                isFocused: groupHasFocus && handler.focusedIndex == index,
+                groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
                 palette: palette
@@ -324,13 +329,15 @@ extension RadioButtonGroup: Renderable {
     private func renderHorizontal(
         context: RenderContext,
         handler: RadioButtonGroupHandler,
+        groupHasFocus: Bool,
         palette: Palette
     ) -> [String] {
         let itemLines = items.enumerated().map { index, item in
             renderRadioButton(
                 index: index,
                 item: item,
-                isFocused: handler.focusedIndex == index,
+                isFocused: groupHasFocus && handler.focusedIndex == index,
+                groupHasFocus: groupHasFocus,
                 isSelected: selection.wrappedValue == item.value,
                 context: context,
                 palette: palette
@@ -346,6 +353,7 @@ extension RadioButtonGroup: Renderable {
         index: Int,
         item: RadioButtonItem<Value>,
         isFocused: Bool,
+        groupHasFocus: Bool,
         isSelected: Bool,
         context: RenderContext,
         palette: Palette
@@ -358,8 +366,8 @@ extension RadioButtonGroup: Renderable {
         if isDisabled {
             indicatorColor = palette.foregroundTertiary
         } else if isSelected {
-            // Selected indicator: accent color, pulses if group is focused
-            if isFocused {
+            // Selected indicator: accent color, pulses only if this item is focused AND group has focus
+            if isFocused && groupHasFocus {
                 let dimAccent = palette.accent.opacity(0.35)
                 indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
             } else {
