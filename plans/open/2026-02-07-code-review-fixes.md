@@ -436,10 +436,11 @@ func run() throws {
 - [x] Tests pass (590/590)
 
 ### Phase 6: AppRunner
-- [ ] Replace implicitly unwrapped optionals
-- [ ] Update initialization flow
-- [ ] Build passes
-- [ ] Tests pass
+- [x] Replace implicitly unwrapped optionals with local variables in run()
+- [x] InputHandler, RenderLoop, PulseTimer now created at start of run()
+- [x] Removed swiftlint:disable comments for IUOs
+- [x] Build passes
+- [x] Tests pass (590/590)
 
 ### Phase 7: Final
 - [ ] Full test suite passes (591+ tests)
