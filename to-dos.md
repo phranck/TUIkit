@@ -2,12 +2,13 @@
 
 ## In Progress
 
-- [ ] **Swift 6 Concurrency**: @MainActor on View/Renderable hierarchy (Phase 2 complete)
-  - [x] View, ViewModifier, Renderable, App, Scene protocols
-  - [x] ViewBuilder, SceneBuilder, ChildInfoProvider
-  - [x] renderToBuffer(), makeChildInfo(), resolveChildInfos()
-  - [x] All test suites updated with @MainActor
-  - [ ] Phase 3-6: TerminalProtocol, ForEach, ActionHandler, AppRunner
+- [ ] **Swift 6 Concurrency**: Phase 2b complete, Phases 3-6 pending
+  - [x] Phase 1-2: @MainActor on protocols, builders, render functions
+  - [x] Phase 2b: Cross-platform Lock wrapper (OSAllocatedUnfairLock/NSLock)
+  - [ ] Phase 3: TerminalProtocol for testability
+  - [ ] Phase 4: ForEach compile-time error
+  - [ ] Phase 5: ActionHandler consolidation
+  - [ ] Phase 6: AppRunner cleanup (remove IUOs)
 
 ## Open
 
@@ -44,9 +45,9 @@
 
 ### 2026-02-07
 
-- [x] **Swift 6 @MainActor**: View, ViewModifier, Renderable, App, Scene protocols; all builders; 64 files, 591 tests pass
+- [x] **Swift 6 @MainActor Phase 2b**: Cross-platform Lock wrapper; OSAllocatedUnfairLock on macOS, NSLock on Linux
+- [x] **Swift 6 @MainActor Phase 2**: View, ViewModifier, Renderable, App, Scene protocols; all builders; 67 files
 - [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported (PR #83)
-- [x] **UI Consistency**: Unified card headers (gap-3, Icon size 20, text-accent), text-lg content
 - [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
 - [x] **List Reverted**: Removed premature List implementation; will re-implement after shared architecture
 
@@ -164,4 +165,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-07 (Swift 6 @MainActor Phase 2 complete)
+**Last Updated:** 2026-02-07 (Swift 6 @MainActor Phase 2b complete)
