@@ -47,7 +47,7 @@ import Foundation
 /// `Terminal` is `@MainActor` isolated. All terminal operations must occur
 /// on the main thread, which is enforced by the Swift concurrency system.
 @MainActor
-final class Terminal {
+final class Terminal: TerminalProtocol {
     /// Whether raw mode is active.
     private var isRawMode = false
 

@@ -412,11 +412,11 @@ func run() throws {
 - [x] Awaiting Linux CI verification
 
 ### Phase 3: TerminalProtocol
-- [ ] Create TerminalProtocol.swift
-- [ ] Terminal conforms to TerminalProtocol
-- [ ] Create MockTerminal for tests
-- [ ] Build passes
-- [ ] Tests pass
+- [x] Create TerminalProtocol.swift
+- [x] Terminal conforms to TerminalProtocol
+- [x] Create MockTerminal for tests
+- [x] Build passes
+- [x] Tests pass
 
 ### Phase 4: ForEach
 - [ ] Add @available(*, unavailable) to ForEach.body
