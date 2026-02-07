@@ -1,18 +1,18 @@
 # TUIKit: What's Next
 
-**Branch:** `feat/button-focus-indicator` (PR #81 pending)
-**Tests:** 571 / 90 suites ✅ · **Build:** clean ✅ · **Lint:** 0 serious ✅
+**Branch:** `main`
+**Tests:** 618 / 99 suites ✅ · **Build:** clean ✅ · **Lint:** 0 serious ✅
 
 ## Active
 
-- **Button Focus Indicator**: Pulsing accent brackets, Shift+Tab, style refinements (PR #81)
+- **View Architecture Refactoring**: ContainerView, shared handlers, List & Table alignment
 
 ## Next Steps
 
-1. **TextInput / TextField**: Single-line text input with cursor, backspace, delete, scrolling (High)
-2. **Table**: Column alignment with ANSI-aware padding (High)
-3. **List (scrollable)**: Scrollable list with selection for arbitrary views (Medium)
+1. **ContainerView Refactor**: Extract `_ContainerViewCore`, enable modifier support (High)
+2. **Shared Handlers**: FocusableItemListHandler, SelectionStateManager (High)
+3. **TextInput / TextField**: Single-line text input with cursor (Medium)
 
 ---
 
-**Last Updated:** 2026-02-06 17:35
+**Last Updated:** 2026-02-07
