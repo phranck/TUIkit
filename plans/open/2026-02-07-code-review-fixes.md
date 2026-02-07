@@ -445,7 +445,7 @@ func run() throws {
 ### Phase 7: Final
 - [x] Full test suite passes (590 tests in 94 suites)
 - [x] SwiftLint passes (1 warning: file_length in StatusBarTests, known)
-- [ ] Linux CI passes (awaiting push)
+- [x] Linux CI passes
 - [x] Documentation updated (plan checklists complete)
 
 ## Files Affected
