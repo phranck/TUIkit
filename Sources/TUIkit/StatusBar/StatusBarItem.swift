@@ -129,6 +129,42 @@ public enum Shortcut {
     /// Function key prefix: Fn
     public static let fn = "Fn"
 
+    /// Function key F1
+    public static let f1 = "F1"
+
+    /// Function key F2
+    public static let f2 = "F2"
+
+    /// Function key F3
+    public static let f3 = "F3"
+
+    /// Function key F4
+    public static let f4 = "F4"
+
+    /// Function key F5
+    public static let f5 = "F5"
+
+    /// Function key F6
+    public static let f6 = "F6"
+
+    /// Function key F7
+    public static let f7 = "F7"
+
+    /// Function key F8
+    public static let f8 = "F8"
+
+    /// Function key F9
+    public static let f9 = "F9"
+
+    /// Function key F10
+    public static let f10 = "F10"
+
+    /// Function key F11
+    public static let f11 = "F11"
+
+    /// Function key F12
+    public static let f12 = "F12"
+
     // MARK: - Navigation
 
     /// Home key symbol: ⤒
@@ -478,23 +514,67 @@ public extension StatusBarItem {
 private extension StatusBarItem {
     /// Maps common shortcut symbols to Key values.
     static func keyFromShortcut(_ shortcut: String) -> Key? {
-        switch shortcut.lowercased() {
-        case "⎋", "esc", "escape":
+        switch shortcut {
+        // Special keys
+        case Shortcut.escape, "esc", "escape":
             return .escape
-        case "↵", "⏎", "enter", "return":
+        case Shortcut.enter, Shortcut.returnKey, "enter", "return":
             return .enter
-        case "⇥", "tab":
+        case Shortcut.tab, "tab":
             return .tab
-        case "⌫", "backspace", "del":
+        case Shortcut.backspace, "backspace", "del":
             return .backspace
-        case "↑":
+        case Shortcut.delete:
+            return .delete
+        case Shortcut.space, "space":
+            return .space
+
+        // Arrow keys
+        case Shortcut.arrowUp:
             return .up
-        case "↓":
+        case Shortcut.arrowDown:
             return .down
-        case "←":
+        case Shortcut.arrowLeft:
             return .left
-        case "→":
+        case Shortcut.arrowRight:
             return .right
+
+        // Navigation keys
+        case Shortcut.home:
+            return .home
+        case Shortcut.end:
+            return .end
+        case Shortcut.pageUp:
+            return .pageUp
+        case Shortcut.pageDown:
+            return .pageDown
+
+        // Function keys
+        case Shortcut.f1:
+            return .f1
+        case Shortcut.f2:
+            return .f2
+        case Shortcut.f3:
+            return .f3
+        case Shortcut.f4:
+            return .f4
+        case Shortcut.f5:
+            return .f5
+        case Shortcut.f6:
+            return .f6
+        case Shortcut.f7:
+            return .f7
+        case Shortcut.f8:
+            return .f8
+        case Shortcut.f9:
+            return .f9
+        case Shortcut.f10:
+            return .f10
+        case Shortcut.f11:
+            return .f11
+        case Shortcut.f12:
+            return .f12
+
         default:
             return nil
         }

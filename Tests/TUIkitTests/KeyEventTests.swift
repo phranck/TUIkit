@@ -147,7 +147,7 @@ struct KeyEventParseTests {
     @Test("Parse space character")
     func parseSpace() {
         let event = KeyEvent.parse([0x20])
-        #expect(event?.key == .character(" "))
+        #expect(event?.key == .space)
     }
 
     @Test("Parse Ctrl+A")
