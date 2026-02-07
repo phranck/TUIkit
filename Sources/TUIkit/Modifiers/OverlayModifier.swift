@@ -26,7 +26,15 @@ public struct OverlayModifier<Base: View, Overlay: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension OverlayModifier: @preconcurrency Equatable where Base: Equatable, Overlay: Equatable {}
+extension OverlayModifier: Equatable where Base: Equatable, Overlay: Equatable {
+    nonisolated public static func == (lhs: OverlayModifier<Base, Overlay>, rhs: OverlayModifier<Base, Overlay>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.base == rhs.base &&
+            lhs.overlay == rhs.overlay &&
+            lhs.alignment == rhs.alignment
+        }
+    }
+}
 
 // MARK: - Renderable
 
