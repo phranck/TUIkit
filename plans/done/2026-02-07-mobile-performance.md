@@ -1,5 +1,9 @@
 # Mobile Performance Optimization
 
+## Completed
+
+2026-02-07
+
 ## Preface
 
 The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices.
