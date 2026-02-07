@@ -17,9 +17,7 @@
 
 #### Medium
 
-- [ ] **List & Table**: Shared architecture (focus handler, selection state, rendering). BLOCKED: Wait for architecture plan finalization
-- [ ] **List (scrollable)**: Implement after shared architecture is finalized
-- [ ] **Table**: Implement after shared architecture is finalized
+- [ ] **Table**: Column alignment with ANSI-aware padding. BLOCKED: Wait for shared handlers
 
 
 #### Low
@@ -40,6 +38,13 @@
 - [ ] **Code Examples**: Counter, Todo List, Form, Table/List
 
 ## Completed
+
+### 2026-02-07
+
+- [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported (PR #83)
+- [x] **UI Consistency**: Unified card headers (gap-3, Icon size 20, text-accent), text-lg content
+- [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
+- [x] **List Component**: Scrollable list with keyboard navigation, 38 tests (PR #83)
 
 ### 2026-02-06
 
@@ -155,4 +160,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-06 16:00
+**Last Updated:** 2026-02-07

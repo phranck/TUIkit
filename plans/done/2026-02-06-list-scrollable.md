@@ -2,7 +2,24 @@
 
 ## Preface
 
-List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. Uthey come later once the API is proven.
+List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven.
+
+## Completed
+
+**2026-02-07**: Core List implementation merged in PR #83. 38 tests passing, ListPage added to example app.
+
+## Checklist
+
+- [x] Create ListRow internal structure
+- [x] Create List struct with selection binding and content builder
+- [x] Create ListHandler for keyboard navigation and selection
+- [x] Implement row identity resolution from @ViewBuilder
+- [x] Implement Renderable extension with visible window rendering
+- [x] Add .disabled() modifier
+- [x] Write 38 comprehensive tests
+- [x] Build & lint verification
+- [x] Add to example app
+- [x] Documentation complete
 
 ## Context / Problem
 
@@ -219,19 +236,6 @@ Each row is rendered independently, with focus/selection state determining visua
   - Empty list handling
 - [ ] Build & lint verification
 - [ ] Add to example app (ListPage with multiple scenarios)
-
-## Checklist
-
-- [ ] Create ListRow internal structure
-- [ ] Create List struct with selection binding and content builder
-- [ ] Create ListHandler for keyboard navigation and selection
-- [ ] Implement row identity resolution from @ViewBuilder
-- [ ] Implement Renderable extension with visible window rendering
-- [ ] Add .disabled() modifier
-- [ ] Write 25+ comprehensive tests
-- [ ] Build & lint verification
-- [ ] Add to example app
-- [ ] Documentation complete
 
 ### Phase 2: Enhancements (future)
 
