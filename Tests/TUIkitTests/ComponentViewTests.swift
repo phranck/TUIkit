@@ -121,7 +121,6 @@ struct CardTests {
 
         #expect(bufferWith.height > bufferWithout.height)
     }
-
 }
 
 // MARK: - Panel Tests
@@ -162,7 +161,6 @@ struct PanelTests {
 
         #expect(bufferWith.height > bufferWithout.height)
     }
-
 }
 
 // MARK: - ContainerView Tests
@@ -184,7 +182,6 @@ struct ContainerViewDirectTests {
         #expect(allContent.contains("Test")) // title
         #expect(allContent.contains("Content"))
     }
-
 }
 
 // MARK: - ForEach Tests

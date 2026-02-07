@@ -51,5 +51,4 @@ struct StatePropertyWrapperTests {
         binding.wrappedValue = 77
         #expect(state.wrappedValue == 77)
     }
-
 }

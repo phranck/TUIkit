@@ -197,7 +197,7 @@ public struct RenderContext {
     /// with the modal's interactive elements. The returned context has a
     /// throwaway ``FocusManager`` and ``KeyEventDispatcher`` while sharing
     /// lifecycle, preferences, and state storage with the real context.
-    func isolatedForBackground() -> RenderContext {
+    func isolatedForBackground() -> Self {
         var copy = self
         copy.environment.focusManager = FocusManager()
         copy.tuiContext = TUIContext(

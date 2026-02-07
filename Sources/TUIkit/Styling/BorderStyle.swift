@@ -148,5 +148,4 @@ public struct BorderStyle: Sendable, Equatable {
         leftT: " ",
         rightT: " "
     )
-
 }

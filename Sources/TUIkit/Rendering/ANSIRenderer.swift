@@ -26,7 +26,7 @@ enum ANSIRenderer {
     /// Used by `String.stripped` and `String.strippedLength` to remove
     /// formatting codes for visible-width calculations. Compiling once
     /// avoids per-call overhead in the hot rendering path.
-    static nonisolated(unsafe) let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
+    nonisolated(unsafe) static let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
 
     // MARK: - SGR Style Codes
 

@@ -77,8 +77,11 @@ internal final class AppRunner<A: App> {
     let appearanceManager: ThemeManager
     let tuiContext: TUIContext
     private var signals = SignalManager()
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var inputHandler: InputHandler!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var renderer: RenderLoop<A>!
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var pulseTimer: PulseTimer!
     private var isRunning = false
 

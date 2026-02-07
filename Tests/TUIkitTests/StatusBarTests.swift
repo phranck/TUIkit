@@ -662,7 +662,6 @@ struct StatusBarItemBuilderTests {
 
         #expect(result.count == 1)
     }
-
 }
 
 // MARK: - StatusBarItems Modifier Tests

@@ -119,7 +119,6 @@ extension Appearance {
 
         /// Heavy/bold borders (┏━┓).
         public static let heavy = Self(rawValue: "heavy")
-
     }
 }
 
