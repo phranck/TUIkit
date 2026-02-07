@@ -549,3 +549,51 @@ enum ANSIColor: UInt8, Sendable {
         }
     }
 }
+
+// MARK: - Foreground Color Environment
+
+/// Environment key for the foreground color.
+///
+/// When set via `.foregroundColor(_:)` on any View, this value propagates
+/// down through the view hierarchy. Child views can read it from the
+/// render context to apply the color.
+private struct ForegroundColorKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+extension EnvironmentValues {
+    /// The foreground color for text and other content.
+    ///
+    /// Set via `.foregroundColor(_:)` modifier on any View.
+    /// Returns `nil` if not explicitly set (use palette default).
+    public var foregroundColor: Color? {
+        get { self[ForegroundColorKey.self] }
+        set { self[ForegroundColorKey.self] = newValue }
+    }
+}
+
+// MARK: - View Extension for foregroundColor
+
+extension View {
+    /// Sets the foreground color for this view and its children.
+    ///
+    /// The color propagates through the view hierarchy via the environment.
+    /// Child views that render text or other colored content should read
+    /// `context.environment.foregroundColor` and apply it.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// VStack {
+    ///     Text("Red text")
+    ///     Text("Also red")
+    /// }
+    /// .foregroundColor(.red)
+    /// ```
+    ///
+    /// - Parameter color: The color to apply.
+    /// - Returns: A view with the foreground color set.
+    public func foregroundColor(_ color: Color?) -> some View {
+        environment(\.foregroundColor, color)
+    }
+}
