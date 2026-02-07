@@ -17,7 +17,7 @@
 ///   `@ViewBuilder`. Do not instantiate directly.
 public struct TupleView<each V: View>: View {
     /// The packed child views.
-    nonisolated(unsafe) let children: (repeat each V)
+    let children: (repeat each V)
 
     /// Creates a tuple view from a parameter pack of child views.
     ///
@@ -34,7 +34,7 @@ public struct TupleView<each V: View>: View {
 // MARK: - Equatable Conformance
 
 extension TupleView: @preconcurrency Equatable where repeat each V: Equatable {
-    public nonisolated static func == (lhs: TupleView, rhs: TupleView) -> Bool {
+    public static func == (lhs: TupleView, rhs: TupleView) -> Bool {
         func isEqual<T: Equatable>(_ left: T, _ right: T) -> Bool { left == right }
         var result = true
         repeat result = result && isEqual(each lhs.children, each rhs.children)

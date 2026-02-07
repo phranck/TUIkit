@@ -1,0 +1,60 @@
+//  TUIKit - Terminal UI Kit for Swift
+//  Lock.swift
+//
+//  Created by LAYERED.work
+//  License: MIT
+
+import Foundation
+
+#if canImport(os)
+import os
+#endif
+
+/// A cross-platform lock wrapper that uses the best available implementation.
+///
+/// On Apple platforms, uses `OSAllocatedUnfairLock` for optimal performance
+/// (unfair lock with no syscall in the uncontended case). On Linux, falls back
+/// to `NSLock`.
+///
+/// This type is `@unchecked Sendable` because the underlying lock implementations
+/// are thread-safe by design.
+final class Lock<State: Sendable>: @unchecked Sendable {
+    #if canImport(os)
+    private let _lock: OSAllocatedUnfairLock<State>
+
+    /// Creates a lock with the given initial state.
+    ///
+    /// - Parameter initialState: The initial protected state.
+    init(initialState: State) {
+        _lock = OSAllocatedUnfairLock(initialState: initialState)
+    }
+
+    /// Executes the closure while holding the lock and returns the result.
+    ///
+    /// - Parameter body: The closure to execute with exclusive access to the state.
+    /// - Returns: The value returned by the closure.
+    func withLock<R: Sendable>(_ body: @Sendable (inout State) throws -> R) rethrows -> R {
+        try _lock.withLock(body)
+    }
+    #else
+    private let _lock = NSLock()
+    private var _state: State
+
+    /// Creates a lock with the given initial state.
+    ///
+    /// - Parameter initialState: The initial protected state.
+    init(initialState: State) {
+        _state = initialState
+    }
+
+    /// Executes the closure while holding the lock and returns the result.
+    ///
+    /// - Parameter body: The closure to execute with exclusive access to the state.
+    /// - Returns: The value returned by the closure.
+    func withLock<R>(_ body: (inout State) throws -> R) rethrows -> R {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return try body(&_state)
+    }
+    #endif
+}

@@ -22,15 +22,15 @@ import Foundation
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
-public final class AppState: @unchecked Sendable {
+public final class AppState: Sendable {
+    /// Internal state protected by a lock.
+    private struct StateData: Sendable {
+        var needsRender = false
+        var observers: [@Sendable () -> Void] = []
+    }
+
     /// Lock protecting all mutable state.
-    private let lock = NSLock()
-
-    /// Whether state has changed since last render.
-    private var _needsRender = false
-
-    /// Observers to notify on state change.
-    private var _observers: [@Sendable () -> Void] = []
+    private let lock = Lock(initialState: StateData())
 
     /// Creates a new app state instance.
     public init() {}
@@ -48,11 +48,10 @@ public extension AppState {
     /// automatically detects environment changes via ``EnvironmentSnapshot``
     /// comparison and clears the cache when needed.
     func setNeedsRender() {
-        let observers: [@Sendable () -> Void]
-        lock.lock()
-        _needsRender = true
-        observers = _observers
-        lock.unlock()
+        let observers = lock.withLock { state -> [@Sendable () -> Void] in
+            state.needsRender = true
+            return state.observers
+        }
         // Call observers outside the lock to avoid potential deadlocks
         for observer in observers {
             observer()
@@ -65,32 +64,30 @@ public extension AppState {
 extension AppState {
     /// Whether state has changed since last render.
     var needsRender: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return _needsRender
+        lock.withLock { $0.needsRender }
     }
 
     /// Registers an observer to be notified of state changes.
     ///
     /// - Parameter callback: The callback to invoke on state change.
     func observe(_ callback: @escaping @Sendable () -> Void) {
-        lock.lock()
-        _observers.append(callback)
-        lock.unlock()
+        lock.withLock { state in
+            state.observers.append(callback)
+        }
     }
 
     /// Clears all observers.
     func clearObservers() {
-        lock.lock()
-        _observers.removeAll()
-        lock.unlock()
+        lock.withLock { state in
+            state.observers.removeAll()
+        }
     }
 
     /// Resets the needs render flag.
     func didRender() {
-        lock.lock()
-        _needsRender = false
-        lock.unlock()
+        lock.withLock { state in
+            state.needsRender = false
+        }
     }
 }
 
