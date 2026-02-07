@@ -24,6 +24,7 @@ import Foundation
 ///
 /// Redirects stdout to a pipe, runs the closure, restores stdout,
 /// and returns the captured bytes as a UTF-8 string.
+@MainActor
 private func captureStdout(_ body: () -> Void) -> String {
     var pipeFDs: [Int32] = [0, 0]
     pipe(&pipeFDs)
@@ -54,6 +55,7 @@ private func captureStdout(_ body: () -> Void) -> String {
 // MARK: - Frame Buffer Tests
 
 @Suite("Terminal Output Buffer Tests", .serialized)
+@MainActor
 struct TerminalOutputBufferTests {
 
     @Test("Buffered writes produce same output as unbuffered writes")

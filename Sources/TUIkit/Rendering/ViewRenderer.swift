@@ -21,15 +21,16 @@
 /// for simple CLI tools that don't need a full ``App``. It bypasses
 /// `RenderLoop`, `FrameDiffWriter`, environment, lifecycle tracking,
 /// and diff-based rendering.
+@MainActor
 final class ViewRenderer {
     /// The terminal to render to.
     private let terminal: Terminal
 
     /// Creates a new ViewRenderer.
     ///
-    /// - Parameter terminal: The target terminal.
-    init(terminal: Terminal = Terminal()) {
-        self.terminal = terminal
+    /// - Parameter terminal: The target terminal (default: new Terminal instance).
+    init(terminal: Terminal? = nil) {
+        self.terminal = terminal ?? Terminal()
     }
 }
 

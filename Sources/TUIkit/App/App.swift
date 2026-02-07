@@ -42,10 +42,16 @@ extension App {
     ///
     /// This method is called by the `@main` attribute and starts
     /// the main run loop of the application.
+    ///
+    /// Since TUIKit runs on the main thread and `@main` entry points
+    /// execute on the main thread, we use `MainActor.assumeIsolated`
+    /// to access MainActor-isolated types synchronously.
     public static func main() {
-        let app = Self()
-        let runner = AppRunner<Self>(app: app)
-        runner.run()
+        MainActor.assumeIsolated {
+            let app = Self()
+            let runner = AppRunner<Self>(app: app)
+            runner.run()
+        }
     }
 }
 
@@ -58,6 +64,7 @@ extension App {
 /// - ``SignalManager`` — POSIX signal handling (SIGINT, SIGWINCH)
 /// - ``InputHandler`` — Key event dispatch (status bar → views → defaults)
 /// - ``RenderLoop`` — Rendering pipeline (scene + status bar)
+@MainActor
 internal final class AppRunner<A: App> {
     let app: A
     let terminal: Terminal
