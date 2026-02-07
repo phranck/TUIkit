@@ -5,7 +5,6 @@
 //  License: MIT
 
 import Foundation
-import os
 
 // MARK: - App State
 
@@ -13,7 +12,7 @@ import os
 ///
 /// `AppState` is thread-safe: ``setNeedsRender()`` can be called from any thread
 /// (e.g., from ``PulseTimer`` on a background queue). Internal state is protected
-/// by an `OSAllocatedUnfairLock`.
+/// by an `NSLock`.
 ///
 /// The ``AppRunner`` subscribes to state changes and re-renders when notified.
 /// `AppRunner` creates the instance and registers it with ``RenderNotifier``
@@ -23,15 +22,15 @@ import os
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
-public final class AppState: Sendable {
-    /// Internal state protected by a lock.
-    private struct StateData: Sendable {
-        var needsRender = false
-        var observers: [@Sendable () -> Void] = []
-    }
-
+public final class AppState: @unchecked Sendable {
     /// Lock protecting all mutable state.
-    private let lock = OSAllocatedUnfairLock(initialState: StateData())
+    private let lock = NSLock()
+
+    /// Whether state has changed since last render.
+    private var _needsRender = false
+
+    /// Observers to notify on state change.
+    private var _observers: [@Sendable () -> Void] = []
 
     /// Creates a new app state instance.
     public init() {}
@@ -49,10 +48,11 @@ public extension AppState {
     /// automatically detects environment changes via ``EnvironmentSnapshot``
     /// comparison and clears the cache when needed.
     func setNeedsRender() {
-        let observers = lock.withLock { state -> [@Sendable () -> Void] in
-            state.needsRender = true
-            return state.observers
-        }
+        let observers: [@Sendable () -> Void]
+        lock.lock()
+        _needsRender = true
+        observers = _observers
+        lock.unlock()
         // Call observers outside the lock to avoid potential deadlocks
         for observer in observers {
             observer()
@@ -65,30 +65,32 @@ public extension AppState {
 extension AppState {
     /// Whether state has changed since last render.
     var needsRender: Bool {
-        lock.withLock { $0.needsRender }
+        lock.lock()
+        defer { lock.unlock() }
+        return _needsRender
     }
 
     /// Registers an observer to be notified of state changes.
     ///
     /// - Parameter callback: The callback to invoke on state change.
     func observe(_ callback: @escaping @Sendable () -> Void) {
-        lock.withLock { state in
-            state.observers.append(callback)
-        }
+        lock.lock()
+        _observers.append(callback)
+        lock.unlock()
     }
 
     /// Clears all observers.
     func clearObservers() {
-        lock.withLock { state in
-            state.observers.removeAll()
-        }
+        lock.lock()
+        _observers.removeAll()
+        lock.unlock()
     }
 
     /// Resets the needs render flag.
     func didRender() {
-        lock.withLock { state in
-            state.needsRender = false
-        }
+        lock.lock()
+        _needsRender = false
+        lock.unlock()
     }
 }
 
