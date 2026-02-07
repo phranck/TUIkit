@@ -1,18 +1,6 @@
 {
-  "generated": "2026-02-07T15:20:58.429Z",
+  "generated": "2026-02-07T16:23:54.866Z",
   "open": [
-    {
-      "date": "2026-02-07",
-      "slug": "code-review-fixes",
-      "title": "Code Review Fixes: Swift 6 Concurrency and Architectural Improvements",
-      "preface": "A comprehensive code review identified critical issues with Swift 6 concurrency readiness, missing abstractions for testability, and minor architectural debt. This plan addresses all findings systematically: introducing `@MainActor` isolation for render-loop-only types, adding thread-safe synchronization where cross-thread access occurs, extracting a `TerminalProtocol` for testability, fixing ForEach's runtime crash, and consolidating duplicated focus handler code. The result is a codebase ready for Swift 6 strict concurrency mode with improved testability and maintainability."
-    },
-    {
-      "date": "2026-02-07",
-      "slug": "mobile-performance",
-      "title": "Mobile Performance Optimization",
-      "preface": "The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices."
-    },
     {
       "date": "2026-02-06",
       "slug": "containerization-composition",
@@ -50,12 +38,6 @@
       "preface": "List gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven."
     },
     {
-      "date": "2026-02-06",
-      "slug": "list-table-shared-architecture",
-      "title": "List & Table: Shared Architecture Analysis",
-      "preface": "This analysis identifies the shared architecture between List and Table before implementation: both need focus management, keyboard navigation (Up/Down/Home/End), selection binding, scrolling, and item state rendering. Navigation logic and selection state are identical; rendering differs (List = vertical stack, Table = grid). Extract shared components (handlers, helpers, state managers) to eliminate duplication while letting each component specialize in layout."
-    },
-    {
       "date": "2026-02-02",
       "slug": "state-persistence",
       "title": "State Persistence (Session Continuity / Crash Recovery)",
@@ -74,6 +56,24 @@
       "slug": "astro-landing-page",
       "title": "Astro Migration: Landing Page",
       "preface": "This plan migrates the TUIKit landing page from Next.js 16 to Astro, leveraging Astro's Islands Architecture for zero-JS delivery of static content while preserving React components for interactive elements. The HeroTerminal with CRT effects, TerminalScreen animation, and theme system become React Islands. Static content (FeatureCards, CodePreview, footer) renders as pure Astro components with no client-side JavaScript. Expected outcome: faster initial load, smaller bundle, same visual experience."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "code-review-fixes",
+      "title": "Code Review Fixes: Swift 6 Concurrency and Architectural Improvements",
+      "preface": "A comprehensive code review identified critical issues with Swift 6 concurrency readiness, missing abstractions for testability, and minor architectural debt. This plan addresses all findings systematically: introducing `@MainActor` isolation for render-loop-only types, adding thread-safe synchronization where cross-thread access occurs, extracting a `TerminalProtocol` for testability, fixing ForEach's runtime crash, and consolidating duplicated focus handler code. The result is a codebase ready for Swift 6 strict concurrency mode with improved testability and maintainability."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "mobile-performance",
+      "title": "Mobile Performance Optimization",
+      "preface": "The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "list-table-shared-architecture",
+      "title": "List & Table: Shared Architecture Analysis",
+      "preface": "This analysis identifies the shared architecture between List and Table before implementation: both need focus management, keyboard navigation (Up/Down/Home/End), selection binding, scrolling, and item state rendering. Navigation logic and selection state are identical; rendering differs (List = vertical stack, Table = grid). Extract shared components (handlers, helpers, state managers) to eliminate duplication while letting each component specialize in layout."
     },
     {
       "date": "2026-02-06",
