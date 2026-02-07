@@ -29,6 +29,7 @@
 /// // On terminal resize:
 /// writer.invalidate()
 /// ```
+@MainActor
 final class FrameDiffWriter {
     /// The previous frame's content lines (terminal-ready strings with ANSI codes).
     private var previousContentLines: [String] = []

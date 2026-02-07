@@ -16,12 +16,27 @@ import Foundation
 
 // MARK: - Signal Flags
 
-/// Flag set by the SIGWINCH signal handler to request a re-render.
+/// Signal flags use `nonisolated(unsafe)` intentionally.
 ///
-/// Marked `nonisolated(unsafe)` because it is written from a signal handler
-/// and read from the main loop. A single-word Bool write/read is practically
-/// atomic on arm64/x86_64. Using `Atomic<Bool>` from the `Synchronization`
-/// module would be cleaner but requires macOS 15+.
+/// ## Why not use locks or atomics?
+///
+/// POSIX signal handlers have strict constraints: they may only call
+/// "async-signal-safe" functions. Lock acquisition (pthread_mutex_lock,
+/// os_unfair_lock_lock) and most Swift runtime functions are NOT safe.
+///
+/// Bool read/write on modern CPUs (arm64, x86_64) is effectively atomic
+/// for single-word aligned values. The worst case is a torn read, which
+/// for a Bool just means we might miss one signal or see it twice. Both
+/// are acceptable: re-rendering twice is harmless, and a missed signal
+/// will be caught on the next iteration.
+///
+/// ## Swift 6 Concurrency
+///
+/// `nonisolated(unsafe)` is the correct annotation here. These flags are
+/// genuinely unsafe in the general case, but safe in our specific usage
+/// pattern (single writer from signal handler, single reader from main loop).
+
+/// Flag set by the SIGWINCH signal handler to request a re-render.
 nonisolated(unsafe) private var signalNeedsRerender = false
 
 /// Flag set by the SIGWINCH signal handler to indicate a terminal resize.
@@ -33,7 +48,7 @@ nonisolated(unsafe) private var signalTerminalResized = false
 /// Flag set by the SIGINT signal handler to request a graceful shutdown.
 ///
 /// The actual cleanup (disabling raw mode, restoring cursor, exiting
-/// alternate screen) happens in the main loop — signal handlers must
+/// alternate screen) happens in the main loop. Signal handlers must
 /// not call non-async-signal-safe functions like `write()` or `fflush()`.
 nonisolated(unsafe) private var signalNeedsShutdown = false
 

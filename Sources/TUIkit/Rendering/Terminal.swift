@@ -41,7 +41,13 @@ import Foundation
 ///
 /// Outside of a frame (setup, teardown), ``write(_:)`` writes immediately
 /// as before — safe by default.
-final class Terminal: @unchecked Sendable {
+///
+/// ## Thread Safety
+///
+/// `Terminal` is `@MainActor` isolated. All terminal operations must occur
+/// on the main thread, which is enforced by the Swift concurrency system.
+@MainActor
+final class Terminal {
     /// Whether raw mode is active.
     private var isRawMode = false
 
@@ -66,9 +72,15 @@ final class Terminal: @unchecked Sendable {
     }
 
     /// Destructor ensures raw mode is disabled.
+    ///
+    /// Note: `deinit` cannot be actor-isolated, so we use `MainActor.assumeIsolated`
+    /// which is safe because Terminal instances are only created and destroyed
+    /// on the main thread (in AppRunner).
     deinit {
         if isRawMode {
-            disableRawMode()
+            MainActor.assumeIsolated {
+                disableRawMode()
+            }
         }
     }
 }

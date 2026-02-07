@@ -11,6 +11,7 @@ import Testing
 // MARK: - buildOutputLines Tests
 
 @Suite("FrameDiffWriter buildOutputLines Tests")
+@MainActor
 struct BuildOutputLinesTests {
 
     @Test("Produces exactly terminalHeight output lines")
@@ -110,6 +111,7 @@ struct BuildOutputLinesTests {
 // MARK: - Line Diff Logic Tests
 
 @Suite("FrameDiffWriter Diff Logic Tests")
+@MainActor
 struct DiffLogicTests {
 
     @Test("computeChangedRows returns all rows when previous is empty")
@@ -182,6 +184,7 @@ struct DiffLogicTests {
 // MARK: - Integration Tests
 
 @Suite("FrameDiffWriter Integration Tests")
+@MainActor
 struct DiffIntegrationTests {
 
     @Test("Content and status bar caches are independent")

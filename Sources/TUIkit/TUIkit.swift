@@ -30,6 +30,7 @@ public let tuiKitVersion = "0.1.0"
 /// ```
 ///
 /// - Parameter content: A ViewBuilder closure that defines the view to render.
+@MainActor
 public func renderOnce<Content: View>(@ViewBuilder content: () -> Content) {
     let view = content()
     let renderer = ViewRenderer()

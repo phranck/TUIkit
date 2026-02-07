@@ -5,15 +5,17 @@
 //  License: MIT
 
 import Foundation
+import os
 
 // MARK: - App State
 
 /// Application state that triggers re-renders when modified.
 ///
-/// Since TUIkit runs in a single-threaded event loop, we use a simple
-/// observable pattern. The ``AppRunner`` subscribes to state changes and
-/// re-renders when notified.
+/// `AppState` is thread-safe: ``setNeedsRender()`` can be called from any thread
+/// (e.g., from ``PulseTimer`` on a background queue). Internal state is protected
+/// by an `OSAllocatedUnfairLock`.
 ///
+/// The ``AppRunner`` subscribes to state changes and re-renders when notified.
 /// `AppRunner` creates the instance and registers it with ``RenderNotifier``
 /// on startup. Property wrappers like ``State`` and ``AppStorage`` access it
 /// through ``RenderNotifier/current``.
@@ -21,12 +23,15 @@ import Foundation
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
-public final class AppState: @unchecked Sendable {
-    /// Callbacks to invoke when state changes.
-    private var observers: [() -> Void] = []
+public final class AppState: Sendable {
+    /// Internal state protected by a lock.
+    private struct StateData: Sendable {
+        var needsRender = false
+        var observers: [@Sendable () -> Void] = []
+    }
 
-    /// Whether state has changed since last render.
-    private(set) var needsRender = false
+    /// Lock protecting all mutable state.
+    private let lock = OSAllocatedUnfairLock(initialState: StateData())
 
     /// Creates a new app state instance.
     public init() {}
@@ -37,12 +42,18 @@ public final class AppState: @unchecked Sendable {
 public extension AppState {
     /// Marks state as changed and notifies observers.
     ///
+    /// This method is thread-safe and can be called from any thread.
+    ///
     /// Callers that change visual output (theme, palette, appearance) do
     /// **not** need to manually clear the render cache. ``RenderLoop``
     /// automatically detects environment changes via ``EnvironmentSnapshot``
     /// comparison and clears the cache when needed.
     func setNeedsRender() {
-        needsRender = true
+        let observers = lock.withLock { state -> [@Sendable () -> Void] in
+            state.needsRender = true
+            return state.observers
+        }
+        // Call observers outside the lock to avoid potential deadlocks
         for observer in observers {
             observer()
         }
@@ -52,21 +63,32 @@ public extension AppState {
 // MARK: - Internal API
 
 extension AppState {
+    /// Whether state has changed since last render.
+    var needsRender: Bool {
+        lock.withLock { $0.needsRender }
+    }
+
     /// Registers an observer to be notified of state changes.
     ///
     /// - Parameter callback: The callback to invoke on state change.
-    func observe(_ callback: @escaping () -> Void) {
-        observers.append(callback)
+    func observe(_ callback: @escaping @Sendable () -> Void) {
+        lock.withLock { state in
+            state.observers.append(callback)
+        }
     }
 
     /// Clears all observers.
     func clearObservers() {
-        observers.removeAll()
+        lock.withLock { state in
+            state.observers.removeAll()
+        }
     }
 
     /// Resets the needs render flag.
     func didRender() {
-        needsRender = false
+        lock.withLock { state in
+            state.needsRender = false
+        }
     }
 }
 

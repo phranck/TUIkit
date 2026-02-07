@@ -155,7 +155,7 @@ internal func renderContainer<Content: View, Footer: View>(
             footerView
         }
     }
-    return container.renderToBuffer(context: context)
+    return TUIkit.renderToBuffer(container, context: context)
 }
 
 // MARK: - Container View
@@ -231,8 +231,15 @@ struct ContainerView<Content: View, Footer: View>: View {
         self.footer = footer()
     }
 
-    var body: Never {
-        fatalError("ContainerView renders via Renderable")
+    var body: some View {
+        _ContainerViewCore(
+            title: title,
+            titleColor: titleColor,
+            content: content,
+            footer: footer,
+            style: style,
+            padding: padding
+        )
     }
 }
 
@@ -267,9 +274,36 @@ extension ContainerView where Footer == EmptyView {
     }
 }
 
-// MARK: - Rendering
+// MARK: - Container View Core
 
-extension ContainerView: Renderable {
+/// Internal rendering implementation for ContainerView.
+///
+/// This private struct contains all the complex rendering logic, allowing
+/// ContainerView to have a proper `body: some View` that enables modifiers
+/// to work correctly.
+private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable {
+    /// The container title (rendered in border or header section).
+    let title: String?
+
+    /// The title color.
+    let titleColor: Color?
+
+    /// The main content.
+    let content: Content
+
+    /// The footer content (typically buttons).
+    let footer: Footer?
+
+    /// The container style configuration.
+    let style: ContainerStyle
+
+    /// The inner padding for the body.
+    let padding: EdgeInsets
+
+    var body: Never {
+        fatalError("_ContainerViewCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let appearance = context.environment.appearance
         let effectiveBorderStyle = style.borderStyle ?? appearance.borderStyle
@@ -424,5 +458,8 @@ extension ContainerView: Renderable {
 
         return FrameBuffer(lines: lines)
     }
-
 }
+
+// MARK: - Equatable Conformance
+
+extension _ContainerViewCore: Equatable where Content: Equatable, Footer: Equatable {}
