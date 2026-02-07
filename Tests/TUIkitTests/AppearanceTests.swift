@@ -10,6 +10,7 @@ import Testing
 
 // MARK: - Appearance Tests
 
+@MainActor
 @Suite("Appearance Tests")
 struct AppearanceTests {
 
@@ -77,6 +78,7 @@ struct AppearanceTests {
 
 // MARK: - Appearance Environment Tests
 
+@MainActor
 @Suite("Appearance Environment Tests")
 struct AppearanceEnvironmentTests {
 

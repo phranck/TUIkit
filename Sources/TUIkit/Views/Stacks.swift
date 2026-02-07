@@ -230,9 +230,9 @@ public struct Alignment: Sendable, Equatable {
 
 // MARK: - Equatable Conformances
 
-extension VStack: Equatable where Content: Equatable {}
-extension HStack: Equatable where Content: Equatable {}
-extension ZStack: Equatable where Content: Equatable {}
+extension VStack: @preconcurrency Equatable where Content: Equatable {}
+extension HStack: @preconcurrency Equatable where Content: Equatable {}
+extension ZStack: @preconcurrency Equatable where Content: Equatable {}
 
 // MARK: - VStack Rendering
 

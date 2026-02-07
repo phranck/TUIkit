@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("String ANSI Extension Tests")
 struct StringANSITests {
 

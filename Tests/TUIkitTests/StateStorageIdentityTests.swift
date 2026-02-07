@@ -9,6 +9,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("State Storage Identity Tests", .serialized)
 struct StateStorageIdentityTests {
 

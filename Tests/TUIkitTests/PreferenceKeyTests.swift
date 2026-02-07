@@ -31,6 +31,7 @@ private struct TestArrayKey: PreferenceKey {
     }
 }
 
+@MainActor
 @Suite("PreferenceKey Tests")
 struct PreferenceKeyTests {
 

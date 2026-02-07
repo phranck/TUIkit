@@ -44,6 +44,7 @@
 ///   and set `body: Never`.
 /// - **Warning**: A view with `body: Never` that does *not* conform to
 ///   `Renderable` will silently render as empty. There is no runtime error.
+@MainActor
 protocol Renderable {
     /// Renders this view into a ``FrameBuffer``.
     ///
@@ -243,6 +244,7 @@ public struct RenderContext {
 ///   - view: The view to render.
 ///   - context: The rendering context with layout constraints.
 /// - Returns: A ``FrameBuffer`` containing the rendered terminal output.
+@MainActor
 func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     // Priority 1: Direct rendering via Renderable protocol
     if let renderable = view as? Renderable {

@@ -26,6 +26,7 @@ private func relativeLuminance(of color: Color) -> Double? {
 
 // MARK: - Green Palette Tests
 
+@MainActor
 @Suite("Green Palette Tests")
 struct GreenPaletteTests {
 

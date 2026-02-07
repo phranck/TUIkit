@@ -128,6 +128,7 @@ struct ContainerStyle: Sendable, Equatable {
 ///   - footer: The footer view (optional).
 ///   - context: The current render context.
 /// - Returns: The rendered frame buffer.
+@MainActor
 internal func renderContainer<Content: View, Footer: View>(
     title: String?,
     config: ContainerConfig,
@@ -245,7 +246,7 @@ struct ContainerView<Content: View, Footer: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension ContainerView: Equatable where Content: Equatable, Footer: Equatable {}
+extension ContainerView: @preconcurrency Equatable where Content: Equatable, Footer: Equatable {}
 
 // MARK: - Convenience Initializer (no footer)
 
@@ -462,4 +463,4 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
 
 // MARK: - Equatable Conformance
 
-extension _ContainerViewCore: Equatable where Content: Equatable, Footer: Equatable {}
+extension _ContainerViewCore: @preconcurrency Equatable where Content: Equatable, Footer: Equatable {}

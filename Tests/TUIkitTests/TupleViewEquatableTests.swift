@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("TupleView Equatable Tests", .serialized)
 struct TupleViewEquatableTests {
 

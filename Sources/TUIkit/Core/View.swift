@@ -48,6 +48,12 @@
 ///     }
 /// }
 /// ```
+///
+/// ## Thread Safety
+///
+/// Like SwiftUI, all view operations are confined to the main actor.
+/// This ensures thread-safe access to state, environment, and rendering.
+@MainActor
 public protocol View {
     /// The type of the body view.
     ///

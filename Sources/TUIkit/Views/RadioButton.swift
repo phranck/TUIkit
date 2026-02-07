@@ -27,13 +27,14 @@ public struct RadioButtonItem<Value: Hashable> {
     let value: Value
 
     /// The label view builder.
-    let labelBuilder: () -> AnyView
+    let labelBuilder: @MainActor () -> AnyView
 
     /// Creates a radio button item with a view label.
     ///
     /// - Parameters:
     ///   - value: The value for this option.
     ///   - label: A view builder closure that returns the label.
+    @MainActor
     public init<Label: View>(
         _ value: Value,
         @ViewBuilder label: @escaping () -> Label
@@ -47,6 +48,7 @@ public struct RadioButtonItem<Value: Hashable> {
     /// - Parameters:
     ///   - value: The value for this option.
     ///   - label: The label text.
+    @MainActor
     public init(
         _ value: Value,
         _ label: String

@@ -10,6 +10,7 @@ import Testing
 
 // MARK: - Shortcut Constants Tests
 
+@MainActor
 @Suite("Shortcut Constants Tests")
 struct ShortcutTests {
 
@@ -43,6 +44,7 @@ struct ShortcutTests {
 
 // MARK: - Status Bar Item Tests
 
+@MainActor
 @Suite("Status Bar Item Tests")
 struct StatusBarItemTests {
 
@@ -156,6 +158,7 @@ struct StatusBarItemTests {
 
 // MARK: - Status Bar Manager Tests
 
+@MainActor
 @Suite("Status Bar State Tests")
 struct StatusBarStateTests {
 
@@ -437,6 +440,7 @@ struct StatusBarStateTests {
 
 // MARK: - StatusBar Tests
 
+@MainActor
 @Suite("StatusBar Tests")
 struct StatusBarTests {
 
@@ -614,6 +618,7 @@ struct StatusBarTests {
 
 // MARK: - Status Bar Alignment Tests
 
+@MainActor
 @Suite("Status Bar Alignment Tests")
 struct StatusBarAlignmentTests {
 
@@ -636,6 +641,7 @@ struct StatusBarAlignmentTests {
 
 // MARK: - Status Bar Item Builder Tests
 
+@MainActor
 @Suite("Status Bar Item Builder Tests")
 struct StatusBarItemBuilderTests {
 
@@ -661,6 +667,7 @@ struct StatusBarItemBuilderTests {
 
 // MARK: - StatusBarItems Modifier Tests
 
+@MainActor
 @Suite("StatusBarItems Modifier Tests", .serialized)
 struct StatusBarItemsModifierTests {
 
@@ -798,6 +805,7 @@ struct StatusBarItemsModifierTests {
 
 // MARK: - System Status Bar Items Tests
 
+@MainActor
 @Suite("System Status Bar Items Tests")
 struct SystemStatusBarItemsTests {
 
@@ -878,6 +886,7 @@ struct SystemStatusBarItemsTests {
 
 // MARK: - StatusBar Section Cascading Tests
 
+@MainActor
 @Suite("StatusBar Section Cascading Tests")
 struct StatusBarSectionCascadingTests {
 
