@@ -94,9 +94,9 @@ struct PaddingModifierTests {
 
         // 1 top + 1 content + 1 bottom = 3
         #expect(result.height == 3)
-        #expect(result.lines[0].trimmingCharacters(in: .whitespaces) == "")
+        #expect(result.lines[0].trimmingCharacters(in: .whitespaces).isEmpty)
         #expect(result.lines[1] == "Hello")
-        #expect(result.lines[2].trimmingCharacters(in: .whitespaces) == "")
+        #expect(result.lines[2].trimmingCharacters(in: .whitespaces).isEmpty)
     }
 
     @Test("Padding adds spaces for leading and trailing")
@@ -306,7 +306,6 @@ struct FrameModifierTests {
         let lastLine = buffer.lines[buffer.height - 1]
         #expect(lastLine.contains("Hi"))
     }
-
 }
 
 // MARK: - BorderModifier Tests
@@ -420,7 +419,6 @@ struct BorderModifierTests {
         #expect(contentLine.hasSuffix(" │"))
         #expect(contentLine.contains(" Hi "))
     }
-
 }
 
 // MARK: - BorderStyle Tests
@@ -442,7 +440,6 @@ struct BorderStyleTests {
         #expect(custom.leftT == "F")
         #expect(custom.rightT == "F")
     }
-
 }
 
 // MARK: - BackgroundModifier Tests

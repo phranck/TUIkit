@@ -141,7 +141,6 @@ public final class FocusManager: @unchecked Sendable {
     public var currentFocusedID: String? {
         focusedID
     }
-
 }
 
 // MARK: - Public API

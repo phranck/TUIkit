@@ -67,7 +67,7 @@ extension AlertPresentationModifier: Renderable {
 
         // Render message content to string if provided
         let messageString: String
-        if let message = message {
+        if let message {
             let messageBuffer = TUIkit.renderToBuffer(message, context: context)
             messageString = messageBuffer.lines.joined(separator: "\n").stripped
         } else {

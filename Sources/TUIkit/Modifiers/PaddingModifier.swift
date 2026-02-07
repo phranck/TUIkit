@@ -91,13 +91,6 @@ public struct PaddingModifier: ViewModifier {
     /// The padding insets.
     let insets: EdgeInsets
 
-    /// Creates a padding modifier.
-    ///
-    /// - Parameter insets: The padding insets.
-    init(insets: EdgeInsets) {
-        self.insets = insets
-    }
-
     public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         var result: [String] = []
 
