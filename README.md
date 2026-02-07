@@ -1,5 +1,5 @@
 [![CI](https://github.com/phranck/TUIkit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIkit/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/Tests-645_passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-652_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
@@ -163,7 +163,7 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          645 tests across 103 test suites
+└── TUIkitTests/          652 tests across 104 test suites
 ```
 
 ## Requirements
@@ -174,7 +174,7 @@ Tests/
 ## Developer Notes
 
 - Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
-- All 645 tests run in parallel
+- All 652 tests run in parallel
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## Contribution
