@@ -237,14 +237,29 @@ public struct Spinner: View {
         self.token = "spinner-\(UUID().uuidString)"
     }
 
-    public var body: Never {
-        fatalError("Spinner is a primitive view and renders directly")
+    public var body: some View {
+        _SpinnerCore(
+            label: label,
+            style: style,
+            color: color,
+            token: token
+        )
     }
 }
 
-// MARK: - Spinner Rendering
+// MARK: - Internal Core View
 
-extension Spinner: Renderable {
+/// Internal view that handles the actual rendering and animation of Spinner.
+private struct _SpinnerCore: View, Renderable {
+    let label: String?
+    let style: SpinnerStyle
+    let color: Color?
+    let token: String
+
+    var body: Never {
+        fatalError("_SpinnerCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let lifecycle = context.tuiContext.lifecycle
         let stateStorage = context.tuiContext.stateStorage
@@ -255,9 +270,6 @@ extension Spinner: Renderable {
         stateStorage.markActive(context.identity)
 
         // Start render-trigger task on first appearance.
-        // The task fires at a fixed rate (~40ms) to request redraws.
-        // The actual animation speed is determined by time-based frame
-        // index calculation, not by the trigger interval.
         if !lifecycle.hasAppeared(token: token) {
             _ = lifecycle.recordAppear(token: token) {}
 
@@ -289,8 +301,9 @@ extension Spinner: Renderable {
         }
         let frameIndex = Int(elapsed / style.interval) % frameCount
 
-        // Resolve color.
-        let resolvedColor = (color ?? .palette.accent).resolve(with: context.environment.palette)
+        // Resolve color - use environment foregroundColor if no explicit color set
+        let effectiveColor = color ?? context.environment.foregroundColor ?? .palette.accent
+        let resolvedColor = effectiveColor.resolve(with: context.environment.palette)
 
         // Build spinner text — bouncing renders with colored trail, others are plain.
         let coloredSpinner: String

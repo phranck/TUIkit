@@ -103,8 +103,8 @@ public enum ProgressBarStyle: Sendable, Equatable {
 /// | Filled bar | `palette.foregroundSecondary` |
 /// | Empty bar | `palette.foregroundTertiary` |
 /// | Dot head (`.dot` style only) | `palette.accent` |
-/// | Label | inherited from label view |
-/// | CurrentValueLabel | inherited from value label view |
+/// | Label | inherited from environment |
+/// | CurrentValueLabel | inherited from environment |
 ///
 /// ## Size Behavior
 ///
@@ -115,7 +115,7 @@ public struct ProgressView<Label: View, CurrentValueLabel: View>: View {
     let fractionCompleted: Double?
 
     /// The visual style of the progress bar.
-    let style: ProgressBarStyle
+    var style: ProgressBarStyle
 
     /// The label view displayed above the bar (left-aligned).
     let label: Label?
@@ -123,8 +123,13 @@ public struct ProgressView<Label: View, CurrentValueLabel: View>: View {
     /// The current value label displayed above the bar (right-aligned).
     let currentValueLabel: CurrentValueLabel?
 
-    public var body: Never {
-        fatalError("ProgressView renders via Renderable")
+    public var body: some View {
+        _ProgressViewCore(
+            fractionCompleted: fractionCompleted,
+            style: style,
+            label: label,
+            currentValueLabel: currentValueLabel
+        )
     }
 }
 
@@ -213,14 +218,9 @@ extension ProgressView {
     ///
     /// - Parameter style: The progress bar style.
     /// - Returns: A progress view with the specified style.
-    public func progressBarStyle(_ style: ProgressBarStyle) -> Self {
+    public func progressBarStyle(_ style: ProgressBarStyle) -> ProgressView {
         var copy = self
-        copy = ProgressView(
-            fractionCompleted: fractionCompleted,
-            style: style,
-            label: label,
-            currentValueLabel: currentValueLabel
-        )
+        copy.style = style
         return copy
     }
 }
@@ -238,9 +238,30 @@ extension ProgressView: Equatable where Label: Equatable, CurrentValueLabel: Equ
     }
 }
 
-// MARK: - Rendering
+// MARK: - Normalization Helper
 
-extension ProgressView: Renderable {
+extension ProgressView {
+    /// Normalizes value/total to a 0.0–1.0 fraction, clamping out-of-range values.
+    static func normalizedFraction<V: BinaryFloatingPoint>(value: V?, total: V) -> Double? {
+        guard let value else { return nil }
+        guard total > 0 else { return 0.0 }
+        return min(1.0, max(0.0, Double(value) / Double(total)))
+    }
+}
+
+// MARK: - Internal Core View
+
+/// Internal view that handles the actual rendering of ProgressView.
+private struct _ProgressViewCore<Label: View, CurrentValueLabel: View>: View, Renderable {
+    let fractionCompleted: Double?
+    let style: ProgressBarStyle
+    let label: Label?
+    let currentValueLabel: CurrentValueLabel?
+
+    var body: Never {
+        fatalError("_ProgressViewCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
         let width = context.availableWidth
@@ -265,13 +286,11 @@ extension ProgressView: Renderable {
 
         return FrameBuffer(lines: lines)
     }
-}
 
-// MARK: - Private Rendering Helpers
+    // MARK: - Label Line Rendering
 
-private extension ProgressView {
     /// Renders the label line with label left-aligned and currentValueLabel right-aligned.
-    func renderLabelLine(width: Int, palette: any Palette, context: RenderContext) -> String {
+    private func renderLabelLine(width: Int, palette: any Palette, context: RenderContext) -> String {
         let labelBuffer: FrameBuffer
         if let labelView = label, !(labelView is EmptyView) {
             labelBuffer = TUIkit.renderToBuffer(labelView, context: context)
@@ -296,8 +315,10 @@ private extension ProgressView {
         return labelText + String(repeating: " ", count: gap) + valueText
     }
 
+    // MARK: - Bar Line Rendering
+
     /// Renders the progress bar line using the current style.
-    func renderBarLine(width: Int, palette: any Palette) -> String {
+    private func renderBarLine(width: Int, palette: any Palette) -> String {
         let barWidth = max(0, width)
         let fraction = fractionCompleted ?? 0.0
 
@@ -335,31 +356,22 @@ private extension ProgressView {
     }
 
     /// Renders the `.blockFine` style with sub-character fractional precision.
-    ///
-    /// Uses full blocks (`█`) for completed cells, one of 7 fractional
-    /// blocks (`▉▊▋▌▍▎▏`) for the boundary cell, and light shade (`░`)
-    /// for empty cells. This gives 8× finer visual resolution.
-    func renderBlockFineStyle(fraction: Double, barWidth: Int, filledColor: Color, emptyColor: Color) -> String {
+    private func renderBlockFineStyle(fraction: Double, barWidth: Int, filledColor: Color, emptyColor: Color) -> String {
         guard barWidth > 0 else { return "" }
 
-        // Total progress in 1/8th units across the full bar width
         let totalEighths = fraction * Double(barWidth) * 8.0
         let fullCells = Int(totalEighths) / 8
         let remainderEighths = Int(totalEighths) % 8
 
-        // Fractional block characters indexed by 1/8th increments (1–7)
-        // Index 0 is unused (0 eighths = no partial block)
         let fractionalBlocks: [Character] = ["▏", "▎", "▍", "▌", "▋", "▊", "▉"]
 
         var result = ""
 
-        // Full filled blocks
         if fullCells > 0 {
             let filledBar = String(repeating: "█", count: fullCells)
             result += ANSIRenderer.colorize(filledBar, foreground: filledColor)
         }
 
-        // Fractional block at the boundary
         let cellsUsed: Int
         if remainderEighths > 0 && fullCells < barWidth {
             let partialChar = fractionalBlocks[remainderEighths - 1]
@@ -369,7 +381,6 @@ private extension ProgressView {
             cellsUsed = fullCells
         }
 
-        // Empty blocks
         let emptyCount = barWidth - cellsUsed
         if emptyCount > 0 {
             let emptyBar = String(repeating: "░", count: emptyCount)
@@ -380,7 +391,7 @@ private extension ProgressView {
     }
 
     /// Renders a simple two-character style (filled + empty, no head indicator).
-    func renderSimpleStyle(
+    private func renderSimpleStyle(
         fraction: Double,
         barWidth: Int,
         filledChar: Character,
@@ -408,10 +419,7 @@ private extension ProgressView {
     }
 
     /// Renders a head-indicator style (filled track + head + empty track).
-    ///
-    /// The head uses a distinct color (typically `accent`) to stand out
-    /// from the filled track.
-    func renderHeadStyle(
+    private func renderHeadStyle(
         fraction: Double,
         barWidth: Int,
         filledChar: Character,
@@ -427,7 +435,6 @@ private extension ProgressView {
 
         var result = ""
 
-        // Filled track (before head)
         let trackCount = max(0, filledCount - 1)
         if trackCount > 0 {
             result += ANSIRenderer.colorize(
@@ -436,14 +443,10 @@ private extension ProgressView {
             )
         }
 
-        // Head indicator
         if filledCount > 0 && filledCount <= barWidth {
             result += ANSIRenderer.colorize(String(headChar), foreground: headColor)
-        } else if filledCount == 0 {
-            // 0% — no head, all empty
         }
 
-        // Empty track (after head)
         let emptyCount = barWidth - max(filledCount, 0)
         if emptyCount > 0 {
             result += ANSIRenderer.colorize(
@@ -453,12 +456,5 @@ private extension ProgressView {
         }
 
         return result
-    }
-
-    /// Normalizes value/total to a 0.0–1.0 fraction, clamping out-of-range values.
-    static func normalizedFraction<V: BinaryFloatingPoint>(value: V?, total: V) -> Double? {
-        guard let value else { return nil }
-        guard total > 0 else { return 0.0 }
-        return min(1.0, max(0.0, Double(value) / Double(total)))
     }
 }

@@ -125,6 +125,14 @@ internal final class RenderLoop<A: App> {
     /// focus indicators (pulsing `●`) update correctly.
     private var lastPulsePhase: Double = 0
 
+    /// Whether the first frame has been rendered.
+    ///
+    /// On the first frame, we perform a "measurement pass" to determine
+    /// the actual header height before outputting anything. This prevents
+    /// visible content jumping when the estimated header height differs
+    /// from the actual height.
+    private var isFirstFrame = true
+
     init(
         app: A,
         terminal: Terminal,
@@ -177,33 +185,14 @@ extension RenderLoop {
         let terminalWidth = terminalSize.width
         let terminalHeight = terminalSize.height
 
-        // First pass: render main content with a height estimate from the
-        // previous frame. The AppHeaderModifier inside the view tree will
-        // populate appHeader.contentBuffer during this render. After rendering,
-        // we read the actual height for correct positioning.
-        let estimatedHeaderHeight = appHeader.estimatedHeight
-        let estimatedContentHeight = terminalHeight - statusBarHeight - estimatedHeaderHeight
-
         // Create render context with environment
         let environment = buildEnvironment()
         invalidateCacheIfEnvironmentChanged(environment: environment)
         invalidateCacheIfPulsePhaseChanged(pulsePhase: pulsePhase)
 
-        var context = RenderContext(
-            availableWidth: terminalWidth,
-            availableHeight: estimatedContentHeight,
-            environment: environment,
-            tuiContext: tuiContext
-        )
-        context.pulsePhase = pulsePhase
-
-        // Render main content into a FrameBuffer.
-        // app.body is evaluated fresh each frame. @State values survive
-        // because State.init self-hydrates from StateStorage.
-        //
-        // We set the hydration context BEFORE evaluating app.body so that
-        // views constructed inside WindowGroup { ... } closures (e.g.
-        // ContentView()) get persistent state from the start.
+        // Set up state hydration context BEFORE evaluating app.body so that
+        // views constructed inside WindowGroup { ... } closures get persistent
+        // state from the start.
         let rootIdentity = ViewIdentity(rootType: A.self)
         StateRegistration.activeContext = HydrationContext(
             identity: rootIdentity,
@@ -216,18 +205,62 @@ extension RenderLoop {
         StateRegistration.activeContext = nil
         tuiContext.stateStorage.markActive(rootIdentity)
 
-        let buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
+        // Determine header height. On the first frame, we perform a measurement
+        // pass to discover the actual header height before outputting anything.
+        // This prevents visible content jumping.
+        let appHeaderHeight: Int
+        if isFirstFrame {
+            // Measurement pass: render once to populate appHeader.contentBuffer
+            let measureContext = RenderContext(
+                availableWidth: terminalWidth,
+                availableHeight: terminalHeight - statusBarHeight,
+                environment: environment,
+                tuiContext: tuiContext
+            )
+            _ = renderScene(scene, context: measureContext.withChildIdentity(type: type(of: scene)))
+            appHeaderHeight = appHeader.height
+            isFirstFrame = false
+        } else {
+            // Subsequent frames: use the estimate from the previous frame.
+            // If it differs after rendering, we re-render with the correct height.
+            appHeaderHeight = appHeader.estimatedHeight
+        }
+
+        let contentHeight = terminalHeight - statusBarHeight - appHeaderHeight
+
+        var context = RenderContext(
+            availableWidth: terminalWidth,
+            availableHeight: contentHeight,
+            environment: environment,
+            tuiContext: tuiContext
+        )
+        context.pulsePhase = pulsePhase
+
+        // Render main content into a FrameBuffer.
+        // app.body is evaluated fresh each frame. @State values survive
+        // because State.init self-hydrates from StateStorage.
+        var buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
 
         // Now the AppHeaderModifier has run and populated the header buffer.
         // Read the actual header height for correct positioning.
-        let appHeaderHeight = appHeader.height
-        let contentHeight = terminalHeight - statusBarHeight - appHeaderHeight
+        let actualHeaderHeight = appHeader.height
+        let actualContentHeight = terminalHeight - statusBarHeight - actualHeaderHeight
 
         // If the header height changed (e.g. header appeared, disappeared, or
-        // changed line count), the content start row shifted. The diff cache
-        // still has lines at the old positions, so we must force a full repaint.
-        if appHeaderHeight != estimatedHeaderHeight {
+        // changed line count), the content start row shifted. Re-render with
+        // the correct height so centering is accurate.
+        if actualHeaderHeight != appHeaderHeight {
             diffWriter.invalidate()
+
+            // Re-render with correct content height for proper centering
+            var correctedContext = RenderContext(
+                availableWidth: terminalWidth,
+                availableHeight: actualContentHeight,
+                environment: environment,
+                tuiContext: tuiContext
+            )
+            correctedContext.pulsePhase = pulsePhase
+            buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
 
         // Validate focus state: if previously active section or focused element

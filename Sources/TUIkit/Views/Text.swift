@@ -194,7 +194,15 @@ extension TextStyle {
 
 extension Text: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let resolvedStyle = style.resolved(with: context.environment.palette)
+        var effectiveStyle = style
+
+        // If no explicit foreground color is set on the Text itself,
+        // inherit from the environment (set by .foregroundColor() on parent views)
+        if effectiveStyle.foregroundColor == nil {
+            effectiveStyle.foregroundColor = context.environment.foregroundColor
+        }
+
+        let resolvedStyle = effectiveStyle.resolved(with: context.environment.palette)
         return FrameBuffer(text: ANSIRenderer.render(content, with: resolvedStyle))
     }
 }
