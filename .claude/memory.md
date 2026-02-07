@@ -6,6 +6,7 @@
 **Purpose:** Terminal UI framework for Swift (SwiftUI-inspired)
 **Repo:** github.com/phranck/TUIkit
 **Docs:** tuikit.layered.work
+**Hosting:** GitHub Pages (deployed via `.github/workflows/ci.yml`)
 
 ## Compatibility
 
