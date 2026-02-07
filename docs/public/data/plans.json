@@ -1,5 +1,5 @@
 {
-  "generated": "2026-02-06T23:18:53.097Z",
+  "generated": "2026-02-07T01:41:20.533Z",
   "open": [
     {
       "date": "2026-02-06",
@@ -35,7 +35,7 @@
       "date": "2026-02-06",
       "slug": "list-scrollable",
       "title": "List (Scrollable)",
-      "preface": "List now gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. Uthey come later once the API is proven."
+      "preface": "List gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven."
     },
     {
       "date": "2026-02-06",
