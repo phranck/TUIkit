@@ -227,7 +227,16 @@ extension ProgressView {
 
 // MARK: - Equatable Conformance
 
-extension ProgressView: @preconcurrency Equatable where Label: Equatable, CurrentValueLabel: Equatable {}
+extension ProgressView: Equatable where Label: Equatable, CurrentValueLabel: Equatable {
+    nonisolated public static func == (lhs: ProgressView<Label, CurrentValueLabel>, rhs: ProgressView<Label, CurrentValueLabel>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.fractionCompleted == rhs.fractionCompleted &&
+            lhs.style == rhs.style &&
+            lhs.label == rhs.label &&
+            lhs.currentValueLabel == rhs.currentValueLabel
+        }
+    }
+}
 
 // MARK: - Rendering
 
