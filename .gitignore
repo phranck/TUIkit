@@ -10,11 +10,12 @@ DerivedData/
 # DocC generated output
 /docs-output/
 
-# Next.js landing page
+# Docs site (Astro)
 docs/node_modules/
-docs/.next/
-docs/out/
+docs/.astro/
+docs/dist/
 docs/.env.local
+docs/project-stats.json
 
 # Claude Code
 img/

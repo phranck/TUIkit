@@ -2,13 +2,7 @@
 
 ## In Progress
 
-- [ ] **Swift 6 Concurrency**: Phase 2b complete, Phases 3-6 pending
-  - [x] Phase 1-2: @MainActor on protocols, builders, render functions
-  - [x] Phase 2b: Cross-platform Lock wrapper (OSAllocatedUnfairLock/NSLock)
-  - [ ] Phase 3: TerminalProtocol for testability
-  - [ ] Phase 4: ForEach compile-time error
-  - [ ] Phase 5: ActionHandler consolidation
-  - [ ] Phase 6: AppRunner cleanup (remove IUOs)
+(none)
 
 ## Open
 
@@ -45,11 +39,11 @@
 
 ### 2026-02-07
 
-- [x] **Swift 6 @MainActor Phase 2b**: Cross-platform Lock wrapper; OSAllocatedUnfairLock on macOS, NSLock on Linux
-- [x] **Swift 6 @MainActor Phase 2**: View, ViewModifier, Renderable, App, Scene protocols; all builders; 67 files
-- [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported (PR #83)
+- [x] **Swift 6 Concurrency Complete**: Phases 1-7; TerminalProtocol, ActionHandler, AppRunner cleanup, 590 tests
+- [x] **Mobile Performance**: Framer Motion removed, CSS animations, mobile media queries, lazy Howler.js
+- [x] **Astro Migration**: Docs site migrated from Next.js to Astro, CI workflow fixed
+- [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported
 - [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
-- [x] **List Reverted**: Removed premature List implementation; will re-implement after shared architecture
 
 ### 2026-02-06
 
@@ -165,4 +159,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-07 (Swift 6 @MainActor Phase 2b complete)
+**Last Updated:** 2026-02-07
