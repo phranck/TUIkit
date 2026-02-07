@@ -74,6 +74,9 @@ public protocol Palette: Cyclable {
 
     /// Border color for boxes, cards, etc.
     var border: Color { get }
+
+    /// Background color for focused list/table rows.
+    var focusBackground: Color { get }
 }
 
 // MARK: - Default Palette Implementation
@@ -89,6 +92,10 @@ extension Palette {
 
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
+
+    // MARK: - UI Element Defaults
+
+    public var focusBackground: Color { foregroundTertiary.opacity(0.3) }
 }
 
 // MARK: - Palette Environment Key

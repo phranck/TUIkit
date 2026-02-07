@@ -126,8 +126,8 @@ struct ListRenderingTests {
         let buffer = renderToBuffer(list, context: context)
         let content = buffer.lines.joined()
 
-        // Selected item should show ● indicator
-        #expect(content.contains("●"))
+        // Selected item should have a background color (ANSI 48;2 = RGB background)
+        #expect(content.contains("[48;2;"))
     }
 
     @Test("Scroll indicators appear when needed")

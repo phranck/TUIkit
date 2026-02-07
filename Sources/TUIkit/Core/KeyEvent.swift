@@ -49,6 +49,7 @@ public enum Key: Hashable, Sendable {
     case tab
     case backspace
     case delete
+    case space
 
     // Arrow keys
     case up
@@ -56,11 +57,14 @@ public enum Key: Hashable, Sendable {
     case left
     case right
 
-    // Function keys
+    // Navigation keys
     case home
     case end
     case pageUp
     case pageDown
+
+    // Function keys
+    case f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12
 
     // Character key
     case character(Character)
@@ -155,10 +159,12 @@ extension KeyEvent {
             return KeyEvent(key: .tab)
         case ASCIIByte.delete, ASCIIByte.backspace:
             return KeyEvent(key: .backspace)
+        case 0x20:  // Space
+            return KeyEvent(key: .space)
         case ASCIIByte.ctrlRangeStart...ASCIIByte.ctrlRangeEnd:
             let char = Character(UnicodeScalar(byte + ASCIIByte.ctrlToLowerOffset))
             return KeyEvent(key: .character(char), ctrl: true)
-        case ASCIIByte.printableStart...ASCIIByte.printableEnd:
+        case (ASCIIByte.printableStart + 1)...ASCIIByte.printableEnd:  // Skip space (0x20), handled above
             let char = Character(UnicodeScalar(byte))
             return KeyEvent(character: char)
         default:
@@ -178,6 +184,11 @@ extension KeyEvent {
             return parseCSISequence(Array(bytes.dropFirst(2)))
         }
 
+        // SS3 sequences: ESC O (F1-F4 on some terminals)
+        if bytes[1] == 0x4F && bytes.count >= 3 {  // 'O'
+            return parseSS3Sequence(bytes[2])
+        }
+
         // Alt+key: ESC followed by key
         if bytes.count == 2 {
             if let keyEvent = parseSingleByte(bytes[1]) {
@@ -186,6 +197,19 @@ extension KeyEvent {
         }
 
         return KeyEvent(key: .escape)
+    }
+
+    /// Parses SS3 (Single Shift 3) sequences for F1-F4.
+    ///
+    /// Some terminals send F1-F4 as `ESC O P/Q/R/S`.
+    private static func parseSS3Sequence(_ byte: UInt8) -> KeyEvent? {
+        switch byte {
+        case 0x50: return KeyEvent(key: .f1)  // 'P'
+        case 0x51: return KeyEvent(key: .f2)  // 'Q'
+        case 0x52: return KeyEvent(key: .f3)  // 'R'
+        case 0x53: return KeyEvent(key: .f4)  // 'S'
+        default: return nil
+        }
     }
 
     /// Parses a CSI (Control Sequence Introducer) sequence.
@@ -224,7 +248,8 @@ extension KeyEvent {
     /// Parses extended key sequences (`ESC [ n ~`).
     ///
     /// These are VT-style sequences where `n` is a numeric key identifier:
-    /// 1=Home, 2=Insert, 3=Delete, 4=End, 5=PageUp, 6=PageDown.
+    /// - 1=Home, 2=Insert, 3=Delete, 4=End, 5=PageUp, 6=PageDown
+    /// - 11-15=F1-F5, 17-21=F6-F10, 23-24=F11-F12
     private static func parseExtendedKey(_ params: [UInt8]) -> KeyEvent? {
         // Extract the numeric identifier before the '~' terminator
         let numberBytes = params.dropLast()
@@ -235,12 +260,28 @@ extension KeyEvent {
         }
 
         switch number {
+        // Navigation keys
         case 1: return KeyEvent(key: .home)
         case 2: return nil  // Insert — not commonly used in TUI apps
         case 3: return KeyEvent(key: .delete)
         case 4: return KeyEvent(key: .end)
         case 5: return KeyEvent(key: .pageUp)
         case 6: return KeyEvent(key: .pageDown)
+
+        // Function keys (VT-style)
+        case 11: return KeyEvent(key: .f1)
+        case 12: return KeyEvent(key: .f2)
+        case 13: return KeyEvent(key: .f3)
+        case 14: return KeyEvent(key: .f4)
+        case 15: return KeyEvent(key: .f5)
+        case 17: return KeyEvent(key: .f6)
+        case 18: return KeyEvent(key: .f7)
+        case 19: return KeyEvent(key: .f8)
+        case 20: return KeyEvent(key: .f9)
+        case 21: return KeyEvent(key: .f10)
+        case 23: return KeyEvent(key: .f11)
+        case 24: return KeyEvent(key: .f12)
+
         default: return nil
         }
     }

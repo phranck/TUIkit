@@ -81,14 +81,14 @@ public final class StatusBarState: @unchecked Sendable {
     /// Whether the appearance item (`a`) is shown.
     ///
     /// When `true`, pressing `a` cycles through available appearances (border styles).
-    /// Default is `true`.
-    public var showAppearanceItem: Bool = true
+    /// Default is `false`.
+    public var showAppearanceItem: Bool = false
 
     /// Whether the theme item (`t`) is shown.
     ///
     /// When `true`, pressing `t` cycles through available themes.
-    /// Default is `true`.
-    public var showThemeItem: Bool = true
+    /// Default is `false`.
+    public var showThemeItem: Bool = false
 
     /// Controls when the quit shortcut (`q`) is active.
     ///
@@ -102,7 +102,7 @@ public final class StatusBarState: @unchecked Sendable {
     // MARK: - Appearance
 
     /// The current status bar style.
-    public var style: StatusBarStyle = .compact
+    public var style: StatusBarStyle = .bordered
 
     /// The horizontal alignment of items.
     public var alignment: StatusBarAlignment = .justified

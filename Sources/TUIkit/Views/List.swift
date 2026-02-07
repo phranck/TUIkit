@@ -30,6 +30,7 @@ struct ListRow<ID: Hashable> {
 /// `List` displays a vertical collection of items inside a bordered container
 /// with support for:
 /// - Optional title in the border
+/// - Optional footer (typically buttons or status text)
 /// - Keyboard navigation (Up/Down/Home/End/PageUp/PageDown)
 /// - Single selection via optional binding
 /// - Multi-selection via Set binding
@@ -46,27 +47,42 @@ struct ListRow<ID: Hashable> {
 ///         Text(item.name)
 ///     }
 /// }
+///
+/// // With footer
+/// List("My Items", selection: $selectedID) {
+///     ForEach(items) { item in
+///         Text(item.name)
+///     }
+/// } footer: {
+///     ButtonRow {
+///         Button("Add") { }
+///         Button("Remove") { }
+///     }
+/// }
 /// ```
 ///
 /// ## Visual States
 ///
 /// | State | Rendering |
 /// |-------|-----------|
-/// | Focused + Selected | Pulsing accent, bold |
-/// | Focused only | Accent foreground (cursor) |
-/// | Selected only | Dimmed accent |
+/// | Focused + Selected | Pulsing accent background, bold |
+/// | Focused only | Highlight background bar |
+/// | Selected only | Dimmed accent indicator |
 /// | Neither | Default foreground |
 ///
 /// ## Scroll Indicators
 ///
 /// When content extends beyond the viewport, scroll indicators (arrows)
 /// appear at the top and/or bottom edges inside the container.
-public struct List<SelectionValue: Hashable, Content: View>: View {
+public struct List<SelectionValue: Hashable, Content: View, Footer: View>: View {
     /// The optional title displayed in the border.
     let title: String?
 
     /// The content of the list (typically ForEach).
     let content: Content
+
+    /// The footer content (optional).
+    let footer: Footer?
 
     /// Binding for single selection (optional ID).
     let singleSelection: Binding<SelectionValue?>?
@@ -91,24 +107,97 @@ public struct List<SelectionValue: Hashable, Content: View>: View {
     /// The placeholder text shown when the list is empty.
     let emptyPlaceholder: String
 
+    /// Whether to show separator before footer.
+    let showFooterSeparator: Bool
+
     public var body: some View {
         _ListCore(
             title: title,
             content: content,
+            footer: footer,
             singleSelection: singleSelection,
             multiSelection: multiSelection,
             selectionMode: selectionMode,
             focusID: focusID,
             isDisabled: isDisabled,
             maxVisibleRows: maxVisibleRows,
-            emptyPlaceholder: emptyPlaceholder
+            emptyPlaceholder: emptyPlaceholder,
+            showFooterSeparator: showFooterSeparator
         )
     }
 }
 
-// MARK: - Single Selection Initializers
+// MARK: - Single Selection Initializers (with Footer)
 
 extension List {
+    /// Creates a list with single selection, title, and footer.
+    ///
+    /// - Parameters:
+    ///   - title: The title displayed in the border.
+    ///   - selection: A binding to the selected item's ID (nil = no selection).
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: A ViewBuilder that defines the list content.
+    ///   - footer: A ViewBuilder that defines the footer content.
+    public init(
+        _ title: String,
+        selection: Binding<SelectionValue?>,
+        focusID: String? = nil,
+        maxVisibleRows: Int? = nil,
+        emptyPlaceholder: String = "No items",
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = title
+        self.content = content()
+        self.footer = footer()
+        self.singleSelection = selection
+        self.multiSelection = nil
+        self.focusID = focusID
+        self.isDisabled = false
+        self.maxVisibleRows = maxVisibleRows
+        self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = showFooterSeparator
+    }
+
+    /// Creates a list with single selection and footer, without a title.
+    ///
+    /// - Parameters:
+    ///   - selection: A binding to the selected item's ID (nil = no selection).
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: A ViewBuilder that defines the list content.
+    ///   - footer: A ViewBuilder that defines the footer content.
+    public init(
+        selection: Binding<SelectionValue?>,
+        focusID: String? = nil,
+        maxVisibleRows: Int? = nil,
+        emptyPlaceholder: String = "No items",
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = nil
+        self.content = content()
+        self.footer = footer()
+        self.singleSelection = selection
+        self.multiSelection = nil
+        self.focusID = focusID
+        self.isDisabled = false
+        self.maxVisibleRows = maxVisibleRows
+        self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = showFooterSeparator
+    }
+}
+
+// MARK: - Single Selection Initializers (without Footer)
+
+extension List where Footer == EmptyView {
     /// Creates a list with single selection and a title.
     ///
     /// - Parameters:
@@ -128,12 +217,14 @@ extension List {
     ) {
         self.title = title
         self.content = content()
+        self.footer = nil
         self.singleSelection = selection
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
         self.maxVisibleRows = maxVisibleRows
         self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = false
     }
 
     /// Creates a list with single selection without a title.
@@ -153,18 +244,88 @@ extension List {
     ) {
         self.title = nil
         self.content = content()
+        self.footer = nil
         self.singleSelection = selection
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
         self.maxVisibleRows = maxVisibleRows
         self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = false
     }
 }
 
-// MARK: - Multi Selection Initializers
+// MARK: - Multi Selection Initializers (with Footer)
 
 extension List {
+    /// Creates a list with multi-selection, title, and footer.
+    ///
+    /// - Parameters:
+    ///   - title: The title displayed in the border.
+    ///   - selection: A binding to the set of selected item IDs.
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: A ViewBuilder that defines the list content.
+    ///   - footer: A ViewBuilder that defines the footer content.
+    public init(
+        _ title: String,
+        selection: Binding<Set<SelectionValue>>,
+        focusID: String? = nil,
+        maxVisibleRows: Int? = nil,
+        emptyPlaceholder: String = "No items",
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = title
+        self.content = content()
+        self.footer = footer()
+        self.singleSelection = nil
+        self.multiSelection = selection
+        self.focusID = focusID
+        self.isDisabled = false
+        self.maxVisibleRows = maxVisibleRows
+        self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = showFooterSeparator
+    }
+
+    /// Creates a list with multi-selection and footer, without a title.
+    ///
+    /// - Parameters:
+    ///   - selection: A binding to the set of selected item IDs.
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
+    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
+    ///   - content: A ViewBuilder that defines the list content.
+    ///   - footer: A ViewBuilder that defines the footer content.
+    public init(
+        selection: Binding<Set<SelectionValue>>,
+        focusID: String? = nil,
+        maxVisibleRows: Int? = nil,
+        emptyPlaceholder: String = "No items",
+        showFooterSeparator: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) {
+        self.title = nil
+        self.content = content()
+        self.footer = footer()
+        self.singleSelection = nil
+        self.multiSelection = selection
+        self.focusID = focusID
+        self.isDisabled = false
+        self.maxVisibleRows = maxVisibleRows
+        self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = showFooterSeparator
+    }
+}
+
+// MARK: - Multi Selection Initializers (without Footer)
+
+extension List where Footer == EmptyView {
     /// Creates a list with multi-selection and a title.
     ///
     /// - Parameters:
@@ -184,12 +345,14 @@ extension List {
     ) {
         self.title = title
         self.content = content()
+        self.footer = nil
         self.singleSelection = nil
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
         self.maxVisibleRows = maxVisibleRows
         self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = false
     }
 
     /// Creates a list with multi-selection without a title.
@@ -209,12 +372,14 @@ extension List {
     ) {
         self.title = nil
         self.content = content()
+        self.footer = nil
         self.singleSelection = nil
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
         self.maxVisibleRows = maxVisibleRows
         self.emptyPlaceholder = emptyPlaceholder
+        self.showFooterSeparator = false
     }
 }
 
@@ -225,7 +390,7 @@ extension List {
     ///
     /// - Parameter disabled: Whether the list is disabled.
     /// - Returns: A new list with the disabled state.
-    public func disabled(_ disabled: Bool = true) -> List<SelectionValue, Content> {
+    public func disabled(_ disabled: Bool = true) -> List<SelectionValue, Content, Footer> {
         var copy = self
         copy.isDisabled = disabled
         return copy
@@ -235,9 +400,10 @@ extension List {
 // MARK: - List Core (Internal Rendering)
 
 /// Internal core view that handles list rendering inside a ContainerView.
-private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Renderable {
+private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>: View, Renderable {
     let title: String?
     let content: Content
+    let footer: Footer?
     let singleSelection: Binding<SelectionValue?>?
     let multiSelection: Binding<Set<SelectionValue>>?
     let selectionMode: SelectionMode
@@ -245,6 +411,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
     let isDisabled: Bool
     let maxVisibleRows: Int?
     let emptyPlaceholder: String
+    let showFooterSeparator: Bool
 
     var body: Never {
         fatalError("_ListCore renders via Renderable")
@@ -333,12 +500,16 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
                 viewportHeight: viewportHeight
             )
 
+            // Calculate row width based on the widest row content
+            let maxRowWidth = visibleRows.map { $0.row.buffer.width }.max() ?? 0
+            let rowWidth = maxRowWidth
+
             // Build content lines
             var lines: [String] = []
 
             // Top scroll indicator
             if handler.hasContentAbove {
-                lines.append(renderScrollIndicator(direction: .up, width: context.availableWidth - 4, palette: palette))
+                lines.append(renderScrollIndicator(direction: .up, width: rowWidth, palette: palette))
             }
 
             // Render each visible row
@@ -350,6 +521,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
                     row: row,
                     isFocused: isFocused,
                     isSelected: isSelected,
+                    rowWidth: rowWidth,
                     context: context,
                     palette: palette
                 )
@@ -358,7 +530,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
 
             // Bottom scroll indicator
             if handler.hasContentBelow {
-                lines.append(renderScrollIndicator(direction: .down, width: context.availableWidth - 4, palette: palette))
+                lines.append(renderScrollIndicator(direction: .down, width: rowWidth, palette: palette))
             }
 
             contentLines = lines
@@ -367,16 +539,23 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
         // Create the list content as a simple view
         let listContent = _ListContentView(lines: contentLines)
 
-        // Wrap in ContainerView with title
-        let container = ContainerView(
-            title: title,
-            style: ContainerStyle(showHeaderSeparator: false, showFooterSeparator: false),
-            padding: EdgeInsets(horizontal: 1, vertical: 0)
-        ) {
-            listContent
-        }
+        // Render using the shared container helper with footer support
+        // Padding is 0 because rows handle their own padding (for background bar edge-to-edge)
+        let config = ContainerConfig(
+            borderStyle: nil,
+            borderColor: nil,
+            titleColor: nil,
+            padding: EdgeInsets(all: 0),
+            showFooterSeparator: showFooterSeparator
+        )
 
-        return TUIkit.renderToBuffer(container, context: context)
+        return renderContainer(
+            title: title,
+            config: config,
+            content: listContent,
+            footer: footer,
+            context: context
+        )
     }
 
     // MARK: - Row Extraction
@@ -439,38 +618,41 @@ private struct _ListCore<SelectionValue: Hashable, Content: View>: View, Rendera
         row: ListRow<SelectionValue>,
         isFocused: Bool,
         isSelected: Bool,
+        rowWidth: Int,
         context: RenderContext,
         palette: any Palette
     ) -> [String] {
-        let indicator: String
-        let foregroundColor: Color
+        // Determine visual state - only affects background
+        // The row content keeps its own styling from the child views
+        let backgroundColor: Color?
 
         if isFocused && isSelected {
+            // Focused + Selected: pulsing accent background
             let dimAccent = palette.accent.opacity(0.35)
-            foregroundColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-            indicator = "●"
+            backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
         } else if isFocused {
-            foregroundColor = palette.accent
-            indicator = "›"
+            // Focused only: highlight background bar
+            backgroundColor = palette.focusBackground
         } else if isSelected {
-            foregroundColor = palette.accent.opacity(0.6)
-            indicator = "●"
+            // Selected only: subtle background (darker than focus)
+            backgroundColor = palette.accent.opacity(0.25)
         } else {
-            foregroundColor = palette.foreground
-            indicator = " "
+            // Neither: no background
+            backgroundColor = nil
         }
 
-        let styledIndicator = ANSIRenderer.colorize(
-            indicator,
-            foreground: foregroundColor,
-            bold: isFocused
-        )
+        // Render each line - row content keeps its own styling
+        // All rows have 1 char padding on each side, padded to same total width
+        // Background bar covers the full width including padding
+        return row.buffer.lines.map { line in
+            let lineLength = line.strippedLength
+            let rightPadding = max(1, rowWidth - lineLength + 1)
+            let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
 
-        return row.buffer.lines.enumerated().map { lineIndex, line in
-            if lineIndex == 0 {
-                return styledIndicator + " " + line
+            if let bgColor = backgroundColor {
+                return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
             } else {
-                return "  " + line
+                return paddedLine
             }
         }
     }
