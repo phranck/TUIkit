@@ -102,7 +102,16 @@ public struct Dialog<Content: View, Footer: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension Dialog: @preconcurrency Equatable where Content: Equatable, Footer: Equatable {}
+extension Dialog: Equatable where Content: Equatable, Footer: Equatable {
+    nonisolated public static func == (lhs: Dialog<Content, Footer>, rhs: Dialog<Content, Footer>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.title == rhs.title &&
+            lhs.content == rhs.content &&
+            lhs.footer == rhs.footer &&
+            lhs.config == rhs.config
+        }
+    }
+}
 
 // MARK: - Rendering
 
