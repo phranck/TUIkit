@@ -33,7 +33,9 @@ struct KeyEnumTests {
 
     @Test("Same character keys are equal")
     func characterKeysEquality() {
-        #expect(Key.character("x") == Key.character("x"))
+        let key1 = Key.character("x")
+        let key2 = Key.character("x")
+        #expect(key1 == key2)
     }
 
     @Test("Special keys are distinct")

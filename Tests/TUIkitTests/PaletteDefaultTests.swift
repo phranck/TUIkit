@@ -57,5 +57,3 @@ struct PaletteDefaultTests {
         #expect(palette.overlayBackground == palette.background)
     }
 }
-
-

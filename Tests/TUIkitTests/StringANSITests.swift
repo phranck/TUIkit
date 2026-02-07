@@ -27,7 +27,7 @@ struct StringANSITests {
 
     @Test("stripped on empty string returns empty")
     func strippedEmpty() {
-        #expect("".stripped == "")
+        #expect("".stripped.isEmpty)
     }
 
     @Test("stripped removes nested ANSI codes")

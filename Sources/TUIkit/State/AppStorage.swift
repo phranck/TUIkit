@@ -184,7 +184,7 @@ public enum StorageDefaults {
     ///
     /// Defaults to a ``JSONFileStorage`` instance that persists to
     /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
-    public nonisolated(unsafe) static var backend: StorageBackend = JSONFileStorage()
+    nonisolated(unsafe) public static var backend: StorageBackend = JSONFileStorage()
 }
 
 // MARK: - AppStorage Property Wrapper

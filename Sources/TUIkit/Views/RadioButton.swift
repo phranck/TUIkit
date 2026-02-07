@@ -172,7 +172,7 @@ final class RadioButtonGroupHandler: Focusable {
     var itemValues: [AnyHashable]
     let orientation: RadioButtonOrientation
     var canBeFocused: Bool
-    
+
     /// The currently focused item index within the group.
     /// Persisted across renders to maintain focus position.
     var focusedIndex: Int = 0
@@ -294,12 +294,12 @@ extension RadioButtonGroup: Renderable {
             )
         )
         let handler = handlerBox.value
-        
+
         // Keep handler in sync with current values (in case items changed)
         handler.selection = erasedSelection
         handler.itemValues = itemValues
         handler.canBeFocused = !isDisabled
-        
+
         focusManager.register(handler, inSection: context.activeFocusSectionID)
         stateStorage.markActive(context.identity)
 

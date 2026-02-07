@@ -254,7 +254,6 @@ final class TUIContext: @unchecked Sendable {
         self.stateStorage = stateStorage
         self.renderCache = renderCache
     }
-
 }
 
 // MARK: - Internal API
