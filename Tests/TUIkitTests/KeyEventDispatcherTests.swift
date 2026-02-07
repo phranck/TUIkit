@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("KeyEventDispatcher Tests")
 struct KeyEventDispatcherTests {
 

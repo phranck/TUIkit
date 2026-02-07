@@ -23,6 +23,7 @@ private struct MinimalPalette: Palette {
     let border = Color.brightBlack
 }
 
+@MainActor
 @Suite("Palette Default Implementation Tests")
 struct PaletteDefaultTests {
 

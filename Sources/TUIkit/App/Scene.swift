@@ -8,6 +8,7 @@
 ///
 /// A scene represents a part of the app structure,
 /// typically a window or a group of views.
+@MainActor
 public protocol Scene {}
 
 // MARK: - WindowGroup
@@ -38,6 +39,7 @@ public struct WindowGroup<Content: View>: Scene {
 // MARK: - SceneBuilder
 
 /// A result builder for scene hierarchies.
+@MainActor
 @resultBuilder
 public struct SceneBuilder {
     /// Builds a single scene.

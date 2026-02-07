@@ -20,6 +20,7 @@
 ///     }
 /// }
 /// ```
+@MainActor
 public protocol ViewModifier {
     /// Transforms a rendered buffer.
     ///

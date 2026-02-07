@@ -11,6 +11,7 @@ import Testing
 
 // MARK: - Appear Tracking Tests
 
+@MainActor
 @Suite("LifecycleManager Appear Tests")
 struct LifecycleManagerAppearTests {
 
@@ -73,6 +74,7 @@ struct LifecycleManagerAppearTests {
 
 // MARK: - Render Pass Tests
 
+@MainActor
 @Suite("LifecycleManager Render Pass Tests")
 struct LifecycleManagerRenderPassTests {
 
@@ -157,6 +159,7 @@ struct LifecycleManagerRenderPassTests {
 
 // MARK: - Disappear Callback Storage Tests
 
+@MainActor
 @Suite("LifecycleManager Disappear Callback Tests")
 struct LifecycleManagerDisappearTests {
 
@@ -194,6 +197,7 @@ struct LifecycleManagerDisappearTests {
 
 // MARK: - Task Storage Tests
 
+@MainActor
 @Suite("LifecycleManager Task Tests")
 struct LifecycleManagerTaskTests {
 

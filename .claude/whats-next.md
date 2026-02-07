@@ -5,13 +5,15 @@
 
 ## Active
 
-- **View Architecture Refactoring**: ContainerView, shared handlers, then List & Table
+- **Swift 6 @MainActor Refactoring**: Phase 2 complete, Phases 3-6 pending
 
 ## Next Steps
 
-1. **ContainerView Refactor**: Extract `_ContainerViewCore`, enable modifier support (High)
-2. **Shared Handlers**: FocusableItemListHandler, SelectionStateManager (High)
-3. **List & Table**: Implement using shared architecture (High)
+1. **Phase 3**: TerminalProtocol for testability
+2. **Phase 4**: ForEach compile-time error
+3. **Phase 5**: ActionHandler consolidation
+4. **Phase 6**: AppRunner cleanup (remove IUOs)
+5. **Shared Handlers**: FocusableItemListHandler for List & Table
 
 ---
 

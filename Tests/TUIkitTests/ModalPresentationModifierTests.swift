@@ -9,6 +9,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("ModalPresentationModifier Tests")
 struct ModalPresentationModifierTests {
 

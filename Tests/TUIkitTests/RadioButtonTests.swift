@@ -24,6 +24,7 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
 
 // MARK: - Radio Button Item Tests
 
+@MainActor
 @Suite("RadioButtonItem Tests")
 struct RadioButtonItemTests {
 
@@ -50,6 +51,7 @@ struct RadioButtonItemTests {
 
 // MARK: - Radio Button Group Tests
 
+@MainActor
 @Suite("RadioButtonGroup Tests", .serialized)
 struct RadioButtonGroupTests {
 
@@ -232,6 +234,7 @@ struct RadioButtonGroupTests {
 
 // MARK: - Radio Button Group Handler Tests
 
+@MainActor
 @Suite("RadioButtonGroupHandler Tests")
 struct RadioButtonGroupHandlerTests {
 
@@ -436,6 +439,7 @@ struct RadioButtonGroupHandlerTests {
 
 // MARK: - Radio Button Orientation Tests
 
+@MainActor
 @Suite("RadioButtonOrientation Tests")
 struct RadioButtonOrientationTests {
 

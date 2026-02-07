@@ -42,6 +42,7 @@ final class MockFocusable: Focusable {
 
 // MARK: - Focus Manager Tests
 
+@MainActor
 @Suite("Focus Manager Tests")
 struct FocusManagerTests {
 
@@ -313,6 +314,7 @@ struct FocusManagerTests {
 
 // MARK: - Focus State Tests
 
+@MainActor
 @Suite("Focus State Tests", .serialized)
 struct FocusStateTests {
 
@@ -358,6 +360,7 @@ struct FocusStateTests {
 
 // MARK: - Focus Manager Environment Tests
 
+@MainActor
 @Suite("Focus Manager Environment Tests")
 struct FocusManagerEnvironmentTests {
 
@@ -402,6 +405,7 @@ struct FocusManagerEnvironmentTests {
 
 // MARK: - Focus Section Tests
 
+@MainActor
 @Suite("Focus Section Tests")
 struct FocusSectionTests {
 

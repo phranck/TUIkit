@@ -24,6 +24,7 @@
 /// - Conditionals (`if`, `if-else`)
 /// - Optional views (`if let`)
 /// - Arrays of views (`for-in`)
+@MainActor
 @resultBuilder
 public struct ViewBuilder {
 

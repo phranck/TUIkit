@@ -11,6 +11,7 @@ import Testing
 
 // MARK: - Style Rendering Tests
 
+@MainActor
 @Suite("ANSIRenderer Style Rendering Tests")
 struct ANSIRendererStyleTests {
 
@@ -166,6 +167,7 @@ struct ANSIRendererStyleTests {
 
 // MARK: - Convenience Methods Tests
 
+@MainActor
 @Suite("ANSIRenderer Convenience Tests")
 struct ANSIRendererConvenienceTests {
 
@@ -226,6 +228,7 @@ struct ANSIRendererConvenienceTests {
 
 // MARK: - Cursor Control Tests
 
+@MainActor
 @Suite("ANSIRenderer Cursor Control Tests")
 struct ANSIRendererCursorTests {
 

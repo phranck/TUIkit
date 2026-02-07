@@ -17,6 +17,7 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
 
 // MARK: - EdgeInsets Tests
 
+@MainActor
 @Suite("EdgeInsets Tests")
 struct EdgeInsetsTests {
 
@@ -48,6 +49,7 @@ struct EdgeInsetsTests {
 
 // MARK: - Edge Tests
 
+@MainActor
 @Suite("Edge Tests")
 struct EdgeTests {
 
@@ -78,6 +80,7 @@ struct EdgeTests {
 
 // MARK: - PaddingModifier Tests
 
+@MainActor
 @Suite("PaddingModifier Tests")
 struct PaddingModifierTests {
 
@@ -164,6 +167,7 @@ struct PaddingModifierTests {
 
 // MARK: - FrameModifier Tests
 
+@MainActor
 @Suite("FrameModifier Tests")
 struct FrameModifierTests {
 
@@ -307,6 +311,7 @@ struct FrameModifierTests {
 
 // MARK: - BorderModifier Tests
 
+@MainActor
 @Suite("BorderModifier Tests")
 struct BorderModifierTests {
 
@@ -420,6 +425,7 @@ struct BorderModifierTests {
 
 // MARK: - BorderStyle Tests
 
+@MainActor
 @Suite("BorderStyle Tests")
 struct BorderStyleTests {
 
@@ -441,6 +447,7 @@ struct BorderStyleTests {
 
 // MARK: - BackgroundModifier Tests
 
+@MainActor
 @Suite("BackgroundModifier Tests")
 struct BackgroundModifierTests {
 
