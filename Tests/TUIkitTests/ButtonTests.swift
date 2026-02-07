@@ -158,16 +158,16 @@ struct ButtonTests {
     }
 }
 
-// MARK: - Button Handler Tests
+// MARK: - Action Handler Tests
 
 @MainActor
-@Suite("Button Handler Tests")
-struct ButtonHandlerTests {
+@Suite("Action Handler Tests")
+struct ActionHandlerTests {
 
-    @Test("ButtonHandler handles Enter key")
+    @Test("ActionHandler handles Enter key")
     func handleEnterKey() {
         var wasTriggered = false
-        let handler = ButtonHandler(
+        let handler = ActionHandler(
             focusID: "enter-test",
             action: { wasTriggered = true },
             canBeFocused: true
@@ -180,10 +180,10 @@ struct ButtonHandlerTests {
         #expect(wasTriggered == true)
     }
 
-    @Test("ButtonHandler handles Space key")
+    @Test("ActionHandler handles Space key")
     func handleSpaceKey() {
         var wasTriggered = false
-        let handler = ButtonHandler(
+        let handler = ActionHandler(
             focusID: "space-test",
             action: { wasTriggered = true },
             canBeFocused: true
@@ -196,10 +196,10 @@ struct ButtonHandlerTests {
         #expect(wasTriggered == true)
     }
 
-    @Test("ButtonHandler ignores other keys")
+    @Test("ActionHandler ignores other keys")
     func ignoresOtherKeys() {
         var wasTriggered = false
-        let handler = ButtonHandler(
+        let handler = ActionHandler(
             focusID: "ignore-test",
             action: { wasTriggered = true },
             canBeFocused: true
@@ -210,6 +210,29 @@ struct ButtonHandlerTests {
 
         #expect(handled == false)
         #expect(wasTriggered == false)
+    }
+
+    @Test("ActionHandler respects custom trigger keys")
+    func customTriggerKeys() {
+        var wasTriggered = false
+        let handler = ActionHandler(
+            focusID: "custom-test",
+            action: { wasTriggered = true },
+            canBeFocused: true,
+            triggerKeys: [Key.enter]  // Only Enter, not Space
+        )
+
+        // Space should not trigger
+        let spaceEvent = KeyEvent(key: .character(" "))
+        let spaceHandled = handler.handleKeyEvent(spaceEvent)
+        #expect(spaceHandled == false)
+        #expect(wasTriggered == false)
+
+        // Enter should trigger
+        let enterEvent = KeyEvent(key: .enter)
+        let enterHandled = handler.handleKeyEvent(enterEvent)
+        #expect(enterHandled == true)
+        #expect(wasTriggered == true)
     }
 }
 
