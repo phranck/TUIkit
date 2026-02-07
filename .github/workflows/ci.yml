@@ -161,7 +161,7 @@ jobs:
 
       - name: Assemble site
         run: |
-          cp -r docs/out/* docs-output/
+          cp -r docs/dist/* docs-output/
 
       - name: Add CNAME for custom domain
         run: echo "tuikit.layered.work" > docs-output/CNAME
