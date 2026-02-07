@@ -426,13 +426,14 @@ func run() throws {
 - [x] Tests pass
 
 ### Phase 5: ActionHandler
-- [ ] Create ActionHandler.swift
-- [ ] Update Button to use ActionHandler
-- [ ] Update Toggle to use ActionHandler
-- [ ] Update RadioButtonGroup to use ActionHandler
-- [ ] Remove old handler classes
-- [ ] Build passes
-- [ ] Tests pass
+- [x] Create ActionHandler.swift
+- [x] Update Button to use ActionHandler
+- [x] Update Toggle to use ActionHandler
+- [x] RadioButtonGroup keeps specialized handler (navigation logic too complex)
+- [x] Remove old ButtonHandler and ToggleHandler classes
+- [x] Update tests (ButtonHandlerTests -> ActionHandlerTests, ToggleHandlerTests -> integration tests)
+- [x] Build passes
+- [x] Tests pass (590/590)
 
 ### Phase 6: AppRunner
 - [ ] Replace implicitly unwrapped optionals

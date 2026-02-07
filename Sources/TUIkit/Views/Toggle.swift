@@ -85,48 +85,16 @@ public struct Toggle: View {
     }
 }
 
-// MARK: - Toggle Handler
-
-/// Internal handler class for toggle focus management and state updates.
-final class ToggleHandler: Focusable {
-    let focusID: String
-    let isOn: Binding<Bool>
-    var canBeFocused: Bool
-
-    init(focusID: String, isOn: Binding<Bool>, canBeFocused: Bool) {
-        self.focusID = focusID
-        self.isOn = isOn
-        self.canBeFocused = canBeFocused
-    }
-}
-
-// MARK: - Key Event Handling
-
-extension ToggleHandler {
-    func handleKeyEvent(_ event: KeyEvent) -> Bool {
-        // Toggle state on Space or Enter
-        switch event.key {
-        case .enter:
-            isOn.wrappedValue.toggle()
-            return true
-        case .character(" "):
-            isOn.wrappedValue.toggle()
-            return true
-        default:
-            return false
-        }
-    }
-}
-
 // MARK: - Toggle Rendering
 
 extension Toggle: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register with focus manager
         let focusManager = context.environment.focusManager
-        let handler = ToggleHandler(
+        let binding = isOn
+        let handler = ActionHandler(
             focusID: focusID,
-            isOn: isOn,
+            action: { binding.wrappedValue.toggle() },
             canBeFocused: !isDisabled
         )
         focusManager.register(handler, inSection: context.activeFocusSectionID)

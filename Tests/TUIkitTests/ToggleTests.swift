@@ -228,52 +228,41 @@ struct ToggleTests {
 // MARK: - Toggle Handler Tests
 
 @MainActor
-@Suite("Toggle Handler Tests")
-struct ToggleHandlerTests {
+@Suite("Toggle Action Handler Integration Tests")
+struct ToggleActionHandlerIntegrationTests {
 
-    @Test("ToggleHandler handles Space key to toggle state")
-    func handleSpaceKey() {
+    @Test("Toggle uses ActionHandler for key events")
+    func toggleUsesActionHandler() {
+        // Verify that Toggle's action handler correctly toggles the binding
         var isOn = false
         let binding = Binding(
             get: { isOn },
             set: { isOn = $0 }
         )
 
-        let handler = ToggleHandler(
-            focusID: "space-test",
-            isOn: binding,
+        // Create handler as Toggle does internally
+        let handler = ActionHandler(
+            focusID: "toggle-test",
+            action: { binding.wrappedValue.toggle() },
             canBeFocused: true
         )
 
-        let event = KeyEvent(key: .character(" "))
-        let handled = handler.handleKeyEvent(event)
+        // Space key should toggle
+        let spaceEvent = KeyEvent(key: .character(" "))
+        let spaceHandled = handler.handleKeyEvent(spaceEvent)
 
-        #expect(handled == true)
+        #expect(spaceHandled == true)
         #expect(isOn == true)
+
+        // Enter key should toggle back
+        let enterEvent = KeyEvent(key: .enter)
+        let enterHandled = handler.handleKeyEvent(enterEvent)
+
+        #expect(enterHandled == true)
+        #expect(isOn == false)
     }
 
-    @Test("ToggleHandler handles Enter key to toggle state")
-    func handleEnterKey() {
-        var isOn = false
-        let binding = Binding(
-            get: { isOn },
-            set: { isOn = $0 }
-        )
-
-        let handler = ToggleHandler(
-            focusID: "enter-test",
-            isOn: binding,
-            canBeFocused: true
-        )
-
-        let event = KeyEvent(key: .enter)
-        let handled = handler.handleKeyEvent(event)
-
-        #expect(handled == true)
-        #expect(isOn == true)
-    }
-
-    @Test("ToggleHandler ignores other keys")
+    @Test("Toggle action handler ignores other keys")
     func ignoresOtherKeys() {
         var isOn = false
         let binding = Binding(
@@ -281,9 +270,9 @@ struct ToggleHandlerTests {
             set: { isOn = $0 }
         )
 
-        let handler = ToggleHandler(
+        let handler = ActionHandler(
             focusID: "ignore-test",
-            isOn: binding,
+            action: { binding.wrappedValue.toggle() },
             canBeFocused: true
         )
 
@@ -292,23 +281,6 @@ struct ToggleHandlerTests {
 
         #expect(handled == false)
         #expect(isOn == false)
-    }
-
-    @Test("ToggleHandler respects canBeFocused property")
-    func respectsCanBeFocused() {
-        var isOn = false
-        let binding = Binding(
-            get: { isOn },
-            set: { isOn = $0 }
-        )
-
-        let handler = ToggleHandler(
-            focusID: "disabled-test",
-            isOn: binding,
-            canBeFocused: false
-        )
-
-        #expect(handler.canBeFocused == false)
     }
 }
 
