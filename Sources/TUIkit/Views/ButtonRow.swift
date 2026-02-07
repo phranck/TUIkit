@@ -32,8 +32,8 @@ public struct ButtonRow: View {
         self.buttons = buttons()
     }
 
-    public var body: Never {
-        fatalError("ButtonRow renders via Renderable")
+    public var body: some View {
+        _ButtonRowCore(buttons: buttons, spacing: spacing)
     }
 }
 
@@ -95,9 +95,17 @@ public struct ButtonRowBuilder {
     }
 }
 
-// MARK: - ButtonRow Rendering
+// MARK: - Internal Core View
 
-extension ButtonRow: Renderable {
+/// Internal view that handles the actual rendering of ButtonRow.
+private struct _ButtonRowCore: View, Renderable {
+    let buttons: [Button]
+    let spacing: Int
+
+    var body: Never {
+        fatalError("_ButtonRowCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         guard !buttons.isEmpty else {
             return FrameBuffer(lines: [])
