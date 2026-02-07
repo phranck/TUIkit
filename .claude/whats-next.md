@@ -1,17 +1,17 @@
 # TUIKit: What's Next
 
 **Branch:** `main`
-**Tests:** 591 / 94 suites ✅ · **Build:** clean ✅ · **Lint:** 0 serious ✅
+**Tests:** 590 / 94 suites ✅ · **Build:** clean ✅ · **Lint:** 0 serious ✅
 
-## Completed
+## Active Task
 
-- **Astro Migration**: Docs site migrated from Next.js to Astro (Landing + Dashboard)
+None
 
 ## Next Steps
 
-1. CI workflow update for Astro build
-2. GitHub Pages deployment verification
-3. Swift 6 Concurrency Phase 3: TerminalProtocol
+1. TextInput / TextField component
+2. List & Table shared architecture (SharedHandlers plan)
+3. Mobile docs testing (iPhone Safari)
 
 ---
 
