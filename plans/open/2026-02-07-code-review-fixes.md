@@ -398,8 +398,18 @@ func run() throws {
 - [x] Equatable conformances: @preconcurrency
 - [x] RadioButtonItem: @MainActor init
 - [x] All 45 test suites: @MainActor
-- [x] Build passes (64 files changed)
+- [x] Build passes (67 files changed)
 - [x] Tests pass (591/591)
+
+#### Phase 2c: Cross-Platform Lock Wrapper (completed)
+- [x] Create Lock<State> wrapper in Core/Lock.swift
+- [x] OSAllocatedUnfairLock on Apple platforms (faster unfair lock)
+- [x] NSLock fallback on Linux
+- [x] AppState uses Lock wrapper
+- [x] TupleView Equatable fixed for Swift 6 concurrency
+- [x] Build passes on macOS
+- [x] Tests pass (591/591)
+- [x] Awaiting Linux CI verification
 
 ### Phase 3: TerminalProtocol
 - [ ] Create TerminalProtocol.swift
