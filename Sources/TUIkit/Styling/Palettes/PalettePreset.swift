@@ -65,6 +65,7 @@ public struct SystemPalette: Palette {
 
     // UI elements
     public let border: Color
+    public let focusBackground: Color
 
     // Additional backgrounds
     public let statusBarBackground: Color
@@ -103,6 +104,7 @@ public struct SystemPalette: Palette {
 
         // UI elements
         self.border = Color.hsl(hue, tuning.borderSaturation, tuning.borderLightness)
+        self.focusBackground = Color.hsl(tuning.fgHue, tuning.fgTerSaturation, tuning.focusBgLightness)
     }
 }
 
@@ -147,6 +149,9 @@ private extension SystemPalette {
         // Border
         let borderSaturation: Double
         let borderLightness: Double
+
+        // Focus background
+        let focusBgLightness: Double
     }
 }
 
@@ -167,7 +172,8 @@ private extension SystemPalette.Tuning {
                 warningHue: wrapHue(120 - 45), warningSaturation: 100, warningLightness: 60,
                 errorHue: wrapHue(120 - 105), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(120 + 45), infoSaturation: 100, infoLightness: 60,
-                borderSaturation: 33, borderLightness: 26
+                borderSaturation: 33, borderLightness: 26,
+                focusBgLightness: 15
             )
 
         case .amber:
@@ -181,7 +187,8 @@ private extension SystemPalette.Tuning {
                 warningHue: wrapHue(40 + 20), warningSaturation: 100, warningLightness: 70,
                 errorHue: wrapHue(40 - 25), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(40 + 10), infoSaturation: 100, infoLightness: 70,
-                borderSaturation: 33, borderLightness: 26
+                borderSaturation: 33, borderLightness: 26,
+                focusBgLightness: 12
             )
 
         case .red:
@@ -195,7 +202,8 @@ private extension SystemPalette.Tuning {
                 warningHue: wrapHue(0 + 30), warningSaturation: 100, warningLightness: 70,
                 errorHue: 0, errorSaturation: 0, errorLightness: 100,
                 infoHue: 0, infoSaturation: 100, infoLightness: 80,
-                borderSaturation: 33, borderLightness: 26
+                borderSaturation: 33, borderLightness: 26,
+                focusBgLightness: 15
             )
 
         case .violet:
@@ -209,7 +217,8 @@ private extension SystemPalette.Tuning {
                 warningHue: wrapHue(270 + 60), warningSaturation: 80, warningLightness: 70,
                 errorHue: wrapHue(270 + 180), errorSaturation: 85, errorLightness: 65,
                 infoHue: wrapHue(270 - 60), infoSaturation: 70, infoLightness: 70,
-                borderSaturation: 40, borderLightness: 25
+                borderSaturation: 40, borderLightness: 25,
+                focusBgLightness: 18
             )
 
         case .blue:
@@ -223,7 +232,8 @@ private extension SystemPalette.Tuning {
                 warningHue: wrapHue(200 + 20), warningSaturation: 100, warningLightness: 70,
                 errorHue: wrapHue(200 - 185), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(200 + 5), infoSaturation: 100, infoLightness: 75,
-                borderSaturation: 33, borderLightness: 26
+                borderSaturation: 33, borderLightness: 26,
+                focusBgLightness: 13
             )
 
         case .white:
@@ -237,7 +247,8 @@ private extension SystemPalette.Tuning {
                 warningHue: 40, warningSaturation: 60, warningLightness: 75,
                 errorHue: 0, errorSaturation: 60, errorLightness: 75,
                 infoHue: 210, infoSaturation: 60, infoLightness: 75,
-                borderSaturation: 0, borderLightness: 28
+                borderSaturation: 0, borderLightness: 28,
+                focusBgLightness: 20
             )
         }
     }

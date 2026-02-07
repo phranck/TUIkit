@@ -298,6 +298,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
                     columnWidths: columnWidths,
                     isFocused: isFocused,
                     isSelected: isSelected,
+                    rowWidth: innerWidth,
                     context: context,
                     palette: palette
                 ))
@@ -392,42 +393,62 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         columnWidths: [Int],
         isFocused: Bool,
         isSelected: Bool,
+        rowWidth: Int,
         context: RenderContext,
         palette: any Palette
     ) -> String {
         let spacing = String(repeating: " ", count: columnSpacing)
 
+        // Determine visual state - only affects indicator and background
+        // Cell content uses environment foregroundColor (via context)
         let indicator: String
-        let foregroundColor: Color
+        let indicatorColor: Color
+        let backgroundColor: Color?
 
         if isFocused && isSelected {
+            // Focused + Selected: pulsing accent background, selected indicator
             let dimAccent = palette.accent.opacity(0.35)
-            foregroundColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+            indicatorColor = palette.accent
             indicator = "●"
         } else if isFocused {
-            foregroundColor = palette.accent
-            indicator = "›"
+            // Focused only: highlight background bar, no indicator
+            backgroundColor = palette.focusBackground
+            indicatorColor = palette.foregroundTertiary
+            indicator = " "
         } else if isSelected {
-            foregroundColor = palette.accent.opacity(0.6)
+            // Selected only: accent indicator, no background
+            backgroundColor = nil
+            indicatorColor = palette.accent.opacity(0.6)
             indicator = "●"
         } else {
-            foregroundColor = palette.foreground
+            // Neither: no indicator, no background
+            backgroundColor = nil
+            indicatorColor = palette.foregroundTertiary
             indicator = " "
         }
 
-        let styledIndicator = ANSIRenderer.colorize(
-            indicator,
-            foreground: foregroundColor,
-            bold: isFocused
-        )
+        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
 
+        // Build cells - use environment foreground color, not hardcoded palette
+        let foregroundColor = context.environment.foregroundColor ?? palette.foreground
         let cells = zip(columns, columnWidths).map { column, width -> String in
             let value = column.value(for: item)
             let aligned = alignText(value, width: width, alignment: column.alignment)
             return ANSIRenderer.colorize(aligned, foreground: foregroundColor)
         }
 
-        return styledIndicator + " " + cells.joined(separator: spacing)
+        let content = styledIndicator + " " + cells.joined(separator: spacing)
+
+        if let bgColor = backgroundColor {
+            // Apply background bar across entire row width
+            let visibleLength = content.strippedLength
+            let padding = max(0, rowWidth - visibleLength)
+            let paddedContent = content + String(repeating: " ", count: padding)
+            return ANSIRenderer.applyPersistentBackground(paddedContent, color: bgColor)
+        } else {
+            return content
+        }
     }
 
     // MARK: - Text Alignment
