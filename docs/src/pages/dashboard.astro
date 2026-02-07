@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CloudBackground from "../components/astro/CloudBackground.astro";
+import SiteFooter from "../components/astro/SiteFooter.astro";
+import SiteNav from "../components/react/SiteNav";
+import RainOverlay from "../components/react/RainOverlay";
+import SpinnerLights from "../components/react/SpinnerLights";
+import DashboardContent from "../components/react/dashboard/DashboardContent";
+---
+
+<BaseLayout title="Dashboard | TUIkit" description="Live GitHub metrics for the TUIkit Swift framework">
+  <div class="relative min-h-screen">
+    <CloudBackground />
+    <RainOverlay client:idle />
+    <SpinnerLights client:idle />
+
+    <!-- Skip navigation -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-accent"
+    >
+      Skip to main content
+    </a>
+
+    <div class="relative z-10 flex min-h-screen flex-col">
+      <SiteNav activePage="dashboard" client:load />
+
+      <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-6 pt-28 pb-20">
+        <DashboardContent client:load />
+      </main>
+
+      <SiteFooter />
+    </div>
+  </div>
+</BaseLayout>

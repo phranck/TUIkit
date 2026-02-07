@@ -1,9 +1,0 @@
-{
-  "$schema": "./social-overrides.schema.json",
-  "description": "Manual social account mappings for stargazers. These take priority over auto-detected accounts.",
-  "overrides": {
-    "obrhoff": {
-      "mastodon": { "handle": "@obrhoff@mastodon.social", "url": "https://mastodon.social/@obrhoff" }
-    }
-  }
-}

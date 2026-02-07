@@ -1,0 +1,206 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CloudBackground from "../components/astro/CloudBackground.astro";
+import FeatureCard from "../components/astro/FeatureCard.astro";
+import SiteFooter from "../components/astro/SiteFooter.astro";
+import SiteNav from "../components/react/SiteNav";
+import HeroTerminal from "../components/react/HeroTerminal";
+import RainOverlay from "../components/react/RainOverlay";
+import SpinnerLights from "../components/react/SpinnerLights";
+import CodePreview from "../components/react/CodePreview";
+import PackageBadge from "../components/react/PackageBadge";
+import Icon from "../components/react/Icon";
+
+/** Test and suite counts injected at build-time by the prebuild script. */
+const TEST_COUNT = import.meta.env.PUBLIC_TUIKIT_TEST_COUNT ?? "0";
+
+/** Shared button class strings to avoid duplication across Hero and CTA sections. */
+const BTN_PRIMARY =
+  "inline-flex items-center justify-center gap-2 rounded-full bg-accent px-7 py-2.5 text-xl font-semibold text-background transition-all hover:bg-accent-secondary hover:shadow-lg hover:shadow-accent/20";
+const BTN_SECONDARY =
+  "inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-2.5 text-xl font-semibold text-foreground transition-all hover:border-accent/40 hover:bg-white/5";
+---
+
+<BaseLayout>
+  <div class="relative min-h-screen">
+    <CloudBackground />
+    <RainOverlay client:idle />
+    <SpinnerLights client:idle />
+
+    <!-- Skip navigation for keyboard/screen reader users -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-accent"
+    >
+      Skip to main content
+    </a>
+
+    <!-- All page content above atmosphere layers -->
+    <div class="relative z-10">
+      <SiteNav activePage="home" client:load />
+
+      <!-- Main content -->
+      <main id="main-content" tabindex="-1">
+        <!-- Hero Section -->
+        <section class="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-28 pb-24 text-center sm:pt-40">
+          <div class="mb-6 sm:mb-10">
+            <HeroTerminal client:visible />
+          </div>
+
+          <h1
+            class="mb-6 max-w-4xl text-5xl leading-tight tracking-wide transition-all duration-500 md:text-7xl"
+            style="font-family: WarText, monospace; color: var(--headline-color); text-shadow: 0 0 7px rgba(var(--headline-glow),0.6), 0 0 20px rgba(var(--headline-glow),0.35), 0 0 42px rgba(var(--headline-glow),0.15);"
+          >
+            &gt; Terminal UIs, the Swift way<span class="animate-cursor-blink">_</span>
+          </h1>
+
+          <p class="mb-10 max-w-2xl text-2xl leading-relaxed text-muted">
+            A declarative, SwiftUI-like framework for building Terminal User
+            Interfaces. Pure Swift on macOS and Linux, with no ncurses or C dependencies.
+          </p>
+
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <a href="/documentation/tuikit" class={BTN_PRIMARY}>
+              <Icon name="document" size={20} />
+              Read the Docs
+            </a>
+            <a
+              href="https://github.com/phranck/TUIkit"
+              target="_blank"
+              rel="noopener noreferrer"
+              class={BTN_SECONDARY}
+            >
+              View on GitHub
+            </a>
+          </div>
+
+          <!-- Swift Package badge (hidden on mobile) -->
+          <div class="hidden sm:block">
+            <p class="mt-20 mb-4 max-w-2xl text-xl leading-relaxed text-muted">
+              Getting started is simple. Add TUIkit as a dependency to your
+              Swift package. No extra configuration or system libraries required:
+            </p>
+            <PackageBadge client:visible />
+          </div>
+        </section>
+
+        <!-- Code Preview Section (hidden on mobile) -->
+        <section class="mx-auto hidden max-w-3xl px-6 pb-28 sm:block">
+          <CodePreview client:visible />
+        </section>
+
+        <!-- Features Grid -->
+        <section class="mx-auto max-w-6xl px-6 pb-28">
+          <div class="mb-12 text-center">
+            <h2 class="mb-4 text-4xl font-bold text-foreground">
+              Everything you need
+            </h2>
+            <p class="mx-auto max-w-2xl text-2xl text-muted">
+              Built from the ground up for the terminal, with APIs you already
+              know from SwiftUI.
+            </p>
+          </div>
+
+          <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon="terminal"
+              title="Declarative Syntax"
+              description="Build UIs with VStack, HStack, Text, Button, and more. The same patterns you know from SwiftUI."
+            />
+            <FeatureCard
+              icon="paintbrush"
+              title="Theming System"
+              description="Multiple built-in phosphor themes with full RGB color support. Cycle at runtime or create custom palettes."
+            />
+            <FeatureCard
+              icon="keyboard"
+              title="Keyboard-Driven"
+              description="Focus management, key event handlers, customizable status bar with shortcut display."
+            />
+            <FeatureCard
+              icon="stack"
+              title="Rich Components"
+              description="Panel, Card, Dialog, Alert, Menu, Button, and ForEach. Container and interactive views out of the box."
+            />
+            <FeatureCard
+              icon="bolt"
+              title="Zero Dependencies"
+              description="Pure Swift. No ncurses, no C libraries. Just add the Swift package and go."
+            />
+            <FeatureCard
+              icon="arrows"
+              title="Cross-Platform"
+              description="Runs on macOS and Linux. Same code, same API, same results."
+            />
+          </div>
+        </section>
+
+        <!-- Architecture highlights -->
+        <section class="mx-auto max-w-6xl px-6 pb-28">
+          <div class="rounded-2xl border border-border bg-frosted-glass p-8 backdrop-blur-xl md:p-12">
+            <h2 class="mb-8 text-center text-4xl font-bold text-foreground">
+              Built right
+            </h2>
+            <div class="grid gap-8 md:grid-cols-2">
+              <!-- Arch Highlight: Swift 6.0 -->
+              <div class="flex gap-3">
+                <Icon name="swift" size={24} className="text-accent mt-1" />
+                <div>
+                  <h3 class="mb-1 text-xl font-semibold text-foreground">Swift 6.0 + Strict Concurrency</h3>
+                  <p class="text-lg leading-relaxed text-muted">Full Sendable compliance. No data races, no unsafe globals. Modern Swift from top to bottom.</p>
+                </div>
+              </div>
+              <!-- Arch Highlight: Border Appearances -->
+              <div class="flex gap-3">
+                <Icon name="eye" size={24} className="text-accent mt-1" />
+                <div>
+                  <h3 class="mb-1 text-xl font-semibold text-foreground">5 Border Appearances</h3>
+                  <p class="text-lg leading-relaxed text-muted">Line, rounded, double-line, heavy, and block style. Cycle with a single keystroke.</p>
+                </div>
+              </div>
+              <!-- Arch Highlight: Tests -->
+              <div class="flex gap-3">
+                <Icon name="checkmark" size={24} className="text-accent mt-1" />
+                <div>
+                  <h3 class="mb-1 text-xl font-semibold text-foreground">{TEST_COUNT} Tests</h3>
+                  <p class="text-lg leading-relaxed text-muted">Comprehensive test suite covering views, modifiers, rendering, state management, and more.</p>
+                </div>
+              </div>
+              <!-- Arch Highlight: Docs -->
+              <div class="flex gap-3">
+                <Icon name="document" size={24} className="text-accent mt-1" />
+                <div>
+                  <h3 class="mb-1 text-xl font-semibold text-foreground">13 DocC Articles</h3>
+                  <p class="text-lg leading-relaxed text-muted">Architecture guides, API references, theming, focus system, keyboard shortcuts, and palette documentation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="mx-auto max-w-6xl px-6 pb-20">
+          <div class="text-center">
+            <h2 class="mb-4 text-4xl font-bold text-foreground">
+              Ready to build?
+            </h2>
+            <p class="mb-8 text-2xl text-muted">
+              Get started with TUIkit in minutes. Add the package, write your
+              first view, run it.
+            </p>
+            <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <a href="/documentation/tuikit/gettingstarted" class={BTN_PRIMARY}>
+                Getting Started Guide
+              </a>
+              <a href="/documentation/tuikit" class={BTN_SECONDARY}>
+                Browse Documentation
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooter />
+    </div>
+  </div>
+</BaseLayout>
