@@ -77,6 +77,9 @@ public struct ForEach<Data: RandomAccessCollection, ID: Hashable, Content: View>
 
     /// Never called — `ForEach` is flattened into a ``ViewArray`` by
     /// `@ViewBuilder.buildArray` before rendering occurs.
+    ///
+    /// - Important: Accessing this property directly will crash at runtime.
+    ///   Always use `ForEach` inside a `@ViewBuilder` closure (e.g., `VStack`, `HStack`).
     public var body: Never {
         fatalError("ForEach has no standalone rendering; use inside a @ViewBuilder block")
     }

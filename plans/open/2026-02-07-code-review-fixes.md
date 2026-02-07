@@ -419,10 +419,11 @@ func run() throws {
 - [x] Tests pass
 
 ### Phase 4: ForEach
-- [ ] Add @available(*, unavailable) to ForEach.body
-- [ ] Verify compile-time error
-- [ ] Build passes
-- [ ] Tests pass
+- [x] Investigated @available(*, unavailable) - not possible on protocol requirements
+- [x] ForEach.body already uses fatalError with clear message (best possible solution)
+- [x] Improved documentation with Important callout
+- [x] Build passes
+- [x] Tests pass
 
 ### Phase 5: ActionHandler
 - [ ] Create ActionHandler.swift
