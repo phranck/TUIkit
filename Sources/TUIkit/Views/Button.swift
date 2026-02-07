@@ -162,39 +162,6 @@ public struct Button: View {
     }
 }
 
-// MARK: - Button Handler
-
-/// Internal handler class for button focus management.
-final class ButtonHandler: Focusable {
-    let focusID: String
-    let action: () -> Void
-    var canBeFocused: Bool
-
-    init(focusID: String, action: @escaping () -> Void, canBeFocused: Bool) {
-        self.focusID = focusID
-        self.action = action
-        self.canBeFocused = canBeFocused
-    }
-}
-
-// MARK: - Key Event Handling
-
-extension ButtonHandler {
-    func handleKeyEvent(_ event: KeyEvent) -> Bool {
-        // Trigger action on Enter or Space
-        switch event.key {
-        case .enter:
-            action()
-            return true
-        case .character(" "):
-            action()
-            return true
-        default:
-            return false
-        }
-    }
-}
-
 // MARK: - Button Rendering
 
 extension Button: Renderable {
@@ -203,7 +170,7 @@ extension Button: Renderable {
         let focusManager = context.environment.focusManager
 
         // Register this button with the focus manager
-        let handler = ButtonHandler(
+        let handler = ActionHandler(
             focusID: focusID,
             action: action,
             canBeFocused: !isDisabled
