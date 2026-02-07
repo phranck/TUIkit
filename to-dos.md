@@ -17,6 +17,7 @@
 
 #### Medium
 
+- [ ] **List**: Scrollable list with keyboard navigation. BLOCKED: Wait for shared handlers
 - [ ] **Table**: Column alignment with ANSI-aware padding. BLOCKED: Wait for shared handlers
 
 
@@ -44,7 +45,7 @@
 - [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported (PR #83)
 - [x] **UI Consistency**: Unified card headers (gap-3, Icon size 20, text-accent), text-lg content
 - [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
-- [x] **List Component**: Scrollable list with keyboard navigation, 38 tests (PR #83)
+- [x] **List Reverted**: Removed premature List implementation; will re-implement after shared architecture
 
 ### 2026-02-06
 

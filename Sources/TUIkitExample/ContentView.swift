@@ -19,7 +19,6 @@ enum DemoPage: Int, CaseIterable {
     case buttons
     case toggles
     case radioButtons
-    case list
     case spinners
 }
 
@@ -50,18 +49,14 @@ struct ContentView: View {
                          return true  // Consumed
                      }
                      return false  // Let default handler exit the app
-                  case .character("8"):
-                      // Quick jump to Radio Buttons
-                      currentPage = .radioButtons
-                      return true
-                  case .character("9"):
-                      // Quick jump to List
-                      currentPage = .list
-                      return true
-                  case .character("0"):
-                      // Quick jump to Spinners
-                      currentPage = .spinners
-                      return true
+case .character("8"):
+                       // Quick jump to Radio Buttons
+                       currentPage = .radioButtons
+                       return true
+                   case .character("9"):
+                       // Quick jump to Spinners
+                       currentPage = .spinners
+                       return true
                  default:
                      return false  // Let other handlers process
                  }
@@ -100,9 +95,6 @@ struct ContentView: View {
                  .statusBarItems(subPageItems(pageSetter: pageSetter))
          case .radioButtons:
              RadioButtonPage()
-                 .statusBarItems(subPageItems(pageSetter: pageSetter))
-         case .list:
-             ListPage()
                  .statusBarItems(subPageItems(pageSetter: pageSetter))
          case .spinners:
              SpinnersPage()
