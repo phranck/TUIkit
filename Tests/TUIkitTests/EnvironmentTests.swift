@@ -82,4 +82,192 @@ struct EnvironmentValuesTests {
 @MainActor
 @Suite("EnvironmentModifier Tests")
 struct EnvironmentModifierTests {
+
+    @Test("EnvironmentModifier propagates value to child")
+    func propagatesToChild() {
+        // Create a view that reads the environment and renders it
+        let view = EnvironmentReaderView()
+            .environment(\.testString, "injected")
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        #expect(content.contains("injected"))
+    }
+
+    @Test("Environment value inherits through nested views")
+    func inheritsThroughNesting() {
+        // Wrapper -> Inner -> Reader
+        let view = WrapperView {
+            InnerView {
+                EnvironmentReaderView()
+            }
+        }
+        .environment(\.testString, "nested-value")
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        #expect(content.contains("nested-value"))
+    }
+
+    @Test("Child can override parent environment value")
+    func childOverridesParent() {
+        let view = WrapperView {
+            EnvironmentReaderView()
+                .environment(\.testString, "child-value")
+        }
+        .environment(\.testString, "parent-value")
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        #expect(content.contains("child-value"))
+        #expect(!content.contains("parent-value"))
+    }
+}
+
+// MARK: - Test Helper Views
+
+/// A view with real body that reads an environment value.
+private struct EnvironmentReaderView: View, Renderable {
+    var body: Never { fatalError() }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let value = context.environment.testString
+        return FrameBuffer(lines: ["Value: \(value)"])
+    }
+}
+
+/// A simple wrapper view with real body.
+private struct WrapperView<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+    }
+}
+
+/// Another wrapper to test nesting.
+private struct InnerView<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+    }
+}
+
+// MARK: - ForegroundColor Propagation Tests
+
+@MainActor
+@Suite("ForegroundColor Propagation Tests")
+struct ForegroundColorPropagationTests {
+
+    @Test("foregroundColor on parent affects Text child")
+    func parentColorAffectsTextChild() {
+        // VStack with foregroundColor should affect Text inside
+        let view = VStack {
+            Text("Hello")
+        }
+        .foregroundColor(.red)
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        // Check that ANSI red color code is present
+        // Red foreground is ESC[31m
+        #expect(content.contains("\u{1B}[31m"))
+    }
+
+    @Test("foregroundColor propagates through multiple levels")
+    func colorPropagatesThroughLevels() {
+        let view = VStack {
+            HStack {
+                Text("Nested")
+            }
+        }
+        .foregroundColor(.green)
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        // Green foreground is ESC[32m
+        #expect(content.contains("\u{1B}[32m"))
+    }
+
+    @Test("explicit Text foregroundColor overrides parent")
+    func explicitColorOverridesParent() {
+        let view = VStack {
+            Text("Override").foregroundColor(.blue)
+        }
+        .foregroundColor(.red)
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        // Blue foreground is ESC[34m, should have blue, not red
+        #expect(content.contains("\u{1B}[34m"))
+        #expect(!content.contains("\u{1B}[31m"))
+    }
+
+    @Test("without foregroundColor, Text uses default")
+    func withoutColorUsesDefault() {
+        let view = Text("Plain")
+
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: EnvironmentValues()
+        )
+
+        let buffer = renderToBuffer(view, context: context)
+        let content = buffer.lines.joined()
+
+        // Should just be "Plain" without color codes (or with reset)
+        #expect(content.contains("Plain"))
+    }
 }
