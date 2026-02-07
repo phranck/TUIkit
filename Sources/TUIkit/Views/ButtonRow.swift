@@ -39,7 +39,34 @@ public struct ButtonRow: View {
 
 // MARK: - ButtonRow Builder
 
-/// Result builder for creating button rows.
+/// A result builder that constructs arrays of buttons for use in ``ButtonRow``.
+///
+/// `ButtonRowBuilder` enables the declarative syntax for defining multiple
+/// buttons within a ``ButtonRow``. You don't use this type directly; instead,
+/// the `@ButtonRowBuilder` attribute is applied to the trailing closure of
+/// ``ButtonRow/init(spacing:_:)``.
+///
+/// ## Overview
+///
+/// When you write:
+///
+/// ```swift
+/// ButtonRow {
+///     Button("Cancel", style: .plain) { dismiss() }
+///     Button("OK", style: .primary) { confirm() }
+/// }
+/// ```
+///
+/// The `@ButtonRowBuilder` attribute transforms this closure into an array
+/// of ``Button`` instances that the row can lay out horizontally.
+///
+/// ## Supported Control Flow
+///
+/// The builder supports:
+/// - Multiple button expressions
+/// - `if`/`else` conditionals
+/// - `if let` optional binding
+/// - `for`...`in` loops
 @resultBuilder
 public struct ButtonRowBuilder {
     /// Combines multiple buttons into a single array.

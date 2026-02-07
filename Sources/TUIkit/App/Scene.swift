@@ -4,10 +4,41 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-/// The base protocol for scenes in TUIkit.
+/// The base protocol for scenes in TUIKit.
 ///
-/// A scene represents a part of the app structure,
-/// typically a window or a group of views.
+/// A scene represents a distinct region of the app's user interface,
+/// analogous to SwiftUI's `Scene` protocol. In TUIKit, scenes define
+/// the top-level structure of your terminal application.
+///
+/// ## Overview
+///
+/// Scenes sit between the ``App`` and ``View`` layers in TUIKit's
+/// architecture. While views define the content, scenes define how
+/// that content is organized at the application level.
+///
+/// Currently, TUIKit provides one scene type:
+/// - ``WindowGroup``: Displays content in the terminal window
+///
+/// ## Conforming to Scene
+///
+/// You typically don't create custom scene types. Instead, use the
+/// built-in ``WindowGroup`` in your app's `body`:
+///
+/// ```swift
+/// @main
+/// struct MyApp: App {
+///     var body: some Scene {
+///         WindowGroup {
+///             ContentView()
+///         }
+///     }
+/// }
+/// ```
+///
+/// ## Topics
+///
+/// ### Built-in Scenes
+/// - ``WindowGroup``
 @MainActor
 public protocol Scene {}
 
@@ -38,11 +69,35 @@ public struct WindowGroup<Content: View>: Scene {
 
 // MARK: - SceneBuilder
 
-/// A result builder for scene hierarchies.
+/// A result builder that constructs scene hierarchies from closures.
+///
+/// `SceneBuilder` enables the declarative syntax used in ``App/body-swift.property``
+/// to define your application's scene structure. You don't use this type directly;
+/// instead, the `@SceneBuilder` attribute is applied to the `body` property of
+/// your ``App`` conforming type.
+///
+/// ## Overview
+///
+/// When you write:
+///
+/// ```swift
+/// var body: some Scene {
+///     WindowGroup {
+///         ContentView()
+///     }
+/// }
+/// ```
+///
+/// The `@SceneBuilder` attribute transforms this closure into a scene that
+/// TUIKit can render. Currently, `SceneBuilder` supports a single scene
+/// in the body, which is typically a ``WindowGroup``.
 @MainActor
 @resultBuilder
 public struct SceneBuilder {
-    /// Builds a single scene.
+    /// Builds a scene expression from a single scene component.
+    ///
+    /// - Parameter content: The scene to build.
+    /// - Returns: The same scene, unchanged.
     public static func buildBlock<Content: Scene>(_ content: Content) -> Content {
         content
     }
