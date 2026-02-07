@@ -1,6 +1,12 @@
 {
-  "generated": "2026-02-07T18:28:49.491Z",
+  "generated": "2026-02-07T19:20:33.339Z",
   "open": [
+    {
+      "date": "2026-02-07",
+      "slug": "view-architecture-refactor",
+      "title": "View Architecture Refactor: 100% SwiftUI Conformity",
+      "preface": "This plan refactors TUIKit's view architecture to achieve 100% SwiftUI conformity. Currently, many controls use `body: Never` with direct `Renderable` conformance, which breaks modifier propagation and environment value inheritance. After this refactor, every public control will be a proper View with `body: some View` that composes other Views. Modifiers like `.foregroundColor()` will propagate through the entire hierarchy automatically, exactly like SwiftUI."
+    },
     {
       "date": "2026-02-06",
       "slug": "containerization-composition",
@@ -62,6 +68,12 @@
       "slug": "code-review-fixes",
       "title": "Code Review Fixes: Swift 6 Concurrency and Architectural Improvements",
       "preface": "A comprehensive code review identified critical issues with Swift 6 concurrency readiness, missing abstractions for testability, and minor architectural debt. This plan addresses all findings systematically: introducing `@MainActor` isolation for render-loop-only types, adding thread-safe synchronization where cross-thread access occurs, extracting a `TerminalProtocol` for testability, fixing ForEach's runtime crash, and consolidating duplicated focus handler code. The result is a codebase ready for Swift 6 strict concurrency mode with improved testability and maintainability."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "list-table-components",
+      "title": "List & Table Components",
+      "preface": "This plan implements the List and Table components in two phases. Phase 1 builds the shared `ItemListHandler` (navigation, selection, scrolling) and the `List` view. Phase 2 adds the `Table` view, reusing the handler and adding column alignment. Both components follow the RadioButtonGroup pattern: a handler class persisted via StateStorage, keyboard navigation within the component, and visual states for focused/selected items."
     },
     {
       "date": "2026-02-07",
