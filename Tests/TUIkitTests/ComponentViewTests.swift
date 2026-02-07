@@ -173,7 +173,7 @@ struct ContainerViewDirectTests {
             Text("Content")
         }
         let context = testContext()
-        let buffer = container.renderToBuffer(context: context)
+        let buffer = renderToBuffer(container, context: context)
 
         #expect(buffer.height >= 3)
         let allContent = buffer.lines.joined()

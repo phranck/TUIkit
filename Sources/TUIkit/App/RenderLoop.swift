@@ -81,6 +81,7 @@ private struct EnvironmentSnapshot: Equatable {
 /// - Coordinating lifecycle tracking (appear/disappear)
 /// - Diff-based terminal output via ``FrameDiffWriter``
 /// - Buffered frame output via ``Terminal``
+@MainActor
 internal final class RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
     let app: A
