@@ -18,6 +18,7 @@ private struct ValCounterKey: PreferenceKey {
     static let defaultValue: Int = 0
 }
 
+@MainActor
 @Suite("PreferenceValues Tests")
 struct PreferenceValuesTests {
 

@@ -390,17 +390,16 @@ func run() throws {
 - [x] Build passes
 - [x] Tests pass (591/591)
 
-#### Phase 2b: Additional @MainActor (pending)
-- [ ] RenderCache: @MainActor
-- [ ] StateStorage, StateBox: @MainActor
-- [ ] FocusManager: @MainActor
-- [ ] KeyEventDispatcher: @MainActor
-- [ ] TUIContext, LifecycleManager: @MainActor
-- [ ] ThemeManager: @MainActor
-- [ ] StatusBarState: @MainActor
-- [ ] AppHeaderState: @MainActor
-- [ ] NotificationService: @MainActor
-- [ ] PreferenceStorage: @MainActor
+#### Phase 2b: SwiftUI-Conformant @MainActor (completed)
+- [x] View, ViewModifier, Renderable protocols: @MainActor
+- [x] App, Scene protocols: @MainActor
+- [x] ViewBuilder, SceneBuilder, ChildInfoProvider: @MainActor
+- [x] renderToBuffer(), makeChildInfo(), resolveChildInfos(): @MainActor
+- [x] Equatable conformances: @preconcurrency
+- [x] RadioButtonItem: @MainActor init
+- [x] All 45 test suites: @MainActor
+- [x] Build passes (64 files changed)
+- [x] Tests pass (591/591)
 
 ### Phase 3: TerminalProtocol
 - [ ] Create TerminalProtocol.swift

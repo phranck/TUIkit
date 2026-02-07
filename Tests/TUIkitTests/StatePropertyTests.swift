@@ -14,6 +14,7 @@ private let isLinux = true
 private let isLinux = false
 #endif
 
+@MainActor
 @Suite(
     "State Property Wrapper Tests",
     .disabled(if: isLinux, "Skipped on Linux due to Swift runtime race condition in StateStorage")

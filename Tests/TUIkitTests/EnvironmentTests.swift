@@ -32,6 +32,7 @@ extension EnvironmentValues {
 
 // MARK: - EnvironmentValues Tests
 
+@MainActor
 @Suite("EnvironmentValues Tests")
 struct EnvironmentValuesTests {
 
@@ -78,6 +79,7 @@ struct EnvironmentValuesTests {
 
 // MARK: - EnvironmentModifier Tests
 
+@MainActor
 @Suite("EnvironmentModifier Tests")
 struct EnvironmentModifierTests {
 }

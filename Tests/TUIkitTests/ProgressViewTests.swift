@@ -17,6 +17,7 @@ private func testContext(width: Int = 30, height: Int = 24) -> RenderContext {
 
 // MARK: - ProgressView Rendering Tests
 
+@MainActor
 @Suite("ProgressView Tests")
 struct ProgressViewTests {
 
@@ -127,6 +128,7 @@ struct ProgressViewTests {
 
 // MARK: - Style Tests
 
+@MainActor
 @Suite("ProgressView Style Tests")
 struct ProgressViewStyleTests {
 
@@ -234,6 +236,7 @@ struct ProgressViewStyleTests {
 
 // MARK: - Edge Case Tests
 
+@MainActor
 @Suite("ProgressView Edge Cases")
 struct ProgressViewEdgeCaseTests {
 

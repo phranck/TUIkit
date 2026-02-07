@@ -23,6 +23,7 @@ private struct StorageCounterKey: PreferenceKey {
     }
 }
 
+@MainActor
 @Suite("PreferenceStorage Tests")
 struct PreferenceStorageTests {
 

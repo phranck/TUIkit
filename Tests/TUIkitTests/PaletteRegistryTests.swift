@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("Palette Registry Tests")
 struct PaletteRegistryTests {
 

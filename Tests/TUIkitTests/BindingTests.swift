@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("Binding Tests")
 struct BindingTests {
 

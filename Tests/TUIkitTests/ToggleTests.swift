@@ -25,6 +25,7 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
 
 // MARK: - Toggle Tests
 
+@MainActor
 @Suite("Toggle Tests", .serialized)
 struct ToggleTests {
 
@@ -226,6 +227,7 @@ struct ToggleTests {
 
 // MARK: - Toggle Handler Tests
 
+@MainActor
 @Suite("Toggle Handler Tests")
 struct ToggleHandlerTests {
 
@@ -312,6 +314,7 @@ struct ToggleHandlerTests {
 
 // MARK: - Toggle Style Tests
 
+@MainActor
 @Suite("Toggle Style Tests")
 struct ToggleStyleTests {
 

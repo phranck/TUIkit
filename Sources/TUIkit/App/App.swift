@@ -25,6 +25,7 @@ import Foundation
 ///     }
 /// }
 /// ```
+@MainActor
 public protocol App {
     /// The type of the main scene.
     associatedtype Body: Scene
@@ -216,6 +217,7 @@ private extension AppRunner {
 /// by `App.body`. The scene (typically ``WindowGroup``) then invokes
 /// the free function `renderToBuffer` on its content view, entering
 /// the standard `Renderable`-or-`body` dispatch.
+@MainActor
 internal protocol SceneRenderable {
     /// Renders the scene's content into a ``FrameBuffer``.
     ///

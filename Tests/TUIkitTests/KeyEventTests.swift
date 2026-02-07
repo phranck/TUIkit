@@ -10,6 +10,7 @@ import Testing
 
 // MARK: - Key Enum Tests
 
+@MainActor
 @Suite("Key Enum Tests")
 struct KeyEnumTests {
 
@@ -47,6 +48,7 @@ struct KeyEnumTests {
 
 // MARK: - KeyEvent Creation Tests
 
+@MainActor
 @Suite("KeyEvent Creation Tests")
 struct KeyEventCreationTests {
 
@@ -81,6 +83,7 @@ struct KeyEventCreationTests {
 
 // MARK: - KeyEvent Parsing Tests
 
+@MainActor
 @Suite("KeyEvent Parse Tests")
 struct KeyEventParseTests {
 

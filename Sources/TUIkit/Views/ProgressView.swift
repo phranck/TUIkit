@@ -227,7 +227,7 @@ extension ProgressView {
 
 // MARK: - Equatable Conformance
 
-extension ProgressView: Equatable where Label: Equatable, CurrentValueLabel: Equatable {}
+extension ProgressView: @preconcurrency Equatable where Label: Equatable, CurrentValueLabel: Equatable {}
 
 // MARK: - Rendering
 

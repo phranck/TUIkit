@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("Alert Tests")
 struct AlertTests {
 
@@ -24,6 +25,7 @@ struct AlertTests {
     }
 }
 
+@MainActor
 @Suite("Dialog Tests")
 struct DialogTests {
 
@@ -42,6 +44,7 @@ struct DialogTests {
     }
 }
 
+@MainActor
 @Suite("Menu Tests")
 struct MenuTests {
 

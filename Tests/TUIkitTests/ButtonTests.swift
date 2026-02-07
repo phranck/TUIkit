@@ -25,6 +25,7 @@ private func createTestContext(width: Int = 80, height: Int = 24) -> RenderConte
 
 // MARK: - Button Tests
 
+@MainActor
 @Suite("Button Tests", .serialized)
 struct ButtonTests {
 
@@ -159,6 +160,7 @@ struct ButtonTests {
 
 // MARK: - Button Handler Tests
 
+@MainActor
 @Suite("Button Handler Tests")
 struct ButtonHandlerTests {
 
@@ -213,6 +215,7 @@ struct ButtonHandlerTests {
 
 // MARK: - Button Row Tests
 
+@MainActor
 @Suite("Button Row Tests")
 struct ButtonRowTests {
 
@@ -296,6 +299,7 @@ struct ButtonRowTests {
 
 // MARK: - Button Row Builder Tests
 
+@MainActor
 @Suite("Button Row Builder Tests")
 struct ButtonRowBuilderTests {
 

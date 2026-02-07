@@ -164,4 +164,4 @@ struct BufferView: View, Renderable {
 
 // MARK: - Equatable Conformance
 
-extension Box: Equatable where Content: Equatable {}
+extension Box: @preconcurrency Equatable where Content: Equatable {}

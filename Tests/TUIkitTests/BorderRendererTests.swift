@@ -10,6 +10,7 @@ import Testing
 
 // MARK: - Standard Style Tests
 
+@MainActor
 @Suite("BorderRenderer Standard Style Tests")
 struct BorderRendererStandardTests {
 
@@ -191,6 +192,7 @@ struct BorderRendererStandardTests {
 
 // MARK: - Focus Indicator Tests
 
+@MainActor
 @Suite("BorderRenderer Focus Indicator Tests")
 struct BorderRendererFocusIndicatorTests {
 

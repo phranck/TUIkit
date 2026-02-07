@@ -8,6 +8,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("FrameBuffer Tests")
 struct FrameBufferTests {
 
@@ -80,6 +81,7 @@ struct FrameBufferTests {
     }
 }
 
+@MainActor
 @Suite("Overlay Tests")
 struct OverlayTests {
 

@@ -22,6 +22,7 @@ struct ChildInfo {
 
 /// Internal protocol that allows stack containers to extract individual
 /// child info from their content (which is typically a TupleView).
+@MainActor
 protocol ChildInfoProvider {
     /// Returns an array of ``ChildInfo``, one per child view.
     ///
@@ -40,6 +41,7 @@ protocol ChildInfoProvider {
 ///   - view: The child view.
 ///   - context: The rendering context.
 /// - Returns: A ``ChildInfo`` describing the view.
+@MainActor
 func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
     if let spacer = view as? Spacer {
         return ChildInfo(buffer: nil, isSpacer: true, spacerMinLength: spacer.minLength)
@@ -63,6 +65,7 @@ func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
 ///   - content: The content view.
 ///   - context: The rendering context.
 /// - Returns: An array of ``ChildInfo``.
+@MainActor
 func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [ChildInfo] {
     if let provider = content as? ChildInfoProvider {
         return provider.childInfos(context: context)

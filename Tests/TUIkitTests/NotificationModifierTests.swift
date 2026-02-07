@@ -9,6 +9,7 @@ import Testing
 
 @testable import TUIkit
 
+@MainActor
 @Suite("Notification Tests", .serialized)
 struct NotificationTests {
 

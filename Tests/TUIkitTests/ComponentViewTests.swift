@@ -17,6 +17,7 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
 
 // MARK: - Box Tests
 
+@MainActor
 @Suite("Box Tests")
 struct BoxTests {
 
@@ -71,6 +72,7 @@ struct BoxTests {
 
 // MARK: - Card Tests
 
+@MainActor
 @Suite("Card Tests")
 struct CardTests {
 
@@ -124,6 +126,7 @@ struct CardTests {
 
 // MARK: - Panel Tests
 
+@MainActor
 @Suite("Panel Tests")
 struct PanelTests {
 
@@ -164,6 +167,7 @@ struct PanelTests {
 
 // MARK: - ContainerView Tests
 
+@MainActor
 @Suite("ContainerView Direct Tests")
 struct ContainerViewDirectTests {
 
@@ -185,6 +189,7 @@ struct ContainerViewDirectTests {
 
 // MARK: - ForEach Tests
 
+@MainActor
 @Suite("ForEach Tests")
 struct ForEachTests {
 

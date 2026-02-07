@@ -102,7 +102,7 @@ public struct Dialog<Content: View, Footer: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension Dialog: Equatable where Content: Equatable, Footer: Equatable {}
+extension Dialog: @preconcurrency Equatable where Content: Equatable, Footer: Equatable {}
 
 // MARK: - Rendering
 

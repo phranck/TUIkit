@@ -2,10 +2,12 @@
 
 ## In Progress
 
-- [ ] **Architecture Alignment**: Refactor core components to follow View pattern
-  - [ ] ContainerView refactor (body: some View, move Renderable to _ContainerViewCore)
-  - [ ] List & Table architecture finalization (shared handlers, helpers)
-  - [ ] Verify modifiers work on all controls
+- [ ] **Swift 6 Concurrency**: @MainActor on View/Renderable hierarchy (Phase 2 complete)
+  - [x] View, ViewModifier, Renderable, App, Scene protocols
+  - [x] ViewBuilder, SceneBuilder, ChildInfoProvider
+  - [x] renderToBuffer(), makeChildInfo(), resolveChildInfos()
+  - [x] All test suites updated with @MainActor
+  - [ ] Phase 3-6: TerminalProtocol, ForEach, ActionHandler, AppRunner
 
 ## Open
 
@@ -42,6 +44,7 @@
 
 ### 2026-02-07
 
+- [x] **Swift 6 @MainActor**: View, ViewModifier, Renderable, App, Scene protocols; all builders; 64 files, 591 tests pass
 - [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported (PR #83)
 - [x] **UI Consistency**: Unified card headers (gap-3, Icon size 20, text-accent), text-lg content
 - [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
@@ -161,4 +164,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-07 (Swift 6 @MainActor Phase 2 complete)

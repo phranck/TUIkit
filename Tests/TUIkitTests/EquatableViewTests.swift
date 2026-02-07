@@ -17,6 +17,7 @@ private struct LabelView: View, Equatable {
     }
 }
 
+@MainActor
 @Suite("EquatableView Tests", .serialized)
 struct EquatableViewTests {
 

@@ -41,7 +41,7 @@ public struct FlexibleFrameView<Content: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension FlexibleFrameView: Equatable where Content: Equatable {}
+extension FlexibleFrameView: @preconcurrency Equatable where Content: Equatable {}
 
 // MARK: - Renderable
 

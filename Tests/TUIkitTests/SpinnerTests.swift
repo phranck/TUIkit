@@ -17,6 +17,7 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
 
 // MARK: - SpinnerStyle Tests
 
+@MainActor
 @Suite("SpinnerStyle Tests")
 struct SpinnerStyleTests {
 
@@ -89,6 +90,7 @@ struct SpinnerStyleTests {
 
 // MARK: - Spinner Rendering Tests
 
+@MainActor
 @Suite("Spinner Rendering Tests")
 struct SpinnerRenderingTests {
 
