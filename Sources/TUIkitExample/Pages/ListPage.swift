@@ -15,19 +15,19 @@ private struct FileItem: Identifiable {
     let size: String
     let icon: String
 
-    static let sampleFiles: [FileItem] = [
-        FileItem(id: "1", name: "README.md", size: "4.2 KB", icon: "📄"),
-        FileItem(id: "2", name: "Package.swift", size: "1.8 KB", icon: "📦"),
-        FileItem(id: "3", name: "Sources", size: "128 KB", icon: "📁"),
-        FileItem(id: "4", name: "Tests", size: "64 KB", icon: "📁"),
-        FileItem(id: "5", name: ".gitignore", size: "0.5 KB", icon: "📄"),
-        FileItem(id: "6", name: "LICENSE", size: "1.1 KB", icon: "📄"),
-        FileItem(id: "7", name: "docs", size: "256 KB", icon: "📁"),
-        FileItem(id: "8", name: "plans", size: "32 KB", icon: "📁"),
-        FileItem(id: "9", name: ".swiftlint.yml", size: "1.2 KB", icon: "⚙️"),
-        FileItem(id: "10", name: ".github", size: "8 KB", icon: "📁"),
-        FileItem(id: "11", name: "Makefile", size: "0.8 KB", icon: "📄"),
-        FileItem(id: "12", name: ".claude", size: "16 KB", icon: "📁"),
+    static let sampleFiles: [Self] = [
+        Self(id: "1", name: "README.md", size: "4.2 KB", icon: "📄"),
+        Self(id: "2", name: "Package.swift", size: "1.8 KB", icon: "📦"),
+        Self(id: "3", name: "Sources", size: "128 KB", icon: "📁"),
+        Self(id: "4", name: "Tests", size: "64 KB", icon: "📁"),
+        Self(id: "5", name: ".gitignore", size: "0.5 KB", icon: "📄"),
+        Self(id: "6", name: "LICENSE", size: "1.1 KB", icon: "📄"),
+        Self(id: "7", name: "docs", size: "256 KB", icon: "📁"),
+        Self(id: "8", name: "plans", size: "32 KB", icon: "📁"),
+        Self(id: "9", name: ".swiftlint.yml", size: "1.2 KB", icon: "⚙️"),
+        Self(id: "10", name: ".github", size: "8 KB", icon: "📁"),
+        Self(id: "11", name: "Makefile", size: "0.8 KB", icon: "📄"),
+        Self(id: "12", name: ".claude", size: "16 KB", icon: "📁"),
     ]
 }
 

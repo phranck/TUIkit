@@ -4,6 +4,49 @@
 
 This plan implements the List and Table components in two phases. Phase 1 builds the shared `ItemListHandler` (navigation, selection, scrolling) and the `List` view. Phase 2 adds the `Table` view, reusing the handler and adding column alignment. Both components follow the RadioButtonGroup pattern: a handler class persisted via StateStorage, keyboard navigation within the component, and visual states for focused/selected items.
 
+## Completed
+
+**Date:** 2026-02-07
+
+Both phases completed successfully. List and Table components are fully implemented with:
+- Shared `ItemListHandler` for navigation, selection, and scrolling
+- SwiftUI-compatible APIs with single and multi-selection bindings
+- Column alignment and width modes for Table
+- 53 new tests (32 List/Handler + 21 Table)
+- Example pages demonstrating all features
+
+## Checklist
+
+### Phase 1: List
+
+- [x] ItemListHandler: Navigation logic (Up/Down/Home/End)
+- [x] ItemListHandler: PageUp/PageDown navigation
+- [x] ItemListHandler: Single selection mode
+- [x] ItemListHandler: Multi selection mode
+- [x] ItemListHandler: Scroll offset management
+- [x] ItemListHandler: onFocusLost behavior
+- [x] List: Public API with Binding
+- [x] List: Renderable with StateStorage
+- [x] List: Visual states (focused/selected)
+- [x] List: Scroll indicators
+- [x] List: Disabled state
+- [x] ListTests: Navigation tests
+- [x] ListTests: Selection tests
+- [x] ListTests: Scroll tests
+- [x] ListPage: Example integration
+
+### Phase 2: Table
+
+- [x] TableColumn: Definition struct
+- [x] TableColumn: Width modes (fixed/flexible/ratio)
+- [x] Table: Public API
+- [x] Table: Header rendering
+- [x] Table: ANSI-aware column alignment
+- [x] Table: Reuses ItemListHandler
+- [x] TableTests: Column tests
+- [x] TableTests: Selection tests
+- [x] TablePage: Example integration
+
 ## Context / Problem
 
 TUIKit lacks scrollable list and table components. Users need to display collections with keyboard navigation, selection, and scrolling. The architecture analysis (completed) identified shared patterns between List and Table. Now we implement both components using that shared foundation.
@@ -167,44 +210,12 @@ public struct TableColumn<Value> {
    - File browser style table
    - Multi-column data display
 
-## Checklist
+## Open Questions (Resolved)
 
-### Phase 1: List
-
-- [ ] ItemListHandler: Navigation logic (Up/Down/Home/End)
-- [ ] ItemListHandler: PageUp/PageDown navigation
-- [ ] ItemListHandler: Single selection mode
-- [ ] ItemListHandler: Multi selection mode
-- [ ] ItemListHandler: Scroll offset management
-- [ ] ItemListHandler: onFocusLost behavior
-- [ ] List: Public API with Binding
-- [ ] List: Renderable with StateStorage
-- [ ] List: Visual states (focused/selected)
-- [ ] List: Scroll indicators
-- [ ] List: Disabled state
-- [ ] ListTests: Navigation tests
-- [ ] ListTests: Selection tests
-- [ ] ListTests: Scroll tests
-- [ ] ListPage: Example integration
-
-### Phase 2: Table
-
-- [ ] TableColumn: Definition struct
-- [ ] TableColumn: Width modes (fixed/flexible/ratio)
-- [ ] Table: Public API
-- [ ] Table: Header rendering
-- [ ] Table: ANSI-aware column alignment
-- [ ] Table: Reuses ItemListHandler
-- [ ] TableTests: Column tests
-- [ ] TableTests: Selection tests
-- [ ] TablePage: Example integration
-
-## Open Questions
-
-1. **Selection API:** SwiftUI uses `List(selection:)` with optional for single, Set for multi. Follow exactly?
-2. **Row height:** Fixed 1 line per item, or allow multi-line rows?
-3. **Empty state:** Show placeholder text when list is empty?
-4. **Table separators:** Vertical lines between columns, or space-only?
+1. **Selection API:** SwiftUI uses `List(selection:)` with optional for single, Set for multi. Follow exactly? **Yes, followed exactly.**
+2. **Row height:** Fixed 1 line per item, or allow multi-line rows? **Multi-line rows supported in List.**
+3. **Empty state:** Show placeholder text when list is empty? **Yes, with customizable placeholder.**
+4. **Table separators:** Vertical lines between columns, or space-only? **Space-only for clean look.**
 
 ## Files
 
@@ -219,7 +230,8 @@ New:
 - `Sources/TUIkitExample/Pages/TablePage.swift`
 
 Modified:
-- `Sources/TUIkitExample/ExampleApp.swift` (add menu entries)
+- `Sources/TUIkitExample/ContentView.swift` (add menu entries and shortcuts)
+- `Sources/TUIkitExample/Pages/MainMenuPage.swift` (add menu items)
 
 ## Dependencies
 
