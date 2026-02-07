@@ -50,33 +50,33 @@ struct TablePage: View {
     var body: some View {
         VStack(spacing: 1) {
 
-            DemoSection("File Browser (Single Selection)") {
-                Table(
-                    FileEntry.sampleFiles,
-                    selection: $singleSelection,
-                    maxVisibleRows: 6
-                ) {
-                    TableColumn("Name", value: \FileEntry.name)
-                    TableColumn("Size", value: \FileEntry.size)
-                        .width(.fixed(10))
-                        .alignment(.trailing)
-                    TableColumn("Modified", value: \FileEntry.modified)
-                        .width(.fixed(12))
-                    TableColumn("Type", value: \FileEntry.type)
-                        .width(.fixed(10))
-                }
+            Text("File Browser (Single Selection)")
+                .foregroundColor(.palette.foregroundSecondary)
+            Table(
+                FileEntry.sampleFiles,
+                selection: $singleSelection,
+                maxVisibleRows: 6
+            ) {
+                TableColumn("Name", value: \FileEntry.name)
+                TableColumn("Size", value: \FileEntry.size)
+                    .width(.fixed(10))
+                    .alignment(.trailing)
+                TableColumn("Modified", value: \FileEntry.modified)
+                    .width(.fixed(12))
+                TableColumn("Type", value: \FileEntry.type)
+                    .width(.fixed(10))
             }
 
-            DemoSection("Multi-Selection Table") {
-                Table(
-                    FileEntry.sampleFiles,
-                    selection: $multiSelection,
-                    maxVisibleRows: 4
-                ) {
-                    TableColumn("Name", value: \FileEntry.name)
-                    TableColumn("Type", value: \FileEntry.type)
-                        .width(.fixed(12))
-                }
+            Text("Multi-Selection Table")
+                .foregroundColor(.palette.foregroundSecondary)
+            Table(
+                FileEntry.sampleFiles,
+                selection: $multiSelection,
+                maxVisibleRows: 4
+            ) {
+                TableColumn("Name", value: \FileEntry.name)
+                TableColumn("Type", value: \FileEntry.type)
+                    .width(.fixed(12))
             }
 
             DemoSection("Current Selections") {

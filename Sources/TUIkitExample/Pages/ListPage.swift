@@ -49,30 +49,28 @@ struct ListPage: View {
         VStack(spacing: 1) {
 
             HStack(spacing: 2) {
-                DemoSection("Single Selection") {
-                    List(
-                        selection: $singleSelection,
-                        maxVisibleRows: 6
-                    ) {
-                        ForEach(FileItem.sampleFiles) { file in
-                            HStack(spacing: 1) {
-                                Text(file.icon)
-                                Text(file.name)
-                            }
+                List(
+                    "Single Selection",
+                    selection: $singleSelection,
+                    maxVisibleRows: 6
+                ) {
+                    ForEach(FileItem.sampleFiles) { file in
+                        HStack(spacing: 1) {
+                            Text(file.icon)
+                            Text(file.name)
                         }
                     }
                 }
 
-                DemoSection("Multi Selection") {
-                    List(
-                        selection: $multiSelection,
-                        maxVisibleRows: 6
-                    ) {
-                        ForEach(FileItem.sampleFiles) { file in
-                            HStack(spacing: 1) {
-                                Text(file.icon)
-                                Text(file.name)
-                            }
+                List(
+                    "Multi Selection",
+                    selection: $multiSelection,
+                    maxVisibleRows: 6
+                ) {
+                    ForEach(FileItem.sampleFiles) { file in
+                        HStack(spacing: 1) {
+                            Text(file.icon)
+                            Text(file.name)
                         }
                     }
                 }
@@ -95,10 +93,8 @@ struct ListPage: View {
                 }
             }
 
-            DemoSection("Empty List") {
-                List(selection: Binding<String?>(get: { nil }, set: { _ in })) {
-                    EmptyView()
-                }
+            List("Empty List", selection: Binding<String?>(get: { nil }, set: { _ in })) {
+                EmptyView()
             }
 
             DemoSection("Navigation") {
