@@ -37,62 +37,76 @@ Public APIs MUST match SwiftUI signatures exactly unless terminal constraints re
 **TUI-specific APIs:** OK to add, but keep separate from SwiftUI equivalents.
 
 ### View Architecture (non-negotiable)
-**EVERYTHING that is visible to users must be a `View` (conform to `View` protocol).**
 
-This is CRITICAL for:
-- **View-Modifiers**: `.foregroundColor()`, `.padding()`, `.disabled()`, etc. only work on Views
-- **Environment-Value propagation**: Foreground colors, fonts, etc. inherit automatically through View hierarchy
-- **Consistency**: All public APIs look the same, follow SwiftUI patterns
-- **Performance**: Single rendering path, no special cases
+#### 100% SwiftUI Conformity - EVERYTHING is a View!
 
-**Structure:**
-- Public API: `struct MyControl: View { var body: some View { ... } }`
-- Internal complex logic: Private/internal Views like `_MyControlCore: View` or `Renderable` structs inside `body`
-- NEVER expose `Renderable` to users; it's an implementation detail
+This is the **MOST IMPORTANT RULE**. No exceptions. No shortcuts.
 
-**Before implementing ANY new control:**
-1. Check if similar controls already exist in the codebase
-2. Reuse patterns, extensions, helpers from existing Views
-3. Make it a `View` first: internal rendering complexity goes in `body` or child Views
-4. Verify modifiers work: `.foregroundColor()`, `.disabled()`, environment values propagate correctly
+**The Rule:**
+- Every public control MUST be a `View` with a real `body: some View`
+- The `body` MUST return actual Views (not `Never`, not `fatalError()`)
+- `Renderable` is ONLY for leaf nodes (Text, Spacer) - NEVER for controls
+- All modifiers MUST propagate through the entire View hierarchy
+- Environment values MUST flow down automatically
 
-**Example (CORRECT):**
+**Why this matters:**
 ```swift
-public struct MyControl: View {
-    let label: String
+// This MUST work exactly like SwiftUI:
+List("Items", selection: $selection) {
+    ForEach(items) { item in
+        Text(item.name)
+    }
+}
+.foregroundColor(.red)  // MUST affect all Text inside!
+.disabled(true)         // MUST disable the entire List!
+```
+
+**Correct Pattern (Box.swift is the reference):**
+```swift
+public struct MyControl<Content: View>: View {
+    let content: Content
     
     public var body: some View {
-        _MyControlCore(label: label)
-    }
-}
-
-private struct _MyControlCore: View {
-    let label: String
-    @Environment(\.foregroundColor) var foregroundColor
-    
-    var body: some View {
-        Text(label)
-            .foregroundColor(foregroundColor ?? .default)
+        // Compose using other Views and modifiers
+        // Environment flows through automatically
+        content
+            .padding()
+            .border()
     }
 }
 ```
 
-**Example (WRONG):**
+**WRONG Pattern (breaks modifier propagation):**
 ```swift
 public struct MyControl: View {
-    public var body: Never { fatalError() }
+    public var body: Never { fatalError() }  // WRONG!
 }
 
-extension MyControl: Renderable {
-    func renderToBuffer() { ... }  // Exposes implementation, breaks modifiers
+extension MyControl: Renderable {  // WRONG!
+    func renderToBuffer() { ... }
 }
 ```
 
-**Pattern to follow: `Box.swift`**
-`Box` is the reference implementation:
-- Public API: Real `View` with `body: some View`
-- Body: Applies modifiers to content (`.border()`, `.padding()`, etc.)
-- No `Renderable` in public API: modifiers do the rendering work
-- Users can chain modifiers naturally: `Box { ... }.foregroundColor(...)`
+**Also WRONG (hidden Renderable breaks the chain):**
+```swift
+public struct MyControl: View {
+    public var body: some View {
+        _MyControlCore(...)  // If this is Renderable, modifiers break!
+    }
+}
 
-This is the CORRECT pattern for ALL controls.
+private struct _MyControlCore: View, Renderable {  // WRONG!
+    var body: Never { fatalError() }
+    func renderToBuffer() { ... }
+}
+```
+
+**Before implementing ANY control:**
+1. Can it be composed from existing Views + modifiers? (preferred)
+2. Does `body` return real Views that propagate environment?
+3. Test: `.foregroundColor()` on the control affects its content?
+4. Test: `.disabled()` on the control disables interactions?
+
+**Controls that need refactoring to follow this rule:**
+- List, Table (currently use internal Renderable)
+- Any control with `body: Never`
