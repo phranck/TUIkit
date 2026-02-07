@@ -67,22 +67,16 @@ extension App {
 /// - ``RenderLoop`` — Rendering pipeline (scene + status bar)
 @MainActor
 internal final class AppRunner<A: App> {
-    let app: A
-    let terminal: Terminal
-    let appState: AppState
-    let statusBar: StatusBarState
-    let appHeader: AppHeaderState
-    let focusManager: FocusManager
-    let paletteManager: ThemeManager
-    let appearanceManager: ThemeManager
-    let tuiContext: TUIContext
+    private let app: A
+    private let terminal: Terminal
+    private let appState: AppState
+    private let statusBar: StatusBarState
+    private let appHeader: AppHeaderState
+    private let focusManager: FocusManager
+    private let paletteManager: ThemeManager
+    private let appearanceManager: ThemeManager
+    private let tuiContext: TUIContext
     private var signals = SignalManager()
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    private var inputHandler: InputHandler!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    private var renderer: RenderLoop<A>!
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    private var pulseTimer: PulseTimer!
     private var isRunning = false
 
     init(app: A) {
@@ -98,10 +92,15 @@ internal final class AppRunner<A: App> {
 
         // Configure status bar style
         self.statusBar.style = .bordered
+    }
+}
 
-        // These reference self or other stored properties,
-        // so they are created after all stored properties are initialized.
-        self.inputHandler = InputHandler(
+// MARK: - Internal API
+
+extension AppRunner {
+    func run() {
+        // Create run-loop dependencies (previously IUOs, now local variables)
+        let inputHandler = InputHandler(
             statusBar: statusBar,
             keyEventDispatcher: tuiContext.keyEventDispatcher,
             focusManager: focusManager,
@@ -111,7 +110,7 @@ internal final class AppRunner<A: App> {
                 self?.isRunning = false
             }
         )
-        self.renderer = RenderLoop(
+        let renderer = RenderLoop(
             app: app,
             terminal: terminal,
             statusBar: statusBar,
@@ -121,14 +120,8 @@ internal final class AppRunner<A: App> {
             appearanceManager: appearanceManager,
             tuiContext: tuiContext
         )
-        self.pulseTimer = PulseTimer(renderNotifier: appState)
-    }
-}
+        let pulseTimer = PulseTimer(renderNotifier: appState)
 
-// MARK: - Internal API
-
-extension AppRunner {
-    func run() {
         // Setup
         signals.install()
         terminal.enterAlternateScreen()
