@@ -60,7 +60,35 @@ public struct RadioButtonItem<Value: Hashable> {
 
 // MARK: - Radio Button Group Builder
 
-/// Result builder for radio button items.
+/// A result builder that constructs arrays of radio button items for use in ``RadioButtonGroup``.
+///
+/// `RadioButtonGroupBuilder` enables the declarative syntax for defining multiple
+/// options within a ``RadioButtonGroup``. You don't use this type directly; instead,
+/// the `@RadioButtonGroupBuilder` attribute is applied to the trailing closure of
+/// ``RadioButtonGroup/init(selection:orientation:_:)``.
+///
+/// ## Overview
+///
+/// When you write:
+///
+/// ```swift
+/// RadioButtonGroup(selection: $choice) {
+///     RadioButtonItem(.option1, "First Option")
+///     RadioButtonItem(.option2, "Second Option")
+///     RadioButtonItem(.option3, "Third Option")
+/// }
+/// ```
+///
+/// The `@RadioButtonGroupBuilder` attribute transforms this closure into an array
+/// of ``RadioButtonItem`` instances that the group can render and manage.
+///
+/// ## Supported Control Flow
+///
+/// The builder supports:
+/// - Multiple item expressions
+/// - `if`/`else` conditionals
+/// - `if let` optional binding
+/// - `for`...`in` loops
 @resultBuilder
 public enum RadioButtonGroupBuilder<Value: Hashable> {
     public static func buildBlock(_ items: RadioButtonItem<Value>...) -> [RadioButtonItem<Value>] {

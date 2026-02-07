@@ -604,7 +604,40 @@ public extension SystemStatusBarItem {
 
 // MARK: - Status Bar Item Builder
 
-/// Result builder for creating status bar items.
+/// A result builder that constructs arrays of status bar items.
+///
+/// `StatusBarItemBuilder` enables the declarative syntax for defining multiple
+/// items in a status bar. You don't use this type directly; instead, the
+/// `@StatusBarItemBuilder` attribute is applied to closures that define
+/// status bar content.
+///
+/// ## Overview
+///
+/// When you write:
+///
+/// ```swift
+/// .statusBarItems {
+///     StatusBarItem(shortcut: .arrowsUpDown, label: "navigate")
+///     StatusBarItem(shortcut: .enter, label: "select", key: .enter)
+///     StatusBarItem(shortcut: .escape, label: "back") { goBack() }
+/// }
+/// ```
+///
+/// The `@StatusBarItemBuilder` attribute transforms this closure into an array
+/// of ``StatusBarItemProtocol`` conforming items that the status bar can display.
+///
+/// ## Supported Control Flow
+///
+/// The builder supports:
+/// - Multiple item expressions
+/// - `if`/`else` conditionals
+/// - `if let` optional binding
+/// - `for`...`in` loops
+///
+/// ## See Also
+///
+/// - ``StatusBarItem``
+/// - ``View/statusBarItems(_:)``
 @resultBuilder
 public struct StatusBarItemBuilder {
 }
