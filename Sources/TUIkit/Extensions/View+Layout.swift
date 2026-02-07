@@ -220,9 +220,16 @@ extension View {
 extension View {
     /// Adds padding on all sides.
     ///
+    /// In a terminal context, 1 unit of padding means:
+    /// - **Vertical (top/bottom):** 1 line
+    /// - **Horizontal (leading/trailing):** 1 character
+    ///
+    /// When called without arguments, `.padding()` adds 1 unit on all sides.
+    ///
     /// ```swift
     /// Text("Hello")
-    ///     .padding(2)
+    ///     .padding()    // 1 line top/bottom, 1 char left/right
+    ///     .padding(2)   // 2 lines top/bottom, 2 chars left/right
     /// ```
     ///
     /// - Parameter amount: The padding amount on all sides (default: 1).
@@ -233,9 +240,14 @@ extension View {
 
     /// Adds padding on specific edges.
     ///
+    /// In a terminal context, 1 unit of padding means:
+    /// - **Vertical (top/bottom):** 1 line
+    /// - **Horizontal (leading/trailing):** 1 character
+    ///
     /// ```swift
     /// Text("Hello")
-    ///     .padding(.horizontal, 4)
+    ///     .padding(.horizontal, 4)  // 4 chars left and right
+    ///     .padding(.vertical, 2)    // 2 lines top and bottom
     /// ```
     ///
     /// - Parameters:
