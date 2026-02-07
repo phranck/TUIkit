@@ -1,11 +1,17 @@
 {
-  "generated": "2026-02-07T11:18:27.946Z",
+  "generated": "2026-02-07T11:57:49.631Z",
   "open": [
     {
       "date": "2026-02-07",
       "slug": "code-review-fixes",
       "title": "Code Review Fixes: Swift 6 Concurrency and Architectural Improvements",
       "preface": "A comprehensive code review identified critical issues with Swift 6 concurrency readiness, missing abstractions for testability, and minor architectural debt. This plan addresses all findings systematically: introducing `@MainActor` isolation for render-loop-only types, adding thread-safe synchronization where cross-thread access occurs, extracting a `TerminalProtocol` for testability, fixing ForEach's runtime crash, and consolidating duplicated focus handler code. The result is a codebase ready for Swift 6 strict concurrency mode with improved testability and maintainability."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "mobile-performance",
+      "title": "Mobile Performance Optimization",
+      "preface": "The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices."
     },
     {
       "date": "2026-02-06",
@@ -57,6 +63,18 @@
     }
   ],
   "done": [
+    {
+      "date": "2026-02-07",
+      "slug": "astro-dashboard",
+      "title": "Astro Migration: Dashboard",
+      "preface": "This plan migrates the TUIKit Dashboard from Next.js 16 to Astro, building on the landing page migration. The dashboard is more interactive than the landing page: StatCards, ActivityHeatmap, CommitList, PlansCard, and AvatarMarquee all require client-side JavaScript. These become React Islands with appropriate hydration strategies. Data fetching via `useGitHubStats` and localStorage caching remain client-side. The result is a dashboard that loads faster while maintaining all interactivity including Framer Motion animations."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "astro-landing-page",
+      "title": "Astro Migration: Landing Page",
+      "preface": "This plan migrates the TUIKit landing page from Next.js 16 to Astro, leveraging Astro's Islands Architecture for zero-JS delivery of static content while preserving React components for interactive elements. The HeroTerminal with CRT effects, TerminalScreen animation, and theme system become React Islands. Static content (FeatureCards, CodePreview, footer) renders as pure Astro components with no client-side JavaScript. Expected outcome: faster initial load, smaller bundle, same visual experience."
+    },
     {
       "date": "2026-02-06",
       "slug": "toggle",
