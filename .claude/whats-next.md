@@ -9,9 +9,9 @@ None
 
 ## Next Steps
 
-1. TextInput / TextField component
-2. List & Table shared architecture (SharedHandlers plan)
-3. Mobile docs testing (iPhone Safari)
+1. List component (ItemListHandler + List.swift)
+2. TextInput / TextField component
+3. Table component (reuses ItemListHandler)
 
 ---
 

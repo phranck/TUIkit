@@ -14,8 +14,8 @@
 
 #### Medium
 
-- [ ] **List**: Scrollable list with keyboard navigation. BLOCKED: Wait for shared handlers
-- [ ] **Table**: Column alignment with ANSI-aware padding. BLOCKED: Wait for shared handlers
+- [ ] **List**: Scrollable list with keyboard navigation, ItemListHandler
+- [ ] **Table**: Column alignment with ANSI-aware padding, reuses ItemListHandler
 
 
 #### Low
@@ -43,6 +43,7 @@
 - [x] **Mobile Performance**: Framer Motion removed, CSS animations, mobile media queries, lazy Howler.js
 - [x] **Astro Migration**: Docs site migrated from Next.js to Astro, CI workflow fixed
 - [x] **Plans Dashboard Card**: Collapsible sections, animated expand/collapse, all plans exported
+- [x] **List/Table Shared Architecture**: Analysis complete, ItemListHandler pattern defined
 - [x] **Em-dash Removal**: Replaced all em-dashes with colons/sentences across 73 files
 
 ### 2026-02-06
@@ -159,4 +160,4 @@ Permanent architectural concern. Synthesized from the [SwiftUI performance artic
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-07 (Shared architecture complete, List/Table unblocked)
