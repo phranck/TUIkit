@@ -1,20 +1,20 @@
 /**
- * Prebuild script: runs before `next build` via the `prebuild` npm script.
+ * Prebuild script: runs before `astro build` via the `prebuild` npm script.
  *
  * 1. Generates terminal-data.ts from terminal-script.md
  * 2. Counts Swift @Test and @Suite annotations to produce project-stats.json
- *    (consumed by next.config.ts as environment variables)
+ *    (consumed by astro.config.mjs as environment variables)
  */
 
-import { parseTerminalScript } from "../lib/terminal-parser";
+import { parseTerminalScript } from "../src/lib/terminal-parser";
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-// ── Terminal Data ─────────────────────────────────────────────────────
+// Terminal Data
 
 const script = parseTerminalScript();
-const terminalOutputPath = path.join(process.cwd(), "app", "components", "terminal-data.ts");
+const terminalOutputPath = path.join(process.cwd(), "src", "components", "react", "terminal-data.ts");
 
 const tsContent = `/**
  * Auto-generated from terminal-script.md
@@ -29,7 +29,7 @@ export const TERMINAL_SCRIPT: TerminalScript = ${JSON.stringify(script, null, 2)
 fs.writeFileSync(terminalOutputPath, tsContent);
 console.log("✓ Generated terminal-data.ts from terminal-script.md");
 
-// ── Project Stats ─────────────────────────────────────────────────────
+// Project Stats
 
 const projectRoot = path.resolve(process.cwd(), "..");
 const testsDir = path.join(projectRoot, "Tests");
