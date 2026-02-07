@@ -15,7 +15,7 @@
 /// The result is a flat, de-emphasized text layer with no visual ornaments.
 public struct DimmedModifier<Content: View>: View {
     /// The content to dim.
-    nonisolated(unsafe) let content: Content
+    let content: Content
 
     public var body: Never {
         fatalError("DimmedModifier renders via Renderable")
@@ -24,7 +24,11 @@ public struct DimmedModifier<Content: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension DimmedModifier: @preconcurrency Equatable where Content: Equatable {}
+extension DimmedModifier: Equatable where Content: Equatable {
+    nonisolated public static func == (lhs: DimmedModifier<Content>, rhs: DimmedModifier<Content>) -> Bool {
+        MainActor.assumeIsolated { lhs.content == rhs.content }
+    }
+}
 
 // MARK: - Ornament Characters
 
