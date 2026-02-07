@@ -6,14 +6,15 @@
 
 import Foundation
 
-// MARK: - Table (Single Selection)
+// MARK: - Table
 
 /// A scrollable table with columns, keyboard navigation, and selection.
 ///
-/// `Table` displays tabular data with column headers and supports:
+/// `Table` displays tabular data inside a bordered container with:
+/// - Column headers in the container header section
+/// - Optional footer section
 /// - Keyboard navigation (Up/Down/Home/End/PageUp/PageDown)
-/// - Single selection via optional binding
-/// - Multi-selection via Set binding
+/// - Single or multi-selection via bindings
 /// - Configurable column widths (fixed, flexible, ratio)
 /// - Column alignment (leading, center, trailing)
 /// - ANSI-aware column layout
@@ -77,8 +78,19 @@ public struct Table<Value: Identifiable & Sendable>: View where Value.ID: Hashab
     /// The spacing between columns in characters.
     let columnSpacing: Int
 
-    public var body: Never {
-        fatalError("Table renders via Renderable")
+    public var body: some View {
+        _TableCore(
+            data: data,
+            columns: columns,
+            singleSelection: singleSelection,
+            multiSelection: multiSelection,
+            selectionMode: selectionMode,
+            focusID: focusID,
+            isDisabled: isDisabled,
+            maxVisibleRows: maxVisibleRows,
+            emptyPlaceholder: emptyPlaceholder,
+            columnSpacing: columnSpacing
+        )
     }
 }
 
@@ -164,138 +176,171 @@ extension Table {
     }
 }
 
-// MARK: - Rendering
+// MARK: - Table Core (Internal Rendering)
 
-extension Table: Renderable {
+/// Internal core view that handles table rendering inside a ContainerView.
+private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable where Value.ID: Hashable {
+    let data: [Value]
+    let columns: [TableColumn<Value>]
+    let singleSelection: Binding<Value.ID?>?
+    let multiSelection: Binding<Set<Value.ID>>?
+    let selectionMode: SelectionMode
+    let focusID: String?
+    let isDisabled: Bool
+    let maxVisibleRows: Int?
+    let emptyPlaceholder: String
+    let columnSpacing: Int
+
+    var body: Never {
+        fatalError("_TableCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let focusManager = context.environment.focusManager
         let palette = context.environment.palette
         let stateStorage = context.tuiContext.stateStorage
 
-        // Handle empty state
-        guard !data.isEmpty else {
-            return renderEmptyState(palette: palette)
-        }
+        // Calculate available width inside container (subtract border + padding)
+        let innerWidth = max(0, context.availableWidth - 4)
 
         // Calculate column widths
-        let availableWidth = context.availableWidth
         let columnWidths = calculateColumnWidths(
-            availableWidth: availableWidth,
+            availableWidth: innerWidth,
             spacing: columnSpacing
         )
 
-        // Calculate viewport height (reserve 1 line for header, 2 for scroll indicators)
-        let availableHeight = context.availableHeight
-        let viewportHeight = maxVisibleRows ?? max(1, availableHeight - 3)
+        // Build header line from column titles
+        let headerLine = renderHeader(columnWidths: columnWidths, palette: palette)
 
-        // Get or create persistent focusID
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID ?? "table-\(context.identity.path)"
-        )
-        let persistedFocusID = focusIDBox.value
+        // Handle empty state
+        let contentLines: [String]
 
-        // Get or create persistent handler
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
-            for: handlerKey,
-            default: ItemListHandler(
-                focusID: persistedFocusID,
-                itemCount: data.count,
-                viewportHeight: viewportHeight,
-                selectionMode: selectionMode,
-                canBeFocused: !isDisabled
+        if data.isEmpty {
+            contentLines = [emptyPlaceholder]
+        } else {
+            // Calculate viewport height
+            let availableHeight = context.availableHeight
+            let viewportHeight = maxVisibleRows ?? max(1, availableHeight - 6) // Reserve for border + header + indicators
+
+            // Get or create persistent focusID
+            let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
+            let focusIDBox: StateBox<String> = stateStorage.storage(
+                for: focusIDKey,
+                default: focusID ?? "table-\(context.identity.path)"
             )
-        )
-        let handler = handlerBox.value
+            let persistedFocusID = focusIDBox.value
 
-        // Update handler with current values
-        handler.itemCount = data.count
-        handler.viewportHeight = viewportHeight
-        handler.canBeFocused = !isDisabled
-        handler.itemIDs = data.map { AnyHashable($0.id) }
-
-        // Set up selection bindings
-        if let binding = singleSelection {
-            handler.singleSelection = Binding<AnyHashable?>(
-                get: { binding.wrappedValue.map { AnyHashable($0) } },
-                set: { newValue in
-                    binding.wrappedValue = newValue?.base as? Value.ID
-                }
+            // Get or create persistent handler
+            let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+            let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
+                for: handlerKey,
+                default: ItemListHandler(
+                    focusID: persistedFocusID,
+                    itemCount: data.count,
+                    viewportHeight: viewportHeight,
+                    selectionMode: selectionMode,
+                    canBeFocused: !isDisabled
+                )
             )
+            let handler = handlerBox.value
+
+            // Update handler with current values
+            handler.itemCount = data.count
+            handler.viewportHeight = viewportHeight
+            handler.canBeFocused = !isDisabled
+            handler.itemIDs = data.map { AnyHashable($0.id) }
+
+            // Set up selection bindings
+            if let binding = singleSelection {
+                handler.singleSelection = Binding<AnyHashable?>(
+                    get: { binding.wrappedValue.map { AnyHashable($0) } },
+                    set: { newValue in
+                        binding.wrappedValue = newValue?.base as? Value.ID
+                    }
+                )
+            }
+            if let binding = multiSelection {
+                handler.multiSelection = Binding<Set<AnyHashable>>(
+                    get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
+                    set: { newValue in
+                        binding.wrappedValue = Set(newValue.compactMap { $0.base as? Value.ID })
+                    }
+                )
+            }
+
+            // Ensure focused item is visible
+            handler.ensureFocusedItemVisible()
+
+            // Register with focus manager
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+
+            // Check if this table has focus
+            let tableHasFocus = focusManager.isFocused(id: persistedFocusID)
+
+            // Build content lines
+            var lines: [String] = []
+
+            // Top scroll indicator
+            if handler.hasContentAbove {
+                lines.append(renderScrollIndicator(direction: .up, width: innerWidth, palette: palette))
+            }
+
+            // Data rows
+            let visibleRange = handler.visibleRange
+            for rowIndex in visibleRange {
+                let item = data[rowIndex]
+                let isFocused = handler.isFocused(at: rowIndex) && tableHasFocus
+                let isSelected = handler.isSelected(at: rowIndex)
+
+                lines.append(renderRow(
+                    item: item,
+                    columnWidths: columnWidths,
+                    isFocused: isFocused,
+                    isSelected: isSelected,
+                    context: context,
+                    palette: palette
+                ))
+            }
+
+            // Bottom scroll indicator
+            if handler.hasContentBelow {
+                lines.append(renderScrollIndicator(direction: .down, width: innerWidth, palette: palette))
+            }
+
+            contentLines = lines
         }
-        if let binding = multiSelection {
-            handler.multiSelection = Binding<Set<AnyHashable>>(
-                get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
-                set: { newValue in
-                    binding.wrappedValue = Set(newValue.compactMap { $0.base as? Value.ID })
-                }
-            )
+
+        // Create the table content as a simple view
+        let tableContent = _TableContentView(lines: contentLines)
+
+        // Create header view
+        let headerView = _TableHeaderView(line: headerLine)
+
+        // Wrap in ContainerView with header separator (column titles are in header)
+        let container = ContainerView(
+            title: nil,
+            style: ContainerStyle(showHeaderSeparator: true, showFooterSeparator: false),
+            padding: EdgeInsets(horizontal: 1, vertical: 0)
+        ) {
+            VStack(spacing: 0) {
+                headerView
+                tableContent
+            }
         }
 
-        // Ensure focused item is visible
-        handler.ensureFocusedItemVisible()
-
-        // Register with focus manager
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
-
-        // Check if this table has focus
-        let tableHasFocus = focusManager.isFocused(id: persistedFocusID)
-
-        // Render output
-        var lines: [String] = []
-
-        // Header row
-        lines.append(renderHeader(columnWidths: columnWidths, palette: palette))
-
-        // Top scroll indicator
-        if handler.hasContentAbove {
-            lines.append(renderScrollIndicator(direction: .up, width: availableWidth, palette: palette))
-        }
-
-        // Data rows
-        let visibleRange = handler.visibleRange
-        for rowIndex in visibleRange {
-            let item = data[rowIndex]
-            let isFocused = handler.isFocused(at: rowIndex) && tableHasFocus
-            let isSelected = handler.isSelected(at: rowIndex)
-
-            lines.append(renderRow(
-                item: item,
-                columnWidths: columnWidths,
-                isFocused: isFocused,
-                isSelected: isSelected,
-                context: context,
-                palette: palette
-            ))
-        }
-
-        // Bottom scroll indicator
-        if handler.hasContentBelow {
-            lines.append(renderScrollIndicator(direction: .down, width: availableWidth, palette: palette))
-        }
-
-        return FrameBuffer(lines: lines)
+        return TUIkit.renderToBuffer(container, context: context)
     }
-}
 
-// MARK: - Column Width Calculation
+    // MARK: - Column Width Calculation
 
-private extension Table {
-    /// Calculates the width for each column.
-    func calculateColumnWidths(availableWidth: Int, spacing: Int) -> [Int] {
+    private func calculateColumnWidths(availableWidth: Int, spacing: Int) -> [Int] {
         guard !columns.isEmpty else { return [] }
 
-        // Calculate total spacing between columns
         let totalSpacing = spacing * (columns.count - 1)
-
-        // Reserve space for row indicator (2 chars: indicator + space)
         let indicatorWidth = 2
         let contentWidth = max(0, availableWidth - totalSpacing - indicatorWidth)
 
-        // First pass: allocate fixed widths and ratios
         var widths = [Int](repeating: 0, count: columns.count)
         var usedWidth = 0
         var flexibleIndices: [Int] = []
@@ -314,7 +359,6 @@ private extension Table {
             }
         }
 
-        // Second pass: distribute remaining space to flexible columns
         if !flexibleIndices.isEmpty {
             let remainingWidth = max(0, contentWidth - usedWidth)
             let perColumn = remainingWidth / flexibleIndices.count
@@ -325,34 +369,25 @@ private extension Table {
             }
         }
 
-        // Ensure minimum width of 1 for each column
         return widths.map { max(1, $0) }
     }
-}
 
-// MARK: - Header Rendering
+    // MARK: - Header Rendering
 
-private extension Table {
-    /// Renders the header row.
-    func renderHeader(columnWidths: [Int], palette: any Palette) -> String {
+    private func renderHeader(columnWidths: [Int], palette: any Palette) -> String {
         let spacing = String(repeating: " ", count: columnSpacing)
 
-        // Build header cells
         let cells = zip(columns, columnWidths).map { column, width -> String in
             let aligned = alignText(column.title, width: width, alignment: column.alignment)
             return ANSIRenderer.colorize(aligned, foreground: palette.foregroundSecondary, bold: true)
         }
 
-        // Join with spacing and add indicator placeholder
         return "  " + cells.joined(separator: spacing)
     }
-}
 
-// MARK: - Row Rendering
+    // MARK: - Row Rendering
 
-private extension Table {
-    /// Renders a single data row.
-    func renderRow(
+    private func renderRow(
         item: Value,
         columnWidths: [Int],
         isFocused: Bool,
@@ -362,7 +397,6 @@ private extension Table {
     ) -> String {
         let spacing = String(repeating: " ", count: columnSpacing)
 
-        // Determine row indicator and colors
         let indicator: String
         let foregroundColor: Color
 
@@ -381,14 +415,12 @@ private extension Table {
             indicator = " "
         }
 
-        // Style the indicator
         let styledIndicator = ANSIRenderer.colorize(
             indicator,
             foreground: foregroundColor,
             bold: isFocused
         )
 
-        // Build cells
         let cells = zip(columns, columnWidths).map { column, width -> String in
             let value = column.value(for: item)
             let aligned = alignText(value, width: width, alignment: column.alignment)
@@ -397,13 +429,10 @@ private extension Table {
 
         return styledIndicator + " " + cells.joined(separator: spacing)
     }
-}
 
-// MARK: - Text Alignment
+    // MARK: - Text Alignment
 
-private extension Table {
-    /// Aligns text within the specified width.
-    func alignText(_ text: String, width: Int, alignment: HorizontalAlignment) -> String {
+    private func alignText(_ text: String, width: Int, alignment: HorizontalAlignment) -> String {
         let visibleLength = text.strippedLength
         let padding = max(0, width - visibleLength)
 
@@ -418,23 +447,20 @@ private extension Table {
             return String(repeating: " ", count: padding) + text
         }
     }
-}
 
-// MARK: - Scroll Indicators
+    // MARK: - Scroll Indicators
 
-private extension Table {
-    enum ScrollDirection {
+    private enum ScrollDirection {
         case up, down
     }
 
-    func renderScrollIndicator(direction: ScrollDirection, width: Int, palette: any Palette) -> String {
+    private func renderScrollIndicator(direction: ScrollDirection, width: Int, palette: any Palette) -> String {
         let arrow = direction == .up ? "▲" : "▼"
         let label = direction == .up ? " more above " : " more below "
 
         let styledArrow = ANSIRenderer.colorize(arrow, foreground: palette.foregroundTertiary)
         let styledLabel = ANSIRenderer.colorize(label, foreground: palette.foregroundTertiary)
 
-        // Center the indicator
         let indicatorWidth = 1 + label.count
         let padding = max(0, (width - indicatorWidth) / 2)
 
@@ -442,14 +468,32 @@ private extension Table {
     }
 }
 
-// MARK: - Empty State
+// MARK: - Table Content View
 
-private extension Table {
-    func renderEmptyState(palette: any Palette) -> FrameBuffer {
-        let styledText = ANSIRenderer.colorize(
-            emptyPlaceholder,
-            foreground: palette.foregroundTertiary
-        )
-        return FrameBuffer(lines: [styledText])
+/// Simple view that renders pre-computed lines.
+private struct _TableContentView: View, Renderable {
+    let lines: [String]
+
+    var body: Never {
+        fatalError("_TableContentView renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer(lines: lines)
+    }
+}
+
+// MARK: - Table Header View
+
+/// Simple view that renders the header line.
+private struct _TableHeaderView: View, Renderable {
+    let line: String
+
+    var body: Never {
+        fatalError("_TableHeaderView renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        FrameBuffer(lines: [line])
     }
 }
