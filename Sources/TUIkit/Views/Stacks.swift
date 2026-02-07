@@ -230,9 +230,34 @@ public struct Alignment: Sendable, Equatable {
 
 // MARK: - Equatable Conformances
 
-extension VStack: @preconcurrency Equatable where Content: Equatable {}
-extension HStack: @preconcurrency Equatable where Content: Equatable {}
-extension ZStack: @preconcurrency Equatable where Content: Equatable {}
+extension VStack: Equatable where Content: Equatable {
+    nonisolated public static func == (lhs: VStack<Content>, rhs: VStack<Content>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.alignment == rhs.alignment &&
+            lhs.spacing == rhs.spacing &&
+            lhs.content == rhs.content
+        }
+    }
+}
+
+extension HStack: Equatable where Content: Equatable {
+    nonisolated public static func == (lhs: HStack<Content>, rhs: HStack<Content>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.alignment == rhs.alignment &&
+            lhs.spacing == rhs.spacing &&
+            lhs.content == rhs.content
+        }
+    }
+}
+
+extension ZStack: Equatable where Content: Equatable {
+    nonisolated public static func == (lhs: ZStack<Content>, rhs: ZStack<Content>) -> Bool {
+        MainActor.assumeIsolated {
+            lhs.alignment == rhs.alignment &&
+            lhs.content == rhs.content
+        }
+    }
+}
 
 // MARK: - VStack Rendering
 
