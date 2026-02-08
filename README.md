@@ -102,6 +102,20 @@ Press `q` or `ESC` to exit.
 
 ## Installation
 
+### Quick Start with CLI
+
+Install the `tuikit` command and create a new project:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/phranck/TUIkit/main/project-template/install.sh | bash
+tuikit init MyApp
+cd MyApp && swift run
+```
+
+See [project-template/README.md](project-template/README.md) for more options (SQLite, Swift Testing).
+
+### Manual Setup
+
 Add TUIkit to your `Package.swift`:
 
 ```swift
