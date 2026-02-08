@@ -259,7 +259,7 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 ## Current State
 
 **Branch:** `main`
-**Tests:** 722 / 110 suites
+**Tests:** 732 / 112 suites
 **Build:** clean (1 pre-existing flaky Focus test)
 
 ### Phase 2: SwiftUI API Parity — Status
@@ -270,25 +270,19 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 | 2b | ListStyle System | ✅ Complete | 5cb6794 (earlier) |
 | 2c1 | SelectableListRow Foundation | ✅ Complete | 9df0ab0 |
 | 2c2 | ItemListHandler Skip Logic | ✅ Complete | 9df0ab0 |
-| 2c3 | List Integration & Rendering | 🚧 Deferred | — |
+| 2c3 | List Integration & Rendering | ✅ Complete | (pending commit) |
 
-### Recent Completions (2026-02-09)
+### Recent Completions (2026-02-08)
+
+- **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices, 10 new tests
+
+### Previous Completions (2026-02-09)
 
 - **Badge Modifier (Phase 2a)**: Int/Text/StringProtocol overloads, environment, 20+ tests
 - **ListStyle System (Phase 2b)**: PlainListStyle, InsetGroupedListStyle, alternating colors
 - **SelectableListRow (Phase 2c1)**: Type-safe row classification (header/content/footer)
 - **ItemListHandler Skip Logic (Phase 2c2)**: selectableIndices, focus navigation over non-selectable rows
 
-### Phase 2c3 — Deferred to Next Session
-
-**Why Deferred:** ListRow refactoring from `(id, buffer)` to `(type, buffer)` affects 5+ methods
-- `extractRows()` - Section detection/flattening
-- `calculateVisibleRows()` - Type awareness
-- `renderRow()` - Header/footer styling
-- Selection/focus updates
-
-**Recommendation:** Dedicate full session to this refactoring. Foundation ready (2c1+2c2).
-
 ---
 
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-08
