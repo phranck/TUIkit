@@ -175,11 +175,11 @@ struct ContentView: View {
     var body: some View {
         VStack {
             Text("Hello, TUIkit!")
-                .foregroundStyle(.green)
+                .foregroundStyle(.palette.accent)
                 .bold()
 
             Text("Welcome to your new terminal app")
-                .foregroundStyle(.gray)
+                .foregroundStyle(.palette.foregroundSecondary)
         }
         .padding()
     }
