@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **Xcode Project Template**: TUIkit App template for Xcode, install script, landing page integration
+- [ ] **SwiftUI API Parity**: Rename `.foregroundColor()` to `.foregroundStyle()` for SwiftUI alignment
 
 ## Open
 
@@ -37,8 +37,9 @@
 
 ### 2026-02-08
 
-- [x] **Xcode Project Template**: TUIkit App.xctemplate with Package.swift, main.swift boilerplate, SF Symbol icon, install script, landing page one-liner
+- [x] **Xcode Project Template**: TUIkit App.xctemplate with install script, landing page one-liner
 - [x] **xcode-templates Skill**: Global skill for creating Xcode project templates
+- [x] **List & Table PR**: Merged PR #86 with focus bar, F-keys, StatusBar defaults, SwiftLint fixes
 
 ### 2026-02-07
 
@@ -84,4 +85,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08 (666 tests)
+**Last Updated:** 2026-02-08
