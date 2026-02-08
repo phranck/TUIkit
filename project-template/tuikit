@@ -39,7 +39,7 @@ check_linux_swift() {
     echo -e "${YELLOW}"
     echo "╔════════════════════════════════════════════════════╗"
     echo "║                                                    ║"
-    echo "║      Swift is not installed on this system         ║"
+    echo "║       Swift is not installed on this system        ║"
     echo "║                                                    ║"
     echo "╚════════════════════════════════════════════════════╝"
     echo -e "${NC}"
