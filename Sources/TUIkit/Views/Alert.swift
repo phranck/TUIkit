@@ -93,7 +93,7 @@ public struct Alert<Actions: View>: View {
 /// Internal view that handles Alert rendering.
 ///
 /// This separation ensures `Alert.body` returns a real `View`, allowing
-/// environment modifiers like `.foregroundColor()` to propagate correctly.
+/// environment modifiers like `.foregroundStyle()` to propagate correctly.
 struct _AlertCore<Actions: View>: View, Renderable {
     let title: String
     let message: String
