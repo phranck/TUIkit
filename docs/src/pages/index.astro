@@ -100,13 +100,19 @@ const BTN_SECONDARY =
               Project Creator CLI
             </h2>
             <p class="mx-auto mb-6 max-w-2xl text-center text-lg leading-relaxed text-muted">
-              Install the <code class="text-foreground">tuikit</code> command to create new projects instantly.
-              Supports optional SQLite database and Swift Testing integration.
+              The installer adds the <code class="text-foreground">tuikit</code> command to your system.
+              It detects your platform, installs to <code class="text-foreground">/usr/local/bin</code> or <code class="text-foreground">~/.local/bin</code>,
+              and optionally updates your shell PATH.
             </p>
             <TemplateBadge client:visible />
-            <p class="mt-4 text-center text-sm text-muted">
-              Then run <code class="text-foreground">tuikit init MyApp</code> to create your first project.
-            </p>
+            <div class="mt-6 mx-auto max-w-xl text-left text-sm text-muted">
+              <p class="mb-3">Then create projects with optional features:</p>
+              <ul class="space-y-1 font-mono text-foreground">
+                <li><code>tuikit init MyApp</code> <span class="text-muted ml-2">Basic app</span></li>
+                <li><code>tuikit init sqlite MyApp</code> <span class="text-muted ml-2">With SQLite.swift</span></li>
+                <li><code>tuikit init testing MyApp</code> <span class="text-muted ml-2">With Swift Testing</span></li>
+              </ul>
+            </div>
           </div>
         </section>
 
