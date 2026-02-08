@@ -13,7 +13,7 @@ struct MyApp: App {
             VStack {
                 Text("Welcome to TUIkit")
                     .bold()
-                    .foregroundColor(.cyan)
+                    .foregroundStyle(.cyan)
 
                 HStack {
                     Button("Increment") { count += 1 }
@@ -27,7 +27,6 @@ struct MyApp: App {
                         Text(item)
                     }
                 }
-                .frame(height: 5)
             }
             .padding()
             .appHeader {
