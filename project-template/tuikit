@@ -292,16 +292,17 @@ show_help() {
     echo "  tuikit init [options] [project-name]"
     echo ""
     echo "Options:"
-    echo "  sqlite              Include SQLite.swift for database storage"
+    echo "  git                 Initialize Git repository with initial commit"
+    echo "  sqlite              Include SQLiteData for database storage"
     echo "  testing             Include Swift Testing framework"
     echo "  xctest              Include XCTest framework"
     echo ""
     echo "Examples:"
     echo "  tuikit init MyApp                    # Basic TUIkit app"
+    echo "  tuikit init git MyApp                # With Git repository"
     echo "  tuikit init sqlite MyApp             # With SQLite"
     echo "  tuikit init testing MyApp            # With Swift Testing"
-    echo "  tuikit init sqlite testing MyApp     # With SQLite and Testing"
-    echo "  tuikit init sqlite xctest MyApp      # With SQLite and XCTest"
+    echo "  tuikit init git sqlite testing MyApp # With Git, SQLite and Testing"
     echo ""
     echo "If no project name is provided, you'll be prompted to enter one."
 }
@@ -310,6 +311,7 @@ show_help() {
 check_linux_swift
 
 # Parse arguments
+INIT_GIT=false
 INCLUDE_SQLITE=false
 TEST_FRAMEWORK="None"
 PROJECT_NAME=""
@@ -320,6 +322,10 @@ if [ "$1" == "init" ]; then
     # Parse options and project name
     while [ $# -gt 0 ]; do
         case "$1" in
+            git)
+                INIT_GIT=true
+                shift
+                ;;
             sqlite)
                 INCLUDE_SQLITE=true
                 shift
@@ -380,14 +386,14 @@ echo -e "${GREEN}Creating Package.swift...${NC}"
 DEPENDENCIES="        .package(url: \"https://github.com/phranck/TUIkit.git\", branch: \"main\")"
 if [ "$INCLUDE_SQLITE" = true ]; then
     DEPENDENCIES="${DEPENDENCIES},
-        .package(url: \"https://github.com/stephencelis/SQLite.swift.git\", from: \"0.15.0\")"
+        .package(url: \"https://github.com/pointfreeco/sqlite-data.git\", from: \"0.1.0\")"
 fi
 
 # Build target dependencies
 TARGET_DEPS="                .product(name: \"TUIkit\", package: \"TUIkit\")"
 if [ "$INCLUDE_SQLITE" = true ]; then
     TARGET_DEPS="${TARGET_DEPS},
-                .product(name: \"SQLite\", package: \"SQLite.swift\")"
+                .product(name: \"SQLiteData\", package: \"sqlite-data\")"
 fi
 
 # Build targets array
@@ -463,20 +469,17 @@ EOF
 if [ "$INCLUDE_SQLITE" = true ]; then
     cat > Sources/Database.swift << 'EOF'
 import Foundation
-import SQLite
+import SQLiteData
 
-/// Helper class for SQLite database operations
+/// Example model using SQLiteData's @Table macro
 ///
-/// Example usage:
-/// ```swift
-/// let db = try Database(path: "./myapp.db")
-/// ```
-class Database {
-    let connection: Connection
-
-    init(path: String) throws {
-        connection = try Connection(path)
-    }
+/// SQLiteData uses GRDB under the hood and provides
+/// SwiftData-like macros for database models.
+@Table
+struct Item: Sendable {
+    let id: UUID
+    var title = ""
+    var isCompleted = false
 }
 EOF
 fi
@@ -553,29 +556,31 @@ if [ "$INCLUDE_SQLITE" = true ]; then
 
 ## Database
 
-This project includes [SQLite.swift](https://github.com/stephencelis/SQLite.swift) for local data persistence.
+This project includes [SQLiteData](https://github.com/pointfreeco/sqlite-data) for local data persistence.
 
 **Quick Start:**
 
 ```swift
-import SQLite
+import SQLiteData
 
-// Initialize database
-let db = try Database(path: "./myapp.db")
+// Define a model
+@Table
+struct User: Sendable {
+    let id: UUID
+    var name = ""
+}
 
-// Define a table
-let users = Table("users")
-let id = Expression<Int64>("id")
-let name = Expression<String>("name")
+// Fetch all users
+@FetchAll var users: [User]
 
-// Insert data
-try db.connection.run(users.insert(name <- "Alice"))
-
-// Query data
-for user in try db.connection.prepare(users) {
-    print("User: \(user[name])")
+// Insert a user
+try database.write { db in
+    try User.insert { User(id: UUID(), name: "Alice") }
+        .execute(db)
 }
 ```
+
+See [SQLiteData documentation](https://github.com/pointfreeco/sqlite-data) for more details.
 
 EOF
 fi
@@ -668,23 +673,32 @@ EOF
 echo -e "${BLUE}Configuring Xcode preferences...${NC}"
 defaults write com.apple.dt.Xcode IDEPreferredPlatformForSwiftPackages -string "macosx" 2>/dev/null || true
 
+# Initialize Git repository if requested
+if [ "$INIT_GIT" = true ]; then
+    echo -e "${GREEN}Initializing Git repository...${NC}"
+    git init -q
+    git add .
+    git commit -q -m "Initial commit"
+fi
+
 # Success message
 echo -e "${GREEN}"
 echo "╔════════════════════════════════════════════════════╗"
 echo "║                                                    ║"
-echo "║            ✅ Project created successfully!         ║"
+echo "║            Project created successfully!           ║"
 echo "║                                                    ║"
 echo "╚════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
 echo -e "${BLUE}Project: ${NC}${GREEN}$PROJECT_NAME${NC}"
 echo -e "${BLUE}Location: ${NC}$(pwd)"
+echo -e "${BLUE}Git Repository: ${NC}$([ "$INIT_GIT" = true ] && echo "Yes" || echo "No")"
 echo -e "${BLUE}Test Framework: ${NC}$TEST_FRAMEWORK"
-echo -e "${BLUE}SQLite.swift: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
+echo -e "${BLUE}SQLiteData: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
 
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "  1. cd $PROJECT_NAME"
 echo "  2. open Package.swift"
 echo "  3. Wait for dependencies to resolve"
-echo "  4. Press Cmd+R to build and run"
+echo "  4. Press Cmd+B to build"
