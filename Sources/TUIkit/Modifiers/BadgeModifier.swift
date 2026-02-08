@@ -39,8 +39,8 @@ public enum BadgeValue: Sendable {
     /// Returns true if the badge should be hidden.
     public var isHidden: Bool {
         switch self {
-        case .int(let count):
-            return count == 0
+        case .int(let intValue):
+            return intValue == 0
         case .string(let string):
             return string == nil || string?.isEmpty == true
         }
@@ -49,8 +49,8 @@ public enum BadgeValue: Sendable {
     /// Returns the display text for the badge.
     public var displayText: String {
         switch self {
-        case .int(let count):
-            return "(\(count))"
+        case .int(let intValue):
+            return "(\(intValue))"
         case .string(let string):
             return string ?? ""
         }
