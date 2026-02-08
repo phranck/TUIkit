@@ -37,7 +37,9 @@
 
 ### 2026-02-08
 
-- [x] **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices, 10 new tests
+- [x] **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices
+- [x] **Test Cleanup**: Removed 5 flaky/tautological tests (732 → 727)
+- [x] **README Update**: Added missing features (List, Table, Section, Toggle, ProgressView, Spinner, ListStyle, Badge)
 
 ### 2026-02-09
 
@@ -98,4 +100,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09

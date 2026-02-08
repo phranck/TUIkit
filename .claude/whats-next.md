@@ -1,18 +1,18 @@
 # TUIkit: What's Next
 
 **Branch:** `main`
-**Tests:** 732 / 112 suites
-**Build:** clean (1 pre-existing flaky Focus test)
+**Tests:** 727 / 112 suites
+**Build:** clean
 
 ## Active
 
-List SwiftUI API Parity: Phase 2c3 (Section Integration) complete
+(none)
 
 ## Next Steps
 
-1. TextInput / TextField component
+1. TextInput / TextField component (high priority)
 2. Multi-Section support in List (TupleView with multiple Sections)
-3. Performance optimization with `.equatable()` on List rows
+3. View Architecture Refactor (List/Table to real `body: some View`)
 
 ---
 
