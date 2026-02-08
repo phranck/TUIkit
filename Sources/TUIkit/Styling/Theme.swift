@@ -23,7 +23,7 @@ import Foundation
 /// paletteManager.setCurrent(SystemPalette(.amber))
 ///
 /// // Use palette colors in views
-/// Text("Hello").foregroundColor(.palette.foreground)
+/// Text("Hello").foregroundStyle(.palette.foreground)
 /// ```
 public protocol Palette: Cyclable {
     // MARK: - Background Colors

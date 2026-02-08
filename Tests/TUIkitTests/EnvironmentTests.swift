@@ -183,19 +183,19 @@ private struct InnerView<Content: View>: View {
     }
 }
 
-// MARK: - ForegroundColor Propagation Tests
+// MARK: - ForegroundStyle Propagation Tests
 
 @MainActor
-@Suite("ForegroundColor Propagation Tests")
-struct ForegroundColorPropagationTests {
+@Suite("ForegroundStyle Propagation Tests")
+struct ForegroundStylePropagationTests {
 
-    @Test("foregroundColor on parent affects Text child")
-    func parentColorAffectsTextChild() {
-        // VStack with foregroundColor should affect Text inside
+    @Test("foregroundStyle on parent affects Text child")
+    func parentStyleAffectsTextChild() {
+        // VStack with foregroundStyle should affect Text inside
         let view = VStack {
             Text("Hello")
         }
-        .foregroundColor(.red)
+        .foregroundStyle(.red)
 
         let context = RenderContext(
             availableWidth: 80,
@@ -211,14 +211,14 @@ struct ForegroundColorPropagationTests {
         #expect(content.contains("\u{1B}[31m"))
     }
 
-    @Test("foregroundColor propagates through multiple levels")
-    func colorPropagatesThroughLevels() {
+    @Test("foregroundStyle propagates through multiple levels")
+    func stylePropagatesThroughLevels() {
         let view = VStack {
             HStack {
                 Text("Nested")
             }
         }
-        .foregroundColor(.green)
+        .foregroundStyle(.green)
 
         let context = RenderContext(
             availableWidth: 80,
@@ -233,12 +233,12 @@ struct ForegroundColorPropagationTests {
         #expect(content.contains("\u{1B}[32m"))
     }
 
-    @Test("explicit Text foregroundColor overrides parent")
-    func explicitColorOverridesParent() {
+    @Test("explicit Text foregroundStyle overrides parent")
+    func explicitStyleOverridesParent() {
         let view = VStack {
-            Text("Override").foregroundColor(.blue)
+            Text("Override").foregroundStyle(.blue)
         }
-        .foregroundColor(.red)
+        .foregroundStyle(.red)
 
         let context = RenderContext(
             availableWidth: 80,
@@ -254,8 +254,8 @@ struct ForegroundColorPropagationTests {
         #expect(!content.contains("\u{1B}[31m"))
     }
 
-    @Test("without foregroundColor, Text uses default")
-    func withoutColorUsesDefault() {
+    @Test("without foregroundStyle, Text uses default")
+    func withoutStyleUsesDefault() {
         let view = Text("Plain")
 
         let context = RenderContext(

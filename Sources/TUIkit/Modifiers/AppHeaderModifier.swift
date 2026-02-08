@@ -22,9 +22,9 @@
 /// }
 /// .appHeader {
 ///     HStack {
-///         Text("My App").bold().foregroundColor(.palette.accent)
+///         Text("My App").bold().foregroundStyle(.palette.accent)
 ///         Spacer()
-///         Text("v1.0").foregroundColor(.palette.foregroundTertiary)
+///         Text("v1.0").foregroundStyle(.palette.foregroundTertiary)
 ///     }
 /// }
 /// ```

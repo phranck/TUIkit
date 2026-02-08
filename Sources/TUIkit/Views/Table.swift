@@ -431,7 +431,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
 
         // Build cells - use environment foreground color, not hardcoded palette
-        let foregroundColor = context.environment.foregroundColor ?? palette.foreground
+        let foregroundColor = context.environment.foregroundStyle ?? palette.foreground
         let cells = zip(columns, columnWidths).map { column, width -> String in
             let value = column.value(for: item)
             let aligned = alignText(value, width: width, alignment: column.alignment)

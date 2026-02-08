@@ -176,7 +176,7 @@ extension Panel where Footer == EmptyView {
 /// Internal view that handles Panel rendering.
 ///
 /// This separation ensures `Panel.body` returns a real `View`, allowing
-/// environment modifiers like `.foregroundColor()` to propagate correctly.
+/// environment modifiers like `.foregroundStyle()` to propagate correctly.
 struct _PanelCore<Content: View, Footer: View>: View, Renderable {
     let title: String
     let content: Content

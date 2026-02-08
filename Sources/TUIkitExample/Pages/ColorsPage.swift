@@ -19,43 +19,43 @@ struct ColorsPage: View {
 
             DemoSection("Standard ANSI Colors") {
                 HStack(spacing: 2) {
-                    Text("Black").foregroundColor(.black).background(.white)
-                    Text("Red").foregroundColor(.red)
-                    Text("Green").foregroundColor(.green)
-                    Text("Yellow").foregroundColor(.yellow)
+                    Text("Black").foregroundStyle(.black).background(.white)
+                    Text("Red").foregroundStyle(.red)
+                    Text("Green").foregroundStyle(.green)
+                    Text("Yellow").foregroundStyle(.yellow)
                 }
                 HStack(spacing: 2) {
-                    Text("Blue").foregroundColor(.blue)
-                    Text("Magenta").foregroundColor(.magenta)
-                    Text("Cyan").foregroundColor(.cyan)
-                    Text("White").foregroundColor(.white)
+                    Text("Blue").foregroundStyle(.blue)
+                    Text("Magenta").foregroundStyle(.magenta)
+                    Text("Cyan").foregroundStyle(.cyan)
+                    Text("White").foregroundStyle(.white)
                 }
             }
 
             DemoSection("Bright Colors") {
                 HStack(spacing: 2) {
-                    Text("Bright Red").foregroundColor(.brightRed)
-                    Text("Bright Green").foregroundColor(.brightGreen)
-                    Text("Bright Yellow").foregroundColor(.brightYellow)
-                    Text("Bright Blue").foregroundColor(.brightBlue)
+                    Text("Bright Red").foregroundStyle(.brightRed)
+                    Text("Bright Green").foregroundStyle(.brightGreen)
+                    Text("Bright Yellow").foregroundStyle(.brightYellow)
+                    Text("Bright Blue").foregroundStyle(.brightBlue)
                 }
             }
 
             DemoSection("RGB Colors (24-bit)") {
                 HStack(spacing: 2) {
-                    Text("Orange").foregroundColor(.rgb(255, 128, 0))
-                    Text("Pink").foregroundColor(.rgb(255, 105, 180))
-                    Text("Teal").foregroundColor(.rgb(0, 128, 128))
-                    Text("Purple").foregroundColor(.rgb(128, 0, 128))
+                    Text("Orange").foregroundStyle(.rgb(255, 128, 0))
+                    Text("Pink").foregroundStyle(.rgb(255, 105, 180))
+                    Text("Teal").foregroundStyle(.rgb(0, 128, 128))
+                    Text("Purple").foregroundStyle(.rgb(128, 0, 128))
                 }
             }
 
             DemoSection("Semantic Colors") {
                 HStack(spacing: 2) {
-                    Text("Primary").foregroundColor(.primary)
-                    Text("Success").foregroundColor(.success)
-                    Text("Warning").foregroundColor(.warning)
-                    Text("Error").foregroundColor(.error)
+                    Text("Primary").foregroundStyle(.primary)
+                    Text("Success").foregroundStyle(.success)
+                    Text("Warning").foregroundStyle(.warning)
+                    Text("Error").foregroundStyle(.error)
                 }
             }
 
@@ -63,9 +63,9 @@ struct ColorsPage: View {
         }
         .appHeader {
             HStack {
-                Text("Colors Demo").bold().foregroundColor(.palette.accent)
+                Text("Colors Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

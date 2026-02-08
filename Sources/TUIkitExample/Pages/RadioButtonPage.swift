@@ -57,16 +57,16 @@ struct RadioButtonPage: View {
             DemoSection("Current Selections") {
                 VStack(spacing: 1) {
                     HStack(spacing: 1) {
-                        Text("Color:").foregroundColor(.palette.foregroundSecondary)
-                        Text(colorChoice).bold().foregroundColor(.palette.accent)
+                        Text("Color:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(colorChoice).bold().foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Size:").foregroundColor(.palette.foregroundSecondary)
-                        Text(sizeChoice).bold().foregroundColor(.palette.accent)
+                        Text("Size:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(sizeChoice).bold().foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Layout:").foregroundColor(.palette.foregroundSecondary)
-                        Text(layoutChoice).bold().foregroundColor(.palette.accent)
+                        Text("Layout:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(layoutChoice).bold().foregroundStyle(.palette.accent)
                     }
                 }
             }
@@ -86,9 +86,9 @@ struct RadioButtonPage: View {
         }
         .appHeader {
             HStack {
-                Text("Radio Buttons Demo").bold().foregroundColor(.palette.accent)
+                Text("Radio Buttons Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }
