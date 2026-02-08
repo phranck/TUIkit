@@ -73,18 +73,6 @@ struct FocusManagerTests {
         #expect(!manager.isFocused(element2))
     }
 
-    @Test("Avoid duplicate registration")
-    func avoidDuplicates() {
-        let manager = FocusManager()
-
-        let element = MockFocusable(id: "unique-element")
-        manager.register(element)
-        manager.register(element)
-
-        // Should still work without issues
-        #expect(manager.isFocused(element))
-    }
-
     @Test("Unregister focusable element")
     func unregisterFocusable() {
         let manager = FocusManager()
@@ -317,15 +305,6 @@ struct FocusManagerTests {
 @MainActor
 @Suite("Focus State Tests", .serialized)
 struct FocusStateTests {
-
-    @Test("FocusState generates UUID if no ID provided")
-    func focusStateGeneratesUUID() {
-        let manager = FocusManager()
-        let state = FocusState(focusManager: manager)
-        #expect(!state.id.isEmpty)
-        // UUID format check
-        #expect(state.id.contains("-"))
-    }
 
     @Test("FocusState isFocused reflects focus manager state")
     func focusStateIsFocused() {

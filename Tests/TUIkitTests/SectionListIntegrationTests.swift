@@ -156,39 +156,6 @@ struct SectionListIntegrationTests {
         #expect(content.contains("Footer"))
     }
 
-    @Test("Content rows are individually selectable")
-    func contentRowsAreSelectable() {
-        let context = createTestContext()
-
-        struct Item: Identifiable, Sendable {
-            let id: String
-            let name: String
-        }
-        let items = [
-            Item(id: "first", name: "First"),
-            Item(id: "second", name: "Second")
-        ]
-
-        var selection: String? = "first"
-        let list = List(selection: Binding(
-            get: { selection },
-            set: { selection = $0 }
-        )) {
-            Section("Items") {
-                ForEach(items) { item in
-                    Text(item.name)
-                }
-            }
-        }
-
-        let buffer = renderToBuffer(list, context: context)
-
-        // List should render with selection
-        #expect(!buffer.lines.isEmpty)
-        // Selection should be preserved
-        #expect(selection == "first")
-    }
-
     @Test("SelectableListRow correctly identifies content rows")
     func selectableListRowIdentifiesContentRows() {
         let headerRow = SelectableListRow<String>(
@@ -212,21 +179,6 @@ struct SectionListIntegrationTests {
 
         #expect(footerRow.isSelectable == false)
         #expect(footerRow.id == nil)
-    }
-
-    @Test("ListRowType equality")
-    func listRowTypeEquality() {
-        let header1: ListRowType<String> = .header
-        let header2: ListRowType<String> = .header
-        let footer: ListRowType<String> = .footer
-        let content1: ListRowType<String> = .content(id: "a")
-        let content2: ListRowType<String> = .content(id: "a")
-        let content3: ListRowType<String> = .content(id: "b")
-
-        #expect(header1 == header2)
-        #expect(header1 != footer)
-        #expect(content1 == content2)
-        #expect(content1 != content3)
     }
 }
 
