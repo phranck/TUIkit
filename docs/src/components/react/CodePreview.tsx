@@ -162,25 +162,32 @@ function tokenizeSegment(segment: string) {
         </span>
       );
     } else if (match[3]) {
-      // Modifier (.bold, .foregroundColor): add dot+name, then the ( back
+      // KeyPath (\.self)
       parts.push(
         <span key={match.index} style={{ color: HIGHLIGHT.modifier }}>
           {match[3]}
         </span>
       );
-      parts.push("(");
     } else if (match[4]) {
-      // Keyword
+      // Modifier (.bold, .foregroundColor): add dot+name, then the ( back
       parts.push(
-        <span key={match.index} style={{ color: HIGHLIGHT.keyword }}>
+        <span key={match.index} style={{ color: HIGHLIGHT.modifier }}>
           {match[4]}
         </span>
       );
+      parts.push("(");
     } else if (match[5]) {
+      // Keyword
+      parts.push(
+        <span key={match.index} style={{ color: HIGHLIGHT.keyword }}>
+          {match[5]}
+        </span>
+      );
+    } else if (match[6]) {
       // Type
       parts.push(
         <span key={match.index} style={{ color: HIGHLIGHT.type }}>
-          {match[5]}
+          {match[6]}
         </span>
       );
     }
