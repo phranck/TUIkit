@@ -7,6 +7,7 @@ set -e
 
 VERSION="1.0.0"
 SCRIPT_NAME="tuikit"
+TUIKIT_URL="https://raw.githubusercontent.com/phranck/TUIkit/main/project-template/tuikit"
 
 # Colors (friendly pastels)
 CYAN='\033[0;96m'
@@ -52,15 +53,6 @@ detect_install_path() {
     esac
 }
 
-# Get script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Check if tuikit script exists
-if [ ! -f "$SCRIPT_DIR/$SCRIPT_NAME" ]; then
-    echo -e "${RED}Error:${NC} $SCRIPT_NAME script not found in $SCRIPT_DIR"
-    exit 1
-fi
-
 # Detect install path
 INSTALL_PATH=$(detect_install_path)
 
@@ -94,25 +86,28 @@ detect_shell_config() {
 
 # Install function
 install() {
+    echo ""
     echo -e "${CYAN}"
     echo "  ╭──────────────────────────────────────╮"
     echo "  │                                      │"
-    echo "  │         TUIkit CLI Installer         │"
-    echo "  │                v${VERSION}                │"
+    echo "  │       TUIkit CLI Installer           │"
     echo "  │                                      │"
     echo "  ╰──────────────────────────────────────╯"
     echo -e "${NC}"
     echo -e "  ${DIM}Installing to:${NC} $INSTALL_PATH"
 
-    # Copy script
-    if [ -w "$INSTALL_PATH" ]; then
-        cp "$SCRIPT_DIR/$SCRIPT_NAME" "$INSTALL_PATH/"
-        chmod +x "$INSTALL_PATH/$SCRIPT_NAME"
+    # Download tuikit script from GitHub
+    echo -e "  ${DIM}Downloading tuikit...${NC}"
+    if command -v curl &> /dev/null; then
+        curl -fsSL "$TUIKIT_URL" -o "$INSTALL_PATH/$SCRIPT_NAME"
+    elif command -v wget &> /dev/null; then
+        wget -q "$TUIKIT_URL" -O "$INSTALL_PATH/$SCRIPT_NAME"
     else
-        echo -e "  ${DIM}Requesting sudo access...${NC}"
-        sudo cp "$SCRIPT_DIR/$SCRIPT_NAME" "$INSTALL_PATH/"
-        sudo chmod +x "$INSTALL_PATH/$SCRIPT_NAME"
+        echo -e "  ${RED}Error:${NC} curl or wget required"
+        exit 1
     fi
+
+    chmod +x "$INSTALL_PATH/$SCRIPT_NAME"
 
     # Create uninstall script
     cat > "$INSTALL_PATH/${SCRIPT_NAME}-uninstall" << 'UNINSTALL_SCRIPT'
@@ -121,7 +116,7 @@ INSTALL_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Uninstalling tuikit from $INSTALL_PATH..."
 rm -f "$INSTALL_PATH/tuikit"
 rm -f "$INSTALL_PATH/tuikit-uninstall"
-echo "✅ TUIkit CLI uninstalled successfully"
+echo "Done! TUIkit CLI removed."
 UNINSTALL_SCRIPT
 
     chmod +x "$INSTALL_PATH/${SCRIPT_NAME}-uninstall"
