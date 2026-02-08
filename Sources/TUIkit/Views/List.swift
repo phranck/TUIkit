@@ -74,7 +74,7 @@ struct ListRow<ID: Hashable> {
 ///
 /// When content extends beyond the viewport, scroll indicators (arrows)
 /// appear at the top and/or bottom edges inside the container.
-public struct List<SelectionValue: Hashable, Content: View, Footer: View>: View {
+public struct List<SelectionValue: Hashable & Sendable, Content: View, Footer: View>: View {
     /// The optional title displayed in the border.
     let title: String?
 
@@ -400,7 +400,7 @@ extension List {
 // MARK: - List Core (Internal Rendering)
 
 /// Internal core view that handles list rendering inside a ContainerView.
-private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>: View, Renderable {
+private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: View>: View, Renderable {
     let title: String?
     let content: Content
     let footer: Footer?
@@ -464,7 +464,22 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
             handler.itemCount = rows.count
             handler.viewportHeight = viewportHeight
             handler.canBeFocused = !isDisabled
-            handler.itemIDs = rows.map { AnyHashable($0.id) }
+
+            // Build selectableIndices set and itemIDs from typed rows
+            var selectableIndices = Set<Int>()
+            var itemIDs: [AnyHashable] = []
+            for (index, row) in rows.enumerated() {
+                if let id = row.id {
+                    // Content row: use actual ID
+                    itemIDs.append(AnyHashable(id))
+                    selectableIndices.insert(index)
+                } else {
+                    // Header/footer: use index as placeholder (never selected)
+                    itemIDs.append(AnyHashable(index))
+                }
+            }
+            handler.itemIDs = itemIDs
+            handler.selectableIndices = selectableIndices
 
             // Set up selection bindings
             if let binding = singleSelection {
@@ -514,7 +529,14 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
             }
 
             // Render each visible row with alternating colors based on list style
+            // Track section-relative content index for alternating colors
+            var sectionContentIndex = 0
             for (rowIndex, row) in visibleRows {
+                // Reset section content index on header
+                if case .header = row.type {
+                    sectionContentIndex = 0
+                }
+
                 let isFocused = handler.isFocused(at: rowIndex) && listHasFocus
                 let isSelected = handler.isSelected(at: rowIndex)
 
@@ -523,12 +545,17 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
                     isFocused: isFocused,
                     isSelected: isSelected,
                     rowWidth: rowWidth,
-                    rowIndex: rowIndex,
+                    sectionContentIndex: sectionContentIndex,
                     style: style,
                     context: context,
                     palette: palette
                 )
                 lines.append(contentsOf: styledLines)
+
+                // Increment section content index only for content rows
+                if case .content = row.type {
+                    sectionContentIndex += 1
+                }
             }
 
             // Bottom scroll indicator
@@ -563,44 +590,104 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
 
     // MARK: - Row Extraction
 
-    private func extractRows(from content: Content, context: RenderContext) -> [ListRow<SelectionValue>] {
+    private func extractRows(from content: Content, context: RenderContext) -> [SelectableListRow<SelectionValue>] {
+        // Check for SectionRowExtractor first (Section view)
+        // This must come before ChildInfoProvider because Section conforms to both
+        if let section = content as? SectionRowExtractor {
+            return extractSectionRows(from: section, context: context)
+        }
+
+        // Check for ListRowExtractor (ForEach)
         if let extractor = content as? ListRowExtractor {
-            return extractor.extractListRows(context: context)
+            let rows: [ListRow<SelectionValue>] = extractor.extractListRows(context: context)
+            return rows.map { SelectableListRow(type: .content(id: $0.id), buffer: $0.buffer) }
         }
 
+        // Check for ChildInfoProvider (handles TupleView with multiple children)
         if let provider = content as? ChildInfoProvider {
-            let infos = provider.childInfos(context: context)
-            return infos.enumerated().compactMap { index, info -> ListRow<SelectionValue>? in
-                guard let buffer = info.buffer else { return nil }
-                if let indexID = index as? SelectionValue {
-                    return ListRow(id: indexID, buffer: buffer)
-                }
-                return nil
-            }
+            return extractFromChildren(provider: provider, context: context)
         }
 
+        // Fallback: render as single content row
         let buffer = TUIkit.renderToBuffer(content, context: context)
         if let zeroID = 0 as? SelectionValue {
-            return [ListRow(id: zeroID, buffer: buffer)]
+            return [SelectableListRow(type: .content(id: zeroID), buffer: buffer)]
         }
 
         return []
     }
 
+    /// Extracts rows from a ChildInfoProvider, handling Sections specially.
+    private func extractFromChildren(
+        provider: ChildInfoProvider,
+        context: RenderContext
+    ) -> [SelectableListRow<SelectionValue>] {
+        var result: [SelectableListRow<SelectionValue>] = []
+        let infos = provider.childInfos(context: context)
+
+        for (index, info) in infos.enumerated() {
+            guard let buffer = info.buffer else { continue }
+
+            // Try to extract original view for Section detection
+            // ChildInfo only has buffer, so we check the provider type
+            if let indexID = index as? SelectionValue {
+                result.append(SelectableListRow(type: .content(id: indexID), buffer: buffer))
+            }
+        }
+
+        return result
+    }
+
+    /// Extracts typed rows from a Section (header + content + footer).
+    private func extractSectionRows(
+        from section: SectionRowExtractor,
+        context: RenderContext
+    ) -> [SelectableListRow<SelectionValue>] {
+        var rows: [SelectableListRow<SelectionValue>] = []
+        let info = section.extractSectionInfo(context: context)
+
+        // Header (non-selectable)
+        if let headerBuffer = info.headerBuffer {
+            rows.append(SelectableListRow(type: .header, buffer: headerBuffer))
+        }
+
+        // Content rows (selectable)
+        if let extractor = section as? ListRowExtractor {
+            let contentRows: [ListRow<SelectionValue>] = extractor.extractListRows(context: context)
+            for row in contentRows {
+                rows.append(SelectableListRow(type: .content(id: row.id), buffer: row.buffer))
+            }
+        } else {
+            // Fallback: render content as single row (if Section content is not ForEach)
+            // Use the content buffer from SectionInfo
+            // Note: This row is still selectable but uses index-based ID
+            if !info.contentBuffer.lines.isEmpty, let indexID = 0 as? SelectionValue {
+                rows.append(SelectableListRow(type: .content(id: indexID), buffer: info.contentBuffer))
+            }
+        }
+
+        // Footer (non-selectable)
+        if let footerBuffer = info.footerBuffer {
+            rows.append(SelectableListRow(type: .footer, buffer: footerBuffer))
+        }
+
+        return rows
+    }
+
     // MARK: - Visible Row Calculation
 
     private func calculateVisibleRows(
-        rows: [ListRow<SelectionValue>],
+        rows: [SelectableListRow<SelectionValue>],
         handler: ItemListHandler,
         viewportHeight: Int
-    ) -> [(index: Int, row: ListRow<SelectionValue>)] {
-        var result: [(Int, ListRow<SelectionValue>)] = []
+    ) -> [(index: Int, row: SelectableListRow<SelectionValue>)] {
+        var result: [(Int, SelectableListRow<SelectionValue>)] = []
         var linesUsed = 0
         var currentIndex = handler.scrollOffset
 
         while currentIndex < rows.count && linesUsed < viewportHeight {
             let row = rows[currentIndex]
-            let rowHeight = row.height
+            let rowHeight = row.buffer.height
 
             if linesUsed + rowHeight <= viewportHeight {
                 result.append((currentIndex, row))
@@ -618,51 +705,60 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
     // MARK: - Row Rendering
 
     private func renderRow(
-        row: ListRow<SelectionValue>,
+        row: SelectableListRow<SelectionValue>,
         isFocused: Bool,
         isSelected: Bool,
         rowWidth: Int,
-        rowIndex: Int,
+        sectionContentIndex: Int,
         style: any ListStyle,
         context: RenderContext,
         palette: any Palette
     ) -> [String] {
-        // Determine visual state - only affects background
-        // The row content keeps its own styling from the child views
+        // Determine visual state based on row type
+        // Headers and footers never show focus/selection background
         var backgroundColor: Color?
 
-        if isFocused && isSelected {
-            // Focused + Selected: pulsing accent background (highest priority)
-            let dimAccent = palette.accent.opacity(0.35)
-            backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
-        } else if isFocused {
-            // Focused only: highlight background bar
-            backgroundColor = palette.focusBackground
-        } else if isSelected {
-            // Selected only: subtle background (darker than focus)
-            backgroundColor = palette.accent.opacity(0.25)
-        } else if style.alternatingRowColors {
-            // Apply alternating row colors from list style
-            if rowIndex % 2 == 0 {
-                // Even rows: subtle accent background
-                backgroundColor = palette.accent.opacity(0.15)
+        switch row.type {
+        case .header, .footer:
+            // Headers/footers: no focus/selection/alternating background
+            // They are already styled with dim via SectionInfo extraction
+            backgroundColor = nil
+
+        case .content:
+            // Content rows: apply focus/selection/alternating logic
+            if isFocused && isSelected {
+                // Focused + Selected: pulsing accent background (highest priority)
+                let dimAccent = palette.accent.opacity(0.35)
+                backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+            } else if isFocused {
+                // Focused only: highlight background bar
+                backgroundColor = palette.focusBackground
+            } else if isSelected {
+                // Selected only: subtle background (darker than focus)
+                backgroundColor = palette.accent.opacity(0.25)
+            } else if style.alternatingRowColors {
+                // Apply alternating row colors using section-relative index
+                if sectionContentIndex.isMultiple(of: 2) {
+                    // Even rows within section: subtle accent background
+                    backgroundColor = palette.accent.opacity(0.15)
+                } else {
+                    // Odd rows within section: no background
+                    backgroundColor = nil
+                }
             } else {
-                // Odd rows: no background
+                // No background
                 backgroundColor = nil
             }
-        } else {
-            // No background
-            backgroundColor = nil
         }
 
-        // Check for badge in environment (on the first line only)
+        // Check for badge in environment (only for content rows, on first line only)
         let badge = context.environment.badgeValue
-        let shouldRenderBadge = badge != nil && !badge!.isHidden
+        let shouldRenderBadge = badge != nil && !badge!.isHidden && row.isSelectable
 
         // Render each line - row content keeps its own styling
         // All rows have padding from style, padded to same total width
         // Background bar covers the full width including padding
-        return row.buffer.lines.enumerated().map { (lineIndex, line) in
+        return row.buffer.lines.enumerated().map { lineIndex, line in
             let lineLength = line.strippedLength
 
             // First line: make room for badge if present
