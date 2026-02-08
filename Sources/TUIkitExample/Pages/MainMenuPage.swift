@@ -27,9 +27,9 @@ struct FeatureBox: View, Equatable {
         VStack {
             Text(title)
                 .bold()
-                .foregroundColor(.palette.accent)
+                .foregroundStyle(.palette.accent)
             Text(subtitle)
-                .foregroundColor(.palette.foregroundSecondary)
+                .foregroundStyle(.palette.foregroundSecondary)
         }
         .padding(EdgeInsets(horizontal: 2, vertical: 1))
         .border(color: .palette.border)
@@ -97,12 +97,12 @@ struct MainMenuPage: View {
         .appHeader {
             VStack {
                 HStack {
-                    Text("TUIkit Example App").bold().foregroundColor(.palette.accent)
+                    Text("TUIkit Example App").bold().foregroundStyle(.palette.accent)
                     Spacer()
-                    Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                    Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
                 }
                 Text("A SwiftUI-like framework for Terminal User Interfaces")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
                     .italic()
             }
         }

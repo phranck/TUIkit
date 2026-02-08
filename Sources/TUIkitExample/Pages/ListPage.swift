@@ -79,16 +79,16 @@ struct ListPage: View {
             DemoSection("Current Selections") {
                 VStack(spacing: 1) {
                     HStack(spacing: 1) {
-                        Text("Single:").foregroundColor(.palette.foregroundSecondary)
+                        Text("Single:").foregroundStyle(.palette.foregroundSecondary)
                         Text(singleSelection ?? "(none)")
                             .bold()
-                            .foregroundColor(.palette.accent)
+                            .foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Multi:").foregroundColor(.palette.foregroundSecondary)
+                        Text("Multi:").foregroundStyle(.palette.foregroundSecondary)
                         Text(multiSelection.isEmpty ? "(none)" : multiSelection.sorted().joined(separator: ", "))
                             .bold()
-                            .foregroundColor(.palette.accent)
+                            .foregroundStyle(.palette.accent)
                     }
                 }
             }
@@ -111,9 +111,9 @@ struct ListPage: View {
         }
         .appHeader {
             HStack {
-                Text("List Demo").bold().foregroundColor(.palette.accent)
+                Text("List Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }
