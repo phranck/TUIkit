@@ -48,7 +48,7 @@ struct TablePage: View {
     @State var multiSelection: Set<String> = []
 
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             Text("File Browser (Single Selection)")
                 .foregroundStyle(.palette.foregroundSecondary)
@@ -80,7 +80,7 @@ struct TablePage: View {
             }
 
             DemoSection("Current Selections") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 1) {
                         Text("Single:").foregroundStyle(.palette.foregroundSecondary)
                         Text(singleSelection ?? "(none)")

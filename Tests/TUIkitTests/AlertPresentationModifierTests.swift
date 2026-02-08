@@ -68,10 +68,8 @@ struct AlertPresentationModifierTests {
         let isPresented = Binding.constant(true)
         let view = Text("Base")
             .alert("Warning", isPresented: isPresented, actions: {
-                VStack {
-                    Text("Yes")
-                    Text("No")
-                }
+                Button("Yes") { }
+                Button("No") { }
             }, message: { Text("Are you sure?") })
 
         let buffer = render(view)
@@ -88,7 +86,7 @@ struct AlertPresentationModifierTests {
         let isPresented = Binding.constant(true)
         let view = Text("Base")
             .alert("Just Title", isPresented: isPresented, actions: {
-                Text("OK")
+                Button("OK") { }
             })
 
         let buffer = render(view)

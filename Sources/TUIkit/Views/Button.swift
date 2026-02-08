@@ -6,6 +6,36 @@
 
 import Foundation
 
+// MARK: - Button Role
+
+/// A value that describes the purpose of a button.
+///
+/// Use button roles to give buttons a semantic meaning that affects
+/// their appearance and behavior. In alerts and dialogs, buttons are
+/// automatically ordered based on their role.
+///
+/// - `cancel`: A button that cancels the current operation. Placed on the left.
+/// - `destructive`: A button that deletes data or performs an irreversible action.
+public struct ButtonRole: Equatable, Sendable {
+    let rawValue: String
+
+    private init(_ rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    /// A role that indicates a cancellation action.
+    ///
+    /// Cancel buttons are placed on the left side in alerts and dialogs.
+    /// Pressing ESC triggers the cancel action if one exists.
+    public static let cancel = Self("cancel")
+
+    /// A role that indicates a destructive action.
+    ///
+    /// Destructive buttons are styled with the error color to indicate danger.
+    /// Use for buttons that delete user data or perform irreversible operations.
+    public static let destructive = Self("destructive")
+}
+
 // MARK: - Button Style
 
 /// Defines the visual style of a button.
@@ -110,6 +140,13 @@ public struct Button: View {
     /// The action to perform when pressed.
     let action: () -> Void
 
+    /// The button's semantic role.
+    ///
+    /// Roles affect button ordering in alerts/dialogs and can trigger
+    /// automatic styling. Cancel buttons appear on the left; destructive
+    /// buttons use error coloring.
+    let role: ButtonRole?
+
     /// The normal (unfocused) style.
     let style: ButtonStyle
 
@@ -141,6 +178,7 @@ public struct Button: View {
     ) {
         self.label = label
         self.action = action
+        self.role = nil
         self.style = style
         // Use label as default focusID for stability across render cycles
         self.focusID = focusID ?? "button-\(label)"
@@ -155,6 +193,53 @@ public struct Button: View {
                 isBold: true,
                 horizontalPadding: style.horizontalPadding
             )
+    }
+
+    /// Creates a button with an optional role for semantic meaning.
+    ///
+    /// Use this initializer to create buttons with roles like `.cancel` or `.destructive`.
+    /// The role affects button ordering in alerts and can influence styling.
+    ///
+    /// This matches the SwiftUI signature:
+    /// `init(_ title: S, role: ButtonRole?, action: () -> Void)`
+    ///
+    /// - Parameters:
+    ///   - label: The button's label text.
+    ///   - role: An optional semantic role describing the button.
+    ///   - focusID: The unique focus identifier (default: auto-generated).
+    ///   - action: The action to perform when pressed.
+    public init(
+        _ label: String,
+        role: ButtonRole?,
+        focusID: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.label = label
+        self.action = action
+        self.role = role
+        self.focusID = focusID ?? "button-\(label)"
+        self.isDisabled = false
+
+        // Style based on role
+        switch role {
+        case .destructive:
+            self.style = .destructive
+            self.focusedStyle = ButtonStyle(
+                foregroundColor: .palette.error,
+                isBold: true,
+                horizontalPadding: 1
+            )
+        case .cancel:
+            self.style = .default
+            self.focusedStyle = ButtonStyle(
+                foregroundColor: nil,
+                isBold: true,
+                horizontalPadding: 1
+            )
+        default:
+            self.style = .default
+            self.focusedStyle = ButtonStyle(isBold: true, horizontalPadding: 1)
+        }
     }
 
     public var body: Never {
@@ -244,12 +329,32 @@ extension Button {
     /// - Returns: A new button with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Button {
         Button(
-            label,
+            label: label,
+            action: action,
+            role: role,
             style: style,
             focusedStyle: focusedStyle,
             focusID: focusID,
-            isDisabled: disabled,
-            action: action
+            isDisabled: disabled
         )
+    }
+
+    /// Internal initializer with all properties.
+    private init(
+        label: String,
+        action: @escaping () -> Void,
+        role: ButtonRole?,
+        style: ButtonStyle,
+        focusedStyle: ButtonStyle,
+        focusID: String,
+        isDisabled: Bool
+    ) {
+        self.label = label
+        self.action = action
+        self.role = role
+        self.style = style
+        self.focusedStyle = focusedStyle
+        self.focusID = focusID
+        self.isDisabled = isDisabled
     }
 }

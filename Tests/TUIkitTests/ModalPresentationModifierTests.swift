@@ -109,7 +109,7 @@ struct ModalPresentationModifierTests {
         let view = Text("Base")
             .modal(isPresented: isPresented) {
                 Alert(title: "Warning", message: "Sure?") {
-                    Text("Yes")
+                    Button("Yes") { }
                 }
             }
 
