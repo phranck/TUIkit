@@ -4,12 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
-
-/// Tracks whether the listRowSeparator warning has been logged.
-@MainActor
-private var listRowSeparatorWarningLogged = false
-
 /// A stub modifier for list row separators.
 ///
 /// This modifier exists for SwiftUI API compatibility but has no visual effect
@@ -97,14 +91,9 @@ extension Visibility: Equatable {}
 
 extension ListRowSeparatorModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Log warning once per session.
-        if !listRowSeparatorWarningLogged {
-            listRowSeparatorWarningLogged = true
-            // Use stderr to avoid interfering with terminal UI.
-            fputs("TUIkit warning: .listRowSeparator() has no effect. Separators are not supported in terminal UIs.\n", stderr)
-        }
-
-        // Return content unchanged.
+        // This is a stub modifier for SwiftUI API compatibility.
+        // List row separators are not supported in terminal UIs.
+        // We silently return content unchanged (no warning to avoid noise).
         return TUIkit.renderToBuffer(content, context: context)
     }
 }
