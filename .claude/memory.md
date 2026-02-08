@@ -1,8 +1,8 @@
-# TUIKit Memory
+# TUIkit Memory
 
 ## Project Overview
 
-**Name:** TUIKit
+**Name:** TUIkit
 **Purpose:** Terminal UI framework for Swift (SwiftUI-inspired API)
 **Repo:** github.com/phranck/TUIkit
 **Docs:** tuikit.layered.work (Astro + DocC)
@@ -10,11 +10,12 @@
 ### Package Structure
 
 ```
-TUIKit/
+TUIkit/
 ├── Sources/TUIkit/          # Main library
 ├── Sources/TUIkitExample/   # Demo app
-├── Tests/TUIkitTests/       # Swift Testing (649 tests)
+├── Tests/TUIkitTests/       # Swift Testing (666 tests)
 ├── docs/                    # Astro site + DocC
+├── xcode-template/          # Xcode project template
 └── plans/                   # Feature plans
 ```
 
@@ -360,24 +361,24 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 
 ## Current State
 
-**Branch:** `feature/list-table-components` (PR #84 open)
-**Tests:** 649 / 103 suites
+**Branch:** `feature/list-table-improvements`
+**Tests:** 666 / 104 suites
 **Build:** clean
-**Lint:** 2 warnings (function_body_length in List/Table)
+**Lint:** 0 warnings
 
 ### Recent (Feb 2026)
 
+- Xcode project template created (TUIkit App.xctemplate)
 - List component implemented (with ItemListHandler)
 - Table component implemented (with column support)
 - ContainerView integration for bordered containers
-- Identified View architecture issue: need full SwiftUI conformity
 
 ### Next
 
-- Merge PR #84
+- Commit Xcode template
+- TextInput / TextField component
 - View Architecture Refactor (plan: `2026-02-07-view-architecture-refactor.md`)
-- Convert all controls to real `body: some View`
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-08

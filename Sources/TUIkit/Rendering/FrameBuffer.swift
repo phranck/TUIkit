@@ -63,12 +63,19 @@ public struct FrameBuffer {
         self.width = text.strippedLength
     }
 
-    /// Creates an empty buffer with the specified height.
+    /// Creates a spacer buffer with the specified height.
     ///
-    /// - Parameter height: The number of empty lines.
+    /// The buffer contains lines with a single space character to ensure
+    /// it is not considered "empty" by layout algorithms. This is important
+    /// for Spacer views which need to occupy vertical space even without
+    /// visible content.
+    ///
+    /// - Parameter height: The number of lines.
     public init(emptyWithHeight height: Int) {
-        self.lines = Array(repeating: "", count: height)
-        self.width = 0
+        // Use a single space instead of empty string so the buffer
+        // is not considered "empty" by appendVertically
+        self.lines = Array(repeating: " ", count: height)
+        self.width = 1
     }
 
     // MARK: - Combining Arrays

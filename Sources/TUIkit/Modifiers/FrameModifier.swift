@@ -25,13 +25,28 @@ public enum FrameDimension: Equatable, Sendable {
 /// This view handles min/max constraints and renders content with
 /// the appropriate available space.
 public struct FlexibleFrameView<Content: View>: View {
+    /// The content view to constrain.
     let content: Content
+
+    /// The minimum width in characters, or nil for no minimum.
     let minWidth: Int?
+
+    /// The ideal width in characters, or nil to use intrinsic size.
     let idealWidth: Int?
+
+    /// The maximum width constraint, or nil for no maximum.
     let maxWidth: FrameDimension?
+
+    /// The minimum height in lines, or nil for no minimum.
     let minHeight: Int?
+
+    /// The ideal height in lines, or nil to use intrinsic size.
     let idealHeight: Int?
+
+    /// The maximum height constraint, or nil for no maximum.
     let maxHeight: FrameDimension?
+
+    /// The alignment of the content within the frame.
     let alignment: Alignment
 
     public var body: Never {
