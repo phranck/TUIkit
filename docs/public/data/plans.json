@@ -1,24 +1,6 @@
 {
-  "generated": "2026-02-08T22:21:46.128Z",
+  "generated": "2026-02-08T23:26:49.739Z",
   "open": [
-    {
-      "date": "2026-02-08",
-      "slug": "badge-liststyle-phase2",
-      "title": "Badge & ListStyle Implementation (List SwiftUI API Parity Phase 2)",
-      "preface": "This plan implements the second phase of SwiftUI API Parity for List: the `.badge()` modifier and `.listStyle()` support. Badge adds decorative count/label badges to list rows (Int, Text, String overloads). ListStyle enables PlainListStyle and InsetGroupedListStyle to control borders, padding, and row appearance. Both integrate via TUIkit's environment system and follow existing pattern conventions. Section integration is deferred to Phase 3.\n\n---"
-    },
-    {
-      "date": "2026-02-08",
-      "slug": "list-swiftui-api-parity",
-      "title": "List SwiftUI API Parity",
-      "preface": "TUIkit's List component gains SwiftUI API parity with Section grouping, badges, list styles, selection control, and alternating row backgrounds. Section enables hierarchical organization with headers and footers. The `.badge()` modifier displays counts or labels right-aligned in rows. ListStyle provides visual variants like `.plain` and `.insetGrouped`. Per-item selection can be disabled via `.selectionDisabled()`."
-    },
-    {
-      "date": "2026-02-08",
-      "slug": "section-integration-phase2c",
-      "title": "Section Integration with List (List SwiftUI API Parity Phase 2c)",
-      "preface": "Phase 2c integrates Section headers/footers into List's row rendering while maintaining SwiftUI API parity. The key insight: Section headers/footers are non-selectable visual separators, while content items within sections are individually selectable and focusable. Current architecture treats entire Sections as single rows; this plan flattens Section structure into individual row types with focus navigation that skips non-selectable headers/footers. Alternating row colors now restart per section.\n\n---"
-    },
     {
       "date": "2026-02-07",
       "slug": "view-architecture-refactor",
@@ -33,6 +15,18 @@
     }
   ],
   "done": [
+    {
+      "date": "2026-02-08",
+      "slug": "list-swiftui-api-parity",
+      "title": "List SwiftUI API Parity",
+      "preface": "TUIkit's List component gains SwiftUI API parity with Section grouping, badges, list styles, selection control, and alternating row backgrounds. Section enables hierarchical organization with headers and footers. The `.badge()` modifier displays counts or labels right-aligned in rows. ListStyle provides visual variants like `.plain` and `.insetGrouped`. Per-item selection can be disabled via `.selectionDisabled()`. The `.listRowSeparator()` modifier is implemented as a stub with a warning since separators are not visually supported in TUIkit."
+    },
+    {
+      "date": "2026-02-08",
+      "slug": "section-integration-phase2c",
+      "title": "Section Integration with List (List SwiftUI API Parity Phase 2c)",
+      "preface": "Phase 2c integrates Section headers/footers into List's row rendering while maintaining SwiftUI API parity. The key insight: Section headers/footers are non-selectable visual separators, while content items within sections are individually selectable and focusable. Current architecture treats entire Sections as single rows; this plan flattens Section structure into individual row types with focus navigation that skips non-selectable headers/footers. Alternating row colors now restart per section."
+    },
     {
       "date": "2026-02-07",
       "slug": "astro-dashboard",
