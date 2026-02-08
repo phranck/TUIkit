@@ -697,8 +697,17 @@ echo -e "${BLUE}Test Framework: ${NC}$TEST_FRAMEWORK"
 echo -e "${BLUE}SQLiteData: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
 
 echo ""
-echo -e "${YELLOW}Next steps:${NC}"
-echo "  1. cd $PROJECT_NAME"
-echo "  2. open Package.swift"
-echo "  3. Wait for dependencies to resolve"
-echo "  4. Press Cmd+B to build"
+read -p "Open project in Xcode? [Y/n] " -n 1 -r
+echo ""
+
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    open Package.swift
+    echo -e "${GREEN}Opening in Xcode...${NC}"
+else
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo "  1. cd $PROJECT_NAME"
+    echo "  2. open Package.swift"
+    echo "  3. Wait for dependencies to resolve"
+    echo "  4. Press Cmd+B to build"
+fi
