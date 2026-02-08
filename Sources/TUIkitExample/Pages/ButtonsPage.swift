@@ -19,7 +19,7 @@ struct ButtonsPage: View {
     @State var clickCount: Int = 0
 
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("Interactive Counter (@State)") {
                 HStack(spacing: 2) {

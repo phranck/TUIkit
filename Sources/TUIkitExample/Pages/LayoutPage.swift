@@ -15,7 +15,7 @@ import TUIkit
 /// - Padding and frame modifiers
 struct LayoutPage: View {
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("VStack (Vertical)") {
                 // Box uses appearance default borderStyle

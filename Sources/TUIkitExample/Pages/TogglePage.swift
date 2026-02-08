@@ -21,24 +21,24 @@ struct TogglePage: View {
     @State var analitycsEnabled: Bool = true
 
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("Toggle Style (Slider)") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     Toggle("Enable Notifications", isOn: $notificationsEnabled, style: .toggle)
                     Toggle("Dark Mode", isOn: $darkModeEnabled, style: .toggle)
                 }
             }
 
             DemoSection("Checkbox Style") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     Toggle("Show Hidden Files", isOn: $advancedOptionsEnabled, style: .checkbox)
                     Toggle("Send Analytics", isOn: $analitycsEnabled, style: .checkbox)
                 }
             }
 
             DemoSection("Disabled Toggles") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     Toggle("Enabled Toggle", isOn: $notificationsEnabled, style: .toggle)
                     Toggle("Disabled Toggle", isOn: Binding(get: { false }, set: { _ in }), style: .toggle)
                         .disabled()
@@ -48,7 +48,7 @@ struct TogglePage: View {
             }
 
             DemoSection("State Summary") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 1) {
                         Text("Notifications:").foregroundStyle(.palette.foregroundSecondary)
                         Text(notificationsEnabled ? "[●○]" : "[○●]").foregroundStyle(.palette.accent)

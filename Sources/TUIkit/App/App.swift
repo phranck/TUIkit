@@ -137,9 +137,10 @@ extension AppRunner {
             signals.requestRerender()
         }
 
-        // Reset pulse animation when focus changes
-        focusManager.onFocusChange = { [weak pulseTimer] in
+        // Reset pulse animation and trigger re-render when focus changes
+        focusManager.onFocusChange = { [weak pulseTimer, weak appState] in
             pulseTimer?.reset()
+            appState?.setNeedsRender()
         }
 
         isRunning = true

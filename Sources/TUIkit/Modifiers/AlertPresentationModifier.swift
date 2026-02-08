@@ -101,6 +101,16 @@ extension AlertPresentationModifier: Renderable {
         focusManager.registerSection(id: sectionID)
         focusManager.activateSection(id: sectionID)
 
+        // Register ESC handler to dismiss the alert
+        let isPresentedBinding = isPresented
+        context.tuiContext.keyEventDispatcher.addHandler { event in
+            if event.key == .escape {
+                isPresentedBinding.wrappedValue = false
+                return true
+            }
+            return false
+        }
+
         // Set the alert section in the context so child focusables
         // (buttons in the alert) register in the alert section.
         var alertContext = context

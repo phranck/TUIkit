@@ -4,6 +4,10 @@
 
 ContainerView is fixed by extracting its 400+ lines of rendering logic into a private `_ContainerViewCore` struct, making `ContainerView` a simple public View with `body: some View` that creates the core. This restores modifier support, enables proper view composition, and establishes the correct pattern for refactoring List, Box, and all other components in the framework.
 
+## Completed
+
+**2026-02-08**: ContainerView refactored. _ContainerViewCore handles rendering, ContainerView is proper View with body.
+
 ## Context / Problem
 
 `ContainerView` currently uses `body: Never` + Renderable pattern, preventing modifiers from working correctly.

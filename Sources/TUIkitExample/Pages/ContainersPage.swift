@@ -89,7 +89,7 @@ struct SettingsAndAlignmentRow: View, Equatable {
 struct ProgressViewRow: View, Equatable {
     var body: some View {
         DemoSection("ProgressView") {
-            VStack(spacing: 1) {
+            VStack(alignment: .leading, spacing: 1) {
                 ProgressView("Downloading files...", value: 0.73)
 
                 ProgressView(value: 0.4) {
@@ -138,7 +138,7 @@ struct ContainersPage: View {
     @State var showDetails: Bool = false
 
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
             ContainerTypesRow().equatable()
             SettingsAndAlignmentRow().equatable()
             ProgressViewRow().equatable()

@@ -142,7 +142,7 @@ struct OverlaysPage: View {
 
     /// The main background content with menu and description.
     private var backgroundContent: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
             HStack(spacing: 3) {
                 // Left: Demo menu
                 Menu(
@@ -246,7 +246,7 @@ struct OverlaysPage: View {
             .frame(width: 50)
 
         case .modalCustom:
-            VStack(spacing: 1) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text("Custom Modal Content").bold().foregroundStyle(.palette.accent)
                 Text("")
                 Text("This modal uses .modal(isPresented:)").foregroundStyle(.palette.foreground)

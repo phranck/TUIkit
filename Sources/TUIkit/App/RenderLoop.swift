@@ -267,6 +267,10 @@ extension RenderLoop {
         // is no longer in the tree, fall back to first available.
         focusManager.endRenderPass()
 
+        // Use actual header height for content positioning (may differ from estimate)
+        let finalHeaderHeight = appHeader.height
+        let finalContentHeight = terminalHeight - statusBarHeight - finalHeaderHeight
+
         // Build terminal-ready output lines and write only changes.
         // All terminal writes between beginFrame/endFrame are collected
         // in an internal buffer and flushed as a single write() syscall.
@@ -277,7 +281,7 @@ extension RenderLoop {
         let outputLines = diffWriter.buildOutputLines(
             buffer: buffer,
             terminalWidth: terminalWidth,
-            terminalHeight: contentHeight,
+            terminalHeight: finalContentHeight,
             bgCode: bgCode,
             reset: reset
         )
@@ -298,7 +302,7 @@ extension RenderLoop {
         diffWriter.writeContentDiff(
             newLines: outputLines,
             terminal: terminal,
-            startRow: 1 + appHeaderHeight
+            startRow: 1 + finalHeaderHeight
         )
 
         // Render status bar inside the same frame (flushed together)

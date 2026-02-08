@@ -4,6 +4,10 @@
 
 Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions. Utrue to SwiftUI/TUIKit's design philosophy.
 
+## Completed
+
+**2026-02-08**: Composition pattern established. renderContainer() helper used by Card, Panel, Alert, Dialog, List, Table.
+
 ## Context / Problem
 
 Current container-like components might use inheritance or ad-hoc patterns. We need a unified, composition-based approach that works consistently across Alert, Dialog, Panel, and Card.

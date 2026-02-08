@@ -4,6 +4,10 @@
 
 ContainerView is being refactored from the broken `body: Never` + Renderable pattern to a proper View with `body: some View` that returns an internal `_ContainerViewCore`. This fix enables modifiers to work naturally and becomes the template for fixing List, Box, and other components. Once done, `.foregroundColor()`, `.padding()`, and other standard modifiers will compose correctly instead of being silently ignored.
 
+## Completed
+
+**2026-02-08**: ContainerView refactored with _ContainerViewCore. Shared renderContainer() helper created for consistent container rendering.
+
 ## Context / Problem
 
 ContainerView currently uses the wrong pattern with `body: Never` + Renderable, preventing view modifiers from working correctly.

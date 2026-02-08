@@ -21,7 +21,7 @@ struct RadioButtonPage: View {
     @State var layoutChoice: String = "vertical"
 
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("Color Selection (Vertical)") {
                 RadioButtonGroup(selection: $colorChoice) {
@@ -55,7 +55,7 @@ struct RadioButtonPage: View {
             }
 
             DemoSection("Current Selections") {
-                VStack(spacing: 1) {
+                VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 1) {
                         Text("Color:").foregroundStyle(.palette.foregroundSecondary)
                         Text(colorChoice).bold().foregroundStyle(.palette.accent)

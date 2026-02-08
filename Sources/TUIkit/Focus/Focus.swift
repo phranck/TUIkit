@@ -328,14 +328,17 @@ public extension FocusManager {
             return true
         }
 
-        // Up/Down arrows: navigate within the active section (fallback if element didn't handle)
-        if event.key == .up {
+        // Arrow keys: navigate within the active section (fallback if element didn't handle)
+        // Up/Left go to previous, Down/Right go to next
+        switch event.key {
+        case .up, .left:
             focusPreviousInSection()
             return true
-        }
-        if event.key == .down {
+        case .down, .right:
             focusNextInSection()
             return true
+        default:
+            break
         }
 
         return false
