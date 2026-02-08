@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:TUIkit}",
+            "name": "Debug TUIkitExample",
+            "program": "${workspaceFolder:TUIkit}/.build/debug/TUIkitExample",
+            "preLaunchTask": "swift: Build Debug TUIkitExample"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:TUIkit}",
+            "name": "Release TUIkitExample",
+            "program": "${workspaceFolder:TUIkit}/.build/release/TUIkitExample",
+            "preLaunchTask": "swift: Build Release TUIkitExample"
+        }
+    ]
+}
