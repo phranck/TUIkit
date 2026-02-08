@@ -261,14 +261,14 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 ## Current State
 
 **Branch:** `main`
-**Tests:** 727 / 112 suites
+**Tests:** 738 / 114 suites
 **Build:** clean
 
-### Recent Completions (2026-02-08)
+### Recent Completions (2026-02-09)
 
+- tuikit CLI: git init, SQLiteData, Linux Swift install, Xcode open prompt
+- Landing Page: CLI features update, syntax highlighter fix, foregroundStyle API
 - Section Integration (Phase 2c3): List uses SelectableListRow, Section flattening
-- Test Cleanup: Removed 5 flaky/tautological tests (732 → 727)
-- README Update: Added missing features documentation
 
 ### Phase 2: SwiftUI API Parity — Complete
 
@@ -282,4 +282,4 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09

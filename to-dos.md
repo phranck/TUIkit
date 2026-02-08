@@ -35,6 +35,11 @@
 
 ## Completed
 
+### 2026-02-09
+
+- [x] **tuikit CLI Enhancements**: git init option, SQLiteData (pointfreeco), Linux Swift install, Xcode open prompt
+- [x] **Landing Page Update**: CLI features (git, SQLiteData), syntax highlighter fix, foregroundStyle API update
+
 ### 2026-02-08
 
 - [x] **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices
@@ -43,7 +48,7 @@
 - [x] **SelectionDisabled Modifier**: Environment key + modifier for disabling row selection
 - [x] **ListRowSeparator Stub**: API-compatible stub with warning (not supported in TUI)
 
-### 2026-02-09
+### 2026-02-09 (earlier)
 
 - [x] **Badge Modifier (Phase 2a)**: Int/Text/StringProtocol overloads, List integration, 20+ tests
 - [x] **ListStyle System (Phase 2b)**: PlainListStyle + InsetGroupedListStyle, alternating rows, environment keys
@@ -102,4 +107,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09
