@@ -31,9 +31,9 @@ struct SpinnersPage: View {
         }
         .appHeader {
             HStack {
-                Text("Spinners").bold().foregroundColor(.palette.accent)
+                Text("Spinners").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

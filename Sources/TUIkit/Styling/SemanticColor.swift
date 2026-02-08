@@ -14,7 +14,7 @@
 /// without needing a ``RenderContext``:
 ///
 /// ```swift
-/// Text("Hello").foregroundColor(.palette.accent)
+/// Text("Hello").foregroundStyle(.palette.accent)
 /// ```
 enum SemanticColor: String, Sendable, Equatable {
     // Background

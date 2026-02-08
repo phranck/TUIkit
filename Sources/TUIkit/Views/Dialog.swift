@@ -123,7 +123,7 @@ extension Dialog: Equatable where Content: Equatable, Footer: Equatable {
 /// Internal view that handles Dialog rendering.
 ///
 /// This separation ensures `Dialog.body` returns a real `View`, allowing
-/// environment modifiers like `.foregroundColor()` to propagate correctly.
+/// environment modifiers like `.foregroundStyle()` to propagate correctly.
 struct _DialogCore<Content: View, Footer: View>: View, Renderable {
     let title: String
     let content: Content
