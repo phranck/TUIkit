@@ -15,7 +15,7 @@ import TUIkit
 /// - Semantic colors (primary, success, warning, error)
 struct ColorsPage: View {
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("Standard ANSI Colors") {
                 HStack(spacing: 2) {

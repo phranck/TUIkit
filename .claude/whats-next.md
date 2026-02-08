@@ -1,17 +1,19 @@
 # TUIkit: What's Next
 
-**Branch:** `refactor/foreground-style`
-**Tests:** 666 / 104 suites ✓ · **Build:** clean ✓
+**Branch:** `main`
+**Tests:** 666 / 104 suites (1 flaky: FocusManager shared state)
+**Build:** clean
 
 ## Active
 
-SwiftUI API parity: `.foregroundColor()` renamed to `.foregroundStyle()`
+List SwiftUI API Parity (plan: `2026-02-08-list-swiftui-api-parity.md`)
 
 ## Next Steps
 
-1. Commit and PR foregroundStyle refactor
-2. TextInput / TextField component
-3. View Architecture Refactor (100% SwiftUI conformity)
+1. Commit uncommitted changes (Alert, Button roles, rendering fixes)
+2. Implement Section, .badge(), .listStyle() for List
+3. TextInput / TextField component
+4. View Architecture Refactor
 
 ---
 

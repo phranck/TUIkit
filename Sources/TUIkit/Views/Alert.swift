@@ -104,15 +104,143 @@ struct _AlertCore<Actions: View>: View, Renderable {
         fatalError("_AlertCore renders via Renderable")
     }
 
+    /// Maximum width for alerts (characters).
+    private static var maxWidth: Int { 60 }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let hasActions = !(actions is EmptyView)
+        // Limit alert width
+        var alertContext = context
+        alertContext.availableWidth = min(context.availableWidth, Self.maxWidth)
+
+        // Extract buttons from actions and create horizontal layout
+        let buttons = extractButtons(from: actions)
+        let hasActions = !buttons.isEmpty
+
+        let footerView: AlertButtonRow? = hasActions ? AlertButtonRow(buttons: buttons) : nil
+
         return renderContainer(
             title: title,
             config: config,
             content: Text(message),
-            footer: hasActions ? actions : nil,
-            context: context
+            footer: footerView,
+            context: alertContext
         )
+    }
+
+    /// Extracts Button instances from a view hierarchy.
+    private func extractButtons<V: View>(from view: V) -> [Button] {
+        var buttons: [Button] = []
+        collectButtons(from: view, into: &buttons)
+        return buttons
+    }
+
+    private func collectButtons<V: View>(from view: V, into buttons: inout [Button]) {
+        if let button = view as? Button {
+            buttons.append(button)
+            return
+        }
+
+        if view is EmptyView {
+            return
+        }
+
+        let mirror = Mirror(reflecting: view)
+        let typeName = String(describing: type(of: view))
+
+        // TupleView wraps children in .children property
+        if typeName.hasPrefix("TupleView") {
+            for child in mirror.children where child.label == "children" {
+                let tupleMirror = Mirror(reflecting: child.value)
+                for tupleChild in tupleMirror.children {
+                    if let button = tupleChild.value as? Button {
+                        buttons.append(button)
+                    }
+                }
+            }
+            return
+        }
+
+        // Generic children inspection
+        for child in mirror.children {
+            if let button = child.value as? Button {
+                buttons.append(button)
+            }
+        }
+    }
+}
+
+// MARK: - Alert Button Row
+
+/// Internal view that renders buttons horizontally for alerts.
+struct AlertButtonRow: View, Renderable {
+    let buttons: [Button]
+
+    var body: Never {
+        fatalError("AlertButtonRow renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        guard !buttons.isEmpty else {
+            return FrameBuffer(lines: [])
+        }
+
+        // Sort buttons: cancel on left, others on right
+        let sortedButtons = buttons.sorted { lhs, rhs in
+            let lhsIsCancel = lhs.role == .cancel
+            let rhsIsCancel = rhs.role == .cancel
+            if lhsIsCancel != rhsIsCancel {
+                return lhsIsCancel  // Cancel comes first (left)
+            }
+            return false  // Keep original order otherwise
+        }
+
+        // Render each button
+        var buttonBuffers: [FrameBuffer] = []
+        for button in sortedButtons {
+            let buffer = TUIkit.renderToBuffer(button, context: context)
+            buttonBuffers.append(buffer)
+        }
+
+        // Find the maximum height
+        let maxHeight = buttonBuffers.map { $0.height }.max() ?? 0
+
+        // Calculate total width needed (buttons + spacing)
+        let spacing = 1
+        let totalButtonWidth = buttonBuffers.reduce(0) { $0 + $1.width }
+        let totalSpacingWidth = max(0, buttonBuffers.count - 1) * spacing
+        let totalNeededWidth = totalButtonWidth + totalSpacingWidth
+
+        // Available width from context
+        let availableWidth = context.availableWidth
+
+        // Right-align: calculate left padding
+        let leftPadding = max(0, availableWidth - totalNeededWidth)
+
+        // Combine horizontally (right-aligned)
+        var resultLines: [String] = Array(repeating: "", count: maxHeight)
+        let spacer = String(repeating: " ", count: spacing)
+
+        for lineIndex in 0..<maxHeight {
+            // Add left padding
+            resultLines[lineIndex] = String(repeating: " ", count: leftPadding)
+
+            // Add buttons
+            for (index, buffer) in buttonBuffers.enumerated() {
+                let buttonWidth = buffer.width
+
+                if index > 0 {
+                    resultLines[lineIndex] += spacer
+                }
+
+                if lineIndex < buffer.height {
+                    resultLines[lineIndex] += buffer.lines[lineIndex]
+                } else {
+                    resultLines[lineIndex] += String(repeating: " ", count: buttonWidth)
+                }
+            }
+        }
+
+        return FrameBuffer(lines: resultLines)
     }
 }
 

@@ -4,18 +4,22 @@
 
 List gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven.
 
+## Completed
+
+**2026-02-08**: List implemented with ItemListHandler, single/multi selection, keyboard navigation, scroll indicators, ForEach support.
+
 ## Checklist
 
-- [ ] Create ListRow internal structure
-- [ ] Create List struct with selection binding and content builder
-- [ ] Create ListHandler for keyboard navigation and selection (using shared FocusableItemListHandler)
-- [ ] Implement row identity resolution from @ViewBuilder
-- [ ] Implement Renderable extension with visible window rendering
-- [ ] Add .disabled() modifier
-- [ ] Write 25+ comprehensive tests
-- [ ] Build & lint verification
-- [ ] Add to example app
-- [ ] Documentation complete
+- [x] Create ListRow internal structure
+- [x] Create List struct with selection binding and content builder
+- [x] Create ListHandler for keyboard navigation and selection (using shared FocusableItemListHandler)
+- [x] Implement row identity resolution from @ViewBuilder
+- [x] Implement Renderable extension with visible window rendering
+- [x] Add .disabled() modifier
+- [x] Write 25+ comprehensive tests
+- [x] Build & lint verification
+- [x] Add to example app
+- [x] Documentation complete
 
 ## Context / Problem
 

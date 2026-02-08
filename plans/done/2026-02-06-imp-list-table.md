@@ -4,6 +4,10 @@
 
 List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus and selection handling via `ItemListHandler`, which combines navigation and selection logic in a single reusable component. This establishes a consistent, reusable pattern for List and Table while serving as a reference for future components.
 
+## Completed
+
+**2026-02-08**: List and Table implemented with ItemListHandler. Both use proper View architecture with private _Core structs.
+
 ## Context / Problem
 
 List uses the wrong pattern (body: Never + Renderable), and Table doesn't exist yet. Both need shared focus/selection infrastructure.

@@ -14,7 +14,7 @@ import TUIkit
 /// - Special effects (blink, inverted)
 struct TextStylesPage: View {
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(alignment: .leading, spacing: 1) {
             DemoSection("Basic Styles") {
                 Text("Normal text - no styling applied")
                 Text("Bold text").bold()

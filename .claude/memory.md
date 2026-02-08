@@ -25,6 +25,15 @@ TUIkit/
 - Cross-platform: macOS + Linux
 - CI: `macos-15` + `swift:6.0` container
 
+## SwiftUI Documentation (LOCAL)
+
+**WICHTIG:** Lokale SwiftUI-Dokumentation ist verfügbar unter:
+```
+http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui
+```
+
+**Immer hier nachschlagen** bevor SwiftUI-konforme APIs implementiert werden!
+
 ## Architecture
 
 ### 100% SwiftUI Conformity (NON-NEGOTIABLE)
@@ -59,8 +68,6 @@ List("Items", selection: $sel) {
 .disabled(true)         // Must disable entire List!
 ```
 
-With `body: Never` + Renderable, modifiers don't propagate because the View tree is cut off.
-
 ### Renderable - When to Use
 
 **ONLY for leaf nodes:**
@@ -86,17 +93,12 @@ struct MyView: View
     var body: Never            func renderToBuffer(context:)
 ```
 
-`renderToBuffer(_:context:)` free function:
-- If `Renderable`: call `renderToBuffer` directly
-- Else: recursively render `body` (environment propagates!)
-
 ### Actor Isolation
 
 | Scope | Isolation |
 |-------|-----------|
 | View, ViewModifier, Renderable | `@MainActor` |
 | App, Scene | `@MainActor` |
-| All builders | `@MainActor` |
 | Terminal, FocusManager | `@MainActor` |
 | Cross-thread state | `Lock<State>` wrapper |
 
@@ -115,69 +117,6 @@ struct MyView: View
 | `Styling/` | Color, Palette, Appearance, ThemeManager |
 | `Views/` | All View implementations |
 | `ViewBuilder/` | @ViewBuilder, SceneBuilder, result builders |
-
-## SwiftUI Patterns (Reference)
-
-### Views vs Modifiers (from Swift by Sundell)
-
-**Use Views (custom types) for:**
-- Containers that wrap multiple children
-- Structural changes to view hierarchy
-- When it's clear content is being wrapped
-
-**Use Modifiers for:**
-- Styling (colors, fonts, padding)
-- When the view's place in hierarchy doesn't change
-- Transformations that apply to any view
-
-```swift
-// Container = View
-SplitView(leading: { ... }, trailing: { ... })
-
-// Styling = Modifier
-Text("Hello").featured()  // adds icon + styling
-```
-
-### ViewBuilder Pattern
-
-```swift
-public struct MyContainer<Content: View>: View {
-    @ViewBuilder var content: () -> Content
-    
-    public var body: some View {
-        VStack {
-            content()
-        }
-    }
-}
-```
-
-### ViewModifier with State
-
-```swift
-struct FeaturedModifier: ViewModifier {
-    @State private var opacity = 0.0
-    
-    func body(content: Content) -> some View {
-        HStack {
-            Image(systemName: "star")
-            content
-        }
-        .opacity(opacity)
-        .onAppear { withAnimation { opacity = 1 } }
-    }
-}
-```
-
-### Type-Constrained Extensions
-
-```swift
-extension MyContainer where Content == Text {
-    init(_ text: String) {
-        self.init { Text(text) }
-    }
-}
-```
 
 ## Key Types Reference
 
@@ -215,6 +154,7 @@ extension MyContainer where Content == Text {
 | `Box` | Bordered container (reference implementation!) |
 | `List` | Scrollable list with selection |
 | `Table` | Tabular data with columns |
+| `Alert` | Modal alert with actions |
 | `VStack/HStack/ZStack` | Layout |
 | `Spacer` | Flexible space (leaf) |
 | `Divider` | Horizontal line |
@@ -235,6 +175,7 @@ extension MyContainer where Content == Text {
 | `.overlay(_:)` | Overlay content |
 | `.focusSection(_:)` | Named focus region |
 | `.equatable()` | Enable render caching |
+| `.alert(isPresented:)` | Show modal alert |
 
 ## Patterns & Conventions
 
@@ -249,32 +190,6 @@ public struct MyContainer<Content: View>: View {
         ContainerView(title: title) {
             content
         }
-    }
-}
-```
-
-### Stateful Control (Correct Pattern)
-
-```swift
-public struct MyControl: View {
-    let selection: Binding<String?>
-    
-    public var body: some View {
-        // Compose Views - environment propagates
-        _MyControlContent(selection: selection)
-    }
-}
-
-// Internal - can use Renderable for leaf rendering
-private struct _MyControlContent: View, Renderable {
-    let selection: Binding<String?>
-    
-    var body: Never { fatalError() }
-    
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Access StateStorage, FocusManager here
-        // Read environment: context.environment.foregroundStyle
-        // This is OK because it's internal and at leaf level
     }
 }
 ```
@@ -307,7 +222,7 @@ storage.markActive(context.identity)
 - Handler's `handleKeyEvent` called first
 - Return `true` to consume (stop propagation)
 - Return `false` for FocusManager fallback
-- FocusManager: Tab = sections, Up/Down = within section
+- FocusManager: Tab = sections, Up/Down/Left/Right = within section
 
 ## Rendering Pipeline
 
@@ -320,8 +235,6 @@ AppRunner.run()
        │    └─ RenderLoop.render(pulsePhase)
        │         ├─ focusManager.beginRenderPass()
        │         ├─ renderToBuffer(scene, context)
-       │         │    └─ If View has body: render body (env propagates!)
-       │         │    └─ If Renderable: call renderToBuffer directly
        │         ├─ focusManager.endRenderPass()
        │         └─ FrameDiffWriter.write(buffer)
        └─ terminal.readKeyEvent()
@@ -346,13 +259,6 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 **High Priority (Complex):**
 - List, Table - StateStorage + FocusManager
 - RadioButtonGroup - StateStorage + FocusManager
-- Menu - StateStorage + FocusManager
-
-**Medium Priority (Interactive):**
-- Button, Toggle - Focus handling
-
-**Lower Priority (Containers):**
-- Card, Panel, Dialog, Alert - Already use ContainerView
 
 **OK as Renderable (Leaf Nodes):**
 - Text, Spacer, Divider
@@ -361,22 +267,22 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 
 ## Current State
 
-**Branch:** `refactor/foreground-style`
+**Branch:** `main`
 **Tests:** 666 / 104 suites
 **Build:** clean
-**Lint:** 0 warnings
 
 ### Recent (Feb 2026)
 
-- `.foregroundColor()` renamed to `.foregroundStyle()` for SwiftUI parity
-- List & Table PR merged (focus bar, F-keys, StatusBar defaults)
-- Xcode project template created (TUIkit App.xctemplate)
-- List/Table implemented with ItemListHandler
+- Alert horizontal buttons, ButtonRole, ESC dismiss
+- `.foregroundStyle()` renamed from `.foregroundColor()`
+- List & Table with ItemListHandler
+- Focus Sections with StatusBar cascading
+- ContainerView refactor with shared renderContainer()
 
-### Next
+### Active Plans
 
-- TextInput / TextField component
-- View Architecture Refactor (plan: `2026-02-07-view-architecture-refactor.md`)
+- `2026-02-08-list-swiftui-api-parity.md` - Section, .badge(), .listStyle()
+- `2026-02-07-view-architecture-refactor.md` - 100% SwiftUI conformity
 
 ---
 

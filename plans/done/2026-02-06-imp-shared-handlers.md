@@ -4,6 +4,10 @@
 
 Shared focus/selection infrastructure is extracted so both List and Table reuse the same pieces: `FocusableItemListHandler` for keyboard navigation (Up/Down/Home/End), `SelectionStateManager<T>` for tracking selected values, `ItemStateRenderer` for styling based on focus/selection state, and `renderFocusableContainer()` helper that orchestrates layout + styling + scrolling. Zero duplication, consistent behavior, maximum testability.
 
+## Completed
+
+**2026-02-08**: ItemListHandler implemented as unified handler for List and Table. Handles navigation, selection (single/multi), scroll offset, and focus state.
+
 ## Context / Problem
 
 List has ListHandler for focus logic, but there's no shared selection state manager or standardized container helper for focusable items. Both List and Table need consistent, reusable components.
