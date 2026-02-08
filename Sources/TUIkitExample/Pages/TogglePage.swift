@@ -50,20 +50,20 @@ struct TogglePage: View {
             DemoSection("State Summary") {
                 VStack(spacing: 1) {
                     HStack(spacing: 1) {
-                        Text("Notifications:").foregroundColor(.palette.foregroundSecondary)
-                        Text(notificationsEnabled ? "[●○]" : "[○●]").foregroundColor(.palette.accent)
+                        Text("Notifications:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(notificationsEnabled ? "[●○]" : "[○●]").foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Dark Mode:").foregroundColor(.palette.foregroundSecondary)
-                        Text(darkModeEnabled ? "[●○]" : "[○●]").foregroundColor(.palette.accent)
+                        Text("Dark Mode:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(darkModeEnabled ? "[●○]" : "[○●]").foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Hidden Files:").foregroundColor(.palette.foregroundSecondary)
-                        Text(advancedOptionsEnabled ? "[●]" : "[ ]").foregroundColor(.palette.accent)
+                        Text("Hidden Files:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(advancedOptionsEnabled ? "[●]" : "[ ]").foregroundStyle(.palette.accent)
                     }
                     HStack(spacing: 1) {
-                        Text("Analytics:").foregroundColor(.palette.foregroundSecondary)
-                        Text(analitycsEnabled ? "[●]" : "[ ]").foregroundColor(.palette.accent)
+                        Text("Analytics:").foregroundStyle(.palette.foregroundSecondary)
+                        Text(analitycsEnabled ? "[●]" : "[ ]").foregroundStyle(.palette.accent)
                     }
                 }
             }
@@ -81,9 +81,9 @@ struct TogglePage: View {
         }
         .appHeader {
             HStack {
-                Text("Toggles & Checkboxes Demo").bold().foregroundColor(.palette.accent)
+                Text("Toggles & Checkboxes Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

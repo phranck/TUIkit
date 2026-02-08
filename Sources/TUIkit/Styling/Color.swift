@@ -12,15 +12,15 @@
 /// # Standard Colors
 ///
 /// ```swift
-/// Text("Red").foregroundColor(.red)
-/// Text("Green").foregroundColor(.green)
-/// Text("Blue").foregroundColor(.blue)
+/// Text("Red").foregroundStyle(.red)
+/// Text("Green").foregroundStyle(.green)
+/// Text("Blue").foregroundStyle(.blue)
 /// ```
 ///
 /// # RGB Colors
 ///
 /// ```swift
-/// Text("Custom").foregroundColor(.rgb(255, 128, 0))
+/// Text("Custom").foregroundStyle(.rgb(255, 128, 0))
 /// ```
 public struct Color: Sendable, Equatable {
     /// The internal color value.
@@ -119,7 +119,7 @@ public struct Color: Sendable, Equatable {
     /// ``RenderContext`` is available:
     ///
     /// ```swift
-    /// Text("Hello").foregroundColor(.palette.accent)
+    /// Text("Hello").foregroundStyle(.palette.accent)
     /// ```
     public enum Semantic {
         // Background colors
@@ -152,7 +152,7 @@ public struct Color: Sendable, Equatable {
     /// when the current ``Palette`` is available via ``RenderContext``.
     ///
     /// ```swift
-    /// Text("Hello").foregroundColor(.palette.accent)
+    /// Text("Hello").foregroundStyle(.palette.accent)
     /// ```
     public static var palette: Semantic.Type { Semantic.self }
 
@@ -550,36 +550,36 @@ enum ANSIColor: UInt8, Sendable {
     }
 }
 
-// MARK: - Foreground Color Environment
+// MARK: - Foreground Style Environment
 
-/// Environment key for the foreground color.
+/// Environment key for the foreground style.
 ///
-/// When set via `.foregroundColor(_:)` on any View, this value propagates
+/// When set via `.foregroundStyle(_:)` on any View, this value propagates
 /// down through the view hierarchy. Child views can read it from the
 /// render context to apply the color.
-private struct ForegroundColorKey: EnvironmentKey {
+private struct ForegroundStyleKey: EnvironmentKey {
     static let defaultValue: Color? = nil
 }
 
 extension EnvironmentValues {
-    /// The foreground color for text and other content.
+    /// The foreground style (color) for text and other content.
     ///
-    /// Set via `.foregroundColor(_:)` modifier on any View.
+    /// Set via `.foregroundStyle(_:)` modifier on any View.
     /// Returns `nil` if not explicitly set (use palette default).
-    public var foregroundColor: Color? {
-        get { self[ForegroundColorKey.self] }
-        set { self[ForegroundColorKey.self] = newValue }
+    public var foregroundStyle: Color? {
+        get { self[ForegroundStyleKey.self] }
+        set { self[ForegroundStyleKey.self] = newValue }
     }
 }
 
-// MARK: - View Extension for foregroundColor
+// MARK: - View Extension for foregroundStyle
 
 extension View {
-    /// Sets the foreground color for this view and its children.
+    /// Sets the foreground style for this view and its children.
     ///
-    /// The color propagates through the view hierarchy via the environment.
+    /// The style propagates through the view hierarchy via the environment.
     /// Child views that render text or other colored content should read
-    /// `context.environment.foregroundColor` and apply it.
+    /// `context.environment.foregroundStyle` and apply it.
     ///
     /// ## Example
     ///
@@ -588,12 +588,12 @@ extension View {
     ///     Text("Red text")
     ///     Text("Also red")
     /// }
-    /// .foregroundColor(.red)
+    /// .foregroundStyle(.red)
     /// ```
     ///
-    /// - Parameter color: The color to apply.
-    /// - Returns: A view with the foreground color set.
-    public func foregroundColor(_ color: Color?) -> some View {
-        environment(\.foregroundColor, color)
+    /// - Parameter style: The color to apply as foreground style.
+    /// - Returns: A view with the foreground style set.
+    public func foregroundStyle(_ style: Color?) -> some View {
+        environment(\.foregroundStyle, style)
     }
 }

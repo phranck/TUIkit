@@ -170,25 +170,25 @@ struct OverlaysPage: View {
 
             DemoSection("How It Works") {
                 Text("All overlays use the SwiftUI-style presentation API:")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
                 Text("  .alert(isPresented:)        — for Alert views")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
                 Text("  .modal(isPresented:)        — for Dialog, custom content")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
                 Text("  NotificationService.current.post() — fire-and-forget with fade")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
                 Text("Modals dim the background. Notifications stay non-blocking.")
                     .bold()
-                    .foregroundColor(.palette.accent)
+                    .foregroundStyle(.palette.accent)
             }
 
             Spacer()
         }
         .appHeader {
             HStack {
-                Text("Overlays, Modals & Notifications Demo").bold().foregroundColor(.palette.accent)
+                Text("Overlays, Modals & Notifications Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }
@@ -200,15 +200,15 @@ struct OverlaysPage: View {
         Panel(selectedDemo.label, titleColor: .palette.accent) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(selectedDemo.description)
-                    .foregroundColor(.palette.foreground)
+                    .foregroundStyle(.palette.foreground)
 
                 Text("")
 
                 Text("API:")
                     .bold()
-                    .foregroundColor(.palette.accent)
+                    .foregroundStyle(.palette.accent)
                 Text("  \(selectedDemo.apiUsage)")
-                    .foregroundColor(.palette.foregroundSecondary)
+                    .foregroundStyle(.palette.foregroundSecondary)
             }
         }
         .frame(width: 55)
@@ -227,9 +227,9 @@ struct OverlaysPage: View {
         case .dialog:
             Dialog(title: "Settings", borderColor: .palette.border, titleColor: .palette.accent) {
                 VStack(alignment: .leading) {
-                    Text("Theme: Dark").foregroundColor(.palette.foreground)
-                    Text("Language: English").foregroundColor(.palette.foreground)
-                    Text("Notifications: On").foregroundColor(.palette.foreground)
+                    Text("Theme: Dark").foregroundStyle(.palette.foreground)
+                    Text("Language: English").foregroundStyle(.palette.foreground)
+                    Text("Notifications: On").foregroundStyle(.palette.foreground)
                     Text("")
                     dismissButton
                 }
@@ -238,8 +238,8 @@ struct OverlaysPage: View {
 
         case .dialogWithFooter:
             Dialog(title: "Confirm Action", borderColor: .palette.border, titleColor: .palette.accent) {
-                Text("Are you sure you want to proceed?").foregroundColor(.palette.foreground)
-                Text("This action cannot be undone.").foregroundColor(.palette.foregroundSecondary)
+                Text("Are you sure you want to proceed?").foregroundStyle(.palette.foreground)
+                Text("This action cannot be undone.").foregroundStyle(.palette.foregroundSecondary)
             } footer: {
                 dismissButton
             }
@@ -247,11 +247,11 @@ struct OverlaysPage: View {
 
         case .modalCustom:
             VStack(spacing: 1) {
-                Text("Custom Modal Content").bold().foregroundColor(.palette.accent)
+                Text("Custom Modal Content").bold().foregroundStyle(.palette.accent)
                 Text("")
-                Text("This modal uses .modal(isPresented:)").foregroundColor(.palette.foreground)
-                Text("with completely custom view content.").foregroundColor(.palette.foregroundSecondary)
-                Text("No Alert or Dialog — just any View!").foregroundColor(.palette.foregroundSecondary)
+                Text("This modal uses .modal(isPresented:)").foregroundStyle(.palette.foreground)
+                Text("with completely custom view content.").foregroundStyle(.palette.foregroundSecondary)
+                Text("No Alert or Dialog — just any View!").foregroundStyle(.palette.foregroundSecondary)
                 Text("")
                 dismissButton
             }

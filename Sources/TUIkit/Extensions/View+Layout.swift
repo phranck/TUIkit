@@ -83,7 +83,7 @@ extension View {
     ///
     /// ```swift
     /// Text("Warning!")
-    ///     .foregroundColor(.black)
+    ///     .foregroundStyle(.black)
     ///     .background(.yellow)
     ///
     /// VStack {

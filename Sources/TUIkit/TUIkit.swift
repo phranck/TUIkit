@@ -21,7 +21,7 @@ public let tuiKitVersion = "0.1.0"
 ///     VStack {
 ///         Text("Hello, TUIkit!")
 ///             .bold()
-///             .foregroundColor(.cyan)
+///             .foregroundStyle(.cyan)
 ///         Divider()
 ///         Text("Version \(tuiKitVersion)")
 ///             .dim()
