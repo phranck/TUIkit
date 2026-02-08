@@ -14,24 +14,24 @@ struct ContainerTypesRow: View, Equatable {
     var body: some View {
         HStack(spacing: 2) {
             VStack(alignment: .leading) {
-                Text("Card").bold().foregroundColor(.palette.accent)
+                Text("Card").bold().foregroundStyle(.palette.accent)
                 Card(borderColor: .palette.border) {
-                    Text("A Card view").foregroundColor(.palette.foreground)
-                    Text("with padding").foregroundColor(.palette.foregroundSecondary)
+                    Text("A Card view").foregroundStyle(.palette.foreground)
+                    Text("with padding").foregroundStyle(.palette.foregroundSecondary)
                 }
             }
 
             VStack(alignment: .leading) {
-                Text("Box").bold().foregroundColor(.palette.accent)
+                Text("Box").bold().foregroundStyle(.palette.accent)
                 Box(color: .palette.border) {
-                    Text("Simple Box").foregroundColor(.palette.foreground)
+                    Text("Simple Box").foregroundStyle(.palette.foreground)
                 }
             }
 
             VStack(alignment: .leading) {
-                Text("Panel").bold().foregroundColor(.palette.accent)
+                Text("Panel").bold().foregroundStyle(.palette.accent)
                 Panel("Info", titleColor: .palette.accent) {
-                    Text("Title in border").foregroundColor(.palette.foreground)
+                    Text("Title in border").foregroundStyle(.palette.foreground)
                 }
             }
         }
@@ -47,11 +47,11 @@ struct SettingsAndAlignmentRow: View, Equatable {
         HStack(spacing: 2) {
             DemoSection("Panel (Header + Footer)") {
                 Panel("Settings", titleColor: .palette.accent) {
-                    Text("Primary text (foreground)").foregroundColor(.palette.foreground)
-                    Text("Secondary text (foregroundSecondary)").foregroundColor(.palette.foregroundSecondary)
-                    Text("Tertiary text (foregroundTertiary)").foregroundColor(.palette.foregroundTertiary)
+                    Text("Primary text (foreground)").foregroundStyle(.palette.foreground)
+                    Text("Secondary text (foregroundSecondary)").foregroundStyle(.palette.foregroundSecondary)
+                    Text("Tertiary text (foregroundTertiary)").foregroundStyle(.palette.foregroundTertiary)
                 } footer: {
-                    Text("Footer: Press Enter to confirm").foregroundColor(.palette.foreground)
+                    Text("Footer: Press Enter to confirm").foregroundStyle(.palette.foreground)
                 }
             }
 
@@ -59,20 +59,20 @@ struct SettingsAndAlignmentRow: View, Equatable {
                 HStack(spacing: 1) {
                     Box {
                         VStack(alignment: .leading) {
-                            Text("Leading align").foregroundColor(.palette.foreground)
-                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                            Text("Leading align").foregroundStyle(.palette.foreground)
+                            Text("short").foregroundStyle(.palette.foregroundSecondary)
                         }
                     }
                     Box {
                         VStack(alignment: .center) {
-                            Text("Center align").foregroundColor(.palette.foreground)
-                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                            Text("Center align").foregroundStyle(.palette.foreground)
+                            Text("short").foregroundStyle(.palette.foregroundSecondary)
                         }
                     }
                     Box {
                         VStack(alignment: .trailing) {
-                            Text("Trailing align").foregroundColor(.palette.foreground)
-                            Text("short").foregroundColor(.palette.foregroundSecondary)
+                            Text("Trailing align").foregroundStyle(.palette.foreground)
+                            Text("short").foregroundStyle(.palette.foregroundSecondary)
                         }
                     }
                 }
@@ -93,9 +93,9 @@ struct ProgressViewRow: View, Equatable {
                 ProgressView("Downloading files...", value: 0.73)
 
                 ProgressView(value: 0.4) {
-                    Text("Build progress").foregroundColor(.palette.foreground)
+                    Text("Build progress").foregroundStyle(.palette.foreground)
                 } currentValueLabel: {
-                    Text("40%").foregroundColor(.palette.foregroundSecondary)
+                    Text("40%").foregroundStyle(.palette.foregroundSecondary)
                 }
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -156,15 +156,15 @@ struct ContainersPage: View {
                         Panel("Padding Examples", titleColor: .palette.accent) {
                             HStack(spacing: 1) {
                                 Box {
-                                    Text("h:1 v:0").foregroundColor(.palette.foreground)
+                                    Text("h:1 v:0").foregroundStyle(.palette.foreground)
                                         .padding(.horizontal, 1)
                                 }
                                 Box {
-                                    Text("h:1 v:1").foregroundColor(.palette.foreground)
+                                    Text("h:1 v:1").foregroundStyle(.palette.foreground)
                                         .padding(EdgeInsets(horizontal: 1, vertical: 1))
                                 }
                                 Box {
-                                    Text("h:1 v:2").foregroundColor(.palette.foreground)
+                                    Text("h:1 v:2").foregroundStyle(.palette.foreground)
                                         .padding(EdgeInsets(horizontal: 1, vertical: 2))
                                 }
                             }
@@ -174,16 +174,16 @@ struct ContainersPage: View {
             }
 
             DemoSection("Appearance & BorderStyle") {
-                Text("BorderStyle is determined by Appearance. Press 'a' to cycle.").foregroundColor(.palette.foregroundSecondary)
+                Text("BorderStyle is determined by Appearance. Press 'a' to cycle.").foregroundStyle(.palette.foregroundSecondary)
             }
 
             Spacer()
         }
         .appHeader {
             HStack {
-                Text("Container Views Demo").bold().foregroundColor(.palette.accent)
+                Text("Container Views Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

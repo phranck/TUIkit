@@ -302,7 +302,7 @@ private struct _SpinnerCore: View, Renderable {
         let frameIndex = Int(elapsed / style.interval) % frameCount
 
         // Resolve color - use environment foregroundColor if no explicit color set
-        let effectiveColor = color ?? context.environment.foregroundColor ?? .palette.accent
+        let effectiveColor = color ?? context.environment.foregroundStyle ?? .palette.accent
         let resolvedColor = effectiveColor.resolve(with: context.environment.palette)
 
         // Build spinner text — bouncing renders with colored trail, others are plain.

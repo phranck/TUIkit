@@ -18,7 +18,7 @@
 ///     .bold()
 ///
 /// Text("Colored")
-///     .foregroundColor(.red)
+///     .foregroundStyle(.red)
 /// ```
 public struct Text: View, Equatable {
     /// The text to display.
@@ -51,13 +51,13 @@ public struct Text: View, Equatable {
 // MARK: - Text Modifiers
 
 extension Text {
-    /// Sets the text color.
+    /// Sets the text foreground style.
     ///
-    /// - Parameter color: The desired foreground color.
-    /// - Returns: A new text with the applied color.
-    public func foregroundColor(_ color: Color) -> Text {
+    /// - Parameter style: The desired foreground color.
+    /// - Returns: A new text with the applied style.
+    public func foregroundStyle(_ style: Color) -> Text {
         var copy = self
-        copy.style.foregroundColor = color
+        copy.style.foregroundColor = style
         return copy
     }
 
@@ -197,10 +197,10 @@ extension Text: Renderable {
         var effectiveStyle = style
 
         // If no explicit foreground color is set on the Text itself,
-        // inherit from the environment (set by .foregroundColor() on parent views),
+        // inherit from the environment (set by .foregroundStyle() on parent views),
         // or fall back to the palette's default foreground color
         if effectiveStyle.foregroundColor == nil {
-            effectiveStyle.foregroundColor = context.environment.foregroundColor
+            effectiveStyle.foregroundColor = context.environment.foregroundStyle
                 ?? context.environment.palette.foreground
         }
 

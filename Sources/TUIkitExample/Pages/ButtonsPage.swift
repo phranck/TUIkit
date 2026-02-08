@@ -34,7 +34,7 @@ struct ButtonsPage: View {
                     }
                     Text("Clicks: \(clickCount)")
                         .bold()
-                        .foregroundColor(.palette.accent)
+                        .foregroundStyle(.palette.accent)
                 }
             }
 
@@ -89,9 +89,9 @@ struct ButtonsPage: View {
         }
         .appHeader {
             HStack {
-                Text("Buttons & Focus Demo").bold().foregroundColor(.palette.accent)
+                Text("Buttons & Focus Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

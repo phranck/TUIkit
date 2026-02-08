@@ -27,9 +27,9 @@ struct TextStylesPage: View {
             DemoSection("Combined Styles") {
                 Text("Bold + Italic").bold().italic()
                 Text("Bold + Underline").bold().underline()
-                Text("Bold + Color").bold().foregroundColor(.palette.accent)
+                Text("Bold + Color").bold().foregroundStyle(.palette.accent)
                 Text("Italic + Dim").italic().dim()
-                Text("All combined").bold().italic().underline().foregroundColor(.palette.accent)
+                Text("All combined").bold().italic().underline().foregroundStyle(.palette.accent)
             }
 
             DemoSection("Special Effects") {
@@ -41,9 +41,9 @@ struct TextStylesPage: View {
         }
         .appHeader {
             HStack {
-                Text("Text Styles Demo").bold().foregroundColor(.palette.accent)
+                Text("Text Styles Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundColor(.palette.foregroundTertiary)
+                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
         }
     }

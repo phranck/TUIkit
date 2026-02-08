@@ -1,0 +1,417 @@
+#!/bin/bash
+
+# TUIkit CLI
+# Modern command-line tool for creating TUIkit projects
+
+set -e
+
+VERSION="1.0.0"
+
+# Colors
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Help text
+show_help() {
+    echo -e "${BLUE}TUIkit CLI v${VERSION}${NC}"
+    echo ""
+    echo "Usage:"
+    echo "  tuikit init [options] [project-name]"
+    echo ""
+    echo "Options:"
+    echo "  sqlite              Include SQLite.swift for database storage"
+    echo "  testing             Include Swift Testing framework"
+    echo "  xctest              Include XCTest framework"
+    echo ""
+    echo "Examples:"
+    echo "  tuikit init MyApp                    # Basic TUIkit app"
+    echo "  tuikit init sqlite MyApp             # With SQLite"
+    echo "  tuikit init testing MyApp            # With Swift Testing"
+    echo "  tuikit init sqlite testing MyApp     # With SQLite and Testing"
+    echo "  tuikit init sqlite xctest MyApp      # With SQLite and XCTest"
+    echo ""
+    echo "If no project name is provided, you'll be prompted to enter one."
+}
+
+# Parse arguments
+INCLUDE_SQLITE=false
+TEST_FRAMEWORK="None"
+PROJECT_NAME=""
+
+if [ "$1" == "init" ]; then
+    shift
+
+    # Parse options and project name
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            sqlite)
+                INCLUDE_SQLITE=true
+                shift
+                ;;
+            testing)
+                TEST_FRAMEWORK="Swift Testing"
+                shift
+                ;;
+            xctest)
+                TEST_FRAMEWORK="XCTest"
+                shift
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            *)
+                # Assume it's the project name
+                PROJECT_NAME="$1"
+                shift
+                ;;
+        esac
+    done
+else
+    show_help
+    exit 1
+fi
+
+# Prompt for project name if not provided
+if [ -z "$PROJECT_NAME" ]; then
+    echo -e "${YELLOW}Enter project name:${NC}"
+    read -r PROJECT_NAME
+fi
+
+if [ -z "$PROJECT_NAME" ]; then
+    echo -e "${RED}Error: Project name cannot be empty${NC}"
+    exit 1
+fi
+
+# Header
+echo -e "${BLUE}"
+echo "╔════════════════════════════════════════════════════╗"
+echo "║                                                    ║"
+echo "║              TUIkit Project Creator                ║"
+echo "║                                                    ║"
+echo "╚════════════════════════════════════════════════════╝"
+echo -e "${NC}"
+
+# Create project directory
+echo -e "${BLUE}Creating project directory...${NC}"
+mkdir -p "$PROJECT_NAME"
+cd "$PROJECT_NAME"
+
+# Create Package.swift
+echo -e "${BLUE}Creating Package.swift...${NC}"
+
+# Build dependencies array
+DEPENDENCIES="        .package(url: \"https://github.com/phranck/TUIkit.git\", branch: \"main\")"
+if [ "$INCLUDE_SQLITE" = true ]; then
+    DEPENDENCIES="${DEPENDENCIES},
+        .package(url: \"https://github.com/stephencelis/SQLite.swift.git\", from: \"0.15.0\")"
+fi
+
+# Build target dependencies
+TARGET_DEPS="                .product(name: \"TUIkit\", package: \"TUIkit\")"
+if [ "$INCLUDE_SQLITE" = true ]; then
+    TARGET_DEPS="${TARGET_DEPS},
+                .product(name: \"SQLite\", package: \"SQLite.swift\")"
+fi
+
+# Build targets array
+TARGETS="        .executableTarget(
+            name: \"${PROJECT_NAME}\",
+            dependencies: [
+${TARGET_DEPS}
+            ],
+            path: \"Sources\"
+        )"
+
+if [ "$TEST_FRAMEWORK" != "None" ]; then
+    TARGETS="${TARGETS},
+        .testTarget(
+            name: \"${PROJECT_NAME}Tests\",
+            dependencies: [\"${PROJECT_NAME}\"],
+            path: \"Tests\"
+        )"
+fi
+
+cat > Package.swift << EOF
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "${PROJECT_NAME}",
+    platforms: [.macOS(.v15)],
+    dependencies: [
+${DEPENDENCIES}
+    ],
+    targets: [
+${TARGETS}
+    ]
+)
+EOF
+
+# Create Sources directory and files
+echo -e "${BLUE}Creating source files...${NC}"
+mkdir -p Sources
+
+cat > Sources/App.swift << EOF
+import TUIkit
+
+@main
+struct ${PROJECT_NAME}App: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+EOF
+
+cat > Sources/ContentView.swift << 'EOF'
+import TUIkit
+
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Text("Hello, TUIkit!")
+                .foregroundStyle(.green)
+                .bold()
+
+            Text("Welcome to your new terminal app")
+                .foregroundStyle(.gray)
+        }
+        .padding()
+    }
+}
+EOF
+
+# Create Database.swift if SQLite is enabled
+if [ "$INCLUDE_SQLITE" = true ]; then
+    cat > Sources/Database.swift << 'EOF'
+import Foundation
+import SQLite
+
+/// Helper class for SQLite database operations
+///
+/// Example usage:
+/// ```swift
+/// let db = try Database(path: "./myapp.db")
+/// ```
+class Database {
+    let connection: Connection
+
+    init(path: String) throws {
+        connection = try Connection(path)
+    }
+}
+EOF
+fi
+
+# Create Tests if needed
+if [ "$TEST_FRAMEWORK" != "None" ]; then
+    echo -e "${BLUE}Creating test files...${NC}"
+    mkdir -p Tests
+
+    if [ "$TEST_FRAMEWORK" = "Swift Testing" ]; then
+        cat > Tests/${PROJECT_NAME}Tests.swift << EOF
+import Testing
+@testable import $PROJECT_NAME
+
+@Test func example() async throws {
+    #expect(true)
+}
+EOF
+    else
+        cat > Tests/${PROJECT_NAME}Tests.swift << EOF
+import XCTest
+@testable import $PROJECT_NAME
+
+final class ${PROJECT_NAME}Tests: XCTestCase {
+    func testExample() throws {
+        XCTAssertTrue(true)
+    }
+}
+EOF
+    fi
+fi
+
+# Create README.md
+echo -e "${BLUE}Creating README.md...${NC}"
+cat > README.md << EOF
+# $PROJECT_NAME
+
+A TUIkit terminal application.
+
+## Quick Start
+
+\`\`\`bash
+swift run
+\`\`\`
+
+## Project Structure
+
+\`\`\`
+$PROJECT_NAME/
+├── Sources/
+│   ├── App.swift          # Main application entry point
+│   └── ContentView.swift  # Root view
+EOF
+
+if [ "$INCLUDE_SQLITE" = true ]; then
+    cat >> README.md << 'EOF'
+│   └── Database.swift     # SQLite database helper
+EOF
+fi
+
+if [ "$TEST_FRAMEWORK" != "None" ]; then
+    cat >> README.md << EOF
+└── Tests/                 # $TEST_FRAMEWORK suite
+EOF
+fi
+
+cat >> README.md << 'EOF'
+```
+
+EOF
+
+if [ "$INCLUDE_SQLITE" = true ]; then
+    cat >> README.md << 'EOF'
+
+## Database
+
+This project includes [SQLite.swift](https://github.com/stephencelis/SQLite.swift) for local data persistence.
+
+**Quick Start:**
+
+```swift
+import SQLite
+
+// Initialize database
+let db = try Database(path: "./myapp.db")
+
+// Define a table
+let users = Table("users")
+let id = Expression<Int64>("id")
+let name = Expression<String>("name")
+
+// Insert data
+try db.connection.run(users.insert(name <- "Alice"))
+
+// Query data
+for user in try db.connection.prepare(users) {
+    print("User: \(user[name])")
+}
+```
+
+EOF
+fi
+
+cat >> README.md << 'EOF'
+
+## Learn More
+
+- [TUIkit Documentation](https://tuikit.layered.work/documentation/tuikit/)
+- [TUIkit GitHub](https://github.com/phranck/TUIkit)
+EOF
+
+# Create .gitignore
+cat > .gitignore << 'EOF'
+.DS_Store
+/.build
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+EOF
+
+# Create .swiftpm directory with scheme
+mkdir -p .swiftpm/xcode/xcshareddata/xcschemes
+
+cat > .swiftpm/xcode/xcshareddata/xcschemes/${PROJECT_NAME}.xcscheme << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1600"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "$PROJECT_NAME"
+               BuildableName = "$PROJECT_NAME"
+               BlueprintName = "$PROJECT_NAME"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES"
+      viewDebuggingEnabled = "No">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "$PROJECT_NAME"
+            BuildableName = "$PROJECT_NAME"
+            BlueprintName = "$PROJECT_NAME"
+            ReferencedContainer = "container:">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+</Scheme>
+EOF
+
+cat > .swiftpm/xcode/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>BuildSystemType</key>
+    <string>Original</string>
+</dict>
+</plist>
+EOF
+
+# Configure Xcode preferences
+echo -e "${BLUE}Configuring Xcode preferences...${NC}"
+defaults write com.apple.dt.Xcode IDEPreferredPlatformForSwiftPackages -string "macosx" 2>/dev/null || true
+
+# Success message
+echo -e "${GREEN}"
+echo "╔════════════════════════════════════════════════════╗"
+echo "║                                                    ║"
+echo "║            ✅ Project created successfully!         ║"
+echo "║                                                    ║"
+echo "╚════════════════════════════════════════════════════╝"
+echo -e "${NC}"
+
+echo -e "${BLUE}Project: ${NC}${GREEN}$PROJECT_NAME${NC}"
+echo -e "${BLUE}Location: ${NC}$(pwd)"
+echo -e "${BLUE}Test Framework: ${NC}$TEST_FRAMEWORK"
+echo -e "${BLUE}SQLite.swift: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
+
+echo ""
+echo -e "${YELLOW}Next steps:${NC}"
+echo "  1. cd $PROJECT_NAME"
+echo "  2. open Package.swift"
+echo "  3. Wait for dependencies to resolve"
+echo "  4. Press Cmd+R to build and run"
