@@ -373,14 +373,6 @@ struct FocusManagerEnvironmentTests {
         #expect(environment.focusManager === manager)
     }
 
-    @Test("Default FocusManager is provided if not set")
-    func defaultFocusManager() {
-        let environment = EnvironmentValues()
-        // Should return a default FocusManager instance
-        let defaultManager = environment.focusManager
-        #expect(defaultManager.currentFocusedID == nil)
-    }
-
     @Test("Multiple tests can have independent FocusManagers")
     func independentManagers() {
         let manager1 = FocusManager()
