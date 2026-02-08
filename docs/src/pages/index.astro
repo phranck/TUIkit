@@ -92,18 +92,21 @@ const BTN_SECONDARY =
           </div>
         </section>
 
-        <!-- Xcode Template Card (hidden on mobile) -->
+        <!-- CLI Installer Card (hidden on mobile) -->
         <section class="mx-auto hidden max-w-5xl px-6 pb-16 sm:block">
           <div class="rounded-2xl border border-border bg-frosted-glass p-8 backdrop-blur-xl">
             <h2 class="mb-4 flex items-center justify-center gap-4 text-center text-3xl font-bold text-foreground">
-              <Icon name="xcode" size={32} className="text-accent -mt-0.5" />
-              Xcode Template
+              <Icon name="terminal" size={32} className="text-accent -mt-0.5" />
+              Project Creator CLI
             </h2>
             <p class="mx-auto mb-6 max-w-2xl text-center text-lg leading-relaxed text-muted">
-              Prefer a ready-to-run project? Install the Xcode template with a single command 
-              and start building your terminal app immediately.
+              Install the <code class="text-foreground">tuikit</code> command to create new projects instantly.
+              Supports optional SQLite database and Swift Testing integration.
             </p>
             <TemplateBadge client:visible />
+            <p class="mt-4 text-center text-sm text-muted">
+              Then run <code class="text-foreground">tuikit init MyApp</code> to create your first project.
+            </p>
           </div>
         </section>
 

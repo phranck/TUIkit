@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# TUIkit Project Creator
-# Creates a new TUIkit Swift Package project with all dependencies
+# TUIkit CLI
+# Modern command-line tool for creating TUIkit projects
 
 set -e
+
+VERSION="1.0.0"
 
 # Colors
 BLUE='\033[0;34m'
@@ -12,7 +14,80 @@ YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}"
+# Help text
+show_help() {
+    echo -e "${GREEN}TUIkit CLI v${VERSION}${NC}"
+    echo ""
+    echo "Usage:"
+    echo "  tuikit init [options] [project-name]"
+    echo ""
+    echo "Options:"
+    echo "  sqlite              Include SQLite.swift for database storage"
+    echo "  testing             Include Swift Testing framework"
+    echo "  xctest              Include XCTest framework"
+    echo ""
+    echo "Examples:"
+    echo "  tuikit init MyApp                    # Basic TUIkit app"
+    echo "  tuikit init sqlite MyApp             # With SQLite"
+    echo "  tuikit init testing MyApp            # With Swift Testing"
+    echo "  tuikit init sqlite testing MyApp     # With SQLite and Testing"
+    echo "  tuikit init sqlite xctest MyApp      # With SQLite and XCTest"
+    echo ""
+    echo "If no project name is provided, you'll be prompted to enter one."
+}
+
+# Parse arguments
+INCLUDE_SQLITE=false
+TEST_FRAMEWORK="None"
+PROJECT_NAME=""
+
+if [ "$1" == "init" ]; then
+    shift
+
+    # Parse options and project name
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            sqlite)
+                INCLUDE_SQLITE=true
+                shift
+                ;;
+            testing)
+                TEST_FRAMEWORK="Swift Testing"
+                shift
+                ;;
+            xctest)
+                TEST_FRAMEWORK="XCTest"
+                shift
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            *)
+                # Assume it's the project name
+                PROJECT_NAME="$1"
+                shift
+                ;;
+        esac
+    done
+else
+    show_help
+    exit 1
+fi
+
+# Prompt for project name if not provided
+if [ -z "$PROJECT_NAME" ]; then
+    echo -e "${YELLOW}Enter project name:${NC}"
+    read -r PROJECT_NAME
+fi
+
+if [ -z "$PROJECT_NAME" ]; then
+    echo -e "${RED}Error: Project name cannot be empty${NC}"
+    exit 1
+fi
+
+# Header
+echo -e "${GREEN}"
 echo "╔════════════════════════════════════════════════════╗"
 echo "║                                                    ║"
 echo "║              TUIkit Project Creator                ║"
@@ -20,90 +95,64 @@ echo "║                                                    ║"
 echo "╚════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
-# Get project name
-echo -e "${YELLOW}Enter project name (e.g., MyTUIApp):${NC}"
-read -r PROJECT_NAME
-
-if [ -z "$PROJECT_NAME" ]; then
-    echo -e "${RED}Error: Project name cannot be empty${NC}"
-    exit 1
-fi
-
-# Get test framework
-echo -e "${YELLOW}Select test framework:${NC}"
-echo "  1) None"
-echo "  2) Swift Testing"
-echo "  3) XCTest"
-read -r TEST_CHOICE
-
-case $TEST_CHOICE in
-    1) TEST_FRAMEWORK="None" ;;
-    2) TEST_FRAMEWORK="Swift Testing" ;;
-    3) TEST_FRAMEWORK="XCTest" ;;
-    *) TEST_FRAMEWORK="None" ;;
-esac
-
-# Get SQLite option
-echo -e "${YELLOW}Include SQLite.swift for database storage? (y/n):${NC}"
-read -r SQLITE_CHOICE
-
-INCLUDE_SQLITE=false
-if [[ "$SQLITE_CHOICE" =~ ^[Yy]$ ]]; then
-    INCLUDE_SQLITE=true
-fi
-
 # Create project directory
-echo -e "${BLUE}Creating project directory...${NC}"
+echo -e "${GREEN}Creating project directory...${NC}"
 mkdir -p "$PROJECT_NAME"
 cd "$PROJECT_NAME"
 
 # Create Package.swift
-echo -e "${BLUE}Creating Package.swift...${NC}"
-cat > Package.swift << 'EOF'
+echo -e "${GREEN}Creating Package.swift...${NC}"
+
+# Build dependencies array
+DEPENDENCIES="        .package(url: \"https://github.com/phranck/TUIkit.git\", branch: \"main\")"
+if [ "$INCLUDE_SQLITE" = true ]; then
+    DEPENDENCIES="${DEPENDENCIES},
+        .package(url: \"https://github.com/stephencelis/SQLite.swift.git\", from: \"0.15.0\")"
+fi
+
+# Build target dependencies
+TARGET_DEPS="                .product(name: \"TUIkit\", package: \"TUIkit\")"
+if [ "$INCLUDE_SQLITE" = true ]; then
+    TARGET_DEPS="${TARGET_DEPS},
+                .product(name: \"SQLite\", package: \"SQLite.swift\")"
+fi
+
+# Build targets array
+TARGETS="        .executableTarget(
+            name: \"${PROJECT_NAME}\",
+            dependencies: [
+${TARGET_DEPS}
+            ],
+            path: \"Sources\"
+        )"
+
+if [ "$TEST_FRAMEWORK" != "None" ]; then
+    TARGETS="${TARGETS},
+        .testTarget(
+            name: \"${PROJECT_NAME}Tests\",
+            dependencies: [\"${PROJECT_NAME}\"],
+            path: \"Tests\"
+        )"
+fi
+
+cat > Package.swift << EOF
 // swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
-    name: "___PROJECT_NAME___",
+    name: "${PROJECT_NAME}",
     platforms: [.macOS(.v15)],
     dependencies: [
-        .package(url: "https://github.com/phranck/TUIkit.git", branch: "main")___SQLITE_DEPENDENCY___
+${DEPENDENCIES}
     ],
     targets: [
-        .executableTarget(
-            name: "___PROJECT_NAME___",
-            dependencies: [
-                .product(name: "TUIkit", package: "TUIkit")___SQLITE_TARGET_DEPENDENCY___
-            ],
-            path: "Sources"
-        )___TEST_TARGET___
+${TARGETS}
     ]
 )
 EOF
 
-# Replace placeholders in Package.swift
-sed -i '' "s/___PROJECT_NAME___/$PROJECT_NAME/g" Package.swift
-
-if [ "$INCLUDE_SQLITE" = true ]; then
-    sed -i '' 's/___SQLITE_DEPENDENCY___/,\'$'\n''        .package(url: "https:\/\/github.com\/stephencelis\/SQLite.swift.git", from: "0.15.0")/g' Package.swift
-    sed -i '' 's/___SQLITE_TARGET_DEPENDENCY___/,\'$'\n''                .product(name: "SQLite", package: "SQLite.swift")/g' Package.swift
-else
-    sed -i '' 's/___SQLITE_DEPENDENCY___//g' Package.swift
-    sed -i '' 's/___SQLITE_TARGET_DEPENDENCY___//g' Package.swift
-fi
-
-if [ "$TEST_FRAMEWORK" = "Swift Testing" ]; then
-    TEST_TARGET=",\n        .testTarget(\n            name: \"${PROJECT_NAME}Tests\",\n            dependencies: [\"$PROJECT_NAME\"],\n            path: \"Tests\"\n        )"
-    sed -i '' "s|___TEST_TARGET___|$TEST_TARGET|g" Package.swift
-elif [ "$TEST_FRAMEWORK" = "XCTest" ]; then
-    TEST_TARGET=",\n        .testTarget(\n            name: \"${PROJECT_NAME}Tests\",\n            dependencies: [\"$PROJECT_NAME\"],\n            path: \"Tests\"\n        )"
-    sed -i '' "s|___TEST_TARGET___|$TEST_TARGET|g" Package.swift
-else
-    sed -i '' 's/___TEST_TARGET___//g' Package.swift
-fi
-
 # Create Sources directory and files
-echo -e "${BLUE}Creating source files...${NC}"
+echo -e "${GREEN}Creating source files...${NC}"
 mkdir -p Sources
 
 cat > Sources/App.swift << EOF
@@ -188,30 +237,13 @@ EOF
 fi
 
 # Create README.md
-echo -e "${BLUE}Creating README.md...${NC}"
+echo -e "${GREEN}Creating README.md...${NC}"
 cat > README.md << EOF
 # $PROJECT_NAME
 
-A custom Swift package application built with TUIkit.
-
-## ⚠️ IMPORTANT: First Time Setup
-
-**Before building, verify the run destination:**
-
-1. Look at the Xcode toolbar (top of the window)
-2. Next to "$PROJECT_NAME", you'll see a destination dropdown
-3. **Make sure it says "My Mac"** (not "iPhone Simulator")
-4. If it doesn't, click it and select "My Mac"
-
-This is a macOS-only application and will show build errors if an iOS destination is selected.
+A TUIkit terminal application.
 
 ## Quick Start
-
-### Run in Xcode
-
-Press \`Cmd+R\` to build and run.
-
-### Run from Terminal
 
 \`\`\`bash
 swift run
@@ -264,15 +296,13 @@ let id = Expression<Int64>("id")
 let name = Expression<String>("name")
 
 // Insert data
-try db.run(users.insert(name <- "Alice"))
+try db.connection.run(users.insert(name <- "Alice"))
 
 // Query data
-for user in try db.prepare(users) {
+for user in try db.connection.prepare(users) {
     print("User: \(user[name])")
 }
 ```
-
-For detailed documentation, see [SQLite.swift Documentation](https://github.com/stephencelis/SQLite.swift/blob/master/Documentation/Index.md).
 
 EOF
 fi
@@ -282,7 +312,7 @@ cat >> README.md << 'EOF'
 ## Learn More
 
 - [TUIkit Documentation](https://tuikit.layered.work/documentation/tuikit/)
-- [GitHub](https://github.com/phranck/TUIkit)
+- [TUIkit GitHub](https://github.com/phranck/TUIkit)
 EOF
 
 # Create .gitignore
@@ -296,32 +326,6 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 EOF
-
-# Create .xcode.env
-cat > .xcode.env << 'EOF'
-# Xcode environment configuration
-# This file is used by Xcode to set environment variables
-
-# Prefer macOS platform for Swift packages
-export XCODE_PREFERRED_PLATFORM=macosx
-EOF
-
-# Create setup.sh
-cat > setup.sh << 'EOF'
-#!/bin/bash
-# Configure Xcode to prefer macOS platform
-defaults write com.apple.dt.Xcode IDEPreferredPlatformForSwiftPackages -string "macosx"
-echo "✅ Xcode configured for macOS platform"
-EOF
-chmod +x setup.sh
-
-# Create open-in-xcode.command
-cat > open-in-xcode.command << EOF
-#!/bin/bash
-cd "\$(dirname "\$0")"
-open Package.swift
-EOF
-chmod +x open-in-xcode.command
 
 # Create .swiftpm directory with scheme
 mkdir -p .swiftpm/xcode/xcshareddata/xcschemes
@@ -372,38 +376,7 @@ cat > .swiftpm/xcode/xcshareddata/xcschemes/${PROJECT_NAME}.xcscheme << EOF
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "TUIKIT_DEBUG"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
-   <ProfileAction
-      buildConfiguration = "Release"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      savedToolIdentifier = ""
-      useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "$PROJECT_NAME"
-            BuildableName = "$PROJECT_NAME"
-            BlueprintName = "$PROJECT_NAME"
-            ReferencedContainer = "container:">
-         </BuildableReference>
-      </BuildableProductRunnable>
-   </ProfileAction>
-   <AnalyzeAction
-      buildConfiguration = "Debug">
-   </AnalyzeAction>
-   <ArchiveAction
-      buildConfiguration = "Release"
-      revealArchiveInOrganizer = "YES">
-   </ArchiveAction>
 </Scheme>
 EOF
 
@@ -414,16 +387,15 @@ cat > .swiftpm/xcode/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
 <dict>
     <key>BuildSystemType</key>
     <string>Original</string>
-    <key>DisableBuildSystemDeprecationWarning</key>
-    <true/>
 </dict>
 </plist>
 EOF
 
-# Run setup
+# Configure Xcode preferences
 echo -e "${BLUE}Configuring Xcode preferences...${NC}"
-./setup.sh
+defaults write com.apple.dt.Xcode IDEPreferredPlatformForSwiftPackages -string "macosx" 2>/dev/null || true
 
+# Success message
 echo -e "${GREEN}"
 echo "╔════════════════════════════════════════════════════╗"
 echo "║                                                    ║"
@@ -443,7 +415,3 @@ echo "  1. cd $PROJECT_NAME"
 echo "  2. open Package.swift"
 echo "  3. Wait for dependencies to resolve"
 echo "  4. Press Cmd+R to build and run"
-echo ""
-echo -e "${YELLOW}⚠️  Remember: Select 'My Mac' as run destination!${NC}"
-echo ""
-echo -e "${BLUE}Documentation: ${NC}${YELLOW}https://tuikit.layered.work${NC}"

@@ -1,6 +1,0 @@
-# Don't ignore the template ZIP - it should be committed
-!TUIkit-App-Template.zip
-
-# Ignore build artifacts from testing the template
-TUIkit App.xctemplate/___FILEBASENAME___/.build/
-TUIkit App.xctemplate/___FILEBASENAME___/Package.resolved
