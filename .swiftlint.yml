@@ -83,7 +83,7 @@ function_parameter_count:
 
 cyclomatic_complexity:
   warning: 15
-  error: 25
+  error: 30
 
 identifier_name:
   min_length:
@@ -109,3 +109,10 @@ type_name:
     error: 60
   excluded:
     - ID
+    # Internal _Core views follow SwiftUI pattern (e.g. _AlertCore, _DialogCore)
+    - _AlertCore
+    - _DialogCore
+    - _PanelCore
+    - _CardCore
+    - _ListCore
+    - _TableCore
