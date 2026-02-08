@@ -1,7 +1,7 @@
 # TUIkit: What's Next
 
 **Branch:** `main`
-**Tests:** 727 / 112 suites
+**Tests:** 738 / 114 suites
 **Build:** clean
 
 ## Active
@@ -16,4 +16,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09
