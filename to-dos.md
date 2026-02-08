@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **List SwiftUI API Parity Phase 2c3**: Section flattening into List rows (headers/footers non-selectable)
+(none)
 
 ## Open
 
@@ -14,7 +14,7 @@
 
 #### Medium
 
-- [ ] **Section List Integration**: Connect Section to List row extraction for header/footer rendering
+(none)
 
 #### Low
 
@@ -34,6 +34,10 @@
 - [ ] **Code Examples**: Counter, Todo List, Form, Table/List
 
 ## Completed
+
+### 2026-02-08
+
+- [x] **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices, 10 new tests
 
 ### 2026-02-09
 
@@ -94,4 +98,4 @@
 
 ---
 
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-08

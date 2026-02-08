@@ -290,3 +290,29 @@ extension Section: ChildInfoProvider {
         return [ChildInfo(buffer: buffer, isSpacer: false, spacerMinLength: nil)]
     }
 }
+
+// MARK: - Section as ListRowExtractor
+
+extension Section: ListRowExtractor {
+    /// Extracts list rows from the section's content.
+    ///
+    /// Delegates to the content's `ListRowExtractor` implementation if available
+    /// (e.g., `ForEach`). This allows List to extract individual content rows
+    /// while separately handling section headers and footers.
+    ///
+    /// - Parameter context: The rendering context.
+    /// - Returns: Array of list rows from the section's content.
+    func extractListRows<RowID: Hashable>(context: RenderContext) -> [ListRow<RowID>] {
+        // Delegate to content if it's a ListRowExtractor (e.g., ForEach)
+        if let extractor = content as? ListRowExtractor {
+            return extractor.extractListRows(context: context)
+        }
+
+        // Fallback: render content as a single row (rare case)
+        let buffer = TUIkit.renderToBuffer(content, context: context)
+        if let indexID = 0 as? RowID {
+            return [ListRow(id: indexID, buffer: buffer)]
+        }
+        return []
+    }
+}
