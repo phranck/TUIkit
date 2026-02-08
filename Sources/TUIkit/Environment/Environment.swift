@@ -112,3 +112,21 @@ extension EnvironmentModifier: Renderable {
         return TUIkit.renderToBuffer(content, context: modifiedContext)
     }
 }
+
+// MARK: - Badge Environment Key
+
+/// Environment key for badge values.
+private struct BadgeKey: EnvironmentKey {
+    static let defaultValue: BadgeValue? = nil
+}
+
+extension EnvironmentValues {
+    /// The current badge value.
+    ///
+    /// Used to display decorative badges on list rows or other views.
+    /// Set via `.badge()` modifier on views.
+    var badgeValue: BadgeValue? {
+        get { self[BadgeKey.self] }
+        set { self[BadgeKey.self] = newValue }
+    }
+}

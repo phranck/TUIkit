@@ -641,13 +641,28 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
             backgroundColor = nil
         }
 
+        // Check for badge in environment (on the first line only)
+        let badge = context.environment.badgeValue
+        let shouldRenderBadge = badge != nil && !badge!.isHidden
+
         // Render each line - row content keeps its own styling
         // All rows have 1 char padding on each side, padded to same total width
         // Background bar covers the full width including padding
-        return row.buffer.lines.map { line in
+        return row.buffer.lines.enumerated().map { (lineIndex, line) in
             let lineLength = line.strippedLength
-            let rightPadding = max(1, rowWidth - lineLength + 1)
-            let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
+
+            // First line: make room for badge if present
+            let badgeWidth = shouldRenderBadge && lineIndex == 0 ? badge!.displayText.count + 2 : 0
+            let rightPadding = max(1, rowWidth - lineLength - badgeWidth + 1)
+            var paddedLine = " " + line + String(repeating: " ", count: rightPadding)
+
+            // Add badge to first line if needed
+            if shouldRenderBadge && lineIndex == 0 {
+                let badgeText = badge!.displayText
+                let dimmedForeground = palette.foregroundTertiary
+                let styledBadge = ANSIRenderer.colorize(badgeText, foreground: dimmedForeground)
+                paddedLine = paddedLine + " " + styledBadge
+            }
 
             if let bgColor = backgroundColor {
                 return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
