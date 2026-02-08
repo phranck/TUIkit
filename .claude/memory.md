@@ -13,7 +13,7 @@
 TUIkit/
 ├── Sources/TUIkit/          # Main library
 ├── Sources/TUIkitExample/   # Demo app
-├── Tests/TUIkitTests/       # Swift Testing (682 tests)
+├── Tests/TUIkitTests/       # Swift Testing (727 tests)
 ├── docs/                    # Astro site + DocC
 ├── xcode-template/          # Xcode project template
 └── plans/                   # Feature plans
@@ -66,7 +66,7 @@ extension MyControl: Renderable { ... }
 ```
 User Code                    Framework Internal
 ─────────                    ──────────────────
-struct MyView: View          
+struct MyView: View
   var body: some View        (composes other Views)
       ↓
   internal _Core: View       extension _Core: Renderable
@@ -87,7 +87,7 @@ struct MyView: View
 | Directory | Purpose |
 |-----------|---------|
 | `App/` | App, Scene, AppRunner, SignalManager, PulseTimer |
-| `Core/` | KeyEvent, Key, Lock, Binding, ViewIdentity |
+| `Core/` | KeyEvent, Key, Lock, Binding, ViewIdentity, SelectableListRow |
 | `Environment/` | EnvironmentValues, EnvironmentKey, TUIContext |
 | `Focus/` | FocusManager, Focusable, ActionHandler, ItemListHandler |
 | `Modifiers/` | All ViewModifier implementations |
@@ -135,7 +135,7 @@ struct MyView: View
 | `Toggle` | Boolean switch (slider/checkbox) |
 | `RadioButtonGroup` | Single-select options |
 | `Box` | Bordered container (reference implementation!) |
-| `List` | Scrollable list with selection |
+| `List` | Scrollable list with selection, Section support |
 | `Table` | Tabular data with columns |
 | `Section` | Group content with header/footer |
 | `Alert` | Modal alert with horizontal buttons |
@@ -146,12 +146,12 @@ struct MyView: View
 | `ProgressView` | Progress bar (5 styles) |
 | `ForEach` | Collection iteration |
 
-| Type (Phase 2c New) | Purpose |
-|--------------------|---------|
-| `SelectableListRow` | Type-safe row metadata (header/content/footer) |
-| `ListRowType` | Enum classifying row types |
+| Type | Purpose |
+|------|---------|
+| `SelectableListRow<ID>` | Type-safe row metadata (header/content/footer) |
+| `ListRowType<ID>` | Enum classifying row types |
 | `BadgeValue` | Badge rendering metadata (Int/String) |
-| `ItemListHandler` | Selection + keyboard navigation |
+| `ListStyle` | PlainListStyle, InsetGroupedListStyle |
 
 ### Modifiers
 
@@ -167,6 +167,8 @@ struct MyView: View
 | `.focusSection(_:)` | Named focus region |
 | `.equatable()` | Enable render caching |
 | `.alert(isPresented:)` | Show modal alert |
+| `.badge(_:)` | Show badge on list row |
+| `.listStyle(_:)` | Set list appearance |
 
 ## Patterns & Conventions
 
@@ -176,7 +178,7 @@ struct MyView: View
 public struct MyContainer<Content: View>: View {
     let title: String?
     let content: Content
-    
+
     public var body: some View {
         ContainerView(title: title) {
             content
@@ -191,7 +193,7 @@ public struct MyContainer<Content: View>: View {
 final class MyHandler: Focusable {
     let focusID: String
     var canBeFocused: Bool = true
-    
+
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
         case .enter: action(); return true
@@ -259,29 +261,24 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 ## Current State
 
 **Branch:** `main`
-**Tests:** 732 / 112 suites
-**Build:** clean (1 pre-existing flaky Focus test)
-
-### Phase 2: SwiftUI API Parity — Status
-
-| Phase | Feature | Status | Commit |
-|-------|---------|--------|--------|
-| 2a | Badge Modifier | ✅ Complete | 5cb6794 (earlier) |
-| 2b | ListStyle System | ✅ Complete | 5cb6794 (earlier) |
-| 2c1 | SelectableListRow Foundation | ✅ Complete | 9df0ab0 |
-| 2c2 | ItemListHandler Skip Logic | ✅ Complete | 9df0ab0 |
-| 2c3 | List Integration & Rendering | ✅ Complete | (pending commit) |
+**Tests:** 727 / 112 suites
+**Build:** clean
 
 ### Recent Completions (2026-02-08)
 
-- **Section Integration (Phase 2c3)**: List uses SelectableListRow, Section flattening, selectableIndices, 10 new tests
+- Section Integration (Phase 2c3): List uses SelectableListRow, Section flattening
+- Test Cleanup: Removed 5 flaky/tautological tests (732 → 727)
+- README Update: Added missing features documentation
 
-### Previous Completions (2026-02-09)
+### Phase 2: SwiftUI API Parity — Complete
 
-- **Badge Modifier (Phase 2a)**: Int/Text/StringProtocol overloads, environment, 20+ tests
-- **ListStyle System (Phase 2b)**: PlainListStyle, InsetGroupedListStyle, alternating colors
-- **SelectableListRow (Phase 2c1)**: Type-safe row classification (header/content/footer)
-- **ItemListHandler Skip Logic (Phase 2c2)**: selectableIndices, focus navigation over non-selectable rows
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 2a | Badge Modifier | ✅ Complete |
+| 2b | ListStyle System | ✅ Complete |
+| 2c1 | SelectableListRow Foundation | ✅ Complete |
+| 2c2 | ItemListHandler Skip Logic | ✅ Complete |
+| 2c3 | List Integration & Rendering | ✅ Complete |
 
 ---
 
