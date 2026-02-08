@@ -1,16 +1,16 @@
 import Icon from "./Icon";
 import { useCopyToClipboard } from "../../hooks/useCopyToClipboard";
 
-const INSTALL_COMMAND = 'curl -fsSL https://tuikit.layered.work/install-template.sh | bash';
+const INSTALL_COMMAND = 'curl -fsSL https://raw.githubusercontent.com/phranck/TUIkit/main/project-template/install.sh | bash';
 
-/** Xcode template installer badge with copy-to-clipboard. */
+/** CLI installer badge with copy-to-clipboard. */
 export default function TemplateBadge() {
   const { copied, copy } = useCopyToClipboard();
 
   return (
     <div className="flex w-full items-center justify-between gap-2 rounded-full border border-border bg-container-body/50 px-4 py-2 text-muted backdrop-blur-sm">
 
-      <code className="font-mono text-lg text-glow" style={{ color: "var(--foreground)" }}>
+      <code className="font-mono text-base text-glow" style={{ color: "var(--foreground)" }}>
         {INSTALL_COMMAND}
       </code>
       <button
