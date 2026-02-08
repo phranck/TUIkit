@@ -6,6 +6,7 @@
 set -e
 
 VERSION="1.0.0"
+TUIKIT_INSTALL_PATH="/usr/local/bin/tuikit"
 
 # Colors
 BLUE='\033[0;34m'
@@ -13,6 +14,275 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# Uninstall tuikit
+uninstall_tuikit() {
+    echo -e "${YELLOW}Removing tuikit...${NC}"
+    if [ -f "$TUIKIT_INSTALL_PATH" ]; then
+        sudo rm -f "$TUIKIT_INSTALL_PATH" 2>/dev/null || rm -f "$TUIKIT_INSTALL_PATH"
+    fi
+    echo -e "${GREEN}tuikit has been removed.${NC}"
+}
+
+# Check if running on Linux and Swift is available
+check_linux_swift() {
+    # Only check on Linux
+    if [ "$(uname)" != "Linux" ]; then
+        return 0
+    fi
+
+    # Check if Swift is installed
+    if command -v swift &> /dev/null; then
+        return 0
+    fi
+
+    echo -e "${YELLOW}"
+    echo "╔════════════════════════════════════════════════════╗"
+    echo "║                                                    ║"
+    echo "║      Swift is not installed on this system         ║"
+    echo "║                                                    ║"
+    echo "╚════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+    echo ""
+    echo -e "TUIkit requires Swift 6.0 or later to create projects."
+    echo ""
+    echo -e "${YELLOW}Would you like to install Swift and its dependencies?${NC}"
+    echo -e "This will install: Swift, clang, libcurl, and other required packages."
+    echo ""
+    read -p "Install Swift? [y/N] " -n 1 -r
+    echo ""
+
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+        echo -e "${RED}Swift installation declined.${NC}"
+        uninstall_tuikit
+        echo -e "${YELLOW}Please install Swift manually from https://swift.org/download/${NC}"
+        exit 1
+    fi
+
+    install_swift_linux
+}
+
+# Install Swift on Linux
+install_swift_linux() {
+    echo ""
+    echo -e "${GREEN}Installing Swift and dependencies...${NC}"
+    echo ""
+
+    # Detect package manager and distribution
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO=$ID
+    else
+        DISTRO="unknown"
+    fi
+
+    case "$DISTRO" in
+        ubuntu|debian|linuxmint|pop)
+            install_swift_debian
+            ;;
+        fedora|rhel|centos|rocky|almalinux)
+            install_swift_fedora
+            ;;
+        arch|manjaro)
+            install_swift_arch
+            ;;
+        *)
+            install_swift_generic
+            ;;
+    esac
+
+    # Verify installation
+    if command -v swift &> /dev/null; then
+        SWIFT_VERSION=$(swift --version 2>&1 | head -1)
+        echo ""
+        echo -e "${GREEN}Swift installed successfully!${NC}"
+        echo -e "${BLUE}Version: ${NC}$SWIFT_VERSION"
+        echo ""
+    else
+        echo ""
+        echo -e "${RED}Swift installation failed.${NC}"
+        echo -e "${YELLOW}Please install Swift manually from https://swift.org/download/${NC}"
+        uninstall_tuikit
+        exit 1
+    fi
+}
+
+# Install Swift on Debian/Ubuntu
+install_swift_debian() {
+    echo -e "${BLUE}Detected Debian/Ubuntu-based system${NC}"
+    echo ""
+
+    # Install dependencies
+    sudo apt-get update
+    sudo apt-get install -y \
+        binutils \
+        git \
+        gnupg2 \
+        libc6-dev \
+        libcurl4-openssl-dev \
+        libedit2 \
+        libgcc-11-dev \
+        libpython3-dev \
+        libsqlite3-0 \
+        libstdc++-11-dev \
+        libxml2-dev \
+        libz3-dev \
+        pkg-config \
+        tzdata \
+        unzip \
+        zlib1g-dev \
+        curl
+
+    # Try to install Swift via swiftly (recommended method)
+    if install_swift_via_swiftly; then
+        return 0
+    fi
+
+    # Fallback: Try apt repository
+    echo -e "${YELLOW}Trying Swift apt repository...${NC}"
+    if curl -s https://archive.swiftlang.xyz/install.sh | sudo bash; then
+        sudo apt-get update
+        sudo apt-get install -y swiftlang
+    else
+        echo -e "${YELLOW}apt repository not available, downloading from swift.org...${NC}"
+        install_swift_tarball
+    fi
+}
+
+# Install Swift on Fedora/RHEL
+install_swift_fedora() {
+    echo -e "${BLUE}Detected Fedora/RHEL-based system${NC}"
+    echo ""
+
+    # Install dependencies
+    sudo dnf install -y \
+        binutils \
+        gcc \
+        git \
+        glibc-static \
+        gzip \
+        libbsd \
+        libcurl-devel \
+        libedit \
+        libicu \
+        libstdc++-static \
+        libuuid \
+        libxml2-devel \
+        sqlite \
+        tar \
+        tzdata \
+        curl
+
+    # Try swiftly first
+    if install_swift_via_swiftly; then
+        return 0
+    fi
+
+    # Fallback to tarball
+    install_swift_tarball
+}
+
+# Install Swift on Arch Linux
+install_swift_arch() {
+    echo -e "${BLUE}Detected Arch-based system${NC}"
+    echo ""
+
+    # Swift is available in AUR
+    if command -v yay &> /dev/null; then
+        yay -S --noconfirm swift-bin
+    elif command -v paru &> /dev/null; then
+        paru -S --noconfirm swift-bin
+    else
+        echo -e "${YELLOW}No AUR helper found. Installing yay...${NC}"
+        sudo pacman -S --needed --noconfirm git base-devel
+        git clone https://aur.archlinux.org/yay.git /tmp/yay
+        cd /tmp/yay && makepkg -si --noconfirm
+        cd - > /dev/null
+        yay -S --noconfirm swift-bin
+    fi
+}
+
+# Install Swift via swiftly (cross-platform installer)
+install_swift_via_swiftly() {
+    echo -e "${BLUE}Installing Swift via swiftly...${NC}"
+
+    if curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash -s -- -y; then
+        # Source the environment
+        if [ -f "$HOME/.local/share/swiftly/env.sh" ]; then
+            source "$HOME/.local/share/swiftly/env.sh"
+        fi
+        # Install latest Swift
+        "$HOME/.local/bin/swiftly" install latest
+        return 0
+    fi
+
+    return 1
+}
+
+# Install Swift from official tarball (generic fallback)
+install_swift_tarball() {
+    echo -e "${BLUE}Downloading Swift from swift.org...${NC}"
+
+    # Detect architecture
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64)
+            SWIFT_ARCH="x86_64"
+            ;;
+        aarch64|arm64)
+            SWIFT_ARCH="aarch64"
+            ;;
+        *)
+            echo -e "${RED}Unsupported architecture: $ARCH${NC}"
+            return 1
+            ;;
+    esac
+
+    # Get Ubuntu version for tarball selection
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        UBUNTU_VERSION="${VERSION_ID}"
+    else
+        UBUNTU_VERSION="22.04"
+    fi
+
+    # Download and install (using Swift 6.0.2 as stable version)
+    SWIFT_VERSION="6.0.2"
+    SWIFT_RELEASE="swift-${SWIFT_VERSION}-RELEASE"
+    SWIFT_PLATFORM="ubuntu${UBUNTU_VERSION}"
+
+    DOWNLOAD_URL="https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_PLATFORM//.}/${SWIFT_RELEASE}/${SWIFT_RELEASE}-${SWIFT_PLATFORM}-${SWIFT_ARCH}.tar.gz"
+
+    echo -e "${BLUE}Downloading: ${NC}$DOWNLOAD_URL"
+
+    TEMP_DIR=$(mktemp -d)
+    curl -L "$DOWNLOAD_URL" -o "$TEMP_DIR/swift.tar.gz"
+
+    echo -e "${BLUE}Extracting...${NC}"
+    sudo mkdir -p /opt/swift
+    sudo tar -xzf "$TEMP_DIR/swift.tar.gz" -C /opt/swift --strip-components=1
+
+    # Add to PATH
+    echo 'export PATH="/opt/swift/usr/bin:$PATH"' | sudo tee /etc/profile.d/swift.sh
+    export PATH="/opt/swift/usr/bin:$PATH"
+
+    rm -rf "$TEMP_DIR"
+}
+
+# Generic installation (fallback)
+install_swift_generic() {
+    echo -e "${YELLOW}Unknown Linux distribution.${NC}"
+    echo -e "${BLUE}Attempting generic installation...${NC}"
+
+    # Try swiftly first
+    if install_swift_via_swiftly; then
+        return 0
+    fi
+
+    # Fallback to tarball
+    install_swift_tarball
+}
 
 # Help text
 show_help() {
@@ -35,6 +305,9 @@ show_help() {
     echo ""
     echo "If no project name is provided, you'll be prompted to enter one."
 }
+
+# Check Linux Swift installation first
+check_linux_swift
 
 # Parse arguments
 INCLUDE_SQLITE=false
