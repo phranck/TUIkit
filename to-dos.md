@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **SwiftUI API Parity**: Rename `.foregroundColor()` to `.foregroundStyle()` for SwiftUI alignment
+- [ ] **List SwiftUI API Parity**: Section (done), Badge, ListStyle, SelectionDisabled, AlternatingRows
 
 ## Open
 
@@ -14,7 +14,7 @@
 
 #### Medium
 
-(none)
+- [ ] **Section List Integration**: Connect Section to List row extraction for header/footer rendering
 
 #### Low
 
@@ -37,6 +37,8 @@
 
 ### 2026-02-08
 
+- [x] **Section View**: SwiftUI-conformant Section with header/content/footer, SectionRowExtractor, 14 tests
+- [x] **ButtonRole + Alert**: Horizontal buttons, cancel/destructive roles, ESC dismiss, arrow navigation
 - [x] **Xcode Project Template**: TUIkit App.xctemplate with install script, landing page one-liner
 - [x] **xcode-templates Skill**: Global skill for creating Xcode project templates
 - [x] **List & Table PR**: Merged PR #86 with focus bar, F-keys, StatusBar defaults, SwiftLint fixes
