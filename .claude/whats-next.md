@@ -1,17 +1,17 @@
 # TUIkit: What's Next
 
-**Branch:** `feature/list-table-improvements`
+**Branch:** `refactor/foreground-style`
 **Tests:** 666 / 104 suites ✓ · **Build:** clean ✓
 
 ## Active
 
-Xcode Project Template for TUIkit apps (local install working, needs commit)
+SwiftUI API parity: `.foregroundColor()` renamed to `.foregroundStyle()`
 
 ## Next Steps
 
-1. Commit Xcode template + landing page updates
-2. Create PR for List & Table improvements
-3. TextInput / TextField component
+1. Commit and PR foregroundStyle refactor
+2. TextInput / TextField component
+3. View Architecture Refactor (100% SwiftUI conformity)
 
 ---
 

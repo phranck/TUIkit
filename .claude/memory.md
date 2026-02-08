@@ -55,7 +55,7 @@ extension MyControl: Renderable { ... }
 List("Items", selection: $sel) {
     ForEach(items) { Text($0.name) }
 }
-.foregroundColor(.red)  // Must affect all Text inside!
+.foregroundStyle(.red)  // Must affect all Text inside!
 .disabled(true)         // Must disable entire List!
 ```
 
@@ -226,7 +226,7 @@ extension MyContainer where Content == Text {
 
 | Modifier | Effect |
 |----------|--------|
-| `.foregroundColor(_:)` | Text/border color |
+| `.foregroundStyle(_:)` | Text/border color |
 | `.bold()` / `.dim()` | Text weight |
 | `.padding(_:)` | Edge insets |
 | `.frame(width:height:)` | Fixed dimensions |
@@ -273,7 +273,7 @@ private struct _MyControlContent: View, Renderable {
     
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Access StateStorage, FocusManager here
-        // Read environment: context.environment.foregroundColor
+        // Read environment: context.environment.foregroundStyle
         // This is OK because it's internal and at leaf level
     }
 }
@@ -361,21 +361,20 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 
 ## Current State
 
-**Branch:** `feature/list-table-improvements`
+**Branch:** `refactor/foreground-style`
 **Tests:** 666 / 104 suites
 **Build:** clean
 **Lint:** 0 warnings
 
 ### Recent (Feb 2026)
 
+- `.foregroundColor()` renamed to `.foregroundStyle()` for SwiftUI parity
+- List & Table PR merged (focus bar, F-keys, StatusBar defaults)
 - Xcode project template created (TUIkit App.xctemplate)
-- List component implemented (with ItemListHandler)
-- Table component implemented (with column support)
-- ContainerView integration for bordered containers
+- List/Table implemented with ItemListHandler
 
 ### Next
 
-- Commit Xcode template
 - TextInput / TextField component
 - View Architecture Refactor (plan: `2026-02-07-view-architecture-refactor.md`)
 
