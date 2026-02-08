@@ -1,19 +1,19 @@
 # TUIkit: What's Next
 
 **Branch:** `main`
-**Tests:** 666 / 104 suites (1 flaky: FocusManager shared state)
+**Tests:** 682 / 108 suites
 **Build:** clean
 
 ## Active
 
-List SwiftUI API Parity (plan: `2026-02-08-list-swiftui-api-parity.md`)
+List SwiftUI API Parity: Phase 1 (Section) complete, Phase 2 (Badge) next
 
 ## Next Steps
 
-1. Commit uncommitted changes (Alert, Button roles, rendering fixes)
-2. Implement Section, .badge(), .listStyle() for List
-3. TextInput / TextField component
-4. View Architecture Refactor
+1. Implement `.badge()` modifier (Int, Text, String overloads)
+2. Implement `.listStyle()` with PlainListStyle, InsetGroupedListStyle
+3. Section integration into List (header/footer in row rendering)
+4. TextInput / TextField component
 
 ---
 

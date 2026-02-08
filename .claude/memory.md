@@ -13,7 +13,7 @@
 TUIkit/
 ├── Sources/TUIkit/          # Main library
 ├── Sources/TUIkitExample/   # Demo app
-├── Tests/TUIkitTests/       # Swift Testing (666 tests)
+├── Tests/TUIkitTests/       # Swift Testing (682 tests)
 ├── docs/                    # Astro site + DocC
 ├── xcode-template/          # Xcode project template
 └── plans/                   # Feature plans
@@ -24,15 +24,6 @@ TUIkit/
 - Swift 6.0 (`swift-tools-version: 6.0`)
 - Cross-platform: macOS + Linux
 - CI: `macos-15` + `swift:6.0` container
-
-## SwiftUI Documentation (LOCAL)
-
-**WICHTIG:** Lokale SwiftUI-Dokumentation ist verfügbar unter:
-```
-http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui
-```
-
-**Immer hier nachschlagen** bevor SwiftUI-konforme APIs implementiert werden!
 
 ## Architecture
 
@@ -57,18 +48,7 @@ public struct MyControl: View {
 extension MyControl: Renderable { ... }
 ```
 
-### Why This Matters
-
-```swift
-// This MUST work like SwiftUI:
-List("Items", selection: $sel) {
-    ForEach(items) { Text($0.name) }
-}
-.foregroundStyle(.red)  // Must affect all Text inside!
-.disabled(true)         // Must disable entire List!
-```
-
-### Renderable - When to Use
+### Renderable: When to Use
 
 **ONLY for leaf nodes:**
 - `Text` - renders styled string
@@ -130,6 +110,9 @@ struct MyView: View
 | `ViewModifier` | View transformation | `func modify(buffer:context:) -> FrameBuffer` |
 | `Palette` | Color theme | foreground, background, accent, etc. |
 | `TerminalProtocol` | Terminal abstraction | `func write(_:)`, `func readKeyEvent()` |
+| `ListRowExtractor` | List row extraction | `func extractListRows<ID>(context:) -> [ListRow<ID>]` |
+| `SectionRowExtractor` | Section metadata | `func extractSectionInfo(context:) -> SectionInfo` |
+| `ChildInfoProvider` | Stack child info | `func childInfos(context:) -> [ChildInfo]` |
 
 ### Core Classes
 
@@ -148,13 +131,14 @@ struct MyView: View
 | View | Purpose |
 |------|---------|
 | `Text` | Styled text (leaf) |
-| `Button` | Action trigger, focusable |
+| `Button` | Action trigger, focusable, supports ButtonRole |
 | `Toggle` | Boolean switch (slider/checkbox) |
 | `RadioButtonGroup` | Single-select options |
 | `Box` | Bordered container (reference implementation!) |
 | `List` | Scrollable list with selection |
 | `Table` | Tabular data with columns |
-| `Alert` | Modal alert with actions |
+| `Section` | Group content with header/footer |
+| `Alert` | Modal alert with horizontal buttons |
 | `VStack/HStack/ZStack` | Layout |
 | `Spacer` | Flexible space (leaf) |
 | `Divider` | Horizontal line |
@@ -179,7 +163,7 @@ struct MyView: View
 
 ## Patterns & Conventions
 
-### New View (Correct Pattern - Box.swift)
+### New View (Correct Pattern: Box.swift)
 
 ```swift
 public struct MyContainer<Content: View>: View {
@@ -268,21 +252,20 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 ## Current State
 
 **Branch:** `main`
-**Tests:** 666 / 104 suites
+**Tests:** 682 / 108 suites
 **Build:** clean
 
 ### Recent (Feb 2026)
 
+- Section view with header/content/footer, SectionRowExtractor
 - Alert horizontal buttons, ButtonRole, ESC dismiss
-- `.foregroundStyle()` renamed from `.foregroundColor()`
+- Left/Right arrow navigation in FocusManager
 - List & Table with ItemListHandler
 - Focus Sections with StatusBar cascading
-- ContainerView refactor with shared renderContainer()
 
 ### Active Plans
 
-- `2026-02-08-list-swiftui-api-parity.md` - Section, .badge(), .listStyle()
-- `2026-02-07-view-architecture-refactor.md` - 100% SwiftUI conformity
+- `2026-02-08-list-swiftui-api-parity.md` - Section done, Badge/ListStyle next
 
 ---
 
