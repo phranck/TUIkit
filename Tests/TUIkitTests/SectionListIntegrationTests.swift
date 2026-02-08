@@ -138,7 +138,7 @@ struct SectionListIntegrationTests {
             set: { selection = $0 }
         )) {
             Section {
-                ForEach(items) { item in
+                ForEach(items) { _ in
                     Text("Content")
                 }
             } header: {
@@ -184,7 +184,7 @@ struct SectionListIntegrationTests {
         let buffer = renderToBuffer(list, context: context)
 
         // List should render with selection
-        #expect(buffer.lines.count > 0)
+        #expect(!buffer.lines.isEmpty)
         // Selection should be preserved
         #expect(selection == "first")
     }
@@ -280,8 +280,8 @@ struct SectionListRowExtractorTests {
 
         #expect(info.headerBuffer != nil)
         #expect(info.footerBuffer != nil)
-        // Content may be empty if ForEach has no items, but header/footer should exist
-        #expect(info.contentBuffer.lines.count >= 0)
+        // Content should have the Text content
+        #expect(!info.contentBuffer.lines.isEmpty)
 
         // Header should be styled
         let headerContent = info.headerBuffer!.lines.joined()
@@ -305,7 +305,7 @@ struct SectionListRowExtractorTests {
 
         #expect(info.headerBuffer == nil)
         #expect(info.footerBuffer == nil)
-        // Content should have at least one line
-        #expect(info.contentBuffer.lines.count >= 0)
+        // Content should have the Text content
+        #expect(!info.contentBuffer.lines.isEmpty)
     }
 }
