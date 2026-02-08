@@ -64,3 +64,38 @@ extension View {
         environment(\.palette, palette)
     }
 }
+
+// MARK: - List Style
+
+extension View {
+    /// Sets the list style for List views in this view and its descendants.
+    ///
+    /// The list style controls how lists render, including borders, padding,
+    /// and row backgrounds. Built-in styles match SwiftUI's behavior:
+    /// - ``PlainListStyle``: Minimal appearance with no borders
+    /// - ``InsetGroupedListStyle``: Bordered with inset padding and alternating rows
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// List {
+    ///     ForEach(items) { item in
+    ///         Text(item.name)
+    ///     }
+    /// }
+    /// .listStyle(.plain)
+    ///
+    /// List {
+    ///     ForEach(items) { item in
+    ///         Text(item.name)
+    ///     }
+    /// }
+    /// .listStyle(.insetGrouped)
+    /// ```
+    ///
+    /// - Parameter style: The list style to apply.
+    /// - Returns: A view with the list style applied.
+    public func listStyle(_ style: any ListStyle) -> some View {
+        environment(\.listStyle, style)
+    }
+}

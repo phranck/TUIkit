@@ -130,3 +130,22 @@ extension EnvironmentValues {
         set { self[BadgeKey.self] = newValue }
     }
 }
+
+// MARK: - List Style Environment Key
+
+/// Environment key for list styles.
+private struct ListStyleKey: EnvironmentKey {
+    static let defaultValue: any ListStyle = InsetGroupedListStyle()
+}
+
+extension EnvironmentValues {
+    /// The current list style.
+    ///
+    /// Controls how lists render, including borders, padding, and row backgrounds.
+    /// Set via `.listStyle()` modifier on List views.
+    /// Default: ``InsetGroupedListStyle`` (bordered with alternating rows).
+    var listStyle: any ListStyle {
+        get { self[ListStyleKey.self] }
+        set { self[ListStyleKey.self] = newValue }
+    }
+}
