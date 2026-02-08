@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **List SwiftUI API Parity**: Section (done), Badge, ListStyle, SelectionDisabled, AlternatingRows
+- [ ] **List SwiftUI API Parity Phase 2c3**: Section flattening into List rows (headers/footers non-selectable)
 
 ## Open
 
@@ -34,6 +34,13 @@
 - [ ] **Code Examples**: Counter, Todo List, Form, Table/List
 
 ## Completed
+
+### 2026-02-09
+
+- [x] **Badge Modifier (Phase 2a)**: Int/Text/StringProtocol overloads, List integration, 20+ tests
+- [x] **ListStyle System (Phase 2b)**: PlainListStyle + InsetGroupedListStyle, alternating rows, environment keys
+- [x] **SelectableListRow Foundation (Phase 2c1)**: ListRowType enum, type-safe row classification, FrameBuffer Sendable
+- [x] **ItemListHandler Skip Logic (Phase 2c2)**: selectableIndices, focus navigation over non-selectable rows
 
 ### 2026-02-08
 
@@ -87,4 +94,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09
