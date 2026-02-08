@@ -115,8 +115,13 @@ public struct Panel<Content: View, Footer: View>: View {
         )
     }
 
-    public var body: Never {
-        fatalError("Panel renders via Renderable")
+    public var body: some View {
+        _PanelCore(
+            title: title,
+            content: content,
+            footer: footer,
+            config: config
+        )
     }
 }
 
@@ -166,9 +171,22 @@ extension Panel where Footer == EmptyView {
     }
 }
 
-// MARK: - Panel Rendering
+// MARK: - Panel Core Rendering
 
-extension Panel: Renderable {
+/// Internal view that handles Panel rendering.
+///
+/// This separation ensures `Panel.body` returns a real `View`, allowing
+/// environment modifiers like `.foregroundColor()` to propagate correctly.
+struct _PanelCore<Content: View, Footer: View>: View, Renderable {
+    let title: String
+    let content: Content
+    let footer: Footer?
+    let config: ContainerConfig
+
+    var body: Never {
+        fatalError("_PanelCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         renderContainer(
             title: title,

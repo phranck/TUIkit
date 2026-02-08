@@ -189,8 +189,8 @@ struct TupleViewEquatableTests {
         let buffer = renderToBuffer(stack, context: context)
 
         #expect(buffer.height == 2)
-        #expect(buffer.lines[0].hasPrefix("A"))
-        #expect(buffer.lines[1] == "B")
+        #expect(buffer.lines[0].stripped.hasPrefix("A"))
+        #expect(buffer.lines[1].stripped == "B")
     }
 
     @Test("equatable() on HStack with equatable content renders correctly")

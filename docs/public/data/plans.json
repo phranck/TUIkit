@@ -1,5 +1,5 @@
 {
-  "generated": "2026-02-07T23:25:08.384Z",
+  "generated": "2026-02-08T00:25:52.774Z",
   "open": [
     {
       "date": "2026-02-07",
@@ -29,7 +29,7 @@
       "date": "2026-02-06",
       "slug": "imp-list-table",
       "title": "Implementation Plan: List & Table (Refactored)",
-      "preface": "List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus navigation via `FocusableItemListHandler` and selection state via `SelectionStateManager`, with helpers like `renderFocusableContainer()` preventing code duplication. This establishes the consistent, reusable pattern for List and Table while becoming a reference for future components."
+      "preface": "List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus and selection handling via `ItemListHandler`, which combines navigation and selection logic in a single reusable component. This establishes a consistent, reusable pattern for List and Table while serving as a reference for future components."
     },
     {
       "date": "2026-02-06",

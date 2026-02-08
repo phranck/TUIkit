@@ -82,7 +82,7 @@ struct CardTests {
             Text("Hello")
         }
         let context = testContext()
-        let buffer = card.renderToBuffer(context: context)
+        let buffer = renderToBuffer(card, context: context)
 
         // Should have top border + content + bottom border
         #expect(buffer.height >= 3)
@@ -97,7 +97,7 @@ struct CardTests {
             Text("Content")
         }
         let context = testContext()
-        let buffer = card.renderToBuffer(context: context)
+        let buffer = renderToBuffer(card, context: context)
 
         #expect(buffer.height >= 3)
         let allContent = buffer.lines.joined()
@@ -116,8 +116,8 @@ struct CardTests {
         }
         let context = testContext()
 
-        let bufferWithout = cardWithout.renderToBuffer(context: context)
-        let bufferWith = cardWith.renderToBuffer(context: context)
+        let bufferWithout = renderToBuffer(cardWithout, context: context)
+        let bufferWith = renderToBuffer(cardWith, context: context)
 
         #expect(bufferWith.height > bufferWithout.height)
     }
@@ -135,7 +135,7 @@ struct PanelTests {
             Text("Hello")
         }
         let context = testContext()
-        let buffer = panel.renderToBuffer(context: context)
+        let buffer = renderToBuffer(panel, context: context)
 
         // Top border (with title) + content + bottom border
         #expect(buffer.height >= 3)
@@ -156,8 +156,8 @@ struct PanelTests {
         }
         let context = testContext()
 
-        let bufferWithout = panelWithout.renderToBuffer(context: context)
-        let bufferWith = panelWith.renderToBuffer(context: context)
+        let bufferWithout = renderToBuffer(panelWithout, context: context)
+        let bufferWith = renderToBuffer(panelWith, context: context)
 
         #expect(bufferWith.height > bufferWithout.height)
     }
@@ -216,4 +216,20 @@ struct ForEachTests {
     // at compile time — not at render time. Direct construction in tests
     // bypasses the builder, so ForEach remains unflattened and produces
     // an empty buffer. This is expected behavior, matching SwiftUI's pattern.
+
+    @Test("ForEach with empty array produces empty result")
+    func forEachEmptyArray() {
+        let items: [TestItem] = []
+        let forEach = ForEach(items) { item in
+            Text(item.name)
+        }
+
+        #expect(forEach.data.isEmpty)
+
+        // Also test via ViewArray (which is what @ViewBuilder produces)
+        let viewArray = ViewArray<Text>([])
+        let context = testContext()
+        let buffer = renderToBuffer(viewArray, context: context)
+        #expect(buffer.isEmpty)
+    }
 }

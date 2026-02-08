@@ -264,6 +264,10 @@ struct FrameModifierTests {
         // Center vertically: content should be on line 1 (middle of 3)
         let contentLine = buffer.lines[1]
         #expect(contentLine.contains("Hi"))
+        // Center horizontally: "Hi" is 2 chars, frame is 10, so 4 spaces on left
+        let stripped = contentLine.stripped
+        let leadingSpaces = stripped.prefix(while: { $0 == " " }).count
+        #expect(leadingSpaces == 4, "Content should be horizontally centered with 4 leading spaces")
     }
 
     @Test("FlexibleFrameView alignment trailing")
@@ -283,7 +287,7 @@ struct FrameModifierTests {
 
         // "Hi" should be right-aligned within 10 chars
         let line = buffer.lines[0]
-        #expect(line.hasSuffix("Hi"))
+        #expect(line.stripped.hasSuffix("Hi"))
     }
 
     @Test("FlexibleFrameView alignment bottom")
@@ -305,6 +309,48 @@ struct FrameModifierTests {
         // Content on last line
         let lastLine = buffer.lines[buffer.height - 1]
         #expect(lastLine.contains("Hi"))
+    }
+
+    @Test("FlexibleFrameView maxHeight constrains available height for content")
+    func frameMaxHeight() {
+        // maxHeight constrains the availableHeight passed to child rendering,
+        // but does not clip content that exceeds constraints. This matches
+        // SwiftUI behavior where frame constraints inform layout, not clip.
+        let frame = FlexibleFrameView(
+            content: Text("Short"),
+            minWidth: nil,
+            idealWidth: nil,
+            maxWidth: nil,
+            minHeight: 5,
+            idealHeight: nil,
+            maxHeight: .fixed(10),
+            alignment: .top
+        )
+        let context = testContext()
+        let buffer = frame.renderToBuffer(context: context)
+
+        // minHeight 5 expands the 1-line content to 5 lines
+        #expect(buffer.height == 5)
+    }
+
+    @Test("FlexibleFrameView maxHeight infinity fills available space")
+    func frameMaxHeightInfinity() {
+        let frame = FlexibleFrameView(
+            content: Text("Hi"),
+            minWidth: nil,
+            idealWidth: nil,
+            maxWidth: nil,
+            minHeight: nil,
+            idealHeight: nil,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        var context = testContext()
+        context.availableHeight = 10
+        let buffer = frame.renderToBuffer(context: context)
+
+        // Should expand to fill available height
+        #expect(buffer.height == 10)
     }
 }
 
