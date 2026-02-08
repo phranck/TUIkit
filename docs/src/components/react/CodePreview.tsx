@@ -4,15 +4,38 @@ const CODE = `import TUIkit
 
 @main
 struct MyApp: App {
+    @State private var count = 0
+    @State private var darkMode = true
+    @State private var selected: String?
+
     var body: some Scene {
         WindowGroup {
             VStack {
-                Text("Hello, TUIkit!")
+                Text("Welcome to TUIkit")
                     .bold()
                     .foregroundColor(.cyan)
-                Button("Press me") {
-                    // handle action
+
+                HStack {
+                    Button("Increment") { count += 1 }
+                    Text("Count: \\(count)")
                 }
+
+                Toggle("Dark Mode", isOn: $darkMode)
+
+                List("Items", selection: $selected) {
+                    ForEach(["Alpha", "Beta", "Gamma"], id: \\.self) { item in
+                        Text(item)
+                    }
+                }
+                .frame(height: 5)
+            }
+            .padding()
+            .appHeader {
+                Text("My TUIkit App").bold()
+            }
+            .statusBarItems {
+                StatusBarItem(shortcut: "q", label: "Quit")
+                StatusBarItem(shortcut: "t", label: "Theme")
             }
         }
     }
@@ -44,10 +67,10 @@ export default function CodePreview() {
         </button>
       </div>
 
-      {/* Code content */}
-      <pre className="overflow-x-auto p-5 text-base leading-relaxed">
+      {/* Code content: max 21 lines visible, scroll for rest */}
+      <pre className="overflow-auto p-5 text-base leading-relaxed" style={{ maxHeight: "calc(21 * 1.625em + 2.5rem)" }}>
         <code>
-          <Highlight code={CODE} />
+          <Highlight code={CODE} showLineNumbers />
         </code>
       </pre>
     </div>
@@ -65,15 +88,26 @@ const HIGHLIGHT = {
 } as const;
 
 /** Minimal Swift syntax highlighter: no external dependency. */
-function Highlight({ code }: { code: string }) {
+function Highlight({ code, showLineNumbers = false }: { code: string; showLineNumbers?: boolean }) {
   const lines = code.split("\n");
+  const lineNumberWidth = String(lines.length).length;
 
   return (
     <>
       {lines.map((line, lineIndex) => (
-        <span key={lineIndex}>
-          {tokenizeLine(line)}
-          {lineIndex < lines.length - 1 && "\n"}
+        <span key={lineIndex} className="flex">
+          {showLineNumbers && (
+            <span 
+              className="select-none pr-4 text-right text-muted/40"
+              style={{ minWidth: `${lineNumberWidth + 1}ch` }}
+            >
+              {lineIndex + 1}
+            </span>
+          )}
+          <span className="flex-1">
+            {tokenizeLine(line)}
+            {lineIndex < lines.length - 1 && "\n"}
+          </span>
         </span>
       ))}
     </>
@@ -98,7 +132,7 @@ function tokenizeLine(line: string) {
 function tokenizeSegment(segment: string) {
   // Build a combined regex for all token types
   const combined =
-    /(@\w+)|("(?:[^"\\]|\\.)*")|(\.\w+)\(|\b(struct|var|some|func|import|let|return|if|else|for|in|while|switch|case|default|class|protocol|enum|init|self|true|false|nil|private|public|internal)\b|\b(App|Scene|WindowGroup|VStack|HStack|Text|Button|View|String|Int|Bool|Never)\b/g;
+    /(@\w+)|("(?:[^"\\]|\\.)*")|(\\\.self)|(\.\w+)\(|\b(struct|var|some|func|import|let|return|if|else|for|in|while|switch|case|default|class|protocol|enum|init|self|true|false|nil|private|public|internal|isOn|label|shortcut|id)\b|\b(App|Scene|WindowGroup|VStack|HStack|Text|Button|View|String|Int|Bool|Never|Toggle|List|ForEach|State|StatusBarItem)\b/g;
 
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;

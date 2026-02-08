@@ -95,8 +95,13 @@ public struct Dialog<Content: View, Footer: View>: View {
         self.footer = footer()
     }
 
-    public var body: Never {
-        fatalError("Dialog renders via Renderable")
+    public var body: some View {
+        _DialogCore(
+            title: title,
+            content: content,
+            footer: footer,
+            config: config
+        )
     }
 }
 
@@ -113,9 +118,22 @@ extension Dialog: Equatable where Content: Equatable, Footer: Equatable {
     }
 }
 
-// MARK: - Rendering
+// MARK: - Dialog Core Rendering
 
-extension Dialog: Renderable {
+/// Internal view that handles Dialog rendering.
+///
+/// This separation ensures `Dialog.body` returns a real `View`, allowing
+/// environment modifiers like `.foregroundColor()` to propagate correctly.
+struct _DialogCore<Content: View, Footer: View>: View, Renderable {
+    let title: String
+    let content: Content
+    let footer: Footer?
+    let config: ContainerConfig
+
+    var body: Never {
+        fatalError("_DialogCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         renderContainer(
             title: title,

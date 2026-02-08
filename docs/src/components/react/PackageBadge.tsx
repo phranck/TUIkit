@@ -1,4 +1,4 @@
-import Icon from "./Icon";
+import { IconBrandSwift, IconCopy, IconCheck } from "@tabler/icons-react";
 import { useCopyToClipboard } from "../../hooks/useCopyToClipboard";
 
 const VERSION = import.meta.env.PUBLIC_TUIKIT_VERSION ?? "0.1.0";
@@ -9,21 +9,20 @@ export default function PackageBadge() {
   const { copied, copy } = useCopyToClipboard();
 
   return (
-    <div className="inline-flex items-center gap-3 rounded-full border border-border bg-container-body/50 px-6 py-3 text-muted backdrop-blur-sm">
-      <Icon name="swift" size={20} className="text-accent" />
-      <code className="font-mono text-xl text-glow" style={{ color: "var(--foreground)" }}>
+    <div className="flex w-full items-center justify-between gap-2 rounded-full border border-border bg-container-body/50 px-4 py-2 text-muted backdrop-blur-sm">
 
+      <code className="font-mono text-lg text-glow" style={{ color: "var(--foreground)" }}>
         {PACKAGE_LINE}
       </code>
       <button
         onClick={() => copy(PACKAGE_LINE)}
         aria-label="Copy to clipboard"
-        className="ml-1 rounded-md p-1.5 text-muted transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="ml-1 rounded-md p-1.5 text-muted transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background shrink-0"
       >
         {copied ? (
-          <Icon name="checkmark" size={20} className="text-accent" />
+          <IconCheck size={20} className="text-accent" />
         ) : (
-          <Icon name="copy" size={20} />
+          <IconCopy size={20} />
         )}
       </button>
     </div>

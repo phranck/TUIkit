@@ -270,8 +270,8 @@ private extension Terminal {
     func writeImmediate(_ string: String) {
         string.utf8CString.withUnsafeBufferPointer { buffer in
             let count = buffer.count - 1
-            guard count >= 1 else { return }
-            buffer.baseAddress!.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
+            guard count >= 1, let baseAddress = buffer.baseAddress else { return }
+            baseAddress.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
                 var written = 0
                 while written < count {
                     let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)

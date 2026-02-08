@@ -39,7 +39,7 @@ if [[ -n "$AUDIO" ]]; then
   VIDEO_DURATION=$(ffprobe -v error -show_entries format=duration \
     -of csv=p=0 "$SILENT")
   FADE_START=$(echo "$VIDEO_DURATION - $FADE_DURATION" | bc)
-  ffmpeg -y -i "$SILENT" -i "$AUDIO" \
+  ffmpeg -y -i "$SILENT" -stream_loop -1 -i "$AUDIO" \
     -c:v copy -c:a aac -b:a 192k \
     -af "volume=0.4,afade=t=in:d=$FADE_DURATION,afade=t=out:st=$FADE_START:d=$FADE_DURATION" \
     -shortest -movflags +faststart \
