@@ -12,7 +12,9 @@
       "WebFetch(domain:github.com)",
       "Bash(npm run docs:build:*)",
       "Bash(grep:*)",
-      "Bash(swiftlint:*)"
+      "Bash(swiftlint:*)",
+      "Bash(gh run:*)",
+      "Bash(git push)"
     ]
   }
 }
