@@ -120,8 +120,14 @@ public struct Card<Content: View, Footer: View>: View {
         self.backgroundColor = backgroundColor
     }
 
-    public var body: Never {
-        fatalError("Card renders via Renderable")
+    public var body: some View {
+        _CardCore(
+            title: title,
+            content: content,
+            footer: footer,
+            config: config,
+            backgroundColor: backgroundColor
+        )
     }
 }
 
@@ -139,9 +145,20 @@ extension Card: Equatable where Content: Equatable, Footer: Equatable {
     }
 }
 
-// MARK: - Rendering
+// MARK: - Internal Core View
 
-extension Card: Renderable {
+/// Internal view that handles the actual rendering of Card.
+private struct _CardCore<Content: View, Footer: View>: View, Renderable {
+    let title: String?
+    let content: Content
+    let footer: Footer?
+    let config: ContainerConfig
+    let backgroundColor: Color?
+
+    var body: Never {
+        fatalError("_CardCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Wrap content with background if specified
         let bodyContent: AnyView

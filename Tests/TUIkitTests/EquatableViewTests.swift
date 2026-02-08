@@ -44,7 +44,7 @@ struct EquatableViewTests {
 
         let buffer = renderToBuffer(view, context: context)
 
-        #expect(buffer.lines.contains("Hello"))
+        #expect(buffer.lines[0].stripped == "Hello")
         #expect(context.tuiContext.renderCache.count == 1)
     }
 
@@ -81,7 +81,7 @@ struct EquatableViewTests {
         let buffer2 = renderToBuffer(view2, context: context)
 
         #expect(buffer1.lines != buffer2.lines)
-        #expect(buffer2.lines.contains("After"))
+        #expect(buffer2.lines[0].stripped == "After")
     }
 
     // MARK: - Cache Miss on Size Change
@@ -110,7 +110,7 @@ struct EquatableViewTests {
         )
         let buffer2 = renderToBuffer(view, context: context2)
 
-        #expect(buffer2.lines.contains("Size"))
+        #expect(buffer2.lines[0].stripped == "Size")
         // Cache entry was overwritten with new size
         #expect(tuiContext.renderCache.count == 1)
     }
@@ -146,7 +146,7 @@ struct EquatableViewTests {
         // Verify the wrapper produces correct output
         let context = testContext()
         let buffer = renderToBuffer(wrapped, context: context)
-        #expect(buffer.lines.contains("Test"))
+        #expect(buffer.lines[0].stripped == "Test")
     }
 
     // MARK: - Integration with VStack
@@ -162,9 +162,9 @@ struct EquatableViewTests {
 
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 2)
-        // VStack pads shorter lines to max width (alignment), so check content prefix
-        #expect(buffer.lines[0].hasPrefix("Top"))
-        #expect(buffer.lines[1] == "Bottom")
+        // VStack with default .center alignment centers shorter children
+        #expect(buffer.lines[0].contains("Top"))
+        #expect(buffer.lines[1].contains("Bottom"))
     }
 
     // MARK: - GC Integration

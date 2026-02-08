@@ -78,14 +78,32 @@ public struct Alert<Actions: View>: View {
         self.actions = actions()
     }
 
-    public var body: Never {
-        fatalError("Alert renders via Renderable")
+    public var body: some View {
+        _AlertCore(
+            title: title,
+            message: message,
+            config: config,
+            actions: actions
+        )
     }
 }
 
-// MARK: - Rendering
+// MARK: - Alert Core Rendering
 
-extension Alert: Renderable {
+/// Internal view that handles Alert rendering.
+///
+/// This separation ensures `Alert.body` returns a real `View`, allowing
+/// environment modifiers like `.foregroundColor()` to propagate correctly.
+struct _AlertCore<Actions: View>: View, Renderable {
+    let title: String
+    let message: String
+    let config: ContainerConfig
+    let actions: Actions
+
+    var body: Never {
+        fatalError("_AlertCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let hasActions = !(actions is EmptyView)
         return renderContainer(

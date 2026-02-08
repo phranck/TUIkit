@@ -1,17 +1,18 @@
-# TUIKit: What's Next
+# TUIkit: What's Next
 
-**Branch:** `feature/list-table-components`
-**Tests:** 649 / 103 suites ✓ · **Build:** clean ✓ · **Lint:** 0 warnings ✓
+**Branch:** `feature/list-table-improvements`
+**Tests:** 666 / 104 suites ✓ · **Build:** clean ✓
 
-## Completed
+## Active
 
-List & Table components (Plan: `plans/done/2026-02-07-list-table-components.md`)
+Xcode Project Template for TUIkit apps (local install working, needs commit)
 
 ## Next Steps
 
-1. Create PR for List & Table components
-2. Merge to main after review
+1. Commit Xcode template + landing page updates
+2. Create PR for List & Table improvements
+3. TextInput / TextField component
 
 ---
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-08
