@@ -9,6 +9,7 @@ import RainOverlay from "../components/react/RainOverlay";
 import SpinnerLights from "../components/react/SpinnerLights";
 import CodePreview from "../components/react/CodePreview";
 import PackageBadge from "../components/react/PackageBadge";
+import TemplateBadge from "../components/react/TemplateBadge";
 import Icon from "../components/react/Icon";
 
 /** Test and suite counts injected at build-time by the prebuild script. */
@@ -74,18 +75,40 @@ const BTN_SECONDARY =
             </a>
           </div>
 
-          <!-- Swift Package badge (hidden on mobile) -->
-          <div class="hidden sm:block">
-            <p class="mt-20 mb-4 max-w-2xl text-xl leading-relaxed text-muted">
-              Getting started is simple. Add TUIkit as a dependency to your
-              Swift package. No extra configuration or system libraries required:
+        </section>
+
+        <!-- Getting Started Card (hidden on mobile) -->
+        <section class="mx-auto hidden max-w-5xl px-6 pb-12 sm:block">
+          <div class="rounded-2xl border border-border bg-frosted-glass p-8 backdrop-blur-xl">
+            <h2 class="mb-4 flex items-center justify-center gap-4 text-center text-3xl font-bold text-foreground">
+              <Icon name="swift" size={32} className="text-accent -mt-0.5" />
+              Get started in seconds
+            </h2>
+            <p class="mx-auto mb-6 max-w-2xl text-center text-lg leading-relaxed text-muted">
+              Add TUIkit as a dependency to your Swift package. No ncurses, no C libraries, 
+              no complex setup. Just pure Swift that runs on macOS and Linux.
             </p>
             <PackageBadge client:visible />
           </div>
         </section>
 
+        <!-- Xcode Template Card (hidden on mobile) -->
+        <section class="mx-auto hidden max-w-5xl px-6 pb-16 sm:block">
+          <div class="rounded-2xl border border-border bg-frosted-glass p-8 backdrop-blur-xl">
+            <h2 class="mb-4 flex items-center justify-center gap-4 text-center text-3xl font-bold text-foreground">
+              <Icon name="xcode" size={32} className="text-accent -mt-0.5" />
+              Xcode Template
+            </h2>
+            <p class="mx-auto mb-6 max-w-2xl text-center text-lg leading-relaxed text-muted">
+              Prefer a ready-to-run project? Install the Xcode template with a single command 
+              and start building your terminal app immediately.
+            </p>
+            <TemplateBadge client:visible />
+          </div>
+        </section>
+
         <!-- Code Preview Section (hidden on mobile) -->
-        <section class="mx-auto hidden max-w-3xl px-6 pb-28 sm:block">
+        <section class="mx-auto hidden max-w-5xl px-6 pb-28 sm:block">
           <CodePreview client:visible />
         </section>
 

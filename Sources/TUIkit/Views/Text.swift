@@ -197,12 +197,56 @@ extension Text: Renderable {
         var effectiveStyle = style
 
         // If no explicit foreground color is set on the Text itself,
-        // inherit from the environment (set by .foregroundColor() on parent views)
+        // inherit from the environment (set by .foregroundColor() on parent views),
+        // or fall back to the palette's default foreground color
         if effectiveStyle.foregroundColor == nil {
             effectiveStyle.foregroundColor = context.environment.foregroundColor
+                ?? context.environment.palette.foreground
         }
 
         let resolvedStyle = effectiveStyle.resolved(with: context.environment.palette)
-        return FrameBuffer(text: ANSIRenderer.render(content, with: resolvedStyle))
+
+        // Word-wrap text to fit available width
+        let wrappedLines = wordWrap(content, maxWidth: context.availableWidth)
+
+        // Apply styling to each line
+        let styledLines = wrappedLines.map { ANSIRenderer.render($0, with: resolvedStyle) }
+
+        return FrameBuffer(lines: styledLines)
+    }
+
+    /// Wraps text into lines that fit a maximum character width.
+    ///
+    /// Splits on word boundaries (spaces). Words longer than `maxWidth`
+    /// are placed on their own line without further splitting.
+    ///
+    /// - Parameters:
+    ///   - text: The text to wrap.
+    ///   - maxWidth: Maximum characters per line.
+    /// - Returns: An array of wrapped lines (never empty).
+    private func wordWrap(_ text: String, maxWidth: Int) -> [String] {
+        guard maxWidth > 0 else { return [text] }
+
+        let words = text.split(separator: " ", omittingEmptySubsequences: false)
+        var lines: [String] = []
+        var currentLine = ""
+
+        for word in words {
+            let wordStr = String(word)
+            if currentLine.isEmpty {
+                currentLine = wordStr
+            } else if currentLine.count + 1 + wordStr.count <= maxWidth {
+                currentLine += " " + wordStr
+            } else {
+                lines.append(currentLine)
+                currentLine = wordStr
+            }
+        }
+
+        if !currentLine.isEmpty {
+            lines.append(currentLine)
+        }
+
+        return lines.isEmpty ? [""] : lines
     }
 }

@@ -42,11 +42,11 @@ public struct VStack<Content: View>: View {
     /// Creates a vertical stack with the specified options.
     ///
     /// - Parameters:
-    ///   - alignment: The horizontal alignment of children (default: .leading).
+    ///   - alignment: The horizontal alignment of children (default: .center, like SwiftUI).
     ///   - spacing: The spacing between children in lines (default: 0).
     ///   - content: A ViewBuilder that defines the children.
     public init(
-        alignment: HorizontalAlignment = .leading,
+        alignment: HorizontalAlignment = .center,
         spacing: Int = 0,
         @ViewBuilder content: () -> Content
     ) {
@@ -273,16 +273,22 @@ extension VStack: Renderable {
 
         let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
         let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
+        // Distribute remainder to first spacers (handles odd division)
+        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
 
         // Max width across all children determines alignment reference
         let maxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
 
         var result = FrameBuffer()
+        var spacerIndex = 0
         for (index, info) in infos.enumerated() {
             let spacingToApply = index > 0 ? spacing : 0
             if info.isSpacer {
-                let height = max(info.spacerMinLength ?? 0, spacerHeight)
+                // Add 1 extra to first spacers to distribute remainder
+                let extraHeight = spacerIndex < spacerRemainder ? 1 : 0
+                let height = max(info.spacerMinLength ?? 0, spacerHeight + extraHeight)
                 result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
+                spacerIndex += 1
             } else if let buffer = info.buffer {
                 let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
                 result.appendVertically(alignedBuffer, spacing: spacingToApply)
@@ -292,28 +298,40 @@ extension VStack: Renderable {
     }
 
     /// Aligns a buffer horizontally within the given width.
+    ///
+    /// This positions content according to the alignment, similar to SwiftUI:
+    /// - `.leading`: Content starts at position 0 (left edge)
+    /// - `.center`: Content is centered within the width
+    /// - `.trailing`: Content ends at the right edge
+    ///
+    /// Note: Unlike the old implementation that padded all children to maxWidth,
+    /// this now centers ALL children within maxWidth, creating SwiftUI-like behavior
+    /// where the VStack content block is centered and children align relative to each other.
     private func alignBuffer(_ buffer: FrameBuffer, toWidth width: Int, alignment: HorizontalAlignment) -> FrameBuffer {
         guard buffer.width < width else { return buffer }
 
         var alignedLines: [String] = []
 
+        // Calculate the offset to center the entire buffer within the target width
+        let bufferOffset: Int
+        switch alignment {
+        case .leading:
+            bufferOffset = 0
+        case .center:
+            bufferOffset = (width - buffer.width) / 2
+        case .trailing:
+            bufferOffset = width - buffer.width
+        }
+
+        let leftPadding = String(repeating: " ", count: bufferOffset)
+        let rightPaddingCount = width - bufferOffset - buffer.width
+
         for line in buffer.lines {
             let lineWidth = line.strippedLength
-            let linePadding = width - lineWidth
-
-            switch alignment {
-            case .leading:
-                // Pad on right
-                alignedLines.append(line + String(repeating: " ", count: linePadding))
-            case .center:
-                // Pad on both sides
-                let leftPad = linePadding / 2
-                let rightPad = linePadding - leftPad
-                alignedLines.append(String(repeating: " ", count: leftPad) + line + String(repeating: " ", count: rightPad))
-            case .trailing:
-                // Pad on left
-                alignedLines.append(String(repeating: " ", count: linePadding) + line)
-            }
+            // Pad line to buffer.width first (in case line is shorter)
+            let paddedLine = line + String(repeating: " ", count: max(0, buffer.width - lineWidth))
+            // Then position within target width
+            alignedLines.append(leftPadding + paddedLine + String(repeating: " ", count: max(0, rightPaddingCount)))
         }
 
         return FrameBuffer(lines: alignedLines)
@@ -334,12 +352,17 @@ extension HStack: Renderable {
 
         let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
         let spacerWidth = spacerCount > 0 ? availableForSpacers / spacerCount : 0
+        // Distribute remainder to first spacers (handles odd division)
+        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
 
         var result = FrameBuffer()
+        var spacerIndex = 0
         for (index, info) in infos.enumerated() {
             let spacingToApply = index > 0 ? spacing : 0
             if info.isSpacer {
-                let width = max(info.spacerMinLength ?? 0, spacerWidth)
+                // Add 1 extra to first spacers to distribute remainder
+                let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
+                let width = max(info.spacerMinLength ?? 0, spacerWidth + extraWidth)
                 let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
                 let spacerBuffer = FrameBuffer(
                     lines: Array(
@@ -348,6 +371,7 @@ extension HStack: Renderable {
                     )
                 )
                 result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
+                spacerIndex += 1
             } else if let buffer = info.buffer {
                 result.appendHorizontally(buffer, spacing: spacingToApply)
             }

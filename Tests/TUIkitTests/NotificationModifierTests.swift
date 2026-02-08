@@ -175,7 +175,7 @@ struct NotificationTests {
         )
 
         let buffer = renderToBuffer(view, context: context.withEnvironment(env))
-        #expect(buffer.lines.contains("Base"))
+        #expect(buffer.lines[0].stripped == "Base")
         #expect(buffer.height == 1)
     }
 
