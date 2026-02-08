@@ -50,6 +50,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+    <!-- Preload sounds for instant playback -->
+    <link rel="preload" href="/sounds/power-on.mp3" as="fetch" crossorigin />
+    <link rel="preload" href="/sounds/hard-drive-boot.m4a" as="fetch" crossorigin />
+
     <!-- Analytics -->
     <link rel="preconnect" href="https://cloud.umami.is" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="4085eff5-2e56-4e3a-ba91-cf0828914169"></script>
