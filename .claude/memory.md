@@ -126,7 +126,7 @@ struct MyView: View
 | `ActionHandler` | Reusable Focusable for Button/Toggle |
 | `ItemListHandler` | Shared handler for List/Table navigation/selection |
 
-### Views
+### Views & Core Types
 
 | View | Purpose |
 |------|---------|
@@ -145,6 +145,13 @@ struct MyView: View
 | `Spinner` | Loading indicator |
 | `ProgressView` | Progress bar (5 styles) |
 | `ForEach` | Collection iteration |
+
+| Type (Phase 2c New) | Purpose |
+|--------------------|---------|
+| `SelectableListRow` | Type-safe row metadata (header/content/footer) |
+| `ListRowType` | Enum classifying row types |
+| `BadgeValue` | Badge rendering metadata (Int/String) |
+| `ItemListHandler` | Selection + keyboard navigation |
 
 ### Modifiers
 
@@ -252,21 +259,36 @@ These currently use `body: Never` and need conversion to real `body: some View`:
 ## Current State
 
 **Branch:** `main`
-**Tests:** 682 / 108 suites
-**Build:** clean
+**Tests:** 722 / 110 suites
+**Build:** clean (1 pre-existing flaky Focus test)
 
-### Recent (Feb 2026)
+### Phase 2: SwiftUI API Parity — Status
 
-- Section view with header/content/footer, SectionRowExtractor
-- Alert horizontal buttons, ButtonRole, ESC dismiss
-- Left/Right arrow navigation in FocusManager
-- List & Table with ItemListHandler
-- Focus Sections with StatusBar cascading
+| Phase | Feature | Status | Commit |
+|-------|---------|--------|--------|
+| 2a | Badge Modifier | ✅ Complete | 5cb6794 (earlier) |
+| 2b | ListStyle System | ✅ Complete | 5cb6794 (earlier) |
+| 2c1 | SelectableListRow Foundation | ✅ Complete | 9df0ab0 |
+| 2c2 | ItemListHandler Skip Logic | ✅ Complete | 9df0ab0 |
+| 2c3 | List Integration & Rendering | 🚧 Deferred | — |
 
-### Active Plans
+### Recent Completions (2026-02-09)
 
-- `2026-02-08-list-swiftui-api-parity.md` - Section done, Badge/ListStyle next
+- **Badge Modifier (Phase 2a)**: Int/Text/StringProtocol overloads, environment, 20+ tests
+- **ListStyle System (Phase 2b)**: PlainListStyle, InsetGroupedListStyle, alternating colors
+- **SelectableListRow (Phase 2c1)**: Type-safe row classification (header/content/footer)
+- **ItemListHandler Skip Logic (Phase 2c2)**: selectableIndices, focus navigation over non-selectable rows
+
+### Phase 2c3 — Deferred to Next Session
+
+**Why Deferred:** ListRow refactoring from `(id, buffer)` to `(type, buffer)` affects 5+ methods
+- `extractRows()` - Section detection/flattening
+- `calculateVisibleRows()` - Type awareness
+- `renderRow()` - Header/footer styling
+- Selection/focus updates
+
+**Recommendation:** Dedicate full session to this refactoring. Foundation ready (2c1+2c2).
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09
