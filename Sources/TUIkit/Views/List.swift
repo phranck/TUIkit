@@ -420,6 +420,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let focusManager = context.environment.focusManager
         let palette = context.environment.palette
+        let style = context.environment.listStyle
         let stateStorage = context.tuiContext.stateStorage
 
         // Extract rows from content
@@ -512,7 +513,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
                 lines.append(renderScrollIndicator(direction: .up, width: rowWidth, palette: palette))
             }
 
-            // Render each visible row
+            // Render each visible row with alternating colors based on list style
             for (rowIndex, row) in visibleRows {
                 let isFocused = handler.isFocused(at: rowIndex) && listHasFocus
                 let isSelected = handler.isSelected(at: rowIndex)
@@ -522,6 +523,8 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
                     isFocused: isFocused,
                     isSelected: isSelected,
                     rowWidth: rowWidth,
+                    rowIndex: rowIndex,
+                    style: style,
                     context: context,
                     palette: palette
                 )
@@ -540,12 +543,12 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
         let listContent = _ListContentView(lines: contentLines)
 
         // Render using the shared container helper with footer support
-        // Padding is 0 because rows handle their own padding (for background bar edge-to-edge)
+        // Apply list style: border from showsBorder, padding from style
         let config = ContainerConfig(
-            borderStyle: nil,
-            borderColor: nil,
+            borderStyle: style.showsBorder ? context.environment.appearance.borderStyle : nil,
+            borderColor: style.showsBorder ? palette.border : nil,
             titleColor: nil,
-            padding: EdgeInsets(all: 0),
+            padding: style.rowPadding,
             showFooterSeparator: showFooterSeparator
         )
 
@@ -619,15 +622,17 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
         isFocused: Bool,
         isSelected: Bool,
         rowWidth: Int,
+        rowIndex: Int,
+        style: any ListStyle,
         context: RenderContext,
         palette: any Palette
     ) -> [String] {
         // Determine visual state - only affects background
         // The row content keeps its own styling from the child views
-        let backgroundColor: Color?
+        var backgroundColor: Color?
 
         if isFocused && isSelected {
-            // Focused + Selected: pulsing accent background
+            // Focused + Selected: pulsing accent background (highest priority)
             let dimAccent = palette.accent.opacity(0.35)
             backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
         } else if isFocused {
@@ -636,8 +641,17 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
         } else if isSelected {
             // Selected only: subtle background (darker than focus)
             backgroundColor = palette.accent.opacity(0.25)
+        } else if style.alternatingRowColors {
+            // Apply alternating row colors from list style
+            if rowIndex % 2 == 0 {
+                // Even rows: subtle accent background
+                backgroundColor = palette.accent.opacity(0.15)
+            } else {
+                // Odd rows: no background
+                backgroundColor = nil
+            }
         } else {
-            // Neither: no background
+            // No background
             backgroundColor = nil
         }
 
@@ -646,7 +660,7 @@ private struct _ListCore<SelectionValue: Hashable, Content: View, Footer: View>:
         let shouldRenderBadge = badge != nil && !badge!.isHidden
 
         // Render each line - row content keeps its own styling
-        // All rows have 1 char padding on each side, padded to same total width
+        // All rows have padding from style, padded to same total width
         // Background bar covers the full width including padding
         return row.buffer.lines.enumerated().map { (lineIndex, line) in
             let lineLength = line.strippedLength
