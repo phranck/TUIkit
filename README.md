@@ -1,5 +1,5 @@
 [![CI](https://github.com/phranck/TUIkit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIkit/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/Tests-729_passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-727_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
@@ -11,7 +11,7 @@
 > [!TIP]
 > **☕ Support TUIkit Development**
 >
-> If you enjoy TUIkit and find it useful, consider supporting its development! Your donations help cover ongoing costs like hosting, tooling, and the countless cups of coffee that fuel late-night coding sessions. Every contribution: big or small: is greatly appreciated and keeps this project alive. Thank you! 💙
+> If you enjoy TUIkit and find it useful, consider supporting its development! Your donations help cover ongoing costs like hosting, tooling, and the countless cups of coffee that fuel late-night coding sessions. Every contribution, big or small, is greatly appreciated and keeps this project alive. Thank you! 💙
 >
 > [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue?logo=paypal&logoColor=white)](https://paypal.me/LAYEREDwork)
 > [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/layeredwork)
@@ -73,10 +73,11 @@ struct ContentView: View {
 
 - **Primitive views**: `Text`, `EmptyView`, `Spacer`, `Divider`
 - **Layout containers**: `VStack`, `HStack`, `ZStack` with alignment and spacing
-- **Interactive**: `Button` with focus states, `Menu` with keyboard navigation
+- **Interactive**: `Button`, `Toggle`, `Menu` with keyboard navigation
+- **Data views**: `List`, `Table`, `Section`, `ForEach`
 - **Containers**: `Alert`, `Dialog`, `Panel`, `Box`, `Card`
+- **Feedback**: `ProgressView` (5 bar styles), `Spinner` (animated)
 - **`StatusBar`**: context-sensitive keyboard shortcuts
-- **`ForEach`**: iterate over collections, ranges, or `Identifiable` data
 
 ### Styling
 
@@ -84,13 +85,16 @@ struct ContentView: View {
 - **Full color support**: ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
 - **Theming**: 6 predefined palettes (Green, Amber, Red, Violet, Blue, White)
 - **Border styles**: rounded, line, double, thick, ASCII, and more
+- **List styles**: `PlainListStyle`, `InsetGroupedListStyle` with alternating rows
+- **Badges**: `.badge()` modifier for counts and labels on list rows
 
 ### Advanced
 
 - **Lifecycle modifiers**: `.onAppear()`, `.onDisappear()`, `.task()`
 - **Storage**: `@AppStorage`, `@SceneStorage` with JSON backend
 - **Preferences**: bottom-up data flow with `PreferenceKey`
-- **Focus system**: Tab/Shift+Tab navigation between interactive elements
+- **Focus system**: Tab/Shift+Tab navigation, `.focusSection()` for grouped areas
+- **Render caching**: `.equatable()` for subtree memoization
 
 ## Run the Example App
 
@@ -177,7 +181,7 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          729 tests across 112 test suites
+└── TUIkitTests/          727 tests across 112 test suites
 ```
 
 ## Requirements
@@ -188,7 +192,7 @@ Tests/
 ## Developer Notes
 
 - Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
-- All 729 tests run in parallel
+- All 727 tests run in parallel
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## Contribution
