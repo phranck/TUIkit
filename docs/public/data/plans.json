@@ -1,47 +1,29 @@
 {
-  "generated": "2026-02-08T21:22:09.792Z",
+  "generated": "2026-02-08T22:21:46.128Z",
   "open": [
+    {
+      "date": "2026-02-08",
+      "slug": "badge-liststyle-phase2",
+      "title": "Badge & ListStyle Implementation (List SwiftUI API Parity Phase 2)",
+      "preface": "This plan implements the second phase of SwiftUI API Parity for List: the `.badge()` modifier and `.listStyle()` support. Badge adds decorative count/label badges to list rows (Int, Text, String overloads). ListStyle enables PlainListStyle and InsetGroupedListStyle to control borders, padding, and row appearance. Both integrate via TUIkit's environment system and follow existing pattern conventions. Section integration is deferred to Phase 3.\n\n---"
+    },
+    {
+      "date": "2026-02-08",
+      "slug": "list-swiftui-api-parity",
+      "title": "List SwiftUI API Parity",
+      "preface": "TUIkit's List component gains SwiftUI API parity with Section grouping, badges, list styles, selection control, and alternating row backgrounds. Section enables hierarchical organization with headers and footers. The `.badge()` modifier displays counts or labels right-aligned in rows. ListStyle provides visual variants like `.plain` and `.insetGrouped`. Per-item selection can be disabled via `.selectionDisabled()`."
+    },
+    {
+      "date": "2026-02-08",
+      "slug": "section-integration-phase2c",
+      "title": "Section Integration with List (List SwiftUI API Parity Phase 2c)",
+      "preface": "Phase 2c integrates Section headers/footers into List's row rendering while maintaining SwiftUI API parity. The key insight: Section headers/footers are non-selectable visual separators, while content items within sections are individually selectable and focusable. Current architecture treats entire Sections as single rows; this plan flattens Section structure into individual row types with focus navigation that skips non-selectable headers/footers. Alternating row colors now restart per section.\n\n---"
+    },
     {
       "date": "2026-02-07",
       "slug": "view-architecture-refactor",
       "title": "View Architecture Refactor: 100% SwiftUI Conformity",
       "preface": "This plan refactors TUIKit's view architecture to achieve 100% SwiftUI conformity. Currently, many controls use `body: Never` with direct `Renderable` conformance, which breaks modifier propagation and environment value inheritance. After this refactor, every public control will be a proper View with `body: some View` that composes other Views. Modifiers like `.foregroundColor()` will propagate through the entire hierarchy automatically, exactly like SwiftUI."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "containerization-composition",
-      "title": "Containerization: Composition NOT Inheritance in Swift",
-      "preface": "Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions. Utrue to SwiftUI/TUIKit's design philosophy."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "containerview-refactor",
-      "title": "ContainerView Refactoring Plan",
-      "preface": "ContainerView is being refactored from the broken `body: Never` + Renderable pattern to a proper View with `body: some View` that returns an internal `_ContainerViewCore`. This fix enables modifiers to work naturally and becomes the template for fixing List, Box, and other components. Once done, `.foregroundColor()`, `.padding()`, and other standard modifiers will compose correctly instead of being silently ignored."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "imp-containerview",
-      "title": "Implementation Plan: ContainerView Refactoring",
-      "preface": "ContainerView is fixed by extracting its 400+ lines of rendering logic into a private `_ContainerViewCore` struct, making `ContainerView` a simple public View with `body: some View` that creates the core. This restores modifier support, enables proper view composition, and establishes the correct pattern for refactoring List, Box, and all other components in the framework."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "imp-list-table",
-      "title": "Implementation Plan: List & Table (Refactored)",
-      "preface": "List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus and selection handling via `ItemListHandler`, which combines navigation and selection logic in a single reusable component. This establishes a consistent, reusable pattern for List and Table while serving as a reference for future components."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "imp-shared-handlers",
-      "title": "Implementation Plan: Shared Focus/Selection Handlers & Helpers",
-      "preface": "Shared focus/selection infrastructure is extracted so both List and Table reuse the same pieces: `FocusableItemListHandler` for keyboard navigation (Up/Down/Home/End), `SelectionStateManager<T>` for tracking selected values, `ItemStateRenderer` for styling based on focus/selection state, and `renderFocusableContainer()` helper that orchestrates layout + styling + scrolling."
-    },
-    {
-      "date": "2026-02-06",
-      "slug": "list-scrollable",
-      "title": "List (Scrollable)",
-      "preface": "List gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven."
     },
     {
       "date": "2026-02-02",
@@ -80,6 +62,42 @@
       "slug": "mobile-performance",
       "title": "Mobile Performance Optimization",
       "preface": "The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "containerization-composition",
+      "title": "Containerization: Composition NOT Inheritance in Swift",
+      "preface": "Composition replaces inheritance throughout the framework: Alert, Dialog, Panel, and Card all use the `renderContainer()` helper rather than inheriting from ContainerView. List and Table will follow the same pattern with `renderListWithFocus()` and `renderTableWithFocus()` helpers plus shared `FocusableItemListHandler`. This ensures consistency, maximizes code reuse, and keeps view definitions simple (plain structs) while rendering logic lives in testable helper functions. Utrue to SwiftUI/TUIKit's design philosophy."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "containerview-refactor",
+      "title": "ContainerView Refactoring Plan",
+      "preface": "ContainerView is being refactored from the broken `body: Never` + Renderable pattern to a proper View with `body: some View` that returns an internal `_ContainerViewCore`. This fix enables modifiers to work naturally and becomes the template for fixing List, Box, and other components. Once done, `.foregroundColor()`, `.padding()`, and other standard modifiers will compose correctly instead of being silently ignored."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-containerview",
+      "title": "Implementation Plan: ContainerView Refactoring",
+      "preface": "ContainerView is fixed by extracting its 400+ lines of rendering logic into a private `_ContainerViewCore` struct, making `ContainerView` a simple public View with `body: some View` that creates the core. This restores modifier support, enables proper view composition, and establishes the correct pattern for refactoring List, Box, and all other components in the framework."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-list-table",
+      "title": "Implementation Plan: List & Table (Refactored)",
+      "preface": "List and Table are both implemented using proper View architecture: public View with `body: some View`, private `_ListCore`/`_TableCore` containing all rendering logic. Both share focus and selection handling via `ItemListHandler`, which combines navigation and selection logic in a single reusable component. This establishes a consistent, reusable pattern for List and Table while serving as a reference for future components."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "imp-shared-handlers",
+      "title": "Implementation Plan: Shared Focus/Selection Handlers & Helpers",
+      "preface": "Shared focus/selection infrastructure is extracted so both List and Table reuse the same pieces: `FocusableItemListHandler` for keyboard navigation (Up/Down/Home/End), `SelectionStateManager<T>` for tracking selected values, `ItemStateRenderer` for styling based on focus/selection state, and `renderFocusableContainer()` helper that orchestrates layout + styling + scrolling."
+    },
+    {
+      "date": "2026-02-06",
+      "slug": "list-scrollable",
+      "title": "List (Scrollable)",
+      "preface": "List gives TUI apps the power of SwiftUI's List: arbitrary nested views, ForEach with dynamic content, optional selection binding via `.tag()`, and keyboard navigation (Up/Down/Home/End/PageUp/PageDown) with auto-scrolling. Focused item always visible, scroll indicators show bounds, selection updates on Enter. MVP focuses on core scrollable list without sections. They come later once the API is proven."
     },
     {
       "date": "2026-02-06",
