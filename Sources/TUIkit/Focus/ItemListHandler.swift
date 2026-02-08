@@ -86,6 +86,13 @@ final class ItemListHandler: Focusable {
     /// Maps item indices to their IDs for selection management.
     var itemIDs: [AnyHashable] = []
 
+    /// The set of indices that can be selected and focused.
+    ///
+    /// Headers and footers have non-selectable indices (not in this set).
+    /// Only content rows have indices in `selectableIndices`.
+    /// When empty, all items are considered selectable (backward compatibility).
+    var selectableIndices: Set<Int> = []
+
     /// Creates an item list handler.
     ///
     /// - Parameters:
@@ -155,12 +162,24 @@ extension ItemListHandler {
             return true
 
         case .home:
-            focusedIndex = 0
+            if selectableIndices.isEmpty {
+                focusedIndex = 0
+            } else if let firstSelectable = selectableIndices.min() {
+                focusedIndex = firstSelectable
+            } else {
+                return false
+            }
             ensureFocusedItemVisible()
             return true
 
         case .end:
-            focusedIndex = itemCount - 1
+            if selectableIndices.isEmpty {
+                focusedIndex = itemCount - 1
+            } else if let lastSelectable = selectableIndices.max() {
+                focusedIndex = lastSelectable
+            } else {
+                return false
+            }
             ensureFocusedItemVisible()
             return true
 
@@ -193,16 +212,44 @@ extension ItemListHandler {
     func moveFocus(by delta: Int, wrap: Bool) {
         guard itemCount > 0 else { return }
 
-        let newIndex = focusedIndex + delta
+        var newIndex = focusedIndex + delta
 
-        if wrap {
-            // Wrap around: -1 becomes last, count becomes 0
-            focusedIndex = ((newIndex % itemCount) + itemCount) % itemCount
+        // If selectableIndices is populated, skip non-selectable rows
+        if !selectableIndices.isEmpty {
+            let maxAttempts = itemCount + 1
+            var attempts = 0
+
+            // Keep skipping until we find a selectable index or hit max attempts
+            while !selectableIndices.contains(newIndex) && attempts < maxAttempts {
+                if wrap {
+                    // Wrap around: -1 becomes last, count becomes 0
+                    newIndex = ((newIndex % itemCount) + itemCount) % itemCount
+                } else {
+                    // Clamp to valid range and stop if out of bounds
+                    if newIndex < 0 || newIndex >= itemCount {
+                        return
+                    }
+                }
+                newIndex += delta
+                attempts += 1
+            }
+
+            // If we couldn't find a selectable index, don't move
+            if attempts >= maxAttempts {
+                return
+            }
         } else {
-            // Clamp to valid range
-            focusedIndex = max(0, min(itemCount - 1, newIndex))
+            // Backward compatibility: all items are selectable
+            if wrap {
+                // Wrap around: -1 becomes last, count becomes 0
+                newIndex = ((newIndex % itemCount) + itemCount) % itemCount
+            } else {
+                // Clamp to valid range
+                newIndex = max(0, min(itemCount - 1, newIndex))
+            }
         }
 
+        focusedIndex = newIndex
         ensureFocusedItemVisible()
     }
 

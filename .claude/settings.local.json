@@ -10,7 +10,9 @@
       "Bash(xcrun docc convert:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "Bash(npm run docs:build:*)"
+      "Bash(npm run docs:build:*)",
+      "Bash(grep:*)",
+      "Bash(swiftlint:*)"
     ]
   }
 }
