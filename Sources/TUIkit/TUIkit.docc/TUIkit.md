@@ -60,6 +60,7 @@ struct MyApp: App {
 - <doc:CustomViews>
 - <doc:KeyboardShortcuts>
 - <doc:PaletteReference>
+- <doc:ListAndTable>
 
 ### App Structure
 
@@ -95,6 +96,12 @@ struct MyApp: App {
 - ``Box``
 - ``Card``
 - ``Panel``
+
+### Data Collections
+
+- ``List``
+- ``Table``
+- ``TableColumn``
 
 ### State Management
 

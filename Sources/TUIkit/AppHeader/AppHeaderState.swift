@@ -40,7 +40,11 @@ final class AppHeaderState: @unchecked Sendable {
 
     /// The height from the previous render pass, used as an estimate
     /// for layout calculations before the current pass populates the buffer.
-    private var previousHeight: Int = 0
+    ///
+    /// Defaults to 2 (typical header: 1 content line + 1 divider line) to avoid
+    /// content shifting on the first frame when an app header is present.
+    /// Apps without a header will have this reset to 0 after the first frame.
+    private var previousHeight: Int = 2
 
     /// Whether the header has content to display.
     var hasContent: Bool {

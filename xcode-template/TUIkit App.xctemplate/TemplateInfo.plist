@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>SupportsSwiftPackage</key>
+    <true/>
+    <key>Kind</key>
+    <string>Xcode.IDESwiftPackageUI.TextSubstitutionPlaygroundsAppTemplateKind</string>
+    <key>Identifier</key>
+    <string>com.tuikit.dt.template.TUIkitApp</string>
+    <key>Name</key>
+    <string>TUIkit App</string>
+    <key>Summary</key>
+    <string>A TUIkit terminal app (basic)</string>
+    <key>Description</key>
+    <string>A minimal terminal user interface app built with TUIkit. For advanced options (SQLite, tests), use the create-tuikit-project.sh script instead.</string>
+    <key>Platforms</key>
+    <array>
+        <string>com.apple.platform.macosx</string>
+    </array>
+    <key>Options</key>
+    <array>
+        <dict>
+            <key>Identifier</key>
+            <string>productName</string>
+            <key>Required</key>
+            <true/>
+            <key>Name</key>
+            <string>Product Name:</string>
+            <key>NotPersisted</key>
+            <true/>
+            <key>Description</key>
+            <string>The name of your TUIkit app</string>
+            <key>EmptyReplacement</key>
+            <string>MyTUIApp</string>
+            <key>Type</key>
+            <string>text</string>
+            <key>SortOrder</key>
+            <integer>-2</integer>
+        </dict>
+    </array>
+    <key>NameOfInitialFileForEditor</key>
+    <string>README.md</string>
+    <key>SortOrder</key>
+    <integer>50</integer>
+    <key>MainTemplateFile</key>
+    <string>___FILEBASENAME___</string>
+    <key>AllowedTypes</key>
+    <array>
+        <string>com.apple.swiftpm</string>
+    </array>
+    <key>DefaultCompletionName</key>
+    <string>MyTUIApp</string>
+    <key>Image</key>
+    <dict>
+        <key>SystemSymbolName</key>
+        <string>terminal.fill</string>
+    </dict>
+</dict>
+</plist>
