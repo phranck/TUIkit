@@ -54,9 +54,6 @@ final class TextFieldHandler: Focusable {
     /// Callback triggered when the user presses Enter.
     var onSubmit: (() -> Void)?
 
-    /// The autocapitalization behavior for text input.
-    var autocapitalization: TextInputAutocapitalization = .never
-
     /// Creates a text field handler.
     ///
     /// - Parameters:
@@ -130,74 +127,13 @@ extension TextFieldHandler {
 extension TextFieldHandler {
     /// Inserts a character at the current cursor position.
     ///
-    /// Applies autocapitalization rules based on the current setting.
-    ///
     /// - Parameter char: The character to insert.
     func insertCharacter(_ char: Character) {
         var current = text.wrappedValue
         let index = current.index(current.startIndex, offsetBy: min(cursorPosition, current.count))
-
-        // Apply autocapitalization
-        let transformedChar = applyAutocapitalization(char, in: current, at: cursorPosition)
-
-        current.insert(transformedChar, at: index)
+        current.insert(char, at: index)
         text.wrappedValue = current
         cursorPosition += 1
-    }
-
-    /// Applies autocapitalization rules to a character.
-    ///
-    /// - Parameters:
-    ///   - char: The character to potentially transform.
-    ///   - text: The current text content.
-    ///   - position: The cursor position where the character will be inserted.
-    /// - Returns: The transformed character.
-    private func applyAutocapitalization(_ char: Character, in text: String, at position: Int) -> Character {
-        guard char.isLetter else { return char }
-
-        switch autocapitalization {
-        case .never:
-            return char
-
-        case .characters:
-            return char.uppercased().first ?? char
-
-        case .words:
-            // Capitalize if at start or after whitespace
-            if position == 0 {
-                return char.uppercased().first ?? char
-            }
-            let previousIndex = text.index(text.startIndex, offsetBy: position - 1)
-            if text[previousIndex].isWhitespace {
-                return char.uppercased().first ?? char
-            }
-            return char
-
-        case .sentences:
-            // Capitalize if at start or after sentence-ending punctuation followed by space
-            if position == 0 {
-                return char.uppercased().first ?? char
-            }
-            // Look for pattern: sentence end (. ! ?) followed by optional spaces
-            var foundSentenceEnd = false
-            var idx = position - 1
-            while idx >= 0 {
-                let charIndex = text.index(text.startIndex, offsetBy: idx)
-                let char = text[charIndex]
-                if char.isWhitespace {
-                    idx -= 1
-                    continue
-                }
-                if char == "." || char == "!" || char == "?" {
-                    foundSentenceEnd = true
-                }
-                break
-            }
-            if foundSentenceEnd {
-                return char.uppercased().first ?? char
-            }
-            return char
-        }
     }
 
     /// Deletes the character before the cursor (backspace).

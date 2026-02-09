@@ -172,13 +172,20 @@ extension AppRunner {
             }
 
             // Read key events (non-blocking with VTIME=0)
-            if let keyEvent = terminal.readKeyEvent() {
+            // Process multiple events per frame to prevent input buffering lag,
+            // but limit to avoid render starvation and keep CPU usage low.
+            var eventsProcessed = 0
+            let maxEventsPerFrame = 5
+            while eventsProcessed < maxEventsPerFrame,
+                  let keyEvent = terminal.readKeyEvent() {
                 inputHandler.handle(keyEvent)
+                eventsProcessed += 1
             }
 
-            // Sleep 40ms to yield CPU (replaces VTIME=1 blocking read).
-            // This sets the maximum frame rate to ~25 FPS.
-            usleep(40_000)
+            // Sleep 33ms to yield CPU.
+            // This sets the maximum frame rate to ~30 FPS.
+            // The sleep ensures low CPU usage even during continuous input.
+            usleep(33_000)
         }
 
         // Stop pulse timer before cleanup

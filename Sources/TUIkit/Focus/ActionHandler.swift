@@ -68,7 +68,7 @@ final class ActionHandler: Focusable {
         focusID: String,
         action: @escaping () -> Void,
         canBeFocused: Bool = true,
-        triggerKeys: Set<Key> = [.enter, .character(" ")]
+        triggerKeys: Set<Key> = [.enter, .space]
     ) {
         self.focusID = focusID
         self.action = action

@@ -189,7 +189,7 @@ struct ActionHandlerTests {
             canBeFocused: true
         )
 
-        let event = KeyEvent(key: .character(" "))
+        let event = KeyEvent(key: .space)
         let handled = handler.handleKeyEvent(event)
 
         #expect(handled == true)
