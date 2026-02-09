@@ -27,8 +27,10 @@ struct TextFieldTests {
 
         let textField = TextField("Username", text: binding)
 
-        // Should compile and create without error
-        #expect(textField.title == "Username")
+        // Should compile and render without error
+        let context = testContext()
+        let buffer = renderToBuffer(textField, context: context)
+        #expect(buffer.height == 1)
     }
 
     @Test("TextField initializes with prompt")
@@ -38,7 +40,6 @@ struct TextFieldTests {
 
         let textField = TextField("Email", text: binding, prompt: Text("you@example.com"))
 
-        #expect(textField.title == "Email")
         #expect(textField.prompt != nil)
     }
 
@@ -150,5 +151,34 @@ struct TextFieldTests {
         let buffer = renderToBuffer(view, context: context)
 
         #expect(buffer.height == 2)
+    }
+
+    // MARK: - ViewBuilder Label
+
+    @Test("TextField with ViewBuilder label")
+    func viewBuilderLabel() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+
+        let textField = TextField(text: binding, prompt: Text("Enter text")) {
+            Text("Custom Label")
+        }
+
+        let context = testContext()
+        let buffer = renderToBuffer(textField, context: context)
+        #expect(buffer.height == 1)
+    }
+
+    // MARK: - Autocapitalization
+
+    @Test("TextField with autocapitalization modifier")
+    func autocapitalizationModifier() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+
+        let textField = TextField("Name", text: binding)
+            .textInputAutocapitalization(.words)
+
+        #expect(textField.autocapitalization == .words)
     }
 }
