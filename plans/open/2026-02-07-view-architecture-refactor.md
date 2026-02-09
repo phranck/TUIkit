@@ -1,9 +1,5 @@
 # View Architecture Refactor: 100% SwiftUI Conformity
 
-## Completed
-
-2026-02-09
-
 ## Preface
 
 This plan refactors TUIKit's view architecture to achieve 100% SwiftUI conformity. Currently, many controls use `body: Never` with direct `Renderable` conformance, which breaks modifier propagation and environment value inheritance. After this refactor, every public control will be a proper View with `body: some View` that composes other Views. Modifiers like `.foregroundColor()` will propagate through the entire hierarchy automatically, exactly like SwiftUI.
