@@ -206,35 +206,35 @@ TextField("Search", text: $query)
 ## Checklist
 
 ### Phase 1: Core TextField
-- [ ] Create TextFieldHandler class
-- [ ] Create TextField struct with body: some View
-- [ ] Implement _TextFieldCore with Renderable
-- [ ] Render text content with cursor
-- [ ] Handle character input
-- [ ] Handle backspace/delete
-- [ ] Handle cursor movement (left/right)
-- [ ] Handle home/end keys
-- [ ] Add focus indicator (pulsing brackets)
-- [ ] State persistence for cursor position
+- [x] Create TextFieldHandler class
+- [x] Create TextField struct with body: some View
+- [x] Implement _TextFieldCore with Renderable
+- [x] Render text content with cursor
+- [x] Handle character input
+- [x] Handle backspace/delete
+- [x] Handle cursor movement (left/right)
+- [x] Handle home/end keys
+- [x] Add focus indicator (pulsing brackets)
+- [x] State persistence for cursor position
 
 ### Phase 2: SwiftUI API Parity
-- [ ] init(_:text:) - basic initializer
-- [ ] init(_:text:prompt:) - with placeholder
+- [x] init(_:text:) - basic initializer
+- [x] init(_:text:prompt:) - with placeholder
 - [ ] init(text:prompt:label:) - ViewBuilder label
-- [ ] Render prompt when empty and unfocused
+- [x] Render prompt when empty and unfocused
 
 ### Phase 3: Modifiers & Polish
-- [ ] .onSubmit() modifier support
+- [x] .onSubmit() modifier support
 - [ ] .textFieldStyle(_:) modifier
 - [ ] TextFieldStyle protocol
 - [ ] PlainTextFieldStyle
 - [ ] RoundedBorderTextFieldStyle (default for TUI)
-- [ ] .disabled() support
+- [x] .disabled() support
 - [ ] Width/frame support
 
 ### Phase 4: Testing
-- [ ] TextFieldHandler key event tests
-- [ ] TextField rendering tests
+- [x] TextFieldHandler key event tests (27 tests)
+- [x] TextField rendering tests (9 tests)
 - [ ] Focus integration tests
 - [ ] Prompt/placeholder tests
 - [ ] Style tests
@@ -243,7 +243,7 @@ TextField("Search", text: $query)
 ## Open Questions
 
 1. **Cursor representation**: Block (`█`), underscore (`_`), or pipe (`|`)?
-   - Recommendation: Block when focused, hidden when unfocused
+   - **Answer**: Block (`█`) when focused, hidden when unfocused. Implemented.
 
 2. **Max length**: Should TextField support a character limit?
    - Can add later as `.limit(_:)` modifier
