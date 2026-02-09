@@ -4,6 +4,44 @@
 
 This plan implements Slider and Stepper, two essential numeric input controls for TUIKit. Both components allow users to adjust values using keyboard navigation. Slider displays a visual track with a thumb indicator, while Stepper shows increment/decrement arrows around a value. Both use consistent focus indicators (pulsing vertical bars) matching TextField. The existing `ProgressBarStyle` will be renamed to `TrackStyle` for reuse across ProgressView and Slider.
 
+## Completed
+
+**2026-02-09** - Slider and Stepper complete with 59 new tests (892 total). TrackStyle refactor done with backwards-compatible typealias. TrackRenderer utility extracted and shared between ProgressView and Slider. Both components feature SwiftUI-conformant API, keyboard controls, focus indicators, and Example app demo pages.
+
+## Checklist
+
+### Phase 1: TrackStyle Refactor
+- [x] Rename `ProgressBarStyle` to `TrackStyle`
+- [x] Add backwards-compatible typealias
+- [x] Extract `TrackRenderer` utility
+- [x] Update ProgressView to use TrackRenderer
+- [x] Verify ProgressView tests pass
+
+### Phase 2: Slider
+- [x] Create SliderHandler class (14 tests)
+- [x] Create Slider struct with body: some View
+- [x] Implement _SliderCore with Renderable
+- [x] Render track with arrows and value display
+- [x] Focus indicators (pulsing bars)
+- [x] Keyboard controls (arrow keys, +/-, Home/End)
+- [x] `.trackStyle(_:)` modifier
+- [x] `.disabled()` support
+- [x] `onEditingChanged` callback
+- [x] SliderPage in Example app (14 tests)
+
+### Phase 3: Stepper
+- [x] Create StepperHandler class (19 tests)
+- [x] Create Stepper struct with body: some View
+- [x] Implement _StepperCore with Renderable
+- [x] Render arrows around value
+- [x] Focus indicators (pulsing bars + arrows)
+- [x] Keyboard controls (arrow keys, +/-, Home/End)
+- [x] `init(_ title:, value:, step:)` - basic
+- [x] `init(_ title:, value:, in:, step:)` - with range
+- [x] `init(_ title:, onIncrement:, onDecrement:)` - callbacks
+- [x] `.disabled()` support
+- [x] StepperPage in Example app (12 tests)
+
 ## Context / Problem
 
 TUIKit currently lacks controls for numeric value adjustment. Users need ways to:
@@ -165,39 +203,39 @@ enum TrackRenderer {
 4. Rendering tests for Stepper
 5. Example app demo pages
 
-## Checklist
+## Original Checklist (archived)
 
 ### Phase 1: TrackStyle Refactor
-- [ ] Rename `ProgressBarStyle` to `TrackStyle`
-- [ ] Add backwards-compatible typealias
-- [ ] Extract `TrackRenderer` utility
-- [ ] Update ProgressView to use TrackRenderer
-- [ ] Verify ProgressView tests pass
+- [x] Rename `ProgressBarStyle` to `TrackStyle`
+- [x] Add backwards-compatible typealias
+- [x] Extract `TrackRenderer` utility
+- [x] Update ProgressView to use TrackRenderer
+- [x] Verify ProgressView tests pass
 
 ### Phase 2: Slider
-- [ ] Create SliderHandler class
-- [ ] Create Slider struct with body: some View
-- [ ] Implement _SliderCore with Renderable
-- [ ] Render track with ◀ ▶ arrows
-- [ ] Render value label (percentage or custom)
-- [ ] Focus indicators (pulsing ❙ bars)
-- [ ] Keyboard: ← → for increment/decrement
-- [ ] Keyboard: - + for increment/decrement
-- [ ] Keyboard: Home/End for min/max
-- [ ] `.trackStyle(_:)` modifier
-- [ ] `.disabled()` support
-- [ ] `onEditingChanged` callback
-- [ ] Default width + `.frame(width:)` support
+- [x] Create SliderHandler class
+- [x] Create Slider struct with body: some View
+- [x] Implement _SliderCore with Renderable
+- [x] Render track with arrows
+- [x] Render value label (percentage or custom)
+- [x] Focus indicators (pulsing bars)
+- [x] Keyboard: arrow keys for increment/decrement
+- [x] Keyboard: - + for increment/decrement
+- [x] Keyboard: Home/End for min/max
+- [x] `.trackStyle(_:)` modifier
+- [x] `.disabled()` support
+- [x] `onEditingChanged` callback
+- [x] Default width + `.frame(width:)` support
 
 ### Phase 3: Stepper
-- [ ] Create StepperHandler class
-- [ ] Create Stepper struct with body: some View
-- [ ] Implement _StepperCore with Renderable
-- [ ] Render ◀ value ▶
-- [ ] Focus indicators (pulsing ❙ bars + arrows)
-- [ ] Keyboard: ← → for increment/decrement
-- [ ] Keyboard: - + for increment/decrement
-- [ ] Keyboard: Home/End for min/max (when range defined)
+- [x] Create StepperHandler class
+- [x] Create Stepper struct with body: some View
+- [x] Implement _StepperCore with Renderable
+- [x] Render arrows around value
+- [x] Focus indicators (pulsing bars + arrows)
+- [x] Keyboard: arrow keys for increment/decrement
+- [x] Keyboard: - + for increment/decrement
+- [x] Keyboard: Home/End for min/max (when range defined)
 - [ ] `init(_ title:, value:, step:)` - basic
 - [ ] `init(_ title:, value:, in:, step:)` - with range
 - [ ] `init(_ title:, onIncrement:, onDecrement:)` - callbacks
