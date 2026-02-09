@@ -75,22 +75,26 @@ private struct _VStackCore<Content: View>: View, Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
-        // Spacer distribution: divide remaining vertical space equally
-        // among all spacers after subtracting fixed children and inter-item spacing.
-        let spacerCount = infos.filter(\.isSpacer).count
-        let fixedHeight = infos.compactMap(\.buffer).reduce(0) { $0 + $1.height }
-        let totalSpacing = max(0, infos.count - 1) * spacing
+        // Single pass to compute spacer count, fixed height, and max width
+        var spacerCount = 0
+        var fixedHeight = 0
+        var childMaxWidth = 0
 
+        for info in infos {
+            if info.isSpacer {
+                spacerCount += 1
+            } else if let buffer = info.buffer {
+                fixedHeight += buffer.height
+                childMaxWidth = max(childMaxWidth, buffer.width)
+            }
+        }
+
+        let totalSpacing = max(0, infos.count - 1) * spacing
         let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
         let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        // Distribute remainder to first spacers (handles odd division)
         let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
 
-        // Use available width for alignment when spacers are present.
-        // Spacers indicate the VStack should fill available space, so children
-        // should be centered relative to that space, not just relative to each other.
-        // This ensures dynamic content (like counters) stays centered as it grows.
-        let childMaxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
+        // Use available width for alignment when spacers are present
         let maxWidth = spacerCount > 0 ? context.availableWidth : childMaxWidth
 
         var result = FrameBuffer()
@@ -98,7 +102,6 @@ private struct _VStackCore<Content: View>: View, Renderable {
         for (index, info) in infos.enumerated() {
             let spacingToApply = index > 0 ? spacing : 0
             if info.isSpacer {
-                // Add 1 extra to first spacers to distribute remainder
                 let extraHeight = spacerIndex < spacerRemainder ? 1 : 0
                 let height = max(info.spacerMinLength ?? 0, spacerHeight + extraHeight)
                 result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
@@ -209,15 +212,23 @@ private struct _HStackCore<Content: View>: View, Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let infos = resolveChildInfos(from: content, context: context)
 
-        // Spacer distribution: divide remaining horizontal space equally
-        // among all spacers after subtracting fixed children and inter-item spacing.
-        let spacerCount = infos.filter(\.isSpacer).count
-        let fixedWidth = infos.compactMap(\.buffer).reduce(0) { $0 + $1.width }
-        let totalSpacing = max(0, infos.count - 1) * spacing
+        // Single pass to compute spacer count, fixed width, and max height
+        var spacerCount = 0
+        var fixedWidth = 0
+        var maxHeight = 1
 
+        for info in infos {
+            if info.isSpacer {
+                spacerCount += 1
+            } else if let buffer = info.buffer {
+                fixedWidth += buffer.width
+                maxHeight = max(maxHeight, buffer.height)
+            }
+        }
+
+        let totalSpacing = max(0, infos.count - 1) * spacing
         let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
         let spacerWidth = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        // Distribute remainder to first spacers (handles odd division)
         let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
 
         var result = FrameBuffer()
@@ -225,10 +236,8 @@ private struct _HStackCore<Content: View>: View, Renderable {
         for (index, info) in infos.enumerated() {
             let spacingToApply = index > 0 ? spacing : 0
             if info.isSpacer {
-                // Add 1 extra to first spacers to distribute remainder
                 let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
                 let width = max(info.spacerMinLength ?? 0, spacerWidth + extraWidth)
-                let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
                 let spacerBuffer = FrameBuffer(
                     lines: Array(
                         repeating: String(repeating: " ", count: width),
