@@ -21,13 +21,6 @@ enum ANSIRenderer {
     /// Dim/faint text style code.
     static let dim = "\(csi)2m"
 
-    /// Precompiled regex that matches any ANSI escape sequence.
-    ///
-    /// Used by `String.stripped` and `String.strippedLength` to remove
-    /// formatting codes for visible-width calculations. Compiling once
-    /// avoids per-call overhead in the hot rendering path.
-    nonisolated(unsafe) static let ansiRegex = /\u{1B}\[[0-9;]*[a-zA-Z]/
-
     // MARK: - SGR Style Codes
 
     /// Named constants for ANSI SGR (Select Graphic Rendition) attribute codes.
