@@ -16,6 +16,11 @@ import Testing
 @Suite("String Performance Tests")
 struct StringPerformanceTests {
 
+    /// Measures execution time of a block over multiple iterations.
+    ///
+    /// Uses `Date` instead of `CFAbsoluteTimeGetCurrent` because CoreFoundation
+    /// timing functions are not available on Linux. The precision difference
+    /// is negligible for performance benchmarks at millisecond granularity.
     private func measure(_ name: String, iterations: Int = 1000, block: () -> Void) -> TimeInterval {
         let start = Date()
         for _ in 0..<iterations {
