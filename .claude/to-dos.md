@@ -8,12 +8,10 @@
 
 ### High Priority
 
-- [ ] **Commit Session Changes**: Alert horizontal buttons, ButtonRole, ESC handler, rendering fixes, VStack alignment fixes
 - [ ] **TextInput / TextField**: Text input component with cursor, editing, validation
 
 ### Medium Priority
 
-- [ ] **View Architecture Refactor**: Convert List/Table/RadioButtonGroup to proper View pattern (plan exists)
 - [ ] **DisclosureGroup**: Expandable/collapsible sections
 
 ### Low Priority
@@ -21,6 +19,12 @@
 - [ ] **Fix Flaky Test**: "Default FocusManager is provided if not set" fails due to shared static instance
 
 ## Completed
+
+### 2026-02-09
+- View Architecture Refactor complete (all controls use `body: some View`)
+- LazyVStack, LazyHStack added for SwiftUI parity
+- Performance: FrameBuffer, Stack rendering, ANSI string operations optimized (2-3x faster)
+- Removed unused regex (dead code cleanup)
 
 ### 2026-02-08
 - Alert horizontal button layout, ESC dismiss, max width 60 chars
