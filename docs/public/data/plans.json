@@ -1,11 +1,11 @@
 {
-  "generated": "2026-02-09T15:52:20.007Z",
+  "generated": "2026-02-09T17:47:55.873Z",
   "open": [
     {
-      "date": "2026-02-07",
-      "slug": "view-architecture-refactor",
-      "title": "View Architecture Refactor: 100% SwiftUI Conformity",
-      "preface": "This plan refactors TUIKit's view architecture to achieve 100% SwiftUI conformity. Currently, many controls use `body: Never` with direct `Renderable` conformance, which breaks modifier propagation and environment value inheritance. After this refactor, every public control will be a proper View with `body: some View` that composes other Views. Modifiers like `.foregroundColor()` will propagate through the entire hierarchy automatically, exactly like SwiftUI."
+      "date": "2026-02-09",
+      "slug": "textfield-component",
+      "title": "TextField Component",
+      "preface": "This plan implements TextField, an essential text input component for TUIKit. TextField provides an editable single-line text interface with cursor navigation, text editing, and SwiftUI-conformant API. Users can type, delete, and navigate within the field using standard keyboard controls. The component supports placeholder text (prompt), focus states with visual feedback, and the `.onSubmit()` modifier for form submission. This is a fundamental building block for forms, search fields, and any user text input."
     },
     {
       "date": "2026-02-02",
@@ -56,6 +56,12 @@
       "slug": "mobile-performance",
       "title": "Mobile Performance Optimization",
       "preface": "The docs site (Landing Page + Dashboard) runs poorly on iPhone due to heavy JavaScript bundles (548KB), expensive CSS effects (22 backdrop-blur instances, 6 animated cloud blurs), and continuous animations (rain canvas, spinner lights, avatar marquee). This plan removes Framer Motion, disables expensive effects on mobile via CSS media queries, and optimizes hydration timing to achieve smooth 60fps scrolling on mobile devices."
+    },
+    {
+      "date": "2026-02-07",
+      "slug": "view-architecture-refactor",
+      "title": "View Architecture Refactor: 100% SwiftUI Conformity",
+      "preface": "This plan refactors TUIKit's view architecture to achieve 100% SwiftUI conformity. All public controls now use proper `body: some View` pattern instead of `body: Never` with direct `Renderable` conformance. Modifiers like `.foregroundStyle()` propagate through the entire hierarchy automatically. Performance optimizations were applied to FrameBuffer, Stack rendering, and ANSI string operations, resulting in 2-3x faster rendering. LazyVStack and LazyHStack were added for SwiftUI parity."
     },
     {
       "date": "2026-02-06",
