@@ -9,20 +9,62 @@
 extension String {
     /// The visible length of the string, excluding ANSI escape codes.
     ///
-    /// Counts visible characters without allocating an intermediate
-    /// stripped string. Subtracts the total length of all ANSI escape
-    /// sequences from the character count.
+    /// Counts visible characters by walking the string and skipping
+    /// ANSI escape sequences. This is faster than regex-based approaches.
     var strippedLength: Int {
-        var ansiLength = 0
-        for match in self.matches(of: ANSIRenderer.ansiRegex) {
-            ansiLength += self[match.range].count
+        var count = 0
+        var index = startIndex
+
+        while index < endIndex {
+            if self[index] == "\u{1B}" {
+                // Skip ANSI sequence: ESC [ params letter
+                index = self.index(after: index)
+                if index < endIndex && self[index] == "[" {
+                    index = self.index(after: index)
+                    // Skip parameter bytes (digits, semicolons)
+                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
+                        index = self.index(after: index)
+                    }
+                    // Skip the final byte (letter)
+                    if index < endIndex && self[index].isLetter {
+                        index = self.index(after: index)
+                    }
+                }
+            } else {
+                count += 1
+                index = self.index(after: index)
+            }
         }
-        return count - ansiLength
+
+        return count
     }
 
     /// The string with all ANSI escape codes removed.
     var stripped: String {
-        replacing(ANSIRenderer.ansiRegex, with: "")
+        var result = ""
+        result.reserveCapacity(count)
+        var index = startIndex
+
+        while index < endIndex {
+            if self[index] == "\u{1B}" {
+                // Skip ANSI sequence: ESC [ params letter
+                index = self.index(after: index)
+                if index < endIndex && self[index] == "[" {
+                    index = self.index(after: index)
+                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
+                        index = self.index(after: index)
+                    }
+                    if index < endIndex && self[index].isLetter {
+                        index = self.index(after: index)
+                    }
+                }
+            } else {
+                result.append(self[index])
+                index = self.index(after: index)
+            }
+        }
+
+        return result
     }
 
     /// Pads the string to the specified visible width using spaces.
