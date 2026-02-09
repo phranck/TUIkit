@@ -7,39 +7,39 @@ This plan adds text selection to TextField and SecureField. Users can select tex
 ## Checklist
 
 ### Phase 1: CSI Parser Modifier Support
-- [ ] Parse modifier codes in CSI sequences (`;2` = Shift, `;5` = Ctrl)
-- [ ] Support `ESC [1;2A` format (Shift+Arrow)
-- [ ] Support `ESC [1;2H` / `ESC [1;2F` (Shift+Home/End)
-- [ ] Add tests for modifier parsing
+- [x] Parse modifier codes in CSI sequences (`;2` = Shift, `;5` = Ctrl)
+- [x] Support `ESC [1;2A` format (Shift+Arrow)
+- [x] Support `ESC [1;2H` / `ESC [1;2F` (Shift+Home/End)
+- [x] Add tests for modifier parsing
 
 ### Phase 2: Selection State in TextFieldHandler
-- [ ] Add `selectionAnchor: Int?` property (nil = no selection)
-- [ ] Computed property `selectionRange` returns Range<Int>?
-- [ ] `clearSelection()` helper method
-- [ ] Update `clampCursorPosition()` to also clamp anchor
+- [x] Add `selectionAnchor: Int?` property (nil = no selection)
+- [x] Computed property `selectionRange` returns Range<Int>?
+- [x] `clearSelection()` helper method
+- [x] Update `clampCursorPosition()` to also clamp anchor
 
 ### Phase 3: Selection Keyboard Handling
-- [ ] Shift+Left: extend selection left by 1 character
-- [ ] Shift+Right: extend selection right by 1 character
-- [ ] Shift+Up: extend selection to text start
-- [ ] Shift+Down: extend selection to text end
-- [ ] Shift+Home: extend selection to text start (alternative)
-- [ ] Shift+End: extend selection to text end (alternative)
-- [ ] Any arrow without Shift: clear selection, move cursor
+- [x] Shift+Left: extend selection left by 1 character
+- [x] Shift+Right: extend selection right by 1 character
+- [x] Shift+Up: extend selection to text start
+- [x] Shift+Down: extend selection to text end
+- [x] Shift+Home: extend selection to text start (alternative)
+- [x] Shift+End: extend selection to text end (alternative)
+- [x] Any arrow without Shift: clear selection, move cursor
 
 ### Phase 4: Selection Rendering
-- [ ] Render selected text with highlight background
-- [ ] Selection works with horizontal scrolling
-- [ ] SecureField shows selected bullets with highlight
+- [x] Render selected text with highlight background
+- [x] Selection works with horizontal scrolling
+- [x] SecureField shows selected bullets with highlight
 
 ### Phase 5: Selection Editing
-- [ ] Backspace with selection: delete selected text
-- [ ] Delete with selection: delete selected text
-- [ ] Typing with selection: replace selected text
+- [x] Backspace with selection: delete selected text
+- [x] Delete with selection: delete selected text
+- [x] Typing with selection: replace selected text
 - [ ] Paste (if implemented): replace selected text
 
 ### Phase 6: Testing & Polish
-- [ ] TextFieldHandler selection tests
+- [x] TextFieldHandler selection tests
 - [ ] TextField rendering tests with selection
 - [ ] SecureField rendering tests with selection
 - [ ] Update example pages to demonstrate selection

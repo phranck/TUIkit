@@ -307,4 +307,109 @@ struct KeyEventParseTests {
         let event = KeyEvent.parse([0x1B])
         #expect(event?.key == .escape)
     }
+
+    // MARK: - Modifier Keys (CSI with modifiers)
+
+    @Test("Parse Shift+Up (ESC [ 1 ; 2 A)")
+    func parseShiftUp() {
+        // ESC [ 1 ; 2 A = 0x1B 0x5B 0x31 0x3B 0x32 0x41
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x41])
+        #expect(event?.key == .up)
+        #expect(event?.shift == true)
+        #expect(event?.ctrl == false)
+        #expect(event?.alt == false)
+    }
+
+    @Test("Parse Shift+Down (ESC [ 1 ; 2 B)")
+    func parseShiftDown() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x42])
+        #expect(event?.key == .down)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Shift+Right (ESC [ 1 ; 2 C)")
+    func parseShiftRight() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x43])
+        #expect(event?.key == .right)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Shift+Left (ESC [ 1 ; 2 D)")
+    func parseShiftLeft() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x44])
+        #expect(event?.key == .left)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Shift+Home (ESC [ 1 ; 2 H)")
+    func parseShiftHome() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x48])
+        #expect(event?.key == .home)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Shift+End (ESC [ 1 ; 2 F)")
+    func parseShiftEnd() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x32, 0x46])
+        #expect(event?.key == .end)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Alt+Up (ESC [ 1 ; 3 A)")
+    func parseAltUp() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x33, 0x41])
+        #expect(event?.key == .up)
+        #expect(event?.alt == true)
+        #expect(event?.shift == false)
+    }
+
+    @Test("Parse Ctrl+Up (ESC [ 1 ; 5 A)")
+    func parseCtrlUp() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x35, 0x41])
+        #expect(event?.key == .up)
+        #expect(event?.ctrl == true)
+        #expect(event?.shift == false)
+    }
+
+    @Test("Parse Shift+Ctrl+Up (ESC [ 1 ; 6 A)")
+    func parseShiftCtrlUp() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x36, 0x41])
+        #expect(event?.key == .up)
+        #expect(event?.shift == true)
+        #expect(event?.ctrl == true)
+        #expect(event?.alt == false)
+    }
+
+    @Test("Parse Shift+Alt+Ctrl+Right (ESC [ 1 ; 8 C)")
+    func parseShiftAltCtrlRight() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x31, 0x3B, 0x38, 0x43])
+        #expect(event?.key == .right)
+        #expect(event?.shift == true)
+        #expect(event?.alt == true)
+        #expect(event?.ctrl == true)
+    }
+
+    @Test("Parse Shift+Delete (ESC [ 3 ; 2 ~)")
+    func parseShiftDelete() {
+        // ESC [ 3 ; 2 ~ = 0x1B 0x5B 0x33 0x3B 0x32 0x7E
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x33, 0x3B, 0x32, 0x7E])
+        #expect(event?.key == .delete)
+        #expect(event?.shift == true)
+    }
+
+    @Test("Parse Ctrl+PageUp (ESC [ 5 ; 5 ~)")
+    func parseCtrlPageUp() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x35, 0x3B, 0x35, 0x7E])
+        #expect(event?.key == .pageUp)
+        #expect(event?.ctrl == true)
+    }
+
+    @Test("Arrow without modifier has no modifiers set")
+    func arrowWithoutModifier() {
+        let event = KeyEvent.parse([0x1B, 0x5B, 0x41])  // ESC [ A
+        #expect(event?.key == .up)
+        #expect(event?.shift == false)
+        #expect(event?.ctrl == false)
+        #expect(event?.alt == false)
+    }
 }

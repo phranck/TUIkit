@@ -218,25 +218,37 @@ extension KeyEvent {
     /// The final byte identifies the key (e.g. `A` = up arrow).
     /// Numeric parameters before the final byte encode extended keys
     /// like Page Up/Down (`ESC [ 5 ~`).
+    ///
+    /// Modifier keys are encoded as `ESC [ 1 ; <modifier> <key>`:
+    /// - 2 = Shift
+    /// - 3 = Alt
+    /// - 4 = Shift+Alt
+    /// - 5 = Ctrl
+    /// - 6 = Shift+Ctrl
+    /// - 7 = Alt+Ctrl
+    /// - 8 = Shift+Alt+Ctrl
     private static func parseCSISequence(_ params: [UInt8]) -> KeyEvent? {
         guard !params.isEmpty else { return nil }
+
+        // Extract modifier from params if present (format: "1;2A" for Shift+Up)
+        let modifiers = extractModifiers(from: params)
 
         // The last byte is the CSI function identifier
         switch params.last {
         case ASCIIByte.arrowUp:
-            return KeyEvent(key: .up)
+            return KeyEvent(key: .up, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.arrowDown:
-            return KeyEvent(key: .down)
+            return KeyEvent(key: .down, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.arrowRight:
-            return KeyEvent(key: .right)
+            return KeyEvent(key: .right, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.arrowLeft:
-            return KeyEvent(key: .left)
+            return KeyEvent(key: .left, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.home:
-            return KeyEvent(key: .home)
+            return KeyEvent(key: .home, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.end:
-            return KeyEvent(key: .end)
+            return KeyEvent(key: .end, ctrl: modifiers.ctrl, alt: modifiers.alt, shift: modifiers.shift)
         case ASCIIByte.tilde:
-            return parseExtendedKey(params)
+            return parseExtendedKey(params, modifiers: modifiers)
         case ASCIIByte.shiftTab:
             // Shift+Tab: ESC [ Z (CSI Z / backtab)
             return KeyEvent(key: .tab, shift: true)
@@ -245,42 +257,92 @@ extension KeyEvent {
         }
     }
 
-    /// Parses extended key sequences (`ESC [ n ~`).
+    /// Extracts modifier flags from CSI parameters.
+    ///
+    /// Format: `1;2` where 2 is the modifier code.
+    /// Modifier codes (xterm standard):
+    /// - 2 = Shift
+    /// - 3 = Alt
+    /// - 4 = Shift+Alt
+    /// - 5 = Ctrl
+    /// - 6 = Shift+Ctrl
+    /// - 7 = Alt+Ctrl
+    /// - 8 = Shift+Alt+Ctrl
+    private static func extractModifiers(from params: [UInt8]) -> (shift: Bool, alt: Bool, ctrl: Bool) {
+        // Look for semicolon separator
+        guard let semicolonIndex = params.firstIndex(of: 0x3B) else {  // ';' = 0x3B
+            return (shift: false, alt: false, ctrl: false)
+        }
+
+        // Extract modifier number after semicolon (before final byte)
+        let modifierBytes = params[(semicolonIndex + 1)..<(params.count - 1)]
+        guard let string = String(bytes: modifierBytes, encoding: .ascii),
+              let modifier = Int(string)
+        else {
+            return (shift: false, alt: false, ctrl: false)
+        }
+
+        // Decode modifier bits (modifier - 1 gives the bit flags)
+        // Bit 0 = Shift, Bit 1 = Alt, Bit 2 = Ctrl
+        let bits = modifier - 1
+        let shift = (bits & 1) != 0
+        let alt = (bits & 2) != 0
+        let ctrl = (bits & 4) != 0
+
+        return (shift: shift, alt: alt, ctrl: ctrl)
+    }
+
+    /// Parses extended key sequences (`ESC [ n ~` or `ESC [ n ; m ~`).
     ///
     /// These are VT-style sequences where `n` is a numeric key identifier:
     /// - 1=Home, 2=Insert, 3=Delete, 4=End, 5=PageUp, 6=PageDown
     /// - 11-15=F1-F5, 17-21=F6-F10, 23-24=F11-F12
-    private static func parseExtendedKey(_ params: [UInt8]) -> KeyEvent? {
-        // Extract the numeric identifier before the '~' terminator
-        let numberBytes = params.dropLast()
+    ///
+    /// With modifiers: `ESC [ 3 ; 2 ~` = Shift+Delete
+    private static func parseExtendedKey(
+        _ params: [UInt8],
+        modifiers: (shift: Bool, alt: Bool, ctrl: Bool) = (false, false, false)
+    ) -> KeyEvent? {
+        // Extract the numeric identifier before the '~' terminator or ';'
+        let numberBytes: ArraySlice<UInt8>
+        if let semicolonIndex = params.firstIndex(of: 0x3B) {
+            numberBytes = params[..<semicolonIndex]
+        } else {
+            numberBytes = params.dropLast()
+        }
+
         guard let string = String(bytes: numberBytes, encoding: .ascii),
-            let number = Int(string)
+              let number = Int(string)
         else {
             return nil
         }
 
+        let shift = modifiers.shift
+        let alt = modifiers.alt
+        let ctrl = modifiers.ctrl
+
         switch number {
         // Navigation keys
-        case 1: return KeyEvent(key: .home)
-        case 2: return nil  // Insert — not commonly used in TUI apps
-        case 3: return KeyEvent(key: .delete)
-        case 4: return KeyEvent(key: .end)
-        case 5: return KeyEvent(key: .pageUp)
-        case 6: return KeyEvent(key: .pageDown)
+        case 1: return KeyEvent(key: .home, ctrl: ctrl, alt: alt, shift: shift)
+        case 2: return nil  // Insert - not commonly used in TUI apps
+        case 3: return KeyEvent(key: .delete, ctrl: ctrl, alt: alt, shift: shift)
+        case 4: return KeyEvent(key: .end, ctrl: ctrl, alt: alt, shift: shift)
+        case 5: return KeyEvent(key: .pageUp, ctrl: ctrl, alt: alt, shift: shift)
+        case 6: return KeyEvent(key: .pageDown, ctrl: ctrl, alt: alt, shift: shift)
 
         // Function keys (VT-style)
-        case 11: return KeyEvent(key: .f1)
-        case 12: return KeyEvent(key: .f2)
-        case 13: return KeyEvent(key: .f3)
-        case 14: return KeyEvent(key: .f4)
-        case 15: return KeyEvent(key: .f5)
-        case 17: return KeyEvent(key: .f6)
-        case 18: return KeyEvent(key: .f7)
-        case 19: return KeyEvent(key: .f8)
-        case 20: return KeyEvent(key: .f9)
-        case 21: return KeyEvent(key: .f10)
-        case 23: return KeyEvent(key: .f11)
-        case 24: return KeyEvent(key: .f12)
+        case 11: return KeyEvent(key: .f1, ctrl: ctrl, alt: alt, shift: shift)
+        case 12: return KeyEvent(key: .f2, ctrl: ctrl, alt: alt, shift: shift)
+        case 13: return KeyEvent(key: .f3, ctrl: ctrl, alt: alt, shift: shift)
+        case 14: return KeyEvent(key: .f4, ctrl: ctrl, alt: alt, shift: shift)
+        case 15: return KeyEvent(key: .f5, ctrl: ctrl, alt: alt, shift: shift)
+        case 17: return KeyEvent(key: .f6, ctrl: ctrl, alt: alt, shift: shift)
+        case 18: return KeyEvent(key: .f7, ctrl: ctrl, alt: alt, shift: shift)
+        case 19: return KeyEvent(key: .f8, ctrl: ctrl, alt: alt, shift: shift)
+        case 20: return KeyEvent(key: .f9, ctrl: ctrl, alt: alt, shift: shift)
+        case 21: return KeyEvent(key: .f10, ctrl: ctrl, alt: alt, shift: shift)
+        case 23: return KeyEvent(key: .f11, ctrl: ctrl, alt: alt, shift: shift)
+        case 24: return KeyEvent(key: .f12, ctrl: ctrl, alt: alt, shift: shift)
 
         default: return nil
         }
