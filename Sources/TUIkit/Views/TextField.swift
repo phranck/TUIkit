@@ -320,6 +320,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             innerContent = buildTextWithCursor(
                 text: textValue,
                 cursorPosition: handler.cursorPosition,
+                selectionRange: handler.selectionRange,
                 palette: palette,
                 background: backgroundColor,
                 width: contentWidth
@@ -374,9 +375,11 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
 
     /// Builds text content with cursor at the specified position (focused state).
     /// Implements horizontal scrolling to keep cursor visible.
+    /// Selection is highlighted with accent background if present.
     private func buildTextWithCursor(
         text: String,
         cursorPosition: Int,
+        selectionRange: Range<Int>?,
         palette: any Palette,
         background: Color,
         width: Int
@@ -395,22 +398,50 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             scrollOffset = clampedPosition - visibleTextWidth
         }
 
-        // Extract visible portion of text
-        let textAfterScroll = String(text.dropFirst(scrollOffset))
-        let visibleBeforeCursor = String(textAfterScroll.prefix(clampedPosition - scrollOffset))
-        let afterCursorStart = clampedPosition - scrollOffset
-        let visibleAfterCursor = String(textAfterScroll.dropFirst(afterCursorStart).prefix(width - afterCursorStart - 1))
+        // The visible window in the text
+        let visibleStart = scrollOffset
 
-        // Calculate padding needed to fill width
-        let usedWidth = visibleBeforeCursor.count + 1 + visibleAfterCursor.count  // before + cursor + after
-        let paddingNeeded = max(0, width - usedWidth)
-        let padding = String(repeating: " ", count: paddingNeeded)
+        // Build output character by character
+        var result = ""
+        var outputWidth = 0
 
-        // Render each part with background
-        let beforePart = ANSIRenderer.colorize(visibleBeforeCursor, foreground: palette.foreground, background: background)
-        let cursorPart = ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
-        let afterPart = ANSIRenderer.colorize(visibleAfterCursor + padding, foreground: palette.foreground, background: background)
+        for visibleIndex in 0..<width {
+            let textIndex = visibleStart + visibleIndex
 
-        return beforePart + cursorPart + afterPart
+            if textIndex == clampedPosition {
+                // Render cursor
+                result += ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
+                outputWidth += 1
+            } else if textIndex < text.count && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
+                // Render character
+                let charIndex = text.index(text.startIndex, offsetBy: textIndex)
+                let char = text[charIndex]
+
+                // Check if this character is in the selection
+                let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
+
+                if isSelected {
+                    // Selection highlight: accent background, foreground contrasts
+                    result += ANSIRenderer.colorize(
+                        String(char),
+                        foreground: palette.background,
+                        background: palette.accent
+                    )
+                } else {
+                    result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
+                }
+                outputWidth += 1
+            } else if outputWidth < width {
+                // Padding
+                result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
+                outputWidth += 1
+            }
+
+            if outputWidth >= width {
+                break
+            }
+        }
+
+        return result
     }
 }
