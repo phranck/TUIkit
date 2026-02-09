@@ -278,6 +278,7 @@ private struct _SecureFieldCore: View, Renderable {
             innerContent = buildMaskedTextWithCursor(
                 textLength: textValue.count,
                 cursorPosition: handler.cursorPosition,
+                selectionRange: handler.selectionRange,
                 palette: palette,
                 background: backgroundColor,
                 width: contentWidth
@@ -333,9 +334,11 @@ private struct _SecureFieldCore: View, Renderable {
 
     /// Builds masked text content with cursor at the specified position (focused state).
     /// Implements horizontal scrolling to keep cursor visible.
+    /// Selection is highlighted with accent background if present.
     private func buildMaskedTextWithCursor(
         textLength: Int,
         cursorPosition: Int,
+        selectionRange: Range<Int>?,
         palette: any Palette,
         background: Color,
         width: Int
@@ -354,24 +357,48 @@ private struct _SecureFieldCore: View, Renderable {
             scrollOffset = clampedPosition - visibleTextWidth
         }
 
-        // Calculate how many bullets before and after cursor
-        let bulletsBeforeCursor = max(0, clampedPosition - scrollOffset)
-        let bulletsAfterCursor = max(0, min(textLength - clampedPosition, width - bulletsBeforeCursor - 1))
+        // The visible window in the text
+        let visibleStart = scrollOffset
 
-        // Build masked strings
-        let beforeCursorText = String(repeating: maskChar, count: bulletsBeforeCursor)
-        let afterCursorText = String(repeating: maskChar, count: bulletsAfterCursor)
+        // Build output character by character
+        var result = ""
+        var outputWidth = 0
 
-        // Calculate padding needed to fill width
-        let usedWidth = bulletsBeforeCursor + 1 + bulletsAfterCursor  // before + cursor + after
-        let paddingNeeded = max(0, width - usedWidth)
-        let padding = String(repeating: " ", count: paddingNeeded)
+        for visibleIndex in 0..<width {
+            let textIndex = visibleStart + visibleIndex
 
-        // Render each part with background
-        let beforePart = ANSIRenderer.colorize(beforeCursorText, foreground: palette.foreground, background: background)
-        let cursorPart = ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
-        let afterPart = ANSIRenderer.colorize(afterCursorText + padding, foreground: palette.foreground, background: background)
+            if textIndex == clampedPosition {
+                // Render cursor
+                result += ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
+                outputWidth += 1
+            } else if textIndex < textLength && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
+                // Render bullet
 
-        return beforePart + cursorPart + afterPart
+                // Check if this character is in the selection
+                let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
+
+                if isSelected {
+                    // Selection highlight: accent background, foreground contrasts
+                    result += ANSIRenderer.colorize(
+                        String(maskChar),
+                        foreground: palette.background,
+                        background: palette.accent
+                    )
+                } else {
+                    result += ANSIRenderer.colorize(String(maskChar), foreground: palette.foreground, background: background)
+                }
+                outputWidth += 1
+            } else if outputWidth < width {
+                // Padding
+                result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
+                outputWidth += 1
+            }
+
+            if outputWidth >= width {
+                break
+            }
+        }
+
+        return result
     }
 }

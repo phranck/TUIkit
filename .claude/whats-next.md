@@ -1,16 +1,16 @@
 # TUIkit: What's Next
 
 **Branch:** `main`
-**Tests:** 906 / 131 suites
+**Tests:** 947 / 131 suites
 **Build:** clean
 
 ## Active
 
-None
+TextField Selection implementation complete (uncommitted)
 
 ## Next Steps
 
-1. TextField Selection: Shift+Arrow selection, highlight, delete/replace
+1. Commit TextField Selection changes
 2. TextCursor Modifier: `.textCursor(_:)` for cursor styling
 3. DisclosureGroup: Expandable/collapsible sections
 

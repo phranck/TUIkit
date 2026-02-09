@@ -11,6 +11,7 @@
 /// - Character insertion at cursor position
 /// - Backspace/delete for removing characters
 /// - Cursor navigation (left/right/home/end)
+/// - Text selection with Shift+Arrow keys
 /// - Submit action on Enter
 ///
 /// ## Usage
@@ -30,13 +31,19 @@
 ///
 /// | Key | Action |
 /// |-----|--------|
-/// | Any printable | Insert character at cursor |
-/// | Backspace | Delete character before cursor |
-/// | Delete | Delete character at cursor |
-/// | Left | Move cursor left |
-/// | Right | Move cursor right |
-/// | Home | Move cursor to start |
-/// | End | Move cursor to end |
+/// | Any printable | Insert character at cursor (replaces selection) |
+/// | Backspace | Delete selection or character before cursor |
+/// | Delete | Delete selection or character at cursor |
+/// | Left | Move cursor left (clears selection) |
+/// | Right | Move cursor right (clears selection) |
+/// | Home | Move cursor to start (clears selection) |
+/// | End | Move cursor to end (clears selection) |
+/// | Shift+Left | Extend selection left |
+/// | Shift+Right | Extend selection right |
+/// | Shift+Up | Select to start of text |
+/// | Shift+Down | Select to end of text |
+/// | Shift+Home | Select to start of text |
+/// | Shift+End | Select to end of text |
 /// | Enter | Trigger submit action |
 final class TextFieldHandler: Focusable {
     /// The unique identifier for this focusable element.
@@ -50,6 +57,11 @@ final class TextFieldHandler: Focusable {
 
     /// The cursor position (character index where next input will be inserted).
     var cursorPosition: Int
+
+    /// The selection anchor position (where selection started).
+    /// When nil, there is no active selection.
+    /// When set, the selection spans from `selectionAnchor` to `cursorPosition`.
+    var selectionAnchor: Int?
 
     /// Callback triggered when the user presses Enter.
     var onSubmit: (() -> Void)?
@@ -71,6 +83,83 @@ final class TextFieldHandler: Focusable {
         self.text = text
         self.canBeFocused = canBeFocused
         self.cursorPosition = cursorPosition ?? text.wrappedValue.count
+        self.selectionAnchor = nil
+    }
+}
+
+// MARK: - Selection
+
+extension TextFieldHandler {
+    /// Returns the current selection range, or nil if no selection.
+    ///
+    /// The range is always normalized (start < end) regardless of
+    /// whether the user selected left-to-right or right-to-left.
+    var selectionRange: Range<Int>? {
+        guard let anchor = selectionAnchor else { return nil }
+        guard anchor != cursorPosition else { return nil }  // Empty selection
+        let start = min(anchor, cursorPosition)
+        let end = max(anchor, cursorPosition)
+        return start..<end
+    }
+
+    /// Returns true if there is an active text selection.
+    var hasSelection: Bool {
+        selectionRange != nil
+    }
+
+    /// Clears the current selection without moving the cursor.
+    func clearSelection() {
+        selectionAnchor = nil
+    }
+
+    /// Starts or extends a selection from the current cursor position.
+    ///
+    /// If no selection exists, sets the anchor at the current cursor position.
+    /// If a selection exists, the anchor stays where it is.
+    func startOrExtendSelection() {
+        if selectionAnchor == nil {
+            selectionAnchor = cursorPosition
+        }
+    }
+
+    /// Deletes the text in the given range and positions cursor at start.
+    ///
+    /// - Parameter range: The range of characters to delete.
+    func deleteRange(_ range: Range<Int>) {
+        var current = text.wrappedValue
+        let startIndex = current.index(current.startIndex, offsetBy: range.lowerBound)
+        let endIndex = current.index(current.startIndex, offsetBy: range.upperBound)
+        current.removeSubrange(startIndex..<endIndex)
+        text.wrappedValue = current
+        cursorPosition = range.lowerBound
+    }
+
+    /// Extends selection one character to the left.
+    func extendSelectionLeft() {
+        startOrExtendSelection()
+        if cursorPosition > 0 {
+            cursorPosition -= 1
+        }
+    }
+
+    /// Extends selection one character to the right.
+    func extendSelectionRight() {
+        startOrExtendSelection()
+        if cursorPosition < text.wrappedValue.count {
+            cursorPosition += 1
+        }
+    }
+
+    /// Extends selection to the start of the text.
+    func extendSelectionToStart() {
+        startOrExtendSelection()
+        cursorPosition = 0
+    }
+
+    /// Extends selection to the end of the text.
+    func extendSelectionToEnd() {
+        startOrExtendSelection()
+        cursorPosition = text.wrappedValue.count
     }
 }
 
@@ -97,19 +186,57 @@ extension TextFieldHandler {
             return true
 
         case .left:
-            moveCursorLeft()
+            if event.shift {
+                extendSelectionLeft()
+            } else {
+                clearSelection()
+                moveCursorLeft()
+            }
             return true
 
         case .right:
-            moveCursorRight()
+            if event.shift {
+                extendSelectionRight()
+            } else {
+                clearSelection()
+                moveCursorRight()
+            }
+            return true
+
+        case .up:
+            if event.shift {
+                extendSelectionToStart()
+            } else {
+                clearSelection()
+                cursorPosition = 0
+            }
+            return true
+
+        case .down:
+            if event.shift {
+                extendSelectionToEnd()
+            } else {
+                clearSelection()
+                cursorPosition = text.wrappedValue.count
+            }
             return true
 
         case .home:
-            cursorPosition = 0
+            if event.shift {
+                extendSelectionToStart()
+            } else {
+                clearSelection()
+                cursorPosition = 0
+            }
             return true
 
         case .end:
-            cursorPosition = text.wrappedValue.count
+            if event.shift {
+                extendSelectionToEnd()
+            } else {
+                clearSelection()
+                cursorPosition = text.wrappedValue.count
+            }
             return true
 
         case .enter:
@@ -127,8 +254,16 @@ extension TextFieldHandler {
 extension TextFieldHandler {
     /// Inserts a character at the current cursor position.
     ///
+    /// If text is selected, the selection is replaced with the character.
+    ///
     /// - Parameter char: The character to insert.
     func insertCharacter(_ char: Character) {
+        // Replace selection if present
+        if let range = selectionRange {
+            deleteRange(range)
+            clearSelection()
+        }
+
         var current = text.wrappedValue
         let index = current.index(current.startIndex, offsetBy: min(cursorPosition, current.count))
         current.insert(char, at: index)
@@ -137,7 +272,16 @@ extension TextFieldHandler {
     }
 
     /// Deletes the character before the cursor (backspace).
+    ///
+    /// If text is selected, the entire selection is deleted.
     func deleteBackward() {
+        // Delete selection if present
+        if let range = selectionRange {
+            deleteRange(range)
+            clearSelection()
+            return
+        }
+
         guard cursorPosition > 0 else { return }
         var current = text.wrappedValue
         let index = current.index(current.startIndex, offsetBy: cursorPosition - 1)
@@ -147,7 +291,16 @@ extension TextFieldHandler {
     }
 
     /// Deletes the character at the cursor position (delete key).
+    ///
+    /// If text is selected, the entire selection is deleted.
     func deleteForward() {
+        // Delete selection if present
+        if let range = selectionRange {
+            deleteRange(range)
+            clearSelection()
+            return
+        }
+
         var current = text.wrappedValue
         guard cursorPosition < current.count else { return }
         let index = current.index(current.startIndex, offsetBy: cursorPosition)
@@ -173,9 +326,13 @@ extension TextFieldHandler {
         }
     }
 
-    /// Ensures the cursor position is within valid bounds.
+    /// Ensures the cursor position and selection anchor are within valid bounds.
     func clampCursorPosition() {
-        cursorPosition = max(0, min(cursorPosition, text.wrappedValue.count))
+        let maxPos = text.wrappedValue.count
+        cursorPosition = max(0, min(cursorPosition, maxPos))
+        if let anchor = selectionAnchor {
+            selectionAnchor = max(0, min(anchor, maxPos))
+        }
     }
 }
 
