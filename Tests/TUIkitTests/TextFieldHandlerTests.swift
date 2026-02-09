@@ -347,4 +347,75 @@ struct TextFieldHandlerTests {
 
         #expect(handler.cursorPosition == 2)  // Clamped to "Hi".count
     }
+
+    // MARK: - Autocapitalization
+
+    @Test("Autocapitalization never does not transform")
+    func autocapitalizationNever() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+        handler.autocapitalization = .never
+
+        handler.insertCharacter("a")
+        handler.insertCharacter("b")
+
+        #expect(text == "ab")
+    }
+
+    @Test("Autocapitalization characters uppercases all")
+    func autocapitalizationCharacters() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+        handler.autocapitalization = .characters
+
+        handler.insertCharacter("a")
+        handler.insertCharacter("b")
+
+        #expect(text == "AB")
+    }
+
+    @Test("Autocapitalization words capitalizes first letter of each word")
+    func autocapitalizationWords() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+        handler.autocapitalization = .words
+
+        handler.insertCharacter("h")
+        handler.insertCharacter("e")
+        handler.insertCharacter("l")
+        handler.insertCharacter("l")
+        handler.insertCharacter("o")
+        handler.insertCharacter(" ")
+        handler.insertCharacter("w")
+        handler.insertCharacter("o")
+        handler.insertCharacter("r")
+        handler.insertCharacter("l")
+        handler.insertCharacter("d")
+
+        #expect(text == "Hello World")
+    }
+
+    @Test("Autocapitalization sentences capitalizes after sentence end")
+    func autocapitalizationSentences() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+        handler.autocapitalization = .sentences
+
+        // "hi. hello"
+        handler.insertCharacter("h")
+        handler.insertCharacter("i")
+        handler.insertCharacter(".")
+        handler.insertCharacter(" ")
+        handler.insertCharacter("h")
+        handler.insertCharacter("e")
+        handler.insertCharacter("l")
+        handler.insertCharacter("l")
+        handler.insertCharacter("o")
+
+        #expect(text == "Hi. Hello")
+    }
 }
