@@ -119,7 +119,9 @@ public struct InsetGroupedListStyle: ListStyle {
     }
 
     public var rowPadding: EdgeInsets {
-        EdgeInsets(top: 0, leading: 1, bottom: 0, trailing: 1)
+        // No container padding - row backgrounds need to extend to the borders.
+        // Row padding is handled in List's renderRow() method.
+        EdgeInsets(all: 0)
     }
 
     public var groupingStyle: ListGroupingStyle {
@@ -127,7 +129,7 @@ public struct InsetGroupedListStyle: ListStyle {
     }
 
     public var alternatingRowColors: Bool {
-        true
+        false
     }
 
     public var alternatingColorPair: (evenColor: Color, oddColor: Color)? {
