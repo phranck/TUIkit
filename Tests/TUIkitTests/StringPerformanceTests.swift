@@ -17,11 +17,11 @@ import Testing
 struct StringPerformanceTests {
 
     private func measure(_ name: String, iterations: Int = 1000, block: () -> Void) -> TimeInterval {
-        let start = CFAbsoluteTimeGetCurrent()
+        let start = Date()
         for _ in 0..<iterations {
             block()
         }
-        let time = CFAbsoluteTimeGetCurrent() - start
+        let time = Date().timeIntervalSince(start)
         let perIteration = (time / Double(iterations)) * 1000
         print("  \(name): \(String(format: "%.4f", perIteration))ms per iteration")
         return time
