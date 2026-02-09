@@ -19,6 +19,7 @@ enum DemoPage: Int, CaseIterable {
     case buttons
     case toggles
     case textFields
+    case secureFields
     case radioButtons
     case spinners
     case lists
@@ -57,6 +58,10 @@ struct ContentView: View {
                 case .character("8"):
                     // Quick jump to Text Fields
                     currentPage = .textFields
+                    return true
+                case .character("\\"):
+                    // Quick jump to Secure Fields
+                    currentPage = .secureFields
                     return true
                 case .character("9"):
                     // Quick jump to Radio Buttons
@@ -120,6 +125,9 @@ struct ContentView: View {
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .textFields:
             TextFieldPage()
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .secureFields:
+            SecureFieldPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .radioButtons:
             RadioButtonPage()
