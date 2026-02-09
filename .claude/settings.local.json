@@ -14,7 +14,9 @@
       "Bash(grep:*)",
       "Bash(swiftlint:*)",
       "Bash(gh run:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git pull:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
