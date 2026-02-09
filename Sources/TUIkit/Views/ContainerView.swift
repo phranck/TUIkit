@@ -360,7 +360,7 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
         let footerNaturalWidth = initialFooterBuffer?.width ?? 0
         let contentBasedWidth = max(titleWidth, bodyBuffer.width, footerNaturalWidth)
-        
+
         // If an explicit frame width was set, expand to fill that width.
         // Otherwise, use the content-based width (shrink to fit).
         let innerWidth: Int
