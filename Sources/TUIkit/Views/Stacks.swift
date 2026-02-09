@@ -276,8 +276,12 @@ extension VStack: Renderable {
         // Distribute remainder to first spacers (handles odd division)
         let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
 
-        // Max width across all children determines alignment reference
-        let maxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
+        // Use available width for alignment when spacers are present.
+        // Spacers indicate the VStack should fill available space, so children
+        // should be centered relative to that space, not just relative to each other.
+        // This ensures dynamic content (like counters) stays centered as it grows.
+        let childMaxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
+        let maxWidth = spacerCount > 0 ? context.availableWidth : childMaxWidth
 
         var result = FrameBuffer()
         var spacerIndex = 0
