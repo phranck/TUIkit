@@ -101,9 +101,9 @@ export default function CodePreview() {
               <img
                 src="/images/preview.png"
                 alt="Terminal preview of the code example"
-                className="max-h-[90vh] w-auto"
+                className="w-[1174px] h-[877px] max-w-none"
               />
-              <div className="absolute bottom-[108px] left-0 right-0 flex justify-center">
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center">
                 <p className="text-lg text-foreground bg-black/30 px-6 py-3 rounded-lg">The executed code running in Terminal</p>
               </div>
             </div>
