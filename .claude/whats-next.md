@@ -6,13 +6,13 @@
 
 ## Active
 
-TextField Selection implementation complete (uncommitted)
+None
 
 ## Next Steps
 
-1. Commit TextField Selection changes
-2. TextCursor Modifier: `.textCursor(_:)` for cursor styling
-3. DisclosureGroup: Expandable/collapsible sections
+1. TextCursor Modifier: `.textCursor(_:)` for cursor styling
+2. DisclosureGroup: Expandable/collapsible sections
+3. Example App Redesign: Feature catalog to multiple small apps
 
 ---
 **Last Updated:** 2026-02-09
