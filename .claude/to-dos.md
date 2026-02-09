@@ -2,13 +2,14 @@
 
 ## In Progress
 
+- [ ] **TextField Polish**: TextFieldStyle, ViewBuilder label init, Example app demo page
 - [ ] **List SwiftUI API Parity**: Section, .badge(), .listStyle(), .selectionDisabled(), .alternatingRowBackgrounds()
 
 ## Open
 
 ### High Priority
 
-- [ ] **TextInput / TextField**: Text input component with cursor, editing, validation
+- [ ] **SecureField**: Password input with masking (builds on TextField)
 
 ### Medium Priority
 
