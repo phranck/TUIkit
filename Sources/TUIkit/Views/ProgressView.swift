@@ -1,51 +1,8 @@
-//  🖥️ TUIKit — Terminal UI Kit for Swift
+//  TUIKit - Terminal UI Kit for Swift
 //  ProgressView.swift
 //
 //  Created by LAYERED.work
 //  License: MIT
-
-// MARK: - ProgressBar Style
-
-/// The visual style of a progress bar.
-///
-/// TUIKit provides five built-in styles using different Unicode characters:
-///
-/// ```
-/// block:     ████████████████░░░░░░░░░░░░░░░░
-/// blockFine: ████████████████▍░░░░░░░░░░░░░░░   (sub-character precision)
-/// shade:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░
-/// bar:       ▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌────────────────
-/// dot:       ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●────────────────
-/// ```
-public enum ProgressBarStyle: Sendable, Equatable {
-    /// Full block characters (default).
-    ///
-    /// Uses `█` for filled cells and `░` for empty cells.
-    case block
-
-    /// Full block characters with sub-character fractional precision.
-    ///
-    /// Uses `█` for filled cells, fractional blocks (`▉▊▋▌▍▎▏`) for the
-    /// partial cell at the boundary, and `░` for empty cells. This gives
-    /// 8× finer visual resolution than ``block``.
-    case blockFine
-
-    /// Shade characters for a softer, textured look.
-    ///
-    /// Uses `▓` (dark shade) for filled and `░` (light shade) for empty.
-    case shade
-
-    /// Vertical bar characters with a horizontal line track.
-    ///
-    /// Uses `▌` for filled and `─` for empty.
-    case bar
-
-    /// Rectangle track with a dot indicator at the progress position.
-    ///
-    /// Uses `▬` for filled, `●` as the progress head, and `─` for empty.
-    /// The dot head renders in the accent color.
-    case dot
-}
 
 // MARK: - ProgressView
 
@@ -67,14 +24,14 @@ public enum ProgressBarStyle: Sendable, Equatable {
 ///
 /// ## Styles
 ///
-/// Set the style via the `progressBarStyle(_:)` modifier or pass it directly:
+/// Set the style via the `trackStyle(_:)` modifier or pass it directly:
 ///
 /// ```swift
 /// ProgressView(value: 0.5)
-///     .progressBarStyle(.shade)
+///     .trackStyle(.shade)
 /// ```
 ///
-/// See ``ProgressBarStyle`` for all available styles.
+/// See ``TrackStyle`` for all available styles.
 ///
 /// ## Examples
 ///
@@ -115,7 +72,7 @@ public struct ProgressView<Label: View, CurrentValueLabel: View>: View {
     let fractionCompleted: Double?
 
     /// The visual style of the progress bar.
-    var style: ProgressBarStyle
+    var style: TrackStyle
 
     /// The label view displayed above the bar (left-aligned).
     let label: Label?
@@ -213,15 +170,24 @@ extension ProgressView {
     ///
     /// ```swift
     /// ProgressView(value: 0.5)
-    ///     .progressBarStyle(.shade)
+    ///     .trackStyle(.shade)
     /// ```
     ///
-    /// - Parameter style: The progress bar style.
+    /// - Parameter style: The track style.
     /// - Returns: A progress view with the specified style.
-    public func progressBarStyle(_ style: ProgressBarStyle) -> ProgressView {
+    public func trackStyle(_ style: TrackStyle) -> ProgressView {
         var copy = self
         copy.style = style
         return copy
+    }
+
+    /// Sets the visual style of the progress bar.
+    ///
+    /// - Parameter style: The progress bar style.
+    /// - Returns: A progress view with the specified style.
+    @available(*, deprecated, renamed: "trackStyle(_:)")
+    public func progressBarStyle(_ style: TrackStyle) -> ProgressView {
+        trackStyle(style)
     }
 }
 
@@ -254,7 +220,7 @@ extension ProgressView {
 /// Internal view that handles the actual rendering of ProgressView.
 private struct _ProgressViewCore<Label: View, CurrentValueLabel: View>: View, Renderable {
     let fractionCompleted: Double?
-    let style: ProgressBarStyle
+    let style: TrackStyle
     let label: Label?
     let currentValueLabel: CurrentValueLabel?
 
@@ -317,144 +283,15 @@ private struct _ProgressViewCore<Label: View, CurrentValueLabel: View>: View, Re
 
     // MARK: - Bar Line Rendering
 
-    /// Renders the progress bar line using the current style.
+    /// Renders the progress bar line using the shared TrackRenderer.
     private func renderBarLine(width: Int, palette: any Palette) -> String {
-        let barWidth = max(0, width)
-        let fraction = fractionCompleted ?? 0.0
-
-        let filledColor = palette.foregroundSecondary
-        let emptyColor = palette.foregroundTertiary
-
-        switch style {
-        case .block:
-            return renderSimpleStyle(
-                fraction: fraction, barWidth: barWidth,
-                filledChar: "█", emptyChar: "░",
-                filledColor: filledColor, emptyColor: emptyColor
-            )
-        case .blockFine:
-            return renderBlockFineStyle(fraction: fraction, barWidth: barWidth, filledColor: filledColor, emptyColor: emptyColor)
-        case .shade:
-            return renderSimpleStyle(
-                fraction: fraction, barWidth: barWidth,
-                filledChar: "▓", emptyChar: "░",
-                filledColor: filledColor, emptyColor: emptyColor
-            )
-        case .bar:
-            return renderSimpleStyle(
-                fraction: fraction, barWidth: barWidth,
-                filledChar: "▌", emptyChar: "─",
-                filledColor: filledColor, emptyColor: emptyColor
-            )
-        case .dot:
-            return renderHeadStyle(
-                fraction: fraction, barWidth: barWidth,
-                filledChar: "▬", headChar: "●", emptyChar: "─",
-                filledColor: filledColor, headColor: palette.accent, emptyColor: emptyColor
-            )
-        }
-    }
-
-    /// Renders the `.blockFine` style with sub-character fractional precision.
-    private func renderBlockFineStyle(fraction: Double, barWidth: Int, filledColor: Color, emptyColor: Color) -> String {
-        guard barWidth > 0 else { return "" }
-
-        let totalEighths = fraction * Double(barWidth) * 8.0
-        let fullCells = Int(totalEighths) / 8
-        let remainderEighths = Int(totalEighths) % 8
-
-        let fractionalBlocks: [Character] = ["▏", "▎", "▍", "▌", "▋", "▊", "▉"]
-
-        var result = ""
-
-        if fullCells > 0 {
-            let filledBar = String(repeating: "█", count: fullCells)
-            result += ANSIRenderer.colorize(filledBar, foreground: filledColor)
-        }
-
-        let cellsUsed: Int
-        if remainderEighths > 0 && fullCells < barWidth {
-            let partialChar = fractionalBlocks[remainderEighths - 1]
-            result += ANSIRenderer.colorize(String(partialChar), foreground: filledColor)
-            cellsUsed = fullCells + 1
-        } else {
-            cellsUsed = fullCells
-        }
-
-        let emptyCount = barWidth - cellsUsed
-        if emptyCount > 0 {
-            let emptyBar = String(repeating: "░", count: emptyCount)
-            result += ANSIRenderer.colorize(emptyBar, foreground: emptyColor)
-        }
-
-        return result
-    }
-
-    /// Renders a simple two-character style (filled + empty, no head indicator).
-    private func renderSimpleStyle(
-        fraction: Double,
-        barWidth: Int,
-        filledChar: Character,
-        emptyChar: Character,
-        filledColor: Color,
-        emptyColor: Color
-    ) -> String {
-        let filledCount = Int((fraction * Double(barWidth)).rounded())
-        let emptyCount = barWidth - filledCount
-
-        var result = ""
-        if filledCount > 0 {
-            result += ANSIRenderer.colorize(
-                String(repeating: filledChar, count: filledCount),
-                foreground: filledColor
-            )
-        }
-        if emptyCount > 0 {
-            result += ANSIRenderer.colorize(
-                String(repeating: emptyChar, count: emptyCount),
-                foreground: emptyColor
-            )
-        }
-        return result
-    }
-
-    /// Renders a head-indicator style (filled track + head + empty track).
-    private func renderHeadStyle(
-        fraction: Double,
-        barWidth: Int,
-        filledChar: Character,
-        headChar: Character,
-        emptyChar: Character,
-        filledColor: Color,
-        headColor: Color,
-        emptyColor: Color
-    ) -> String {
-        guard barWidth > 0 else { return "" }
-
-        let filledCount = Int((fraction * Double(barWidth)).rounded())
-
-        var result = ""
-
-        let trackCount = max(0, filledCount - 1)
-        if trackCount > 0 {
-            result += ANSIRenderer.colorize(
-                String(repeating: filledChar, count: trackCount),
-                foreground: filledColor
-            )
-        }
-
-        if filledCount > 0 && filledCount <= barWidth {
-            result += ANSIRenderer.colorize(String(headChar), foreground: headColor)
-        }
-
-        let emptyCount = barWidth - max(filledCount, 0)
-        if emptyCount > 0 {
-            result += ANSIRenderer.colorize(
-                String(repeating: emptyChar, count: emptyCount),
-                foreground: emptyColor
-            )
-        }
-
-        return result
+        TrackRenderer.render(
+            fraction: fractionCompleted ?? 0.0,
+            width: width,
+            style: style,
+            filledColor: palette.foregroundSecondary,
+            emptyColor: palette.foregroundTertiary,
+            accentColor: palette.accent
+        )
     }
 }

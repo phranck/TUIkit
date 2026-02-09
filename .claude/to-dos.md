@@ -21,6 +21,8 @@
 ## Completed
 
 ### 2026-02-09
+- Slider & Stepper: numeric input controls with TrackStyle, keyboard controls, focus indicators (59 tests)
+- TrackStyle refactor: renamed from ProgressBarStyle, TrackRenderer utility extracted
 - TextField complete: full text editing, cursor navigation, onSubmit, ViewBuilder label, Example app demo page (37 tests)
 - View Architecture Refactor complete (all controls use `body: some View`)
 - LazyVStack, LazyHStack added for SwiftUI parity
