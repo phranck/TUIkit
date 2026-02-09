@@ -300,10 +300,33 @@ Controls that need StateStorage/FocusManager:
 ## Open Questions
 
 1. **ForEach**: Currently has `body: Never`. Should it stay that way as an internal iteration helper, or become a proper View?
+   - **Answer**: ForEach is special. In SwiftUI it gets flattened by `@ViewBuilder.buildArray` into a ViewArray before rendering. The current implementation is correct - it has `body: Never` because it's never rendered directly. This matches SwiftUI behavior.
 
 2. **Stacks (HStack, VStack, ZStack)**: These are layout primitives. Should they use body or stay Renderable?
+   - **Answer**: Yes, they should be proper Views with `body: some View`. In SwiftUI, HStack/VStack/ZStack are all Views. This ensures modifier propagation works correctly.
 
 3. **Performance**: Will adding more View layers impact render performance? (Probably not, but should verify)
+   - **Status**: To be verified after Stacks refactor.
+
+4. **LazyHStack/LazyVStack**: These are missing from TUIKit.
+   - **Answer**: Should be added for SwiftUI parity. LazyStacks only render visible content.
+
+## Phase 7: Remaining Work
+
+### Stacks Refactor
+- [x] VStack: Convert to body: some View with _VStackCore
+- [x] HStack: Convert to body: some View with _HStackCore
+- [x] ZStack: Convert to body: some View with _ZStackCore
+- [x] Tests pass for each (757 tests)
+
+### Add LazyStacks
+- [ ] LazyVStack: Implement with lazy rendering
+- [ ] LazyHStack: Implement with lazy rendering
+- [ ] Add tests for LazyStacks
+
+### Performance Verification
+- [ ] Benchmark render performance before/after
+- [ ] Document any performance considerations
 
 ## Files
 
