@@ -320,9 +320,9 @@ Controls that need StateStorage/FocusManager:
 - [x] Tests pass for each (757 tests)
 
 ### Add LazyStacks
-- [ ] LazyVStack: Implement with lazy rendering
-- [ ] LazyHStack: Implement with lazy rendering
-- [ ] Add tests for LazyStacks
+- [x] LazyVStack: Implement with lazy rendering
+- [x] LazyHStack: Implement with lazy rendering
+- [x] Add tests for LazyStacks (11 tests)
 
 ### Performance Verification
 - [ ] Benchmark render performance before/after
