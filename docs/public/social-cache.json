@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-08T18:29:19.971Z",
+  "generatedAt": "2026-02-09T01:23:38.752Z",
   "entries": {
     "patriksvensson": {
       "login": "patriksvensson",
@@ -338,6 +338,16 @@
         "verified": true
       },
       "updatedAt": "2026-02-08T06:43:29.256Z"
+    },
+    "ewilken": {
+      "login": "ewilken",
+      "mastodon": {
+        "handle": "@ewlkn@mastodon.social",
+        "url": "https://mastodon.social/@ewlkn",
+        "source": "github",
+        "verified": true
+      },
+      "updatedAt": "2026-02-09T01:23:38.751Z"
     }
   }
 }
