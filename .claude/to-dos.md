@@ -2,13 +2,14 @@
 
 ## In Progress
 
-- [ ] **List SwiftUI API Parity**: Section, .badge(), .listStyle(), .selectionDisabled(), .alternatingRowBackgrounds()
+(none)
 
 ## Open
 
 ### High Priority
 
-- [ ] **SecureField**: Password input with masking (builds on TextField)
+- [ ] **TextField Selection**: Shift+Arrow selection, visual highlight, delete/replace selection (see plans/open/2026-02-09-textfield-selection.md)
+- [ ] **TextCursor Modifier**: `.textCursor(_:)` for TextField/SecureField cursor styling (block, thinBlock, underscore, bar) and animation (static, blink, pulse)
 
 ### Medium Priority
 
@@ -16,43 +17,33 @@
 
 ### Low Priority
 
-- [ ] **Fix Flaky Test**: "Default FocusManager is provided if not set" fails due to shared static instance
+- [ ] **Fix Flaky Test**: FocusManager shared static instance issue
 
 ## Completed
 
 ### 2026-02-09
-- Slider & Stepper: numeric input controls with TrackStyle, keyboard controls, focus indicators (59 tests)
-- TrackStyle refactor: renamed from ProgressBarStyle, TrackRenderer utility extracted
-- TextField complete: full text editing, cursor navigation, onSubmit, ViewBuilder label, Example app demo page (37 tests)
-- View Architecture Refactor complete (all controls use `body: some View`)
-- LazyVStack, LazyHStack added for SwiftUI parity
-- Performance: FrameBuffer, Stack rendering, ANSI string operations optimized (2-3x faster)
-- Removed unused regex (dead code cleanup)
+- SecureField: password masking with ● bullets, reuses TextFieldHandler (15 tests)
+- List SwiftUI API Parity: Section, badge, listStyle, selectionDisabled (45+ tests)
+- Slider & Stepper with TrackStyle, keyboard controls, focus indicators (59 tests)
+- TextField: text editing, cursor navigation, onSubmit, ViewBuilder label (37 tests)
+- TrackStyle refactor from ProgressBarStyle, TrackRenderer utility
+- View Architecture Refactor (all controls use `body: some View`)
+- LazyVStack, LazyHStack for SwiftUI parity
+- Performance: FrameBuffer, Stack rendering optimized (2-3x faster)
 
 ### 2026-02-08
-- Alert horizontal button layout, ESC dismiss, max width 60 chars
-- ButtonRole (.cancel, .destructive) with SwiftUI-conformant API
-- Left/Right arrow focus navigation
-- RenderLoop content positioning fix (actualHeaderHeight)
-- VStack default alignment fix in Example App pages
+- Alert horizontal buttons, ESC dismiss, ButtonRole (.cancel, .destructive)
+- Left/Right arrow focus navigation, RenderLoop positioning fix
 
 ### 2026-02-07
-- .foregroundColor() renamed to .foregroundStyle()
-- List & Table with ItemListHandler, focus bar, F-keys
+- .foregroundStyle() renamed, List & Table with ItemListHandler
 
 ### 2026-02-06
-- ContainerView refactor with shared renderContainer()
-- List scrolling with viewport management
-
-### 2026-02-03
-- Focus Sections with StatusBar cascading
-- Breathing dot indicator, PulseTimer
+- ContainerView refactor, List scrolling with viewport management
 
 ## Notes
 
-- SwiftUI docs available locally: `http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui`
-- Always check SwiftUI signature before implementing new APIs
+- SwiftUI docs: `http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui`
 
 ---
-
 **Last Updated:** 2026-02-09
