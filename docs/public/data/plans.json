@@ -1,6 +1,12 @@
 {
-  "generated": "2026-02-09T20:54:00.260Z",
+  "generated": "2026-02-09T21:35:22.623Z",
   "open": [
+    {
+      "date": "2026-02-09",
+      "slug": "textfield-selection",
+      "title": "TextField Selection Support",
+      "preface": "This plan adds text selection to TextField and SecureField. Users can select text using Shift+Arrow keys, with Shift+Left/Right extending character-by-character and Shift+Up/Down selecting to start/end (since single-line fields have no vertical navigation). Selected text is visually highlighted and can be deleted with Backspace/Delete or replaced by typing. This requires extending the CSI parser to recognize modifier codes in escape sequences and adding selection state to TextFieldHandler."
+    },
     {
       "date": "2026-02-02",
       "slug": "state-persistence",
@@ -9,6 +15,12 @@
     }
   ],
   "done": [
+    {
+      "date": "2026-02-09",
+      "slug": "securefield-component",
+      "title": "SecureField Component",
+      "preface": "This plan implements SecureField, a password input component for TUIKit. SecureField displays user input as bullet characters (●) instead of plain text, providing privacy for sensitive information like passwords and PINs. It shares most functionality with TextField (cursor navigation, text editing, focus handling) but masks the displayed content. The SwiftUI API is matched exactly, with init signatures using String bindings and optional prompts."
+    },
     {
       "date": "2026-02-09",
       "slug": "slider-stepper",
