@@ -94,17 +94,20 @@ extension ANSIRenderer {
     ///   - foreground: Optional foreground color.
     ///   - background: Optional background color.
     ///   - bold: Whether to apply bold.
+    ///   - underline: Whether to apply underline.
     /// - Returns: The ANSI-formatted string.
     static func colorize(
         _ string: String,
         foreground: Color? = nil,
         background: Color? = nil,
-        bold: Bool = false
+        bold: Bool = false,
+        underline: Bool = false
     ) -> String {
         var style = TextStyle()
         style.foregroundColor = foreground
         style.backgroundColor = background
         style.isBold = bold
+        style.isUnderlined = underline
         return render(string, with: style)
     }
 

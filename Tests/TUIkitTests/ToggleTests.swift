@@ -248,7 +248,7 @@ struct ToggleActionHandlerIntegrationTests {
         )
 
         // Space key should toggle
-        let spaceEvent = KeyEvent(key: .character(" "))
+        let spaceEvent = KeyEvent(key: .space)
         let spaceHandled = handler.handleKeyEvent(spaceEvent)
 
         #expect(spaceHandled == true)
