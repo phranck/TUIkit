@@ -293,7 +293,7 @@ show_help() {
     echo ""
     echo "Options:"
     echo "  git                 Initialize Git repository with initial commit"
-    echo "  sqlite              Include SQLiteData for database storage"
+    echo "  sqlite              Include GRDB for SQLite database storage"
     echo "  testing             Include Swift Testing framework"
     echo "  xctest              Include XCTest framework"
     echo ""
@@ -365,19 +365,48 @@ if [ -z "$PROJECT_NAME" ]; then
     exit 1
 fi
 
-# Header
-echo -e "${GREEN}"
-echo "╔════════════════════════════════════════════════════╗"
-echo "║                                                    ║"
-echo "║              TUIkit Project Creator                ║"
-echo "║                                                    ║"
-echo "╚════════════════════════════════════════════════════╝"
-echo -e "${NC}"
+# Banner with grayscale block style (like opencode)
+show_banner() {
+    # Grayscale ANSI colors (gradient from dark to light)
+    local C1='\033[38;5;240m'  # Darkest (T)
+    local C2='\033[38;5;244m'  # (U)
+    local C3='\033[38;5;248m'  # (I)
+    local C4='\033[38;5;252m'  # (k)
+    local C5='\033[38;5;254m'  # (i)
+    local C6='\033[38;5;255m'  # Brightest (t)
+    local D='\033[38;5;236m'   # Dark inner
+    local R='\033[0m'          # Reset
+
+    echo ""
+    # TUIkit in block letters with inner shadow effect
+    echo -e "${C1}█${D}█${C1}█████${D}█${R}  ${C2}█${D}█${R}    ${C2}█${D}█${R}  ${C3}█${D}█${C3}█${R}  ${C4}█${D}█${R}  ${C4}█${D}█${R}  ${C5}█${D}█${R}  ${C6}█${D}█${C6}███${R}"
+    echo -e "   ${C1}█${D}█${R}     ${C2}█${D}█${R}    ${C2}█${D}█${R}  ${C3}█${D}█${R}   ${C4}█${D}█${R} ${C4}█${D}█${R}   ${C5}█${D}█${R}   ${C6}█${D}█${R}"
+    echo -e "   ${C1}█${D}█${R}     ${C2}█${D}█${R}    ${C2}█${D}█${R}  ${C3}█${D}█${R}   ${C4}█${D}█${C4}█${D}█${R}    ${C5}█${D}█${R}   ${C6}█${D}█${R}"
+    echo -e "   ${C1}█${D}█${R}     ${C2}█${D}█${R}    ${C2}█${D}█${R}  ${C3}█${D}█${R}   ${C4}█${D}█${R} ${C4}█${D}█${R}   ${C5}█${D}█${R}   ${C6}█${D}█${R}"
+    echo -e "   ${C1}█${D}█${R}      ${C2}█${D}█${C2}██${D}█${C2}█${R}   ${C3}█${D}█${C3}█${R}  ${C4}█${D}█${R}  ${C4}█${D}█${R}  ${C5}█${D}█${R}   ${C6}█${D}█${C6}█${R}"
+    echo ""
+}
+
+show_banner
+
+# Separate path and project name
+# If PROJECT_NAME contains a path, extract the directory and basename
+if [[ "$PROJECT_NAME" == *"/"* ]]; then
+    # Expand ~ to home directory
+    PROJECT_PATH="${PROJECT_NAME/#\~/$HOME}"
+    PROJECT_BASE=$(basename "$PROJECT_PATH")
+else
+    PROJECT_PATH="$(pwd)/$PROJECT_NAME"
+    PROJECT_BASE="$PROJECT_NAME"
+fi
 
 # Create project directory
 echo -e "${GREEN}Creating project directory...${NC}"
-mkdir -p "$PROJECT_NAME"
-cd "$PROJECT_NAME"
+mkdir -p "$PROJECT_PATH"
+cd "$PROJECT_PATH"
+
+# Use PROJECT_BASE for all file content (package name, etc.)
+PROJECT_NAME="$PROJECT_BASE"
 
 # Create Package.swift
 echo -e "${GREEN}Creating Package.swift...${NC}"
@@ -386,14 +415,14 @@ echo -e "${GREEN}Creating Package.swift...${NC}"
 DEPENDENCIES="        .package(url: \"https://github.com/phranck/TUIkit.git\", branch: \"main\")"
 if [ "$INCLUDE_SQLITE" = true ]; then
     DEPENDENCIES="${DEPENDENCIES},
-        .package(url: \"https://github.com/pointfreeco/sqlite-data.git\", from: \"0.1.0\")"
+        .package(url: \"https://github.com/groue/GRDB.swift.git\", from: \"7.0.0\")"
 fi
 
 # Build target dependencies
 TARGET_DEPS="                .product(name: \"TUIkit\", package: \"TUIkit\")"
 if [ "$INCLUDE_SQLITE" = true ]; then
     TARGET_DEPS="${TARGET_DEPS},
-                .product(name: \"SQLiteData\", package: \"sqlite-data\")"
+                .product(name: \"GRDB\", package: \"GRDB.swift\")"
 fi
 
 # Build targets array
@@ -469,17 +498,29 @@ EOF
 if [ "$INCLUDE_SQLITE" = true ]; then
     cat > Sources/Database.swift << 'EOF'
 import Foundation
-import SQLiteData
+import GRDB
 
-/// Example model using SQLiteData's @Table macro
-///
-/// SQLiteData uses GRDB under the hood and provides
-/// SwiftData-like macros for database models.
-@Table
-struct Item: Sendable {
-    let id: UUID
-    var title = ""
-    var isCompleted = false
+/// Example model using GRDB
+struct Item: Codable, FetchableRecord, PersistableRecord, Sendable {
+    var id: Int64?
+    var title: String
+    var isCompleted: Bool
+
+    // Define the database table
+    static let databaseTableName = "items"
+}
+
+// MARK: - Database Setup
+
+extension Item {
+    /// Creates the items table
+    static func createTable(in db: Database) throws {
+        try db.create(table: databaseTableName, ifNotExists: true) { table in
+            table.autoIncrementedPrimaryKey("id")
+            table.column("title", .text).notNull()
+            table.column("isCompleted", .boolean).notNull().defaults(to: false)
+        }
+    }
 }
 EOF
 fi
@@ -556,31 +597,34 @@ if [ "$INCLUDE_SQLITE" = true ]; then
 
 ## Database
 
-This project includes [SQLiteData](https://github.com/pointfreeco/sqlite-data) for local data persistence.
+This project includes [GRDB](https://github.com/groue/GRDB.swift) for local SQLite persistence.
 
 **Quick Start:**
 
 ```swift
-import SQLiteData
+import GRDB
 
-// Define a model
-@Table
-struct User: Sendable {
-    let id: UUID
-    var name = ""
+// Open database
+let dbQueue = try DatabaseQueue(path: "db.sqlite")
+
+// Create table
+try dbQueue.write { db in
+    try Item.createTable(in: db)
 }
 
-// Fetch all users
-@FetchAll var users: [User]
+// Insert
+try dbQueue.write { db in
+    var item = Item(id: nil, title: "Task", isCompleted: false)
+    try item.insert(db)
+}
 
-// Insert a user
-try database.write { db in
-    try User.insert { User(id: UUID(), name: "Alice") }
-        .execute(db)
+// Fetch all
+let items = try dbQueue.read { db in
+    try Item.fetchAll(db)
 }
 ```
 
-See [SQLiteData documentation](https://github.com/pointfreeco/sqlite-data) for more details.
+See [GRDB documentation](https://github.com/groue/GRDB.swift) for more details.
 
 EOF
 fi
@@ -605,72 +649,11 @@ DerivedData/
 .netrc
 EOF
 
-# Create .swiftpm directory with scheme
-mkdir -p .swiftpm/xcode/xcshareddata/xcschemes
+# Note: We don't create .swiftpm directory - Xcode generates it automatically
+# and handles scheme/workspace settings better on its own
 
-cat > .swiftpm/xcode/xcshareddata/xcschemes/${PROJECT_NAME}.xcscheme << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<Scheme
-   LastUpgradeVersion = "1600"
-   version = "1.7">
-   <BuildAction
-      parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
-      <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "$PROJECT_NAME"
-               BuildableName = "$PROJECT_NAME"
-               BlueprintName = "$PROJECT_NAME"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-      </BuildActionEntries>
-   </BuildAction>
-   <LaunchAction
-      buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      launchStyle = "0"
-      useCustomWorkingDirectory = "NO"
-      ignoresPersistentStateOnLaunch = "NO"
-      debugDocumentVersioning = "YES"
-      debugServiceExtension = "internal"
-      allowLocationSimulation = "YES"
-      viewDebuggingEnabled = "No">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "$PROJECT_NAME"
-            BuildableName = "$PROJECT_NAME"
-            BlueprintName = "$PROJECT_NAME"
-            ReferencedContainer = "container:">
-         </BuildableReference>
-      </BuildableProductRunnable>
-   </LaunchAction>
-</Scheme>
-EOF
-
-cat > .swiftpm/xcode/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>BuildSystemType</key>
-    <string>Original</string>
-</dict>
-</plist>
-EOF
-
-# Configure Xcode preferences
-echo -e "${BLUE}Configuring Xcode preferences...${NC}"
+# Set Xcode preference for Swift packages to prefer macOS
+defaults write com.apple.dt.Xcode IDEPackageSupportUseBuiltinSCM -bool YES 2>/dev/null || true
 defaults write com.apple.dt.Xcode IDEPreferredPlatformForSwiftPackages -string "macosx" 2>/dev/null || true
 
 # Initialize Git repository if requested
@@ -694,20 +677,30 @@ echo -e "${BLUE}Project: ${NC}${GREEN}$PROJECT_NAME${NC}"
 echo -e "${BLUE}Location: ${NC}$(pwd)"
 echo -e "${BLUE}Git Repository: ${NC}$([ "$INIT_GIT" = true ] && echo "Yes" || echo "No")"
 echo -e "${BLUE}Test Framework: ${NC}$TEST_FRAMEWORK"
-echo -e "${BLUE}SQLiteData: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
+echo -e "${BLUE}GRDB: ${NC}$([ "$INCLUDE_SQLITE" = true ] && echo "Yes" || echo "No")"
 
 echo ""
 read -p "Open project in Xcode? [Y/n] " -n 1 -r
 echo ""
 
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    open Package.swift
+    open "$PROJECT_PATH/Package.swift"
     echo -e "${GREEN}Opening in Xcode...${NC}"
+    
+    # Show macOS alert about deployment target (only on macOS)
+    if [ "$(uname)" = "Darwin" ]; then
+        echo ""
+        echo -e "${YELLOW}╔════════════════════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}║  IMPORTANT: Set Run Destination to \"My Mac\"        ║${NC}"
+        echo -e "${YELLOW}║  in Xcode's toolbar before building!               ║${NC}"
+        echo -e "${YELLOW}╚════════════════════════════════════════════════════╝${NC}"
+    fi
 else
     echo ""
     echo -e "${YELLOW}Next steps:${NC}"
-    echo "  1. cd $PROJECT_NAME"
+    echo "  1. cd $PROJECT_PATH"
     echo "  2. open Package.swift"
-    echo "  3. Wait for dependencies to resolve"
-    echo "  4. Press Cmd+B to build"
+    echo "  3. Set Run Destination to \"My Mac\" in Xcode"
+    echo "  4. Wait for dependencies to resolve"
+    echo "  5. Press Cmd+B to build"
 fi
