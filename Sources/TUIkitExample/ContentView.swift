@@ -23,6 +23,8 @@ enum DemoPage: Int, CaseIterable {
     case spinners
     case lists
     case tables
+    case sliders
+    case steppers
 }
 
 // MARK: - Content View (Page Router)
@@ -71,6 +73,14 @@ struct ContentView: View {
                 case .character("="):
                     // Quick jump to Tables
                     currentPage = .tables
+                    return true
+                case .character("["):
+                    // Quick jump to Sliders
+                    currentPage = .sliders
+                    return true
+                case .character("]"):
+                    // Quick jump to Steppers
+                    currentPage = .steppers
                     return true
                 default:
                     return false  // Let other handlers process
@@ -122,6 +132,12 @@ struct ContentView: View {
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .tables:
             TablePage()
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .sliders:
+            SliderPage()
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .steppers:
+            StepperPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }
