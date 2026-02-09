@@ -1,12 +1,6 @@
 {
-  "generated": "2026-02-09T20:00:14.882Z",
+  "generated": "2026-02-09T20:54:00.260Z",
   "open": [
-    {
-      "date": "2026-02-09",
-      "slug": "textfield-component",
-      "title": "TextField Component",
-      "preface": "This plan implements TextField, an essential text input component for TUIKit. TextField provides an editable single-line text interface with cursor navigation, text editing, and SwiftUI-conformant API. Users can type, delete, and navigate within the field using standard keyboard controls. The component supports placeholder text (prompt), focus states with visual feedback, and the `.onSubmit()` modifier for form submission. This is a fundamental building block for forms, search fields, and any user text input."
-    },
     {
       "date": "2026-02-02",
       "slug": "state-persistence",
@@ -15,6 +9,18 @@
     }
   ],
   "done": [
+    {
+      "date": "2026-02-09",
+      "slug": "slider-stepper",
+      "title": "Slider & Stepper Components",
+      "preface": "This plan implements Slider and Stepper, two essential numeric input controls for TUIKit. Both components allow users to adjust values using keyboard navigation. Slider displays a visual track with a thumb indicator, while Stepper shows increment/decrement arrows around a value. Both use consistent focus indicators (pulsing vertical bars) matching TextField. The existing `ProgressBarStyle` will be renamed to `TrackStyle` for reuse across ProgressView and Slider."
+    },
+    {
+      "date": "2026-02-09",
+      "slug": "textfield-component",
+      "title": "TextField Component",
+      "preface": "This plan implements TextField, an essential text input component for TUIKit. TextField provides an editable single-line text interface with cursor navigation, text editing, and SwiftUI-conformant API. Users can type, delete, and navigate within the field using standard keyboard controls. The component supports placeholder text (prompt), focus states with visual feedback, and the `.onSubmit()` modifier for form submission. This is a fundamental building block for forms, search fields, and any user text input."
+    },
     {
       "date": "2026-02-08",
       "slug": "list-swiftui-api-parity",
