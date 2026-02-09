@@ -80,14 +80,31 @@ public struct Toggle: View {
         self.isDisabled = isDisabled
     }
 
-    public var body: Never {
-        fatalError("Toggle renders via Renderable")
+    public var body: some View {
+        _ToggleCore(
+            isOn: isOn,
+            label: label,
+            style: style,
+            focusID: focusID,
+            isDisabled: isDisabled
+        )
     }
 }
 
-// MARK: - Toggle Rendering
+// MARK: - Internal Core View
 
-extension Toggle: Renderable {
+/// Internal view that handles the actual rendering of Toggle.
+private struct _ToggleCore: View, Renderable {
+    let isOn: Binding<Bool>
+    let label: String
+    let style: ToggleStyle
+    let focusID: String
+    let isDisabled: Bool
+
+    var body: Never {
+        fatalError("_ToggleCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register with focus manager
         let focusManager = context.environment.focusManager
