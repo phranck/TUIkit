@@ -55,8 +55,88 @@ public struct VStack<Content: View>: View {
         self.content = content()
     }
 
-    public var body: Never {
-        fatalError("VStack is a primitive container and renders its children directly")
+    public var body: some View {
+        _VStackCore(alignment: alignment, spacing: spacing, content: content)
+    }
+}
+
+// MARK: - Internal VStack Core
+
+/// Internal view that handles the actual rendering of VStack.
+private struct _VStackCore<Content: View>: View, Renderable {
+    let alignment: HorizontalAlignment
+    let spacing: Int
+    let content: Content
+
+    var body: Never {
+        fatalError("_VStackCore renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let infos = resolveChildInfos(from: content, context: context)
+
+        // Spacer distribution: divide remaining vertical space equally
+        // among all spacers after subtracting fixed children and inter-item spacing.
+        let spacerCount = infos.filter(\.isSpacer).count
+        let fixedHeight = infos.compactMap(\.buffer).reduce(0) { $0 + $1.height }
+        let totalSpacing = max(0, infos.count - 1) * spacing
+
+        let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
+        let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
+        // Distribute remainder to first spacers (handles odd division)
+        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
+
+        // Use available width for alignment when spacers are present.
+        // Spacers indicate the VStack should fill available space, so children
+        // should be centered relative to that space, not just relative to each other.
+        // This ensures dynamic content (like counters) stays centered as it grows.
+        let childMaxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
+        let maxWidth = spacerCount > 0 ? context.availableWidth : childMaxWidth
+
+        var result = FrameBuffer()
+        var spacerIndex = 0
+        for (index, info) in infos.enumerated() {
+            let spacingToApply = index > 0 ? spacing : 0
+            if info.isSpacer {
+                // Add 1 extra to first spacers to distribute remainder
+                let extraHeight = spacerIndex < spacerRemainder ? 1 : 0
+                let height = max(info.spacerMinLength ?? 0, spacerHeight + extraHeight)
+                result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
+                spacerIndex += 1
+            } else if let buffer = info.buffer {
+                let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
+                result.appendVertically(alignedBuffer, spacing: spacingToApply)
+            }
+        }
+        return result
+    }
+
+    /// Aligns a buffer horizontally within the given width.
+    private func alignBuffer(_ buffer: FrameBuffer, toWidth width: Int, alignment: HorizontalAlignment) -> FrameBuffer {
+        guard buffer.width < width else { return buffer }
+
+        var alignedLines: [String] = []
+
+        let bufferOffset: Int
+        switch alignment {
+        case .leading:
+            bufferOffset = 0
+        case .center:
+            bufferOffset = (width - buffer.width) / 2
+        case .trailing:
+            bufferOffset = width - buffer.width
+        }
+
+        let leftPadding = String(repeating: " ", count: bufferOffset)
+        let rightPaddingCount = width - bufferOffset - buffer.width
+
+        for line in buffer.lines {
+            let lineWidth = line.strippedLength
+            let paddedLine = line + String(repeating: " ", count: max(0, buffer.width - lineWidth))
+            alignedLines.append(leftPadding + paddedLine + String(repeating: " ", count: max(0, rightPaddingCount)))
+        }
+
+        return FrameBuffer(lines: alignedLines)
     }
 }
 
@@ -109,8 +189,59 @@ public struct HStack<Content: View>: View {
         self.content = content()
     }
 
-    public var body: Never {
-        fatalError("HStack is a primitive container and renders its children directly")
+    public var body: some View {
+        _HStackCore(alignment: alignment, spacing: spacing, content: content)
+    }
+}
+
+// MARK: - Internal HStack Core
+
+/// Internal view that handles the actual rendering of HStack.
+private struct _HStackCore<Content: View>: View, Renderable {
+    let alignment: VerticalAlignment
+    let spacing: Int
+    let content: Content
+
+    var body: Never {
+        fatalError("_HStackCore renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let infos = resolveChildInfos(from: content, context: context)
+
+        // Spacer distribution: divide remaining horizontal space equally
+        // among all spacers after subtracting fixed children and inter-item spacing.
+        let spacerCount = infos.filter(\.isSpacer).count
+        let fixedWidth = infos.compactMap(\.buffer).reduce(0) { $0 + $1.width }
+        let totalSpacing = max(0, infos.count - 1) * spacing
+
+        let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
+        let spacerWidth = spacerCount > 0 ? availableForSpacers / spacerCount : 0
+        // Distribute remainder to first spacers (handles odd division)
+        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
+
+        var result = FrameBuffer()
+        var spacerIndex = 0
+        for (index, info) in infos.enumerated() {
+            let spacingToApply = index > 0 ? spacing : 0
+            if info.isSpacer {
+                // Add 1 extra to first spacers to distribute remainder
+                let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
+                let width = max(info.spacerMinLength ?? 0, spacerWidth + extraWidth)
+                let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
+                let spacerBuffer = FrameBuffer(
+                    lines: Array(
+                        repeating: String(repeating: " ", count: width),
+                        count: maxHeight
+                    )
+                )
+                result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
+                spacerIndex += 1
+            } else if let buffer = info.buffer {
+                result.appendHorizontally(buffer, spacing: spacingToApply)
+            }
+        }
+        return result
     }
 }
 
@@ -149,8 +280,31 @@ public struct ZStack<Content: View>: View {
         self.content = content()
     }
 
-    public var body: Never {
-        fatalError("ZStack is a primitive container and renders its children directly")
+    public var body: some View {
+        _ZStackCore(alignment: alignment, content: content)
+    }
+}
+
+// MARK: - Internal ZStack Core
+
+/// Internal view that handles the actual rendering of ZStack.
+private struct _ZStackCore<Content: View>: View, Renderable {
+    let alignment: Alignment
+    let content: Content
+
+    var body: Never {
+        fatalError("_ZStackCore renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let infos = resolveChildInfos(from: content, context: context)
+        var result = FrameBuffer()
+        for info in infos {
+            if let buffer = info.buffer {
+                result.overlay(buffer)
+            }
+        }
+        return result
     }
 }
 
@@ -256,145 +410,5 @@ extension ZStack: Equatable where Content: Equatable {
             lhs.alignment == rhs.alignment &&
             lhs.content == rhs.content
         }
-    }
-}
-
-// MARK: - VStack Rendering
-
-extension VStack: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
-
-        // Spacer distribution: divide remaining vertical space equally
-        // among all spacers after subtracting fixed children and inter-item spacing.
-        let spacerCount = infos.filter(\.isSpacer).count
-        let fixedHeight = infos.compactMap(\.buffer).reduce(0) { $0 + $1.height }
-        let totalSpacing = max(0, infos.count - 1) * spacing
-
-        let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
-        let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        // Distribute remainder to first spacers (handles odd division)
-        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
-
-        // Use available width for alignment when spacers are present.
-        // Spacers indicate the VStack should fill available space, so children
-        // should be centered relative to that space, not just relative to each other.
-        // This ensures dynamic content (like counters) stays centered as it grows.
-        let childMaxWidth = infos.compactMap(\.buffer).map(\.width).max() ?? 0
-        let maxWidth = spacerCount > 0 ? context.availableWidth : childMaxWidth
-
-        var result = FrameBuffer()
-        var spacerIndex = 0
-        for (index, info) in infos.enumerated() {
-            let spacingToApply = index > 0 ? spacing : 0
-            if info.isSpacer {
-                // Add 1 extra to first spacers to distribute remainder
-                let extraHeight = spacerIndex < spacerRemainder ? 1 : 0
-                let height = max(info.spacerMinLength ?? 0, spacerHeight + extraHeight)
-                result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
-                spacerIndex += 1
-            } else if let buffer = info.buffer {
-                let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
-                result.appendVertically(alignedBuffer, spacing: spacingToApply)
-            }
-        }
-        return result
-    }
-
-    /// Aligns a buffer horizontally within the given width.
-    ///
-    /// This positions content according to the alignment, similar to SwiftUI:
-    /// - `.leading`: Content starts at position 0 (left edge)
-    /// - `.center`: Content is centered within the width
-    /// - `.trailing`: Content ends at the right edge
-    ///
-    /// Note: Unlike the old implementation that padded all children to maxWidth,
-    /// this now centers ALL children within maxWidth, creating SwiftUI-like behavior
-    /// where the VStack content block is centered and children align relative to each other.
-    private func alignBuffer(_ buffer: FrameBuffer, toWidth width: Int, alignment: HorizontalAlignment) -> FrameBuffer {
-        guard buffer.width < width else { return buffer }
-
-        var alignedLines: [String] = []
-
-        // Calculate the offset to center the entire buffer within the target width
-        let bufferOffset: Int
-        switch alignment {
-        case .leading:
-            bufferOffset = 0
-        case .center:
-            bufferOffset = (width - buffer.width) / 2
-        case .trailing:
-            bufferOffset = width - buffer.width
-        }
-
-        let leftPadding = String(repeating: " ", count: bufferOffset)
-        let rightPaddingCount = width - bufferOffset - buffer.width
-
-        for line in buffer.lines {
-            let lineWidth = line.strippedLength
-            // Pad line to buffer.width first (in case line is shorter)
-            let paddedLine = line + String(repeating: " ", count: max(0, buffer.width - lineWidth))
-            // Then position within target width
-            alignedLines.append(leftPadding + paddedLine + String(repeating: " ", count: max(0, rightPaddingCount)))
-        }
-
-        return FrameBuffer(lines: alignedLines)
-    }
-}
-
-// MARK: - HStack Rendering
-
-extension HStack: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
-
-        // Spacer distribution: divide remaining horizontal space equally
-        // among all spacers after subtracting fixed children and inter-item spacing.
-        let spacerCount = infos.filter(\.isSpacer).count
-        let fixedWidth = infos.compactMap(\.buffer).reduce(0) { $0 + $1.width }
-        let totalSpacing = max(0, infos.count - 1) * spacing
-
-        let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
-        let spacerWidth = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        // Distribute remainder to first spacers (handles odd division)
-        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
-
-        var result = FrameBuffer()
-        var spacerIndex = 0
-        for (index, info) in infos.enumerated() {
-            let spacingToApply = index > 0 ? spacing : 0
-            if info.isSpacer {
-                // Add 1 extra to first spacers to distribute remainder
-                let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
-                let width = max(info.spacerMinLength ?? 0, spacerWidth + extraWidth)
-                let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
-                let spacerBuffer = FrameBuffer(
-                    lines: Array(
-                        repeating: String(repeating: " ", count: width),
-                        count: maxHeight
-                    )
-                )
-                result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
-                spacerIndex += 1
-            } else if let buffer = info.buffer {
-                result.appendHorizontally(buffer, spacing: spacingToApply)
-            }
-        }
-        return result
-    }
-}
-
-// MARK: - ZStack Rendering
-
-extension ZStack: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
-        var result = FrameBuffer()
-        for info in infos {
-            if let buffer = info.buffer {
-                result.overlay(buffer)
-            }
-        }
-        return result
     }
 }
