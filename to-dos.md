@@ -10,7 +10,7 @@
 
 #### High
 
-- [ ] **TextInput / TextField**: Single-line text input with cursor, backspace, delete, scrolling
+(none)
 
 #### Medium
 
@@ -37,6 +37,7 @@
 
 ### 2026-02-09
 
+- [x] **TextField Selection**: Shift+Arrow selection, highlight rendering, delete/replace selected text, 41 new tests
 - [x] **tuikit CLI Enhancements**: git init option, SQLiteData (pointfreeco), Linux Swift install, Xcode open prompt
 - [x] **Landing Page Update**: CLI features (git, SQLiteData), syntax highlighter fix, foregroundStyle API update
 
@@ -107,4 +108,4 @@
 
 ---
 
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-09 (evening)

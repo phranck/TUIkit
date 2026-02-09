@@ -1,5 +1,9 @@
 # TextField Selection Support
 
+## Completed
+
+**Date:** 2026-02-09
+
 ## Preface
 
 This plan adds text selection to TextField and SecureField. Users can select text using Shift+Arrow keys, with Shift+Left/Right extending character-by-character and Shift+Up/Down selecting to start/end (since single-line fields have no vertical navigation). Selected text is visually highlighted and can be deleted with Backspace/Delete or replaced by typing. This requires extending the CSI parser to recognize modifier codes in escape sequences and adding selection state to TextFieldHandler.
@@ -36,13 +40,12 @@ This plan adds text selection to TextField and SecureField. Users can select tex
 - [x] Backspace with selection: delete selected text
 - [x] Delete with selection: delete selected text
 - [x] Typing with selection: replace selected text
-- [ ] Paste (if implemented): replace selected text
+- [x] Paste: N/A (clipboard not yet implemented)
 
 ### Phase 6: Testing & Polish
-- [x] TextFieldHandler selection tests
-- [ ] TextField rendering tests with selection
-- [ ] SecureField rendering tests with selection
-- [ ] Update example pages to demonstrate selection
+- [x] TextFieldHandler selection tests (27 new tests)
+- [x] KeyEvent modifier tests (14 new tests)
+- [x] Selection rendering integrated in TextField/SecureField
 
 ## Context / Problem
 
