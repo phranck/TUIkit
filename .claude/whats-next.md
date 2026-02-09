@@ -1,18 +1,18 @@
 # TUIkit: What's Next
 
 **Branch:** `main`
-**Tests:** 832 / 125 suites
+**Tests:** 833 / 126 suites
 **Build:** clean
 
 ## Active
 
-TextField component (Phase 1-2 complete, Phase 3-4 remaining)
+None
 
 ## Next Steps
 
-1. TextField: Add TextFieldStyle, Example app demo page
-2. Multi-Section support in List (TupleView with multiple Sections)
-3. List SwiftUI API Parity (Section, .badge(), .listStyle(), etc.)
+1. SecureField: Password input with masking (builds on TextField)
+2. List SwiftUI API Parity (Section, .badge(), .listStyle(), etc.)
+3. DisclosureGroup: Expandable/collapsible sections
 
 ---
 

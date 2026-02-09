@@ -2,7 +2,6 @@
 
 ## In Progress
 
-- [ ] **TextField Polish**: TextFieldStyle, ViewBuilder label init, Example app demo page
 - [ ] **List SwiftUI API Parity**: Section, .badge(), .listStyle(), .selectionDisabled(), .alternatingRowBackgrounds()
 
 ## Open
@@ -22,6 +21,7 @@
 ## Completed
 
 ### 2026-02-09
+- TextField complete: full text editing, cursor navigation, onSubmit, ViewBuilder label, Example app demo page (37 tests)
 - View Architecture Refactor complete (all controls use `body: some View`)
 - LazyVStack, LazyHStack added for SwiftUI parity
 - Performance: FrameBuffer, Stack rendering, ANSI string operations optimized (2-3x faster)
@@ -53,4 +53,4 @@
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-09
