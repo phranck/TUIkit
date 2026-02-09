@@ -6,6 +6,26 @@
 
 import Foundation
 
+// MARK: - Text Input Autocapitalization
+
+/// The autocapitalization behavior for text input.
+///
+/// In a terminal environment, autocapitalization affects how typed text
+/// is transformed before being stored in the text binding.
+public enum TextInputAutocapitalization: Sendable {
+    /// No autocapitalization is applied.
+    case never
+
+    /// The first letter of each word is capitalized.
+    case words
+
+    /// The first letter of each sentence is capitalized.
+    case sentences
+
+    /// All letters are capitalized.
+    case characters
+}
+
 // MARK: - TextField
 
 /// A control that displays an editable text interface.
@@ -52,6 +72,14 @@ import Foundation
 /// TextField("Email", text: $email, prompt: Text("you@example.com"))
 /// ```
 ///
+/// # With ViewBuilder Label
+///
+/// ```swift
+/// TextField(text: $username, prompt: Text("Required")) {
+///     Text("Username").bold()
+/// }
+/// ```
+///
 /// # With Submit Action
 ///
 /// ```swift
@@ -60,9 +88,9 @@ import Foundation
 ///         performSearch()
 ///     }
 /// ```
-public struct TextField: View {
-    /// The label/title text describing the field's purpose.
-    let title: String
+public struct TextField<Label: View>: View {
+    /// The label view describing the field's purpose.
+    let label: Label
 
     /// The binding to the text content.
     let text: Binding<String>
@@ -79,18 +107,38 @@ public struct TextField: View {
     /// Action to perform when the user submits (presses Enter).
     let onSubmitAction: (() -> Void)?
 
+    /// The autocapitalization behavior.
+    let autocapitalization: TextInputAutocapitalization
+
+    public var body: some View {
+        _TextFieldCore(
+            label: label,
+            text: text,
+            prompt: prompt,
+            focusID: focusID,
+            isDisabled: isDisabled,
+            onSubmitAction: onSubmitAction,
+            autocapitalization: autocapitalization
+        )
+    }
+}
+
+// MARK: - TextField Initializers (Label == Text)
+
+extension TextField where Label == Text {
     /// Creates a text field with a text label generated from a title string.
     ///
     /// - Parameters:
     ///   - title: The title of the text field, describing its purpose.
     ///   - text: The text to display and edit.
     public init(_ title: String, text: Binding<String>) {
-        self.title = title
+        self.label = Text(title)
         self.text = text
         self.prompt = nil
         self.focusID = "textfield-\(title)"
         self.isDisabled = false
         self.onSubmitAction = nil
+        self.autocapitalization = .never
     }
 
     /// Creates a text field with a prompt.
@@ -101,40 +149,51 @@ public struct TextField: View {
     ///   - prompt: A Text representing the prompt which provides users with
     ///     guidance on what to type into the text field.
     public init(_ title: String, text: Binding<String>, prompt: Text?) {
-        self.title = title
+        self.label = Text(title)
         self.text = text
         self.prompt = prompt
         self.focusID = "textfield-\(title)"
         self.isDisabled = false
         self.onSubmitAction = nil
+        self.autocapitalization = .never
     }
+}
 
-    /// Internal initializer with all parameters.
-    init(
-        title: String,
+// MARK: - TextField Initializers (Generic Label)
+
+extension TextField {
+    /// Creates a text field with a prompt generated from a `Text` and a custom label.
+    ///
+    /// Use this initializer when you need a custom label view instead of a simple string.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// TextField(text: $username, prompt: Text("Required")) {
+    ///     HStack {
+    ///         Text("Username").bold()
+    ///         Text("*").foregroundStyle(.red)
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - text: The text to display and edit.
+    ///   - prompt: A Text representing the prompt which provides users with
+    ///     guidance on what to type into the text field.
+    ///   - label: A view that describes the purpose of the text field.
+    public init(
         text: Binding<String>,
-        prompt: Text?,
-        focusID: String,
-        isDisabled: Bool,
-        onSubmitAction: (() -> Void)?
+        prompt: Text? = nil,
+        @ViewBuilder label: () -> Label
     ) {
-        self.title = title
+        self.label = label()
         self.text = text
         self.prompt = prompt
-        self.focusID = focusID
-        self.isDisabled = isDisabled
-        self.onSubmitAction = onSubmitAction
-    }
-
-    public var body: some View {
-        _TextFieldCore(
-            title: title,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: isDisabled,
-            onSubmitAction: onSubmitAction
-        )
+        self.focusID = "textfield-\(UUID().uuidString)"
+        self.isDisabled = false
+        self.onSubmitAction = nil
+        self.autocapitalization = .never
     }
 }
 
@@ -147,12 +206,13 @@ extension TextField {
     /// - Returns: A new text field with the disabled state.
     public func disabled(_ disabled: Bool = true) -> TextField {
         TextField(
-            title: title,
+            label: label,
             text: text,
             prompt: prompt,
             focusID: focusID,
             isDisabled: disabled,
-            onSubmitAction: onSubmitAction
+            onSubmitAction: onSubmitAction,
+            autocapitalization: autocapitalization
         )
     }
 
@@ -174,12 +234,39 @@ extension TextField {
     /// - Returns: A text field that performs the action on submit.
     public func onSubmit(_ action: @escaping () -> Void) -> TextField {
         TextField(
-            title: title,
+            label: label,
             text: text,
             prompt: prompt,
             focusID: focusID,
             isDisabled: isDisabled,
-            onSubmitAction: action
+            onSubmitAction: action,
+            autocapitalization: autocapitalization
+        )
+    }
+
+    /// Sets the autocapitalization behavior for this text field.
+    ///
+    /// Use this modifier to control how text is automatically capitalized
+    /// as the user types.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// TextField("Name", text: $name)
+    ///     .textInputAutocapitalization(.words)
+    /// ```
+    ///
+    /// - Parameter autocapitalization: The autocapitalization behavior.
+    /// - Returns: A text field with the specified autocapitalization.
+    public func textInputAutocapitalization(_ autocapitalization: TextInputAutocapitalization) -> TextField {
+        TextField(
+            label: label,
+            text: text,
+            prompt: prompt,
+            focusID: focusID,
+            isDisabled: isDisabled,
+            onSubmitAction: onSubmitAction,
+            autocapitalization: autocapitalization
         )
     }
 }
@@ -187,13 +274,14 @@ extension TextField {
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of TextField.
-private struct _TextFieldCore: View, Renderable {
-    let title: String
+private struct _TextFieldCore<Label: View>: View, Renderable {
+    let label: Label
     let text: Binding<String>
     let prompt: Text?
     let focusID: String
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
+    let autocapitalization: TextInputAutocapitalization
 
     /// The cursor character shown when focused.
     private let cursorChar: Character = "█"
@@ -236,6 +324,7 @@ private struct _TextFieldCore: View, Renderable {
         handler.text = text
         handler.canBeFocused = !isDisabled
         handler.onSubmit = onSubmitAction
+        handler.autocapitalization = autocapitalization
         handler.clampCursorPosition()
 
         // Register with focus manager
@@ -304,8 +393,16 @@ private struct _TextFieldCore: View, Renderable {
 
     /// Builds the prompt content (shown when empty and unfocused).
     private func buildPromptContent(palette: any Palette) -> String {
-        // Extract prompt text - for now just use title as fallback
-        let promptText = title
+        // Use the prompt text if available, rendered via its own render path
+        // For now, use a simple placeholder approach
+        let promptText: String
+        if let prompt {
+            // Render the prompt Text view to extract its string content
+            let buffer = TUIkit.renderToBuffer(prompt, context: RenderContext(availableWidth: 100, availableHeight: 1))
+            promptText = buffer.lines.first?.stripped ?? ""
+        } else {
+            promptText = ""
+        }
         let paddedPrompt = promptText.padding(toLength: minContentWidth, withPad: " ", startingAt: 0)
         return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary)
     }
