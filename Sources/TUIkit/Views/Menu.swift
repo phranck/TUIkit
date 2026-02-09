@@ -164,14 +164,41 @@ public struct Menu: View {
         self.borderColor = borderColor
     }
 
-    public var body: Never {
-        fatalError("Menu renders via Renderable")
+    public var body: some View {
+        _MenuCore(
+            title: title,
+            items: items,
+            selectedIndex: selectedIndex,
+            selectionBinding: selectionBinding,
+            onSelect: onSelect,
+            itemColor: itemColor,
+            selectedColor: selectedColor,
+            selectionIndicator: selectionIndicator,
+            borderStyle: borderStyle,
+            borderColor: borderColor
+        )
     }
 }
 
-// MARK: - Menu Rendering
+// MARK: - Internal Core View
 
-extension Menu: Renderable {
+/// Internal view that handles the actual rendering of Menu.
+private struct _MenuCore: View, Renderable {
+    let title: String?
+    let items: [MenuItem]
+    let selectedIndex: Int
+    let selectionBinding: Binding<Int>?
+    let onSelect: ((Int) -> Void)?
+    let itemColor: Color?
+    let selectedColor: Color?
+    let selectionIndicator: String
+    let borderStyle: BorderStyle?
+    let borderColor: Color?
+
+    var body: Never {
+        fatalError("_MenuCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
 

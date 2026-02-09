@@ -242,14 +242,35 @@ public struct Button: View {
         }
     }
 
-    public var body: Never {
-        fatalError("Button renders via Renderable")
+    public var body: some View {
+        _ButtonCore(
+            label: label,
+            action: action,
+            role: role,
+            style: style,
+            focusedStyle: focusedStyle,
+            focusID: focusID,
+            isDisabled: isDisabled
+        )
     }
 }
 
-// MARK: - Button Rendering
+// MARK: - Internal Core View
 
-extension Button: Renderable {
+/// Internal view that handles the actual rendering of Button.
+private struct _ButtonCore: View, Renderable {
+    let label: String
+    let action: () -> Void
+    let role: ButtonRole?
+    let style: ButtonStyle
+    let focusedStyle: ButtonStyle
+    let focusID: String
+    let isDisabled: Bool
+
+    var body: Never {
+        fatalError("_ButtonCore renders via Renderable")
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Get focus manager from environment
         let focusManager = context.environment.focusManager

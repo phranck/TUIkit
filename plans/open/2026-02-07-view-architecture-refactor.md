@@ -263,33 +263,33 @@ Controls that need StateStorage/FocusManager:
 ## Checklist
 
 ### Phase 1: Infrastructure
-- [ ] Verify environment propagation through body
-- [ ] Document the render pipeline
+- [x] Verify environment propagation through body
+- [x] Document the render pipeline
 
 ### Phase 2: Simple Controls
-- [ ] ProgressView: Convert to body: some View
-- [ ] Spinner: Convert to body: some View
-- [ ] ButtonRow: Convert to body: some View
-- [ ] Tests pass for each
+- [x] ProgressView: Convert to body: some View
+- [x] Spinner: Convert to body: some View
+- [x] ButtonRow: Convert to body: some View
+- [x] Tests pass for each
 
 ### Phase 3: Container Views
-- [ ] Card: Convert to body: some View
-- [ ] Panel: Convert to body: some View
-- [ ] Dialog: Convert to body: some View
-- [ ] Alert: Convert to body: some View
-- [ ] Tests pass for each
+- [x] Card: Convert to body: some View
+- [x] Panel: Convert to body: some View
+- [x] Dialog: Convert to body: some View
+- [x] Alert: Convert to body: some View
+- [x] Tests pass for each
 
 ### Phase 4: Interactive Controls
-- [ ] Button: Convert to body: some View
-- [ ] Toggle: Convert to body: some View
-- [ ] Menu: Convert to body: some View
+- [x] Button: Convert to body: some View
+- [x] Toggle: Convert to body: some View
+- [x] Menu: Convert to body: some View
 - [ ] RadioButtonGroup: Convert to body: some View
 - [ ] Tests pass for each
 
 ### Phase 5: Complex Controls
-- [ ] List: Convert to body: some View
-- [ ] Table: Convert to body: some View
-- [ ] Tests pass for each
+- [x] List: Convert to body: some View
+- [x] Table: Convert to body: some View
+- [x] Tests pass for each
 
 ### Phase 6: Verification
 - [ ] Add modifier propagation tests
