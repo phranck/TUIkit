@@ -4,6 +4,41 @@
 
 This plan implements TextField, an essential text input component for TUIKit. TextField provides an editable single-line text interface with cursor navigation, text editing, and SwiftUI-conformant API. Users can type, delete, and navigate within the field using standard keyboard controls. The component supports placeholder text (prompt), focus states with visual feedback, and the `.onSubmit()` modifier for form submission. This is a fundamental building block for forms, search fields, and any user text input.
 
+## Completed
+
+**2026-02-09** - TextField v1 complete with 37 tests. Core functionality implemented: text editing, cursor navigation, focus integration, prompt/placeholder, onSubmit, disabled state, ViewBuilder label init, and Example app demo page. TextFieldStyle deferred to future enhancement.
+
+## Checklist
+
+### Phase 1: Core TextField
+- [x] Create TextFieldHandler class
+- [x] Create TextField struct with body: some View
+- [x] Implement _TextFieldCore with Renderable
+- [x] Render text content with cursor
+- [x] Handle character input
+- [x] Handle backspace/delete
+- [x] Handle cursor movement (left/right)
+- [x] Handle home/end keys
+- [x] Add focus indicator (pulsing vertical bars)
+- [x] State persistence for cursor position
+
+### Phase 2: SwiftUI API Parity
+- [x] init(_:text:) - basic initializer
+- [x] init(_:text:prompt:) - with placeholder
+- [x] init(text:prompt:label:) - ViewBuilder label
+- [x] Render prompt when empty and unfocused
+
+### Phase 3: Modifiers & Polish
+- [x] .onSubmit() modifier support
+- [x] .disabled() support
+- [x] Width/frame support (uses availableWidth from context)
+- [ ] .textFieldStyle(_:) modifier (deferred)
+
+### Phase 4: Testing & Demo
+- [x] TextFieldHandler key event tests (21 tests)
+- [x] TextField rendering tests (16 tests)
+- [x] Example app demo page (TextFieldPage.swift)
+
 ## Context / Problem
 
 TUIKit currently has no way for users to enter text. All existing controls (Button, Toggle, Menu, List) are selection-based, not input-based. TextField is essential for:
@@ -202,43 +237,6 @@ TextField("Search", text: $query)
 2. Rendering tests for TextField
 3. Focus integration tests
 4. Example app integration
-
-## Checklist
-
-### Phase 1: Core TextField
-- [x] Create TextFieldHandler class
-- [x] Create TextField struct with body: some View
-- [x] Implement _TextFieldCore with Renderable
-- [x] Render text content with cursor
-- [x] Handle character input
-- [x] Handle backspace/delete
-- [x] Handle cursor movement (left/right)
-- [x] Handle home/end keys
-- [x] Add focus indicator (pulsing brackets)
-- [x] State persistence for cursor position
-
-### Phase 2: SwiftUI API Parity
-- [x] init(_:text:) - basic initializer
-- [x] init(_:text:prompt:) - with placeholder
-- [ ] init(text:prompt:label:) - ViewBuilder label
-- [x] Render prompt when empty and unfocused
-
-### Phase 3: Modifiers & Polish
-- [x] .onSubmit() modifier support
-- [ ] .textFieldStyle(_:) modifier
-- [ ] TextFieldStyle protocol
-- [ ] PlainTextFieldStyle
-- [ ] RoundedBorderTextFieldStyle (default for TUI)
-- [x] .disabled() support
-- [ ] Width/frame support
-
-### Phase 4: Testing
-- [x] TextFieldHandler key event tests (27 tests)
-- [x] TextField rendering tests (9 tests)
-- [ ] Focus integration tests
-- [ ] Prompt/placeholder tests
-- [ ] Style tests
-- [ ] Example app demo page
 
 ## Open Questions
 
