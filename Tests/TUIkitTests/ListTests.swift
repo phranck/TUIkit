@@ -217,6 +217,10 @@ struct ListRenderingTests {
         let buffer = renderToBuffer(list, context: context)
 
         // The list should be constrained to 20 characters width
-        #expect(buffer.width == 20)
+        #expect(buffer.width == 20, "Expected width 20, got \(buffer.width)")
+        
+        // The border should also be 20 characters wide (not just padded)
+        let firstLine = buffer.lines.first ?? ""
+        #expect(firstLine.strippedLength == 20, "Border should be 20 chars wide")
     }
 }

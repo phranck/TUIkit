@@ -357,14 +357,18 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         }
 
         // Calculate inner width from title, body, AND footer.
-        // If a frame constraint is set (availableWidth is smaller than terminal),
-        // use that as the maximum width.
         let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
         let footerNaturalWidth = initialFooterBuffer?.width ?? 0
         let contentBasedWidth = max(titleWidth, bodyBuffer.width, footerNaturalWidth)
         
-        // Respect frame constraints: innerWidth should not exceed innerContext.availableWidth
-        let innerWidth = min(contentBasedWidth, innerContext.availableWidth)
+        // If an explicit frame width was set, expand to fill that width.
+        // Otherwise, use the content-based width (shrink to fit).
+        let innerWidth: Int
+        if context.hasExplicitWidth {
+            innerWidth = max(contentBasedWidth, innerContext.availableWidth)
+        } else {
+            innerWidth = contentBasedWidth
+        }
 
         // Re-render footer constrained to the final innerWidth so that
         // Spacer() fills exactly the container's inner width.

@@ -517,8 +517,15 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             )
 
             // Calculate row width based on the widest row content
+            // If an explicit frame width is set, use the available width minus border padding
             let maxRowWidth = visibleRows.map { $0.row.buffer.width }.max() ?? 0
-            let rowWidth = maxRowWidth
+            let rowWidth: Int
+            if context.hasExplicitWidth {
+                // Use available width minus 2 for borders, minus 2 for container padding
+                rowWidth = max(maxRowWidth, context.availableWidth - 4)
+            } else {
+                rowWidth = maxRowWidth
+            }
 
             // Build content lines
             var lines: [String] = []
@@ -756,14 +763,14 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         let shouldRenderBadge = badge != nil && !badge!.isHidden && row.isSelectable
 
         // Render each line - row content keeps its own styling
-        // All rows have padding from style, padded to same total width
-        // Background bar covers the full width including padding
+        // Add 1 char padding on each side, with background color extending to edges
         return row.buffer.lines.enumerated().map { lineIndex, line in
             let lineLength = line.strippedLength
 
             // First line: make room for badge if present
             let badgeWidth = shouldRenderBadge && lineIndex == 0 ? badge!.displayText.count + 2 : 0
-            let rightPadding = max(1, rowWidth - lineLength - badgeWidth + 1)
+            // Calculate right padding: rowWidth - 1 (left pad) - content - badge - 1 (right pad min)
+            let rightPadding = max(1, rowWidth - 1 - lineLength - badgeWidth)
             var paddedLine = " " + line + String(repeating: " ", count: rightPadding)
 
             // Add badge to first line if needed

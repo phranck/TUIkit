@@ -118,6 +118,13 @@ public struct RenderContext {
     /// nested borders don't also show the indicator.
     var focusIndicatorColor: Color?
 
+    /// Whether an explicit frame width constraint has been set.
+    ///
+    /// Set by ``FlexibleFrameView`` when a fixed width is specified.
+    /// Container views use this to decide whether to expand to fill
+    /// the available width or shrink to fit their content.
+    var hasExplicitWidth: Bool = false
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:

@@ -43,10 +43,12 @@ struct ListStyleTests {
         #expect(style.showsBorder)
     }
 
-    @Test("InsetGroupedListStyle has inset padding")
+    @Test("InsetGroupedListStyle has no container padding")
     func testInsetGroupedListStylePadding() {
+        // Row padding is handled internally by List's renderRow() method,
+        // not by ContainerView, so row backgrounds extend to the borders.
         let style = InsetGroupedListStyle()
-        let expectedPadding = EdgeInsets(top: 0, leading: 1, bottom: 0, trailing: 1)
+        let expectedPadding = EdgeInsets(all: 0)
         #expect(style.rowPadding == expectedPadding)
     }
 
@@ -56,10 +58,10 @@ struct ListStyleTests {
         #expect(style.groupingStyle == .insetGrouped)
     }
 
-    @Test("InsetGroupedListStyle has alternating rows")
+    @Test("InsetGroupedListStyle has no alternating rows by default")
     func testInsetGroupedListStyleAlternating() {
         let style = InsetGroupedListStyle()
-        #expect(style.alternatingRowColors)
+        #expect(!style.alternatingRowColors)
     }
 
     // MARK: - Edge Cases
@@ -89,7 +91,7 @@ struct ListStyleTests {
     func testInsetGroupedInstantiation() {
         let style = InsetGroupedListStyle()
         #expect(style.showsBorder)
-        #expect(style.alternatingRowColors)
+        #expect(!style.alternatingRowColors)
     }
 
     // MARK: - Environment Integration
@@ -106,7 +108,7 @@ struct ListStyleTests {
     func testEnvironmentListStyleDefault() {
         let env = EnvironmentValues()
         #expect(env.listStyle.showsBorder)
-        #expect(env.listStyle.alternatingRowColors)
+        #expect(!env.listStyle.alternatingRowColors)
     }
 
     @Test("List style environment can be changed")
