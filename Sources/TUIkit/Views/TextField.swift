@@ -6,26 +6,6 @@
 
 import Foundation
 
-// MARK: - Text Input Autocapitalization
-
-/// The autocapitalization behavior for text input.
-///
-/// In a terminal environment, autocapitalization affects how typed text
-/// is transformed before being stored in the text binding.
-public enum TextInputAutocapitalization: Sendable {
-    /// No autocapitalization is applied.
-    case never
-
-    /// The first letter of each word is capitalized.
-    case words
-
-    /// The first letter of each sentence is capitalized.
-    case sentences
-
-    /// All letters are capitalized.
-    case characters
-}
-
 // MARK: - TextField
 
 /// A control that displays an editable text interface.
@@ -107,9 +87,6 @@ public struct TextField<Label: View>: View {
     /// Action to perform when the user submits (presses Enter).
     let onSubmitAction: (() -> Void)?
 
-    /// The autocapitalization behavior.
-    let autocapitalization: TextInputAutocapitalization
-
     public var body: some View {
         _TextFieldCore(
             label: label,
@@ -117,8 +94,7 @@ public struct TextField<Label: View>: View {
             prompt: prompt,
             focusID: focusID,
             isDisabled: isDisabled,
-            onSubmitAction: onSubmitAction,
-            autocapitalization: autocapitalization
+            onSubmitAction: onSubmitAction
         )
     }
 }
@@ -138,7 +114,6 @@ extension TextField where Label == Text {
         self.focusID = "textfield-\(title)"
         self.isDisabled = false
         self.onSubmitAction = nil
-        self.autocapitalization = .never
     }
 
     /// Creates a text field with a prompt.
@@ -155,7 +130,6 @@ extension TextField where Label == Text {
         self.focusID = "textfield-\(title)"
         self.isDisabled = false
         self.onSubmitAction = nil
-        self.autocapitalization = .never
     }
 }
 
@@ -193,7 +167,6 @@ extension TextField {
         self.focusID = "textfield-\(UUID().uuidString)"
         self.isDisabled = false
         self.onSubmitAction = nil
-        self.autocapitalization = .never
     }
 }
 
@@ -211,8 +184,7 @@ extension TextField {
             prompt: prompt,
             focusID: focusID,
             isDisabled: disabled,
-            onSubmitAction: onSubmitAction,
-            autocapitalization: autocapitalization
+            onSubmitAction: onSubmitAction
         )
     }
 
@@ -239,34 +211,7 @@ extension TextField {
             prompt: prompt,
             focusID: focusID,
             isDisabled: isDisabled,
-            onSubmitAction: action,
-            autocapitalization: autocapitalization
-        )
-    }
-
-    /// Sets the autocapitalization behavior for this text field.
-    ///
-    /// Use this modifier to control how text is automatically capitalized
-    /// as the user types.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// TextField("Name", text: $name)
-    ///     .textInputAutocapitalization(.words)
-    /// ```
-    ///
-    /// - Parameter autocapitalization: The autocapitalization behavior.
-    /// - Returns: A text field with the specified autocapitalization.
-    public func textInputAutocapitalization(_ autocapitalization: TextInputAutocapitalization) -> TextField {
-        TextField(
-            label: label,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: isDisabled,
-            onSubmitAction: onSubmitAction,
-            autocapitalization: autocapitalization
+            onSubmitAction: action
         )
     }
 }
@@ -281,13 +226,12 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
     let focusID: String
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
-    let autocapitalization: TextInputAutocapitalization
 
     /// The cursor character shown when focused.
     private let cursorChar: Character = "█"
 
-    /// Minimum visible width for the text field content area.
-    private let minContentWidth = 20
+    /// Default visible width for the text field content area.
+    private let defaultContentWidth = 20
 
     var body: Never {
         fatalError("_TextFieldCore renders via Renderable")
@@ -297,6 +241,15 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
+
+        // Determine content width: use available width if explicit frame set, otherwise default
+        // Account for focus indicators (2 chars for ❙ on each side)
+        let contentWidth: Int
+        if context.hasExplicitWidth && context.availableWidth > 2 {
+            contentWidth = context.availableWidth - 2  // Subtract space for focus indicators
+        } else {
+            contentWidth = defaultContentWidth
+        }
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
@@ -324,7 +277,6 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         handler.text = text
         handler.canBeFocused = !isDisabled
         handler.onSubmit = onSubmitAction
-        handler.autocapitalization = autocapitalization
         handler.clampCursorPosition()
 
         // Register with focus manager
@@ -339,7 +291,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             handler: handler,
             isFocused: isFocused,
             palette: palette,
-            pulsePhase: context.pulsePhase
+            pulsePhase: context.pulsePhase,
+            contentWidth: contentWidth
         )
 
         return FrameBuffer(text: content)
@@ -350,95 +303,114 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         handler: TextFieldHandler,
         isFocused: Bool,
         palette: any Palette,
-        pulsePhase: Double
+        pulsePhase: Double,
+        contentWidth: Int
     ) -> String {
         let textValue = text.wrappedValue
         let isEmpty = textValue.isEmpty
+        let backgroundColor = palette.focusBackground
 
-        // Determine bracket color
-        let bracketColor: Color
-        if isDisabled {
-            bracketColor = palette.foregroundTertiary
-        } else if isFocused {
-            // Pulse between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
-            bracketColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
-        } else {
-            bracketColor = palette.border
-        }
-
-        // Render brackets
-        let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused && !isDisabled)
-        let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused && !isDisabled)
-
-        // Build inner content
+        // Build inner content with background
         let innerContent: String
         if isEmpty && !isFocused && prompt != nil {
             // Show prompt when empty and unfocused
-            innerContent = buildPromptContent(palette: palette)
+            innerContent = buildPromptContent(palette: palette, background: backgroundColor, width: contentWidth)
         } else if isFocused {
-            // Show text with cursor
+            // Show text with cursor (scrolling if needed)
             innerContent = buildTextWithCursor(
                 text: textValue,
                 cursorPosition: handler.cursorPosition,
-                palette: palette
+                palette: palette,
+                background: backgroundColor,
+                width: contentWidth
             )
         } else {
-            // Show text without cursor
-            innerContent = buildTextContent(text: textValue, palette: palette)
+            // Show text without cursor (scrolling if needed)
+            innerContent = buildTextContent(
+                text: textValue,
+                palette: palette,
+                background: backgroundColor,
+                width: contentWidth
+            )
         }
 
-        return "\(openBracket) \(innerContent) \(closeBracket)"
+        // Add medium vertical bars when focused (outside the content area)
+        if isFocused && !isDisabled {
+            // Pulse between 35% and 100% accent
+            let dimAccent = palette.accent.opacity(0.35)
+            let accentColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
+
+            let bar = ANSIRenderer.colorize("❙", foreground: accentColor)
+            return "\(bar)\(innerContent)\(bar)"
+        }
+
+        // Unfocused: add space placeholders to maintain alignment
+        return " \(innerContent) "
     }
 
     /// Builds the prompt content (shown when empty and unfocused).
-    private func buildPromptContent(palette: any Palette) -> String {
-        // Use the prompt text if available, rendered via its own render path
-        // For now, use a simple placeholder approach
+    private func buildPromptContent(palette: any Palette, background: Color, width: Int) -> String {
         let promptText: String
         if let prompt {
-            // Render the prompt Text view to extract its string content
             let buffer = TUIkit.renderToBuffer(prompt, context: RenderContext(availableWidth: 100, availableHeight: 1))
             promptText = buffer.lines.first?.stripped ?? ""
         } else {
             promptText = ""
         }
-        let paddedPrompt = promptText.padding(toLength: minContentWidth, withPad: " ", startingAt: 0)
-        return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary)
+        // Truncate or pad prompt to exact width
+        let truncated = String(promptText.prefix(width))
+        let paddedPrompt = truncated.padding(toLength: width, withPad: " ", startingAt: 0)
+        return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary, background: background)
     }
 
-    /// Builds text content without cursor.
-    private func buildTextContent(text: String, palette: any Palette) -> String {
-        let paddedText = text.padding(toLength: max(minContentWidth, text.count), withPad: " ", startingAt: 0)
-        if isDisabled {
-            return ANSIRenderer.colorize(paddedText, foreground: palette.foregroundTertiary)
-        }
-        return paddedText
+    /// Builds text content without cursor (unfocused state).
+    private func buildTextContent(text: String, palette: any Palette, background: Color, width: Int) -> String {
+        // Show text from the beginning, truncated to width
+        let visibleText = String(text.prefix(width))
+        let paddedText = visibleText.padding(toLength: width, withPad: " ", startingAt: 0)
+        let foreground = isDisabled ? palette.foregroundTertiary : palette.foreground
+        return ANSIRenderer.colorize(paddedText, foreground: foreground, background: background)
     }
 
-    /// Builds text content with cursor at the specified position.
+    /// Builds text content with cursor at the specified position (focused state).
+    /// Implements horizontal scrolling to keep cursor visible.
     private func buildTextWithCursor(
         text: String,
         cursorPosition: Int,
-        palette: any Palette
+        palette: any Palette,
+        background: Color,
+        width: Int
     ) -> String {
         let clampedPosition = max(0, min(cursorPosition, text.count))
 
-        // Split text at cursor position
-        let beforeCursor = String(text.prefix(clampedPosition))
-        let afterCursor = String(text.suffix(from: text.index(text.startIndex, offsetBy: clampedPosition)))
+        // Calculate scroll offset to keep cursor visible
+        // The cursor needs 1 character, so visible text area is (width - 1)
+        let visibleTextWidth = width - 1  // Reserve 1 char for cursor
+        let scrollOffset: Int
+        if clampedPosition <= visibleTextWidth {
+            // Cursor fits without scrolling
+            scrollOffset = 0
+        } else {
+            // Scroll so cursor is at the right edge
+            scrollOffset = clampedPosition - visibleTextWidth
+        }
 
-        // Render cursor with accent color
-        let cursor = ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent)
+        // Extract visible portion of text
+        let textAfterScroll = String(text.dropFirst(scrollOffset))
+        let visibleBeforeCursor = String(textAfterScroll.prefix(clampedPosition - scrollOffset))
+        let afterCursorStart = clampedPosition - scrollOffset
+        let visibleAfterCursor = String(textAfterScroll.dropFirst(afterCursorStart).prefix(width - afterCursorStart - 1))
 
-        // Combine: [before][cursor][after]
-        let combined = beforeCursor + cursor + afterCursor
-
-        // Pad to minimum width (accounting for cursor taking 1 visual space)
-        let visibleLength = text.count + 1  // text + cursor
-        let paddingNeeded = max(0, minContentWidth - visibleLength)
+        // Calculate padding needed to fill width
+        let usedWidth = visibleBeforeCursor.count + 1 + visibleAfterCursor.count  // before + cursor + after
+        let paddingNeeded = max(0, width - usedWidth)
         let padding = String(repeating: " ", count: paddingNeeded)
 
-        return combined + padding
+        // Render each part with background
+        let beforePart = ANSIRenderer.colorize(visibleBeforeCursor, foreground: palette.foreground, background: background)
+        let cursorPart = ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
+        let afterPart = ANSIRenderer.colorize(visibleAfterCursor + padding, foreground: palette.foreground, background: background)
+
+        return beforePart + cursorPart + afterPart
     }
 }

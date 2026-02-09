@@ -45,7 +45,7 @@ struct TextFieldTests {
 
     // MARK: - Rendering
 
-    @Test("TextField renders with brackets")
+    @Test("TextField renders with brackets only when focused")
     func renderWithBrackets() {
         var text = "test"
         let binding = Binding(get: { text }, set: { text = $0 })
@@ -56,8 +56,11 @@ struct TextFieldTests {
 
         #expect(buffer.lines.count == 1)
         let line = buffer.lines[0].stripped
-        #expect(line.contains("["))
-        #expect(line.contains("]"))
+
+        // Unfocused: no brackets
+        #expect(!line.contains("["))
+        #expect(!line.contains("]"))
+        #expect(line.contains("test"))
     }
 
     @Test("TextField renders text content")
@@ -167,18 +170,5 @@ struct TextFieldTests {
         let context = testContext()
         let buffer = renderToBuffer(textField, context: context)
         #expect(buffer.height == 1)
-    }
-
-    // MARK: - Autocapitalization
-
-    @Test("TextField with autocapitalization modifier")
-    func autocapitalizationModifier() {
-        var text = ""
-        let binding = Binding(get: { text }, set: { text = $0 })
-
-        let textField = TextField("Name", text: binding)
-            .textInputAutocapitalization(.words)
-
-        #expect(textField.autocapitalization == .words)
     }
 }
