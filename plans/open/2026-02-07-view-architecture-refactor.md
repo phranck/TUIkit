@@ -283,8 +283,8 @@ Controls that need StateStorage/FocusManager:
 - [x] Button: Convert to body: some View
 - [x] Toggle: Convert to body: some View
 - [x] Menu: Convert to body: some View
-- [ ] RadioButtonGroup: Convert to body: some View
-- [ ] Tests pass for each
+- [x] RadioButtonGroup: Convert to body: some View
+- [x] Tests pass for each
 
 ### Phase 5: Complex Controls
 - [x] List: Convert to body: some View
