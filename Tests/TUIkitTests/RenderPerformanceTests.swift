@@ -28,6 +28,10 @@ struct RenderPerformanceTests {
     }
 
     /// Measures the time to render a view multiple times.
+    ///
+    /// Uses `Date` instead of `CFAbsoluteTimeGetCurrent` because CoreFoundation
+    /// timing functions are not available on Linux. The precision difference
+    /// is negligible for performance benchmarks at millisecond granularity.
     private func measureRenderTime<V: View>(
         _ view: V,
         iterations: Int = 100,
