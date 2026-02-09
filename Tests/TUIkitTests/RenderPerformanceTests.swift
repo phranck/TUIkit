@@ -33,12 +33,11 @@ struct RenderPerformanceTests {
         iterations: Int = 100,
         context: RenderContext
     ) -> TimeInterval {
-        let start = CFAbsoluteTimeGetCurrent()
+        let start = Date()
         for _ in 0..<iterations {
             _ = renderToBuffer(view, context: context)
         }
-        let end = CFAbsoluteTimeGetCurrent()
-        return end - start
+        return Date().timeIntervalSince(start)
     }
 
     // MARK: - Stack Performance Tests
@@ -290,30 +289,30 @@ struct RenderPerformanceStatistics {
         var results: [(String, TimeInterval)] = []
 
         // Measure each view type
-        let start1 = CFAbsoluteTimeGetCurrent()
+        let start1 = Date()
         for _ in 0..<iterations {
             _ = renderToBuffer(VStack { Text("A"); Text("B") }, context: context)
         }
-        results.append(("VStack (2 children)", CFAbsoluteTimeGetCurrent() - start1))
+        results.append(("VStack (2 children)", Date().timeIntervalSince(start1)))
 
-        let start2 = CFAbsoluteTimeGetCurrent()
+        let start2 = Date()
         for _ in 0..<iterations {
             _ = renderToBuffer(HStack { Text("A"); Text("B") }, context: context)
         }
-        results.append(("HStack (2 children)", CFAbsoluteTimeGetCurrent() - start2))
+        results.append(("HStack (2 children)", Date().timeIntervalSince(start2)))
 
-        let start3 = CFAbsoluteTimeGetCurrent()
+        let start3 = Date()
         for _ in 0..<iterations {
             _ = renderToBuffer(Button("Test") {}, context: context)
         }
-        results.append(("Button", CFAbsoluteTimeGetCurrent() - start3))
+        results.append(("Button", Date().timeIntervalSince(start3)))
 
         var isOn = false
-        let start4 = CFAbsoluteTimeGetCurrent()
+        let start4 = Date()
         for _ in 0..<iterations {
             _ = renderToBuffer(Toggle("Test", isOn: Binding(get: { isOn }, set: { isOn = $0 })), context: context)
         }
-        results.append(("Toggle", CFAbsoluteTimeGetCurrent() - start4))
+        results.append(("Toggle", Date().timeIntervalSince(start4)))
 
         // Print results
         print("\n=== Render Performance Statistics ===")
