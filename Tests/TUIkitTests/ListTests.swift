@@ -198,4 +198,25 @@ struct ListRenderingTests {
 
         #expect(list.selectionMode == .single)
     }
+
+    @Test("List respects frame width constraint")
+    func listRespectsFrameWidth() {
+        let context = createTestContext(width: 80)
+
+        var selection: String?
+        let list = List("Items", selection: Binding(
+            get: { selection },
+            set: { selection = $0 }
+        )) {
+            ForEach(["Alpha", "Beta", "Gamma"], id: \.self) { item in
+                Text(item)
+            }
+        }
+        .frame(width: 20)
+
+        let buffer = renderToBuffer(list, context: context)
+
+        // The list should be constrained to 20 characters width
+        #expect(buffer.width == 20)
+    }
 }
