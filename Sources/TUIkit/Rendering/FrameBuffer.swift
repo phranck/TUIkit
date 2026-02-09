@@ -55,6 +55,14 @@ public struct FrameBuffer: Sendable, Equatable {
         self.width = Self.computeWidth(lines)
     }
 
+    /// Internal initializer that accepts pre-computed width.
+    ///
+    /// Use this when the width is already known to avoid redundant computation.
+    init(lines: [String], width: Int) {
+        self.lines = lines
+        self.width = width
+    }
+
     /// Creates a buffer containing a single line.
     ///
     /// - Parameter text: The text content.
@@ -104,13 +112,19 @@ public extension FrameBuffer {
     ///   - spacing: Number of empty lines between the two buffers.
     mutating func appendVertically(_ other: Self, spacing: Int = 0) {
         guard !other.isEmpty else { return }
-        // Build combined array and assign once to trigger didSet only once.
+
+        // Pre-compute the new width (avoids redundant computation in didSet)
+        let newWidth = max(width, other.width)
+
+        // Build combined array
         var combined = lines
         if !combined.isEmpty && spacing > 0 {
             combined.append(contentsOf: repeatElement("", count: spacing))
         }
         combined.append(contentsOf: other.lines)
-        lines = combined
+
+        // Replace self with new buffer using pre-computed width
+        self = FrameBuffer(lines: combined, width: newWidth)
     }
 
     /// Places another buffer to the right of this one with optional spacing.
@@ -123,7 +137,12 @@ public extension FrameBuffer {
         let myWidth = width
         let spacer = String(repeating: " ", count: spacing)
 
+        // Pre-compute the new width
+        let newWidth = myWidth + spacing + other.width
+
         var result: [String] = []
+        result.reserveCapacity(maxHeight)
+
         for row in 0..<maxHeight {
             let left = row < lines.count ? lines[row] : ""
             let right = row < other.lines.count ? other.lines[row] : ""
@@ -132,7 +151,9 @@ public extension FrameBuffer {
             let leftPadded = left.padToVisibleWidth(myWidth)
             result.append(leftPadded + spacer + right)
         }
-        lines = result
+
+        // Replace self with new buffer using pre-computed width
+        self = FrameBuffer(lines: result, width: newWidth)
     }
 
     /// Layers another buffer on top of this one (ZStack behavior).
