@@ -110,6 +110,12 @@ public struct RenderContext {
     /// A value of 0 means dimmest, 1 means brightest.
     var pulsePhase: Double = 0
 
+    /// The cursor timer for TextField/SecureField animations.
+    ///
+    /// Set by ``RenderLoop`` at the start of each frame.
+    /// Read by text fields to compute blink and pulse phases.
+    var cursorTimer: CursorTimer?
+
     /// The focus indicator color for the first border encountered in this subtree.
     ///
     /// Set by ``FocusSectionModifier`` when the section is active.
