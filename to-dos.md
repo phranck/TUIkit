@@ -35,6 +35,10 @@
 
 ## Completed
 
+### 2026-02-10
+
+- [x] **NavigationSplitView**: Two/three-column layouts, visibility control, focus sections, styles, 39 tests
+
 ### 2026-02-09
 
 - [x] **TextField Selection**: Shift+Arrow selection, highlight rendering, delete/replace selected text, 41 new tests
@@ -108,4 +112,4 @@
 
 ---
 
-**Last Updated:** 2026-02-09 (evening)
+**Last Updated:** 2026-02-10

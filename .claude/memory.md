@@ -248,18 +248,19 @@ let ctrl = (bits & 4) != 0
 ## Current State
 
 **Branch:** `main`  
-**Tests:** 947 / 131 suites  
+**Tests:** 986 / 139 suites  
 **Build:** clean
 
-### Recent Changes (2026-02-09)
+### Recent Changes (2026-02-10)
 
-- TextField/SecureField selection: Shift+Arrow, highlight, delete/replace (41 tests)
-- CSI modifier parsing: Shift/Alt/Ctrl in escape sequences
-- Test file refactoring: Split FocusTests and ModifierTests
+- NavigationSplitView: Two/three-column layouts with focus sections (39 tests)
+- NavigationSplitViewVisibility, NavigationSplitViewColumn, NavigationSplitViewStyle
+- Column width modifiers: `.navigationSplitViewColumnWidth(_:)`
+- Style modifier: `.navigationSplitViewStyle(_:)`
 
 ### Known Issues
 
 - None
 
 ---
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-10
