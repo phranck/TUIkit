@@ -231,17 +231,28 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
 
         // Render each visible column
         var buffers: [FrameBuffer] = []
+        let focusManager = context.environment.focusManager
+
         for (index, column) in visibleColumns.enumerated() {
             let columnWidth = columnWidths[index]
             let columnContext = context.withAvailableWidth(columnWidth)
 
             // Register focus section for this column
             let sectionID = focusSectionID(for: column)
-            context.environment.focusManager.registerSection(id: sectionID)
+            focusManager.registerSection(id: sectionID)
 
             // Create a context with the active focus section
             var sectionContext = columnContext
             sectionContext.activeFocusSectionID = sectionID
+
+            // If this section is active, set the focus indicator color for borders
+            if focusManager.isActiveSection(sectionID) {
+                let accentColor = context.environment.palette.accent
+                let dimColor = accentColor.opacity(0.20)
+                sectionContext.focusIndicatorColor = Color.lerp(dimColor, accentColor, phase: context.pulsePhase)
+            } else {
+                sectionContext.focusIndicatorColor = nil
+            }
 
             let buffer = renderColumn(column, context: sectionContext)
             buffers.append(buffer)

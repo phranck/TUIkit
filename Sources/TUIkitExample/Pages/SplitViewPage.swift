@@ -30,7 +30,7 @@ private struct Message: Identifiable {
     let id: String
     let from: String
     let subject: String
-    let preview: String
+    let body: String
     let date: String
     let isRead: Bool
 
@@ -39,27 +39,35 @@ private struct Message: Identifiable {
         case "inbox":
             return [
                 Self(id: "1", from: "Alice", subject: "Meeting Tomorrow",
-                     preview: "Hi, just wanted to confirm...", date: "10:30", isRead: false),
+                     body: "Hi,\n\nJust wanted to confirm our meeting tomorrow at 2pm.\n\nBest,\nAlice",
+                     date: "10:30", isRead: false),
                 Self(id: "2", from: "Bob", subject: "Code Review",
-                     preview: "I've reviewed your PR...", date: "09:15", isRead: false),
+                     body: "Hey,\n\nI've reviewed your PR and left some comments.\n\nLooks good overall!",
+                     date: "09:15", isRead: false),
                 Self(id: "3", from: "Carol", subject: "Project Update",
-                     preview: "Here's the latest status...", date: "Yesterday", isRead: true),
+                     body: "Team,\n\nHere's the latest status on the project.\n\nWe're on track for launch.",
+                     date: "Yesterday", isRead: true),
                 Self(id: "4", from: "David", subject: "Quick Question",
-                     preview: "Do you have a moment...", date: "Yesterday", isRead: true),
+                     body: "Hi,\n\nDo you have a moment to discuss the API design?\n\nThanks!",
+                     date: "Yesterday", isRead: true),
                 Self(id: "5", from: "Eve", subject: "New Feature Idea",
-                     preview: "I was thinking we could...", date: "Monday", isRead: true),
+                     body: "Hello,\n\nI was thinking we could add dark mode support.\n\nThoughts?",
+                     date: "Monday", isRead: true),
             ]
         case "starred":
             return [
                 Self(id: "s1", from: "Frank", subject: "Important: Deadline",
-                     preview: "The deadline is next Friday...", date: "Tuesday", isRead: true),
+                     body: "Reminder:\n\nThe deadline is next Friday.\n\nPlease submit your work.",
+                     date: "Tuesday", isRead: true),
                 Self(id: "s2", from: "Grace", subject: "Contract Review",
-                     preview: "Please review the attached...", date: "Last week", isRead: true),
+                     body: "Hi,\n\nPlease review the attached contract.\n\nLet me know if you have questions.",
+                     date: "Last week", isRead: true),
             ]
         case "drafts":
             return [
                 Self(id: "d1", from: "Me", subject: "Re: Meeting",
-                     preview: "Thanks for the invite...", date: "Draft", isRead: true),
+                     body: "Thanks for the invite.\n\nI'll be there at 2pm.\n\nSee you then!",
+                     date: "Draft", isRead: true),
             ]
         default:
             return []
@@ -71,36 +79,50 @@ private struct Message: Identifiable {
 
 /// NavigationSplitView demo page.
 ///
-/// Shows a three-column mail client layout:
-/// - Sidebar: Folder list
+/// Shows a three-column mail client layout with interactive Lists:
+/// - Sidebar: Folder list (Tab to focus)
 /// - Content: Message list for selected folder
-/// - Detail: Message preview
+/// - Detail: Full message content
 struct SplitViewPage: View {
     @State private var selectedFolder: String? = "inbox"
-    @State private var selectedMessage: String?
+    @State private var selectedMessage: String? = "1"
     @State private var visibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
         VStack(spacing: 0) {
             NavigationSplitView(columnVisibility: $visibility) {
                 // Sidebar: Folder list
-                sidebarContent
+                List("Folders", selection: $selectedFolder, maxVisibleRows: 8) {
+                    ForEach(Folder.samples) { folder in
+                        HStack(spacing: 1) {
+                            Text(folder.icon)
+                            Text(folder.name)
+                            if folder.unreadCount > 0 {
+                                Spacer()
+                                Text("(\(folder.unreadCount))")
+                                    .foregroundStyle(.palette.foregroundSecondary)
+                            }
+                        }
+                    }
+                }
             } content: {
                 // Content: Message list
-                contentColumn
+                messageListContent
             } detail: {
                 // Detail: Message content
                 detailColumn
             }
             .navigationSplitViewStyle(.balanced)
 
-            // Visibility controls
-            DemoSection("Visibility") {
+            // Navigation hints
+            DemoSection("Navigation") {
                 HStack(spacing: 2) {
-                    Text("Current:").foregroundStyle(.palette.foregroundSecondary)
-                    Text(visibilityLabel).bold().foregroundStyle(.palette.accent)
+                    Text("[Tab]").foregroundStyle(.palette.accent)
+                    Text("switch columns").dim()
                     Spacer()
-                    Text("[1] All  [2] Double  [3] Detail").dim()
+                    Text("[1/2/3]").foregroundStyle(.palette.accent)
+                    Text("visibility:").dim()
+                    Text(visibilityLabel).bold()
                 }
             }
             .onKeyPress { event in
@@ -132,43 +154,43 @@ struct SplitViewPage: View {
 // MARK: - Column Views
 
 private extension SplitViewPage {
-    var sidebarContent: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Folders").bold().foregroundStyle(.palette.accent)
-            Spacer(minLength: 1)
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Folder.samples) { folder in
-                    FolderRow(folder: folder, isSelected: selectedFolder == folder.id)
-                }
+    @ViewBuilder
+    var messageListContent: some View {
+        let messages = Message.samples(for: selectedFolder ?? "inbox")
+        if messages.isEmpty {
+            VStack {
+                Spacer()
+                Text("No messages in this folder").dim()
+                Spacer()
             }
-            Spacer()
-        }
-        .padding(.horizontal, 1)
-    }
-
-    var contentColumn: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(folderTitle).bold().foregroundStyle(.palette.accent)
-            Spacer(minLength: 1)
-            let messages = Message.samples(for: selectedFolder ?? "inbox")
-            if messages.isEmpty {
-                Text("No messages").dim()
-            } else {
-                VStack(alignment: .leading, spacing: 1) {
-                    ForEach(messages) { message in
-                        MessageRow(message: message, isSelected: selectedMessage == message.id)
+        } else {
+            List(folderTitle, selection: $selectedMessage, maxVisibleRows: 8) {
+                ForEach(messages) { message in
+                    HStack(spacing: 1) {
+                        if message.isRead {
+                            Text(" ")
+                        } else {
+                            Text("*").foregroundStyle(.palette.accent)
+                        }
+                        if message.isRead {
+                            Text(message.from)
+                        } else {
+                            Text(message.from).bold()
+                        }
+                        Text("-").dim()
+                        Text(message.subject)
                     }
                 }
             }
-            Spacer()
         }
-        .padding(.horizontal, 1)
     }
 
     var detailColumn: some View {
         VStack(alignment: .leading, spacing: 1) {
             if let message = currentMessage {
+                // Header
                 Text(message.subject).bold().foregroundStyle(.palette.accent)
+                Spacer(minLength: 1)
                 HStack(spacing: 1) {
                     Text("From:").foregroundStyle(.palette.foregroundSecondary)
                     Text(message.from)
@@ -178,78 +200,21 @@ private extension SplitViewPage {
                     Text(message.date)
                 }
                 Spacer(minLength: 1)
-                Text(message.preview)
+
+                // Message body
+                Text(message.body)
                 Spacer()
             } else {
                 Spacer()
-                Text("Select a message").dim()
+                HStack {
+                    Spacer()
+                    Text("Select a message to view").dim()
+                    Spacer()
+                }
                 Spacer()
             }
         }
         .padding(.horizontal, 1)
-    }
-}
-
-// MARK: - Row Views
-
-/// A folder row in the sidebar.
-private struct FolderRow: View {
-    let folder: Folder
-    let isSelected: Bool
-
-    private var hasUnread: Bool { folder.unreadCount > 0 }
-
-    var body: some View {
-        if isSelected {
-            HStack(spacing: 1) {
-                Text(folder.icon)
-                Text(folder.name).bold()
-                if hasUnread {
-                    Spacer()
-                    Text("(\(folder.unreadCount))").foregroundStyle(.palette.foregroundSecondary)
-                }
-            }
-            .foregroundStyle(.palette.accent)
-        } else {
-            HStack(spacing: 1) {
-                Text(folder.icon)
-                Text(folder.name)
-                if hasUnread {
-                    Spacer()
-                    Text("(\(folder.unreadCount))").foregroundStyle(.palette.foregroundSecondary)
-                }
-            }
-        }
-    }
-}
-
-/// A message row in the content column.
-private struct MessageRow: View {
-    let message: Message
-    let isSelected: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 1) {
-                if message.isRead {
-                    Text(" ")
-                } else {
-                    Text("*").foregroundStyle(.palette.accent)
-                }
-                if message.isRead {
-                    Text(message.from)
-                } else {
-                    Text(message.from).bold()
-                }
-                Spacer()
-                Text(message.date).dim()
-            }
-            if isSelected {
-                Text(message.subject).foregroundStyle(.palette.accent)
-            } else {
-                Text(message.subject)
-            }
-        }
     }
 }
 
@@ -267,10 +232,10 @@ private extension SplitViewPage {
 
     var visibilityLabel: String {
         switch visibility {
-        case .all: return "All Columns"
-        case .doubleColumn: return "Double Column"
-        case .detailOnly: return "Detail Only"
-        default: return "Automatic"
+        case .all: return "All"
+        case .doubleColumn: return "Double"
+        case .detailOnly: return "Detail"
+        default: return "Auto"
         }
     }
 }
