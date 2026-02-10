@@ -228,16 +228,15 @@ private struct _HStackCore<Content: View>: View, Renderable {
 
         let totalSpacing = max(0, infos.count - 1) * spacing
 
-        // Spacers only expand to fill available space if hasExplicitWidth is set.
-        // Otherwise, they use their minLength (or 1 as default).
+        // Spacers expand to fill remaining space when there's a defined available width.
         let spacerWidth: Int
         let spacerRemainder: Int
-        if context.hasExplicitWidth && spacerCount > 0 {
+        if spacerCount > 0 {
             let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
             spacerWidth = availableForSpacers / spacerCount
             spacerRemainder = availableForSpacers % spacerCount
         } else {
-            spacerWidth = 0  // Will use minLength or default
+            spacerWidth = 0
             spacerRemainder = 0
         }
 

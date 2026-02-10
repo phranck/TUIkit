@@ -18,24 +18,21 @@ struct LayoutPage: View {
         VStack(alignment: .leading, spacing: 1) {
 
             DemoSection("VStack (Vertical)") {
-                // Box uses appearance default borderStyle
-                Box(color: .brightBlack) {
-                    VStack(spacing: 0) {
-                        Text("Item 1")
-                        Text("Item 2")
-                        Text("Item 3")
-                    }
+                VStack(spacing: 0) {
+                    Text("Item 1")
+                    Text("Item 2")
+                    Text("Item 3")
                 }
+                .border(color: .brightBlack)
             }
 
             DemoSection("HStack (Horizontal)") {
-                Box(color: .brightBlack) {
-                    HStack(spacing: 2) {
-                        Text("Left")
-                        Text("Center")
-                        Text("Right")
-                    }
+                HStack(spacing: 2) {
+                    Text("Left")
+                    Text("Center")
+                    Text("Right")
                 }
+                .border()
             }
 
             DemoSection("Spacer") {

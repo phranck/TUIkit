@@ -22,10 +22,10 @@ struct ContainerTypesRow: View, Equatable {
             }
 
             VStack(alignment: .leading) {
-                Text("Box").bold().foregroundStyle(.palette.accent)
-                Box(color: .palette.border) {
-                    Text("Simple Box").foregroundStyle(.palette.foreground)
-                }
+                Text(".border()").bold().foregroundStyle(.palette.accent)
+                Text("Simple bordered content")
+                    .foregroundStyle(.palette.foreground)
+                    .border()
             }
 
             VStack(alignment: .leading) {
@@ -57,24 +57,23 @@ struct SettingsAndAlignmentRow: View, Equatable {
 
             DemoSection("Content Alignment") {
                 HStack(spacing: 1) {
-                    Box {
-                        VStack(alignment: .leading) {
-                            Text("Leading align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    VStack(alignment: .leading) {
+                        Text("Leading align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
-                    Box {
-                        VStack(alignment: .center) {
-                            Text("Center align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    .border()
+
+                    VStack(alignment: .center) {
+                        Text("Center align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
-                    Box {
-                        VStack(alignment: .trailing) {
-                            Text("Trailing align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    .border()
+
+                    VStack(alignment: .trailing) {
+                        Text("Trailing align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
+                    .border()
                 }
             }
         }
@@ -155,18 +154,17 @@ struct ContainersPage: View {
                     if showDetails {
                         Panel("Padding Examples", titleColor: .palette.accent) {
                             HStack(spacing: 1) {
-                                Box {
-                                    Text("h:1 v:0").foregroundStyle(.palette.foreground)
-                                        .padding(.horizontal, 1)
-                                }
-                                Box {
-                                    Text("h:1 v:1").foregroundStyle(.palette.foreground)
-                                        .padding(EdgeInsets(horizontal: 1, vertical: 1))
-                                }
-                                Box {
-                                    Text("h:1 v:2").foregroundStyle(.palette.foreground)
-                                        .padding(EdgeInsets(horizontal: 1, vertical: 2))
-                                }
+                                Text("h:1 v:0").foregroundStyle(.palette.foreground)
+                                    .padding(.horizontal, 1)
+                                    .border()
+
+                                Text("h:1 v:1").foregroundStyle(.palette.foreground)
+                                    .padding(EdgeInsets(horizontal: 1, vertical: 1))
+                                    .border()
+
+                                Text("h:1 v:2").foregroundStyle(.palette.foreground)
+                                    .padding(EdgeInsets(horizontal: 1, vertical: 2))
+                                    .border()
                             }
                         }
                     }
