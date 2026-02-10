@@ -132,12 +132,11 @@ struct ListRenderingTests {
 
     @Test("Scroll indicators appear when needed")
     func scrollIndicatorsAppear() {
-        let context = createTestContext(height: 5)
-
         struct Item: Identifiable {
             let id: Int
             let name: String
         }
+        // Create list with more items than will fit in available height
         let items = (0..<20).map { Item(id: $0, name: "Item \($0)") }
 
         var selection: Int?
@@ -145,18 +144,19 @@ struct ListRenderingTests {
             selection: Binding(
                 get: { selection },
                 set: { selection = $0 }
-            ),
-            maxVisibleRows: 3
+            )
         ) {
             ForEach(items) { item in
                 Text(item.name)
             }
         }
 
+        // Use a small height context so scrolling is triggered
+        let context = createTestContext(width: 40, height: 8)
         let buffer = renderToBuffer(list, context: context)
         let content = buffer.lines.joined()
 
-        // Should have "more below" indicator
+        // Should have "more below" indicator since we have 20 items in height 8
         #expect(content.contains("▼") || content.contains("more below"))
     }
 

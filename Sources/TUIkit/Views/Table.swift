@@ -69,9 +69,6 @@ public struct Table<Value: Identifiable & Sendable>: View where Value.ID: Hashab
     /// Whether the table is disabled.
     var isDisabled: Bool
 
-    /// The maximum number of visible rows (nil = use available height).
-    let maxVisibleRows: Int?
-
     /// The placeholder text shown when the table is empty.
     let emptyPlaceholder: String
 
@@ -87,7 +84,6 @@ public struct Table<Value: Identifiable & Sendable>: View where Value.ID: Hashab
             selectionMode: selectionMode,
             focusID: focusID,
             isDisabled: isDisabled,
-            maxVisibleRows: maxVisibleRows,
             emptyPlaceholder: emptyPlaceholder,
             columnSpacing: columnSpacing
         )
@@ -103,7 +99,7 @@ extension Table {
     ///   - data: The data items to display.
     ///   - selection: A binding to the selected item's ID (nil = no selection).
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - columnSpacing: Spacing between columns (default: 2).
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - columns: A builder that defines the table columns.
@@ -111,7 +107,7 @@ extension Table {
         _ data: [Value],
         selection: Binding<Value.ID?>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         columnSpacing: Int = 2,
         emptyPlaceholder: String = "No items",
         @TableColumnBuilder<Value> columns: () -> [TableColumn<Value>]
@@ -122,7 +118,7 @@ extension Table {
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.columnSpacing = columnSpacing
         self.emptyPlaceholder = emptyPlaceholder
     }
@@ -137,7 +133,7 @@ extension Table {
     ///   - data: The data items to display.
     ///   - selection: A binding to the set of selected item IDs.
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - columnSpacing: Spacing between columns (default: 2).
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - columns: A builder that defines the table columns.
@@ -145,7 +141,7 @@ extension Table {
         _ data: [Value],
         selection: Binding<Set<Value.ID>>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         columnSpacing: Int = 2,
         emptyPlaceholder: String = "No items",
         @TableColumnBuilder<Value> columns: () -> [TableColumn<Value>]
@@ -156,7 +152,7 @@ extension Table {
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.columnSpacing = columnSpacing
         self.emptyPlaceholder = emptyPlaceholder
     }
@@ -187,7 +183,6 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
     let selectionMode: SelectionMode
     let focusID: String?
     let isDisabled: Bool
-    let maxVisibleRows: Int?
     let emptyPlaceholder: String
     let columnSpacing: Int
 
@@ -220,7 +215,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         } else {
             // Calculate viewport height
             let availableHeight = context.availableHeight
-            let viewportHeight = maxVisibleRows ?? max(1, availableHeight - 6) // Reserve for border + header + indicators
+            let viewportHeight = max(1, availableHeight - 6) // Reserve for border + header + indicators
 
             // Get or create persistent focusID
             let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)

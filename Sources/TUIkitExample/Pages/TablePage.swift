@@ -54,8 +54,7 @@ struct TablePage: View {
                 .foregroundStyle(.palette.foregroundSecondary)
             Table(
                 FileEntry.sampleFiles,
-                selection: $singleSelection,
-                maxVisibleRows: 6
+                selection: $singleSelection
             ) {
                 TableColumn("Name", value: \FileEntry.name)
                 TableColumn("Size", value: \FileEntry.size)
@@ -71,8 +70,7 @@ struct TablePage: View {
                 .foregroundStyle(.palette.foregroundSecondary)
             Table(
                 FileEntry.sampleFiles,
-                selection: $multiSelection,
-                maxVisibleRows: 4
+                selection: $multiSelection
             ) {
                 TableColumn("Name", value: \FileEntry.name)
                 TableColumn("Type", value: \FileEntry.type)
