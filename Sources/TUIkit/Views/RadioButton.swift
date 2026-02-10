@@ -328,21 +328,17 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         // Determine indicator color based on state
         let indicatorColor: Color
         if isDisabled {
-            indicatorColor = palette.foregroundTertiary
-        } else if isSelected {
-            // Selected: accent color, pulses if group has focus
-            if groupHasFocus {
-                let dimAccent = palette.accent.opacity(0.35)
-                indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-            } else {
-                indicatorColor = palette.accent
-            }
+            indicatorColor = palette.foregroundTertiary.opacity(0.5)
         } else if isFocused {
-            // Focused but not selected: dimmed accent (static, no pulse)
-            indicatorColor = palette.accent.opacity(0.5)
+            // Focused: pulsing accent (whether selected or not)
+            let dimAccent = palette.accent.opacity(0.35)
+            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+        } else if isSelected {
+            // Selected but not focused: solid accent
+            indicatorColor = palette.accent
         } else {
-            // Unselected and unfocused: tertiary (dimmed)
-            indicatorColor = palette.foregroundTertiary
+            // Unselected and unfocused: dimmed
+            indicatorColor = palette.foregroundTertiary.opacity(0.5)
         }
 
         let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
