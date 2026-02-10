@@ -216,7 +216,8 @@ struct RenderingTests {
             Spacer()
             Text("R")
         }
-        let context = RenderContext(availableWidth: 20, availableHeight: 10)
+        var context = RenderContext(availableWidth: 20, availableHeight: 10)
+        context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(stack, context: context)
 
         // Spacer should take remaining width: 20 - 2 (L + R) = 18 spaces
@@ -259,7 +260,8 @@ struct RenderingTests {
             Text("X")
             Spacer()
         }
-        let context = RenderContext(availableWidth: 11, availableHeight: 1)
+        var context = RenderContext(availableWidth: 11, availableHeight: 1)
+        context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(view, context: context)
 
         // The "X" should be centered with spacers on both sides
@@ -286,7 +288,8 @@ struct RenderingTests {
             }
             Spacer()
         }
-        let context = RenderContext(availableWidth: 20, availableHeight: 5)
+        var context = RenderContext(availableWidth: 20, availableHeight: 5)
+        context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(view, context: context)
 
         // Buffer should fill available width
@@ -416,5 +419,98 @@ struct RenderingTests {
             // So centering: (80 - 42) / 2 = 19 leading spaces
             #expect(leadingSpaces >= 15, "Headline should be centered by WindowGroup, got \(leadingSpaces) leading spaces")
         }
+    }
+
+    @Test("HStack with Spacer inside border respects available width")
+    func hstackWithSpacerInsideBorder() {
+        let view = HStack {
+            Text("Start")
+            Spacer()
+            Text("End")
+        }.border()
+
+        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        context.hasExplicitWidth = true
+        let buffer = renderToBuffer(view, context: context)
+
+        // Buffer width should be exactly 80 (terminal width)
+        #expect(buffer.width == 80, "Buffer width should be 80, got \(buffer.width)")
+
+        // Content line (middle line with Start...End) should have strippedLength <= 80
+        let contentLine = buffer.lines[1]  // Middle line (borders are top and bottom)
+        #expect(contentLine.strippedLength <= 80, "Content line should not exceed 80 chars, got \(contentLine.strippedLength)")
+
+        // "End" should be near the right edge
+        let stripped = contentLine.stripped
+        #expect(stripped.hasSuffix("End│") || stripped.hasSuffix("End ") || stripped.contains("End"),
+                "End should be at right side: '\(stripped)'")
+    }
+
+    @Test("HStack with Spacer inside VStack with border respects width")
+    func hstackWithSpacerInVStackWithBorder() {
+        // This mirrors the LayoutPage structure more closely
+        let view = VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading) {
+                Text("Spacer")
+                HStack {
+                    Text("Start")
+                    Spacer()
+                    Text("End")
+                }
+                .border()
+            }
+        }
+
+        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        context.hasExplicitWidth = true
+        context.hasExplicitHeight = true
+        let buffer = renderToBuffer(view, context: context)
+
+        // Find the line with the border content (contains "Start" and "End")
+        let contentLineIndex = buffer.lines.firstIndex { $0.contains("Start") && $0.contains("End") }
+        #expect(contentLineIndex != nil, "Should find a line with Start and End")
+
+        if let idx = contentLineIndex {
+            let line = buffer.lines[idx]
+            #expect(line.strippedLength <= 80, "Content line should not exceed 80 chars, got \(line.strippedLength): '\(line.stripped)'")
+        }
+
+        // The entire buffer should not exceed 80 chars on any line
+        for (index, line) in buffer.lines.enumerated() {
+            #expect(line.strippedLength <= 80, "Line \(index) exceeds 80 chars: \(line.strippedLength) | '\(line.stripped)'")
+        }
+    }
+
+    @Test("Bordered HStack with Spacer fills exact terminal width")
+    func borderedHStackWithSpacerFillsExactWidth() {
+        // Verify the width calculation for HStack with Spacer inside a border.
+        // Width breakdown for availableWidth=80:
+        // - forBorderedContent: 80 - 2 (border chars) = 78
+        // - subtract padding: 78 - 2 (1 each side) = 76
+        // - content renders with availableWidth=76
+        // - padding adds back: 76 + 2 = 78
+        // - border sides add: 78 + 2 = 80
+        let view = HStack {
+            Text("Start")
+            Spacer()
+            Text("End")
+        }.border()
+
+        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        context.hasExplicitWidth = true
+        let buffer = renderToBuffer(view, context: context)
+
+        // All lines should be exactly 80 chars (fills terminal width)
+        for (index, line) in buffer.lines.enumerated() {
+            #expect(line.strippedLength == 80, "Line \(index) should be exactly 80, got \(line.strippedLength)")
+        }
+
+        // Verify content structure: │ Start ... End │
+        let contentLine = buffer.lines[1]
+        let stripped = contentLine.stripped
+        #expect(stripped.hasPrefix("│"), "Should start with left border")
+        #expect(stripped.hasSuffix("│"), "Should end with right border")
+        #expect(stripped.contains("Start"), "Should contain Start")
+        #expect(stripped.contains("End"), "Should contain End")
     }
 }
