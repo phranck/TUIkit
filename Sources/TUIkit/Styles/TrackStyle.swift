@@ -11,13 +11,18 @@
 /// TUIKit provides five built-in styles using different Unicode characters:
 ///
 /// ```
+/// bar:       ▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌────────────────
 /// block:     ████████████████░░░░░░░░░░░░░░░░
 /// blockFine: ████████████████▍░░░░░░░░░░░░░░░   (sub-character precision)
-/// shade:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░
-/// bar:       ▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌▌────────────────
 /// dot:       ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬●────────────────
+/// shade:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░
 /// ```
 public enum TrackStyle: Sendable, Equatable {
+    /// Vertical bar characters with a horizontal line track.
+    ///
+    /// Uses `▌` for filled and `─` for empty.
+    case bar
+
     /// Full block characters (default).
     ///
     /// Uses `█` for filled cells and `░` for empty cells.
@@ -30,21 +35,16 @@ public enum TrackStyle: Sendable, Equatable {
     /// 8x finer visual resolution than ``block``.
     case blockFine
 
-    /// Shade characters for a softer, textured look.
-    ///
-    /// Uses `▓` (dark shade) for filled and `░` (light shade) for empty.
-    case shade
-
-    /// Vertical bar characters with a horizontal line track.
-    ///
-    /// Uses `▌` for filled and `─` for empty.
-    case bar
-
     /// Rectangle track with a dot indicator at the progress position.
     ///
     /// Uses `▬` for filled, `●` as the progress head, and `─` for empty.
     /// The dot head renders in the accent color.
     case dot
+
+    /// Shade characters for a softer, textured look.
+    ///
+    /// Uses `▓` (dark shade) for filled and `░` (light shade) for empty.
+    case shade
 }
 
 // MARK: - Backwards Compatibility
