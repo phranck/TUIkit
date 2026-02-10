@@ -92,7 +92,7 @@ struct SplitViewPage: View {
         VStack(spacing: 0) {
             NavigationSplitView(columnVisibility: $visibility) {
                 // Sidebar: Folder list
-                List("Folders", selection: $selectedFolder, maxVisibleRows: 8) {
+                List("Folders", selection: $selectedFolder) {
                     ForEach(Folder.samples) { folder in
                         HStack(spacing: 1) {
                             Text(folder.icon)
@@ -164,7 +164,7 @@ private extension SplitViewPage {
                 Spacer()
             }
         } else {
-            List(folderTitle, selection: $selectedMessage, maxVisibleRows: 8) {
+            List(folderTitle, selection: $selectedMessage) {
                 ForEach(messages) { message in
                     HStack(spacing: 1) {
                         if message.isRead {
