@@ -227,9 +227,6 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
 
-    /// The cursor character shown when focused.
-    private let cursorChar: Character = "█"
-
     /// Default visible width for the text field content area.
     private let defaultContentWidth = 20
 
@@ -241,6 +238,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
+        let cursorStyle = context.environment.textCursorStyle
 
         // Determine content width: use available width if explicit frame set, otherwise default
         // Account for focus indicators (2 chars for ❙ on each side)
@@ -291,7 +289,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             handler: handler,
             isFocused: isFocused,
             palette: palette,
-            pulsePhase: context.pulsePhase,
+            cursorStyle: cursorStyle,
+            cursorTimer: context.cursorTimer,
             contentWidth: contentWidth
         )
 
@@ -303,7 +302,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         handler: TextFieldHandler,
         isFocused: Bool,
         palette: any Palette,
-        pulsePhase: Double,
+        cursorStyle: TextCursorStyle,
+        cursorTimer: CursorTimer?,
         contentWidth: Int
     ) -> String {
         let textValue = text.wrappedValue
@@ -322,6 +322,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
                 cursorPosition: handler.cursorPosition,
                 selectionRange: handler.selectionRange,
                 palette: palette,
+                cursorStyle: cursorStyle,
+                cursorTimer: cursorTimer,
                 background: backgroundColor,
                 width: contentWidth
             )
@@ -335,18 +337,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             )
         }
 
-        // Add medium vertical bars when focused (outside the content area)
-        if isFocused && !isDisabled {
-            // Pulse between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
-            let accentColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
-
-            let bar = ANSIRenderer.colorize("❙", foreground: accentColor)
-            return "\(bar)\(innerContent)\(bar)"
-        }
-
-        // Unfocused: add space placeholders to maintain alignment
-        return " \(innerContent) "
+        // No focus markers needed - the cursor itself indicates focus
+        return innerContent
     }
 
     /// Builds the prompt content (shown when empty and unfocused).
@@ -381,6 +373,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         cursorPosition: Int,
         selectionRange: Range<Int>?,
         palette: any Palette,
+        cursorStyle: TextCursorStyle,
+        cursorTimer: CursorTimer?,
         background: Color,
         width: Int
     ) -> String {
@@ -401,6 +395,14 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         // The visible window in the text
         let visibleStart = scrollOffset
 
+        // Compute cursor visibility and color based on animation style
+        let (cursorVisible, cursorColor) = computeCursorState(
+            baseColor: palette.cursorColor,
+            animation: cursorStyle.animation,
+            speed: cursorStyle.speed,
+            cursorTimer: cursorTimer
+        )
+
         // Build output character by character
         var result = ""
         var outputWidth = 0
@@ -409,8 +411,20 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             let textIndex = visibleStart + visibleIndex
 
             if textIndex == clampedPosition {
-                // Render cursor
-                result += ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
+                if cursorVisible {
+                    // Cursor visible: show cursor character
+                    let cursorChar = cursorStyle.shape.character
+                    result += ANSIRenderer.colorize(String(cursorChar), foreground: cursorColor, background: background)
+                } else {
+                    // Cursor hidden (blink off): show underlying character or space
+                    if textIndex < text.count {
+                        let charIndex = text.index(text.startIndex, offsetBy: textIndex)
+                        let char = text[charIndex]
+                        result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
+                    } else {
+                        result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
+                    }
+                }
                 outputWidth += 1
             } else if textIndex < text.count && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
                 // Render character
@@ -421,11 +435,11 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
                 let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
 
                 if isSelected {
-                    // Selection highlight: accent background, foreground contrasts
+                    // Selection highlight: dimmed accent background, foreground contrasts
                     result += ANSIRenderer.colorize(
                         String(char),
                         foreground: palette.background,
-                        background: palette.accent
+                        background: palette.accent.opacity(0.6)
                     )
                 } else {
                     result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
@@ -443,5 +457,33 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         }
 
         return result
+    }
+
+    /// Computes the cursor visibility and color based on the animation style and cursor timer.
+    ///
+    /// - Returns: A tuple of (visible, color) where visible indicates if the cursor should be shown.
+    private func computeCursorState(
+        baseColor: Color,
+        animation: TextCursorStyle.Animation,
+        speed: TextCursorStyle.Speed,
+        cursorTimer: CursorTimer?
+    ) -> (visible: Bool, color: Color) {
+        switch animation {
+        case .none:
+            // Static cursor, always visible at full brightness
+            return (true, baseColor)
+
+        case .blink:
+            // Classic blink: on/off based on cursor timer
+            let visible = cursorTimer?.blinkVisible(for: speed) ?? true
+            return (visible, baseColor)
+
+        case .pulse:
+            // Smooth pulse: always visible, color varies
+            let phase = cursorTimer?.pulsePhase(for: speed) ?? 1.0
+            let dimColor = baseColor.opacity(0.35)
+            let color = Color.lerp(dimColor, baseColor, phase: phase)
+            return (true, color)
+        }
     }
 }

@@ -77,6 +77,12 @@ public protocol Palette: Cyclable {
 
     /// Background color for focused list/table rows.
     var focusBackground: Color { get }
+
+    /// Text cursor color for TextField and SecureField.
+    ///
+    /// Defaults to `accent` if not explicitly set. Custom palettes can override
+    /// this to provide a distinct cursor color independent of the accent.
+    var cursorColor: Color { get }
 }
 
 // MARK: - Default Palette Implementation
@@ -96,6 +102,8 @@ extension Palette {
     // MARK: - UI Element Defaults
 
     public var focusBackground: Color { foregroundTertiary.opacity(0.3) }
+
+    public var cursorColor: Color { accent }
 }
 
 // MARK: - Palette Environment Key
