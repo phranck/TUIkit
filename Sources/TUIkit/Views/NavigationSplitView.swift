@@ -236,7 +236,7 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
 
         for (index, column) in visibleColumns.enumerated() {
             let columnWidth = columnWidths[index]
-            let columnContext = context.withAvailableWidth(columnWidth)
+            let columnContext = context.withAvailableSize(width: columnWidth, height: context.availableHeight)
 
             // Register focus section for this column
             let sectionID = focusSectionID(for: column)
