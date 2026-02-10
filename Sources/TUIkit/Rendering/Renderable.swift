@@ -215,6 +215,19 @@ public struct RenderContext {
         )
         return copy
     }
+
+    /// Creates a new context with a different available width.
+    ///
+    /// Used by layout containers (e.g., NavigationSplitView) to constrain
+    /// child views to a specific column width.
+    ///
+    /// - Parameter width: The new available width in characters.
+    /// - Returns: A new RenderContext with the updated width.
+    func withAvailableWidth(_ width: Int) -> Self {
+        var copy = self
+        copy.availableWidth = width
+        return copy
+    }
 }
 
 // MARK: - Rendering Dispatch
