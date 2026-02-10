@@ -46,14 +46,19 @@ public struct SelectableListRow<SelectionValue: Hashable & Sendable>: Sendable, 
     /// The rendered content buffer.
     public let buffer: FrameBuffer
 
-    /// Creates a selectable list row with type and buffer.
+    /// The badge value for this row (from environment).
+    public let badge: BadgeValue?
+
+    /// Creates a selectable list row with type, buffer, and optional badge.
     ///
     /// - Parameters:
     ///   - type: The row type (header, content, or footer).
     ///   - buffer: The rendered row content.
-    public init(type: ListRowType<SelectionValue>, buffer: FrameBuffer) {
+    ///   - badge: The badge value for this row (default: nil).
+    public init(type: ListRowType<SelectionValue>, buffer: FrameBuffer, badge: BadgeValue? = nil) {
         self.type = type
         self.buffer = buffer
+        self.badge = badge
     }
 
     /// Indicates whether this row can be selected and focused.
