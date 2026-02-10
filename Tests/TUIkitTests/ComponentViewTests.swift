@@ -15,58 +15,45 @@ private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
     RenderContext(availableWidth: width, availableHeight: height)
 }
 
-// MARK: - Box Tests
+// MARK: - Border via ContainerView Tests
 
 @MainActor
-@Suite("Box Tests")
-struct BoxTests {
+@Suite("Border via ContainerView Tests")
+struct BorderViaContainerViewTests {
 
-    @Test("Box renders with border around content")
-    func boxRendersWithBorder() {
-        let box = Box(.line) {
-            Text("Hi")
-        }
+    @Test(".border() renders with border around content")
+    func borderRendersWithBorder() {
+        let view = Text("Hi").border(.line)
         let context = testContext()
-        let buffer = renderToBuffer(box, context: context)
+        let buffer = renderToBuffer(view, context: context)
 
-        // Box = border top + content + border bottom = 3 lines minimum
+        // border = top + content + bottom = 3 lines minimum
         #expect(buffer.height >= 3)
-        // Width = content width + 2 (left + right border)
-        #expect(buffer.width >= 4) // "Hi" (2) + borders (2)
+        // Width = content width + 2 (left + right border) + 2 (padding)
+        #expect(buffer.width >= 6) // "Hi" (2) + borders (2) + padding (2)
     }
 
-    @Test("Box renders empty content")
-    func boxEmptyContent() {
-        let box = Box(.line) {
-            EmptyView()
-        }
+    @Test(".border() with empty content renders empty")
+    func borderEmptyContent() {
+        let view = EmptyView().border(.line)
         let context = testContext()
-        let buffer = renderToBuffer(box, context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         // EmptyView produces empty buffer, so bordered empty = empty
         #expect(buffer.isEmpty)
     }
 
-    @Test("Box with multiple children renders vertically")
-    func boxMultipleChildren() {
-        let box = Box(.line) {
+    @Test(".border() with VStack renders multiple lines")
+    func borderMultipleChildren() {
+        let view = VStack {
             Text("Line 1")
             Text("Line 2")
-        }
+        }.border(.line)
         let context = testContext()
-        let buffer = renderToBuffer(box, context: context)
+        let buffer = renderToBuffer(view, context: context)
 
         // Top border + 2 content lines + bottom border = 4
         #expect(buffer.height >= 4)
-    }
-
-    @Test("Box delegates to body (is composite, not Renderable)")
-    func boxIsComposite() {
-        let box = Box {
-            Text("Test")
-        }
-        // Box should NOT conform to Renderable — it uses body
-        #expect(!(box is Renderable))
     }
 }
 

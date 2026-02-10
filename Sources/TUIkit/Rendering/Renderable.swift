@@ -299,39 +299,30 @@ public struct RenderContext {
         return copy
     }
 
-    /// Calculates the inner width for a container based on content and constraints.
+    /// Calculates the inner width for a container based on content.
     ///
-    /// If `hasExplicitWidth` is set, expands to fill available space.
-    /// Otherwise, shrinks to fit the content width.
+    /// Containers (borders, panels, cards) size to fit their content.
+    /// They do not auto-expand beyond the content width.
     ///
     /// - Parameters:
     ///   - contentWidth: The natural width of the content.
-    ///   - innerAvailableWidth: The available width inside the container (after border).
-    /// - Returns: The calculated inner width.
+    ///   - innerAvailableWidth: The available width inside the container (unused).
+    /// - Returns: The content width.
     func resolveContainerWidth(contentWidth: Int, innerAvailableWidth: Int) -> Int {
-        if hasExplicitWidth {
-            return max(contentWidth, innerAvailableWidth)
-        } else {
-            return contentWidth
-        }
+        return contentWidth
     }
 
-    /// Calculates the inner height for a container based on content and constraints.
+    /// Calculates the inner height for a container based on content.
     ///
-    /// If `hasExplicitHeight` is set, expands to fill available space.
-    /// Otherwise, shrinks to fit the content height.
+    /// Containers size to fit their content height.
+    /// They do not auto-expand to fill available space.
     ///
     /// - Parameters:
     ///   - contentHeight: The natural height of the content.
-    ///   - borderOverhead: Lines used by borders/title/footer.
-    /// - Returns: The calculated inner height.
+    ///   - borderOverhead: Lines used by borders/title/footer (unused, kept for API compatibility).
+    /// - Returns: The content height.
     func resolveContainerHeight(contentHeight: Int, borderOverhead: Int = 0) -> Int {
-        if hasExplicitHeight {
-            let targetHeight = max(1, availableHeight - borderOverhead)
-            return max(contentHeight, targetHeight)
-        } else {
-            return contentHeight
-        }
+        return contentHeight
     }
 }
 
