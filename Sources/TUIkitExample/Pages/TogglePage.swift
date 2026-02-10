@@ -1,4 +1,4 @@
-//  🖥️ TUIKit — Terminal UI Kit for Swift
+//  TUIKit - Terminal UI Kit for Swift
 //  TogglePage.swift
 //
 //  Created by LAYERED.work
@@ -6,74 +6,29 @@
 
 import TUIkit
 
-/// Toggle and checkbox demo page.
-///
-/// Shows interactive toggle features including:
-/// - Toggle style (slider with dots)
-/// - Checkbox style (classic checkbox)
-/// - Disabled toggles
-/// - Focus navigation with Tab
-/// - Live state changes demonstrating `@State` persistence across re-renders
+/// Toggle demo page.
 struct TogglePage: View {
     @State var notificationsEnabled: Bool = false
     @State var darkModeEnabled: Bool = true
-    @State var advancedOptionsEnabled: Bool = false
-    @State var analitycsEnabled: Bool = true
+    @State var showHiddenFiles: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
 
-            DemoSection("Toggle Style (Slider)") {
+            DemoSection("Toggles") {
                 VStack(alignment: .leading, spacing: 1) {
-                    Toggle("Enable Notifications", isOn: $notificationsEnabled, style: .toggle)
-                    Toggle("Dark Mode", isOn: $darkModeEnabled, style: .toggle)
+                    Toggle("Enable Notifications", isOn: $notificationsEnabled)
+                    Toggle("Dark Mode", isOn: $darkModeEnabled)
+                    Toggle("Show Hidden Files", isOn: $showHiddenFiles)
+                    Toggle("Disabled (OFF)", isOn: .constant(false)).disabled()
+                    Toggle("Disabled (ON)", isOn: .constant(true)).disabled()
                 }
             }
 
-            DemoSection("Checkbox Style") {
-                VStack(alignment: .leading, spacing: 1) {
-                    Toggle("Show Hidden Files", isOn: $advancedOptionsEnabled, style: .checkbox)
-                    Toggle("Send Analytics", isOn: $analitycsEnabled, style: .checkbox)
-                }
-            }
-
-            DemoSection("Disabled Toggles") {
-                VStack(alignment: .leading, spacing: 1) {
-                    Toggle("Enabled Toggle", isOn: $notificationsEnabled, style: .toggle)
-                    Toggle("Disabled Toggle", isOn: Binding(get: { false }, set: { _ in }), style: .toggle)
-                        .disabled()
-                    Toggle("Disabled Checkbox", isOn: Binding(get: { true }, set: { _ in }), style: .checkbox)
-                        .disabled()
-                }
-            }
-
-            DemoSection("State Summary") {
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 1) {
-                        Text("Notifications:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(notificationsEnabled ? "[●○]" : "[○●]").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Dark Mode:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(darkModeEnabled ? "[●○]" : "[○●]").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Hidden Files:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(advancedOptionsEnabled ? "[●]" : "[ ]").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Analytics:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(analitycsEnabled ? "[●]" : "[ ]").foregroundStyle(.palette.accent)
-                    }
-                }
-            }
-
-            DemoSection("Focus Navigation") {
-                VStack {
-                    Text("Use [Tab] to move focus between toggles")
-                        .dim()
-                    Text("Use [Space] or [Enter] to toggle the focused item")
-                        .dim()
+            DemoSection("Keyboard Controls") {
+                VStack(alignment: .leading) {
+                    Text("[Tab] Move focus between toggles").dim()
+                    Text("[Space] or [Enter] Toggle the focused item").dim()
                 }
             }
 
@@ -81,7 +36,7 @@ struct TogglePage: View {
         }
         .appHeader {
             HStack {
-                Text("Toggles & Checkboxes Demo").bold().foregroundStyle(.palette.accent)
+                Text("Toggle Demo").bold().foregroundStyle(.palette.accent)
                 Spacer()
                 Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
             }
