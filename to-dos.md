@@ -2,7 +2,7 @@
 
 ## In Progress
 
-(none)
+- [ ] **Two-Pass Layout Refactor**: Phase 5 pending (hasExplicitWidth removal)
 
 ## Open
 
@@ -14,7 +14,7 @@
 
 #### Medium
 
-(none)
+- [ ] **DisclosureGroup**: Expandable/collapsible sections
 
 #### Low
 
@@ -37,7 +37,8 @@
 
 ### 2026-02-10
 
-- [x] **TextField Clipboard & Undo**: Ctrl+A/C/X/V/Z support, clipboard via pbcopy/pbpaste (macOS) and xclip/xsel (Linux), 50-state undo stack, 12 new tests
+- [x] **Two-Pass Layout (Phases 1-4)**: ProposedSize/ViewSize/Layoutable, HStack/VStack refactor, TextField/SecureField/Slider flexible
+- [x] **TextField Clipboard & Undo**: Ctrl+A/C/X/V/Z support, clipboard via pbcopy/pbpaste (macOS) and xclip/xsel (Linux), 50-state undo stack
 - [x] **NavigationSplitView**: Two/three-column layouts, visibility control, focus sections, styles, 39 tests
 
 ### 2026-02-09
@@ -113,4 +114,4 @@
 
 ---
 
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-10 (evening)
