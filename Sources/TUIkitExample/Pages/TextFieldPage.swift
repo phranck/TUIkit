@@ -74,11 +74,11 @@ struct TextFieldPage: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 1) {
                         Text("Input:").foregroundStyle(.palette.foregroundSecondary)
-                        TextField("Type here...", text: $demoText)
+                        TextField("Input", text: $demoText, prompt: Text("Type here..."))
                     }
                     HStack(spacing: 1) {
                         Text("Search:").foregroundStyle(.palette.foregroundSecondary)
-                        TextField("Search", text: $searchQuery)
+                        TextField("Search", text: $searchQuery, prompt: Text("Enter search term..."))
                             .onSubmit { submittedValue = searchQuery }
                     }
                     if !submittedValue.isEmpty {
@@ -95,7 +95,8 @@ struct TextFieldPage: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 1) {
                         Text("Disabled:").foregroundStyle(.palette.foregroundSecondary)
-                        TextField("Disabled", text: $disabledText).disabled()
+                        TextField("Disabled", text: $disabledText, prompt: Text("Cannot edit"))
+                            .disabled()
                     }
                 }
             }
