@@ -219,7 +219,7 @@ extension TextField {
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of TextField.
-private struct _TextFieldCore<Label: View>: View, Renderable {
+private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
     let label: Label
     let text: Binding<String>
     let prompt: Text?
@@ -227,11 +227,28 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
 
-    /// Default visible width for the text field content area.
+    /// Minimum width for the text field content area.
+    private let minContentWidth = 10
+
+    /// Default visible width for the text field content area when no proposal is given.
     private let defaultContentWidth = 20
 
     var body: Never {
         fatalError("_TextFieldCore renders via Renderable")
+    }
+
+    /// Returns the size this text field needs.
+    ///
+    /// TextField is width-flexible: it has a minimum width but expands
+    /// to fill available horizontal space in HStack.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let width = proposal.width ?? defaultContentWidth
+        return ViewSize(
+            width: max(minContentWidth, width),
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
@@ -240,10 +257,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // TextField uses default width. In TUI we can't reliably detect
-        // remaining space in HStack, so we use a fixed width.
-        // Use .frame(width:) to set a specific width.
-        let contentWidth = defaultContentWidth
+        // TextField expands to fill available width (with minimum)
+        let contentWidth = max(minContentWidth, context.availableWidth)
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.

@@ -241,9 +241,9 @@ func renderToBuffer(context: RenderContext) -> FrameBuffer {
 - [x] Implement `sizeThatFits` for HStack
 - [x] Refactor VStack to two-pass layout
 - [x] Implement `sizeThatFits` for VStack
-- [ ] Make TextField width-flexible
-- [ ] Make SecureField width-flexible
-- [ ] Make Slider width-flexible
+- [x] Make TextField width-flexible
+- [x] Make SecureField width-flexible
+- [x] Make Slider width-flexible
 - [ ] Update ContainerView layout
 - [ ] Update Panel layout
 - [ ] Update Card layout

@@ -174,7 +174,7 @@ extension SecureField {
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of SecureField.
-private struct _SecureFieldCore: View, Renderable {
+private struct _SecureFieldCore: View, Renderable, Layoutable {
     let text: Binding<String>
     let prompt: Text?
     let focusID: String
@@ -184,11 +184,28 @@ private struct _SecureFieldCore: View, Renderable {
     /// The masking character for password display (U+25CF Black Circle).
     private let maskChar: Character = "●"
 
-    /// Default visible width for the secure field content area.
+    /// Minimum width for the secure field content area.
+    private let minContentWidth = 10
+
+    /// Default visible width for the secure field content area when no proposal is given.
     private let defaultContentWidth = 20
 
     var body: Never {
         fatalError("_SecureFieldCore renders via Renderable")
+    }
+
+    /// Returns the size this secure field needs.
+    ///
+    /// SecureField is width-flexible: it has a minimum width but expands
+    /// to fill available horizontal space in HStack.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let width = proposal.width ?? defaultContentWidth
+        return ViewSize(
+            width: max(minContentWidth, width),
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
@@ -197,10 +214,8 @@ private struct _SecureFieldCore: View, Renderable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // SecureField uses default width. In TUI we can't reliably detect
-        // remaining space in HStack, so we use a fixed width.
-        // Use .frame(width:) to set a specific width.
-        let contentWidth = defaultContentWidth
+        // SecureField expands to fill available width (with minimum)
+        let contentWidth = max(minContentWidth, context.availableWidth)
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.

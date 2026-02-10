@@ -241,7 +241,7 @@ extension Slider {
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of Slider.
-private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
+private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Layoutable {
     let value: Binding<Double>
     let bounds: ClosedRange<Double>
     let step: Double
@@ -252,11 +252,34 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
     let isDisabled: Bool
     let onEditingChanged: ((Bool) -> Void)?
 
+    /// Minimum track width.
+    private let minTrackWidth = 10
+
     /// Default track width when no explicit frame is set.
     private let defaultTrackWidth = 20
 
+    /// Fixed width for arrows and value label.
+    /// Layout: ◀ [track] ▶ [value]
+    /// Arrows: 4 chars ("◀ " + " ▶"), Value: 5 chars (" 100%")
+    private let fixedWidth = 9  // arrowsWidth(4) + valueLabelWidth(5)
+
     var body: Never {
         fatalError("_SliderCore renders via Renderable")
+    }
+
+    /// Returns the size this slider needs.
+    ///
+    /// Slider is width-flexible: it has a minimum width but expands
+    /// to fill available horizontal space in HStack.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let proposedWidth = proposal.width ?? (defaultTrackWidth + fixedWidth)
+        let trackWidth = max(minTrackWidth, proposedWidth - fixedWidth)
+        return ViewSize(
+            width: trackWidth + fixedWidth,
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
@@ -264,20 +287,8 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
 
-        // Determine track width: use available width minus arrows and value label space
-        // Layout: ◀ [track] ▶ [value]
-        // Arrows: 2 chars each (◀ + space, space + ▶)
-        // Value label: ~5 chars (e.g., "100%")
-        let arrowsWidth = 4  // "◀ " + " ▶"
-        let valueLabelWidth = 5  // " 100%"
-
-        let trackWidth: Int
-        if context.hasExplicitWidth {
-            let availableForTrack = context.availableWidth - arrowsWidth - valueLabelWidth
-            trackWidth = max(5, availableForTrack)
-        } else {
-            trackWidth = defaultTrackWidth
-        }
+        // Slider expands to fill available width (with minimum)
+        let trackWidth = max(minTrackWidth, context.availableWidth - fixedWidth)
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
