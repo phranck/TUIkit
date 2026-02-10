@@ -245,14 +245,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let labelWidth = labelBuffer.width
         let labelText = labelBuffer.lines.first ?? ""
 
-        // Determine content width: use available width minus label, otherwise default
-        let contentWidth: Int
-        if context.hasExplicitWidth && context.availableWidth > labelWidth + 2 {
-            // Subtract label width and 1 space separator
-            contentWidth = context.availableWidth - labelWidth - 1
-        } else {
-            contentWidth = defaultContentWidth
-        }
+        // TextField uses fixed default width. Use .frame() to change size.
+        let contentWidth = defaultContentWidth
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
