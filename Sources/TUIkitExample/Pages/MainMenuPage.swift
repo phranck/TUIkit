@@ -68,6 +68,7 @@ struct MainMenuPage: View {
                           MenuItem(label: "Tables", shortcut: "="),
                           MenuItem(label: "Sliders", shortcut: "["),
                           MenuItem(label: "Steppers", shortcut: "]"),
+                          MenuItem(label: "Split View", shortcut: ";"),
                       ],
                      selection: $menuSelection,
                      onSelect: { index in
