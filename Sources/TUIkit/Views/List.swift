@@ -519,8 +519,8 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             let maxRowWidth = visibleRows.map { $0.row.buffer.width }.max() ?? 0
             let rowWidth: Int
             if context.hasExplicitWidth {
-                // Use available width minus 2 for borders, minus 2 for container padding
-                rowWidth = max(maxRowWidth, context.availableWidth - 4)
+                // Use available width minus 2 for borders only (content padding is 0)
+                rowWidth = max(maxRowWidth, context.availableWidth - 2)
             } else {
                 rowWidth = maxRowWidth
             }
