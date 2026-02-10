@@ -192,7 +192,20 @@ extension TextStyle {
 
 // MARK: - Text Rendering
 
-extension Text: Renderable {
+extension Text: Renderable, Layoutable {
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        // Text has a fixed size based on its content.
+        // If a width is proposed, we may word-wrap.
+        let maxWidth = proposal.width ?? context.availableWidth
+        let wrappedLines = wordWrap(content, maxWidth: maxWidth)
+
+        let width = wrappedLines.map(\.count).max() ?? 0
+        let height = wrappedLines.count
+
+        // Text is never flexible - it has a fixed size
+        return ViewSize.fixed(width, height)
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         var effectiveStyle = style
 

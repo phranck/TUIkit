@@ -4,6 +4,86 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+// MARK: - Layout Types
+
+/// How much space a parent proposes to a child view.
+///
+/// Similar to SwiftUI's `ProposedViewSize`. The parent suggests dimensions,
+/// and the child can accept, ignore, or partially use them.
+///
+/// - `nil` means "use your ideal size" (no constraint)
+/// - A specific value means "try to fit in this space"
+public struct ProposedSize: Equatable, Sendable {
+    /// The proposed width in characters, or nil for ideal width.
+    public var width: Int?
+
+    /// The proposed height in lines, or nil for ideal height.
+    public var height: Int?
+
+    /// No constraints - view should use its ideal size.
+    public static let unspecified = ProposedSize(width: nil, height: nil)
+
+    /// Creates a proposed size with specific dimensions.
+    public init(width: Int?, height: Int?) {
+        self.width = width
+        self.height = height
+    }
+
+    /// Creates a proposed size with fixed dimensions.
+    public static func fixed(_ width: Int, _ height: Int) -> ProposedSize {
+        ProposedSize(width: width, height: height)
+    }
+}
+
+/// The size a view needs and whether it can flex.
+///
+/// Views return this from `sizeThatFits` to communicate their space requirements.
+/// Flexible views (like Spacer, TextField) can expand to fill available space.
+/// Fixed views (like Text, Button) have a specific size they need.
+public struct ViewSize: Equatable, Sendable {
+    /// The width this view needs (minimum if flexible).
+    public var width: Int
+
+    /// The height this view needs (minimum if flexible).
+    public var height: Int
+
+    /// Whether this view can expand horizontally to fill available space.
+    public var isWidthFlexible: Bool
+
+    /// Whether this view can expand vertically to fill available space.
+    public var isHeightFlexible: Bool
+
+    /// Creates a view size with explicit flexibility flags.
+    public init(width: Int, height: Int, isWidthFlexible: Bool = false, isHeightFlexible: Bool = false) {
+        self.width = width
+        self.height = height
+        self.isWidthFlexible = isWidthFlexible
+        self.isHeightFlexible = isHeightFlexible
+    }
+
+    /// Creates a fixed-size view that doesn't expand.
+    public static func fixed(_ width: Int, _ height: Int) -> ViewSize {
+        ViewSize(width: width, height: height, isWidthFlexible: false, isHeightFlexible: false)
+    }
+
+    /// Creates a flexible view that expands to fill available space.
+    public static func flexible(minWidth: Int = 0, minHeight: Int = 0) -> ViewSize {
+        ViewSize(width: minWidth, height: minHeight, isWidthFlexible: true, isHeightFlexible: true)
+    }
+
+    /// Creates a view that is flexible only horizontally.
+    public static func flexibleWidth(minWidth: Int = 0, height: Int) -> ViewSize {
+        ViewSize(width: minWidth, height: height, isWidthFlexible: true, isHeightFlexible: false)
+    }
+
+    /// Creates a view that is flexible only vertically.
+    public static func flexibleHeight(width: Int, minHeight: Int = 0) -> ViewSize {
+        ViewSize(width: width, height: minHeight, isWidthFlexible: false, isHeightFlexible: true)
+    }
+}
+
+// MARK: - Renderable Protocol
+
 /// A protocol for views that produce terminal output directly.
 ///
 /// TUIkit uses a **dual rendering system** inspired by SwiftUI:
@@ -56,6 +136,67 @@ protocol Renderable {
     ///   environment values, and the ``TUIContext``.
     /// - Returns: A buffer containing the rendered terminal output.
     func renderToBuffer(context: RenderContext) -> FrameBuffer
+}
+
+// MARK: - Layoutable Protocol
+
+/// A protocol for views that support two-pass layout.
+///
+/// Views conforming to `Layoutable` can participate in the two-pass layout system:
+/// 1. **Measure pass**: `sizeThatFits` is called to determine how much space the view needs
+/// 2. **Layout pass**: `renderToBuffer` is called with the final allocated size
+///
+/// This enables proper layout distribution in containers like HStack and VStack,
+/// where flexible views (Spacer, TextField) share remaining space after fixed
+/// views (Text, Button) have claimed their natural size.
+///
+/// ## Conformance
+///
+/// Views that conform to `Layoutable` must also conform to `Renderable`.
+/// The `sizeThatFits` method should return consistent results with what
+/// `renderToBuffer` actually produces.
+///
+/// ## Default Implementation
+///
+/// Views that don't implement `sizeThatFits` get a default implementation
+/// that renders the view and measures the resulting buffer. This is less
+/// efficient but ensures backward compatibility.
+@MainActor
+protocol Layoutable: Renderable {
+    /// Returns the size this view needs given a proposed size.
+    ///
+    /// Called during the measure pass of two-pass layout. The view should
+    /// return its ideal size, optionally constrained by the proposal.
+    ///
+    /// - Parameters:
+    ///   - proposal: The size proposed by the parent (nil dimensions mean "use ideal").
+    ///   - context: The rendering context.
+    /// - Returns: The size this view needs and whether it's flexible.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize
+}
+
+// MARK: - Default Layoutable Implementation
+
+extension Layoutable {
+    /// Default implementation that renders the view to measure its size.
+    ///
+    /// This fallback ensures backward compatibility but is less efficient
+    /// than a proper `sizeThatFits` implementation that calculates size
+    /// without rendering.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        // Create a context with proposed dimensions if available
+        var measureContext = context
+        if let width = proposal.width {
+            measureContext.availableWidth = width
+        }
+        if let height = proposal.height {
+            measureContext.availableHeight = height
+        }
+
+        // Render to measure
+        let buffer = renderToBuffer(context: measureContext)
+        return ViewSize.fixed(buffer.width, buffer.height)
+    }
 }
 
 /// The context for rendering a view.
