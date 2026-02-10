@@ -49,6 +49,7 @@ struct LayoutPage: View {
                     VStack {
                         Text(".padding()").dim()
                         Text("Padded")
+                            .frame(width: 25, alignment: .center)
                             .padding(EdgeInsets(all: 1))
                             .border()  // Uses appearance default
                     }
