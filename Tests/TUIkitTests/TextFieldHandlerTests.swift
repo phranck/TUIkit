@@ -730,4 +730,184 @@ struct TextFieldHandlerTests {
         #expect(handler.cursorPosition == 1)
     }
 
+    // MARK: - Select All (Ctrl+A)
+
+    @Test("Ctrl+A selects all text")
+    func ctrlASelectsAllText() {
+        var text = "Hello World"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 3)
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("a"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.selectionAnchor == 0)
+        #expect(handler.cursorPosition == 11)
+        #expect(handler.selectionRange == 0..<11)
+    }
+
+    @Test("Ctrl+A on empty text does nothing")
+    func ctrlAOnEmptyTextDoesNothing() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("a"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.hasSelection == false)
+    }
+
+    // MARK: - Undo (Ctrl+Z)
+
+    @Test("Ctrl+Z undoes character insertion")
+    func ctrlZUndoesCharacterInsertion() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+
+        // Insert a character
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("!")))
+        #expect(text == "Hello!")
+
+        // Undo
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(handled == true)
+        #expect(text == "Hello")
+    }
+
+    @Test("Ctrl+Z undoes backspace")
+    func ctrlZUndoesBackspace() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+
+        // Delete last character
+        _ = handler.handleKeyEvent(KeyEvent(key: .backspace))
+        #expect(text == "Hell")
+
+        // Undo
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(text == "Hello")
+    }
+
+    @Test("Ctrl+Z undoes selection deletion")
+    func ctrlZUndoesSelectionDeletion() {
+        var text = "Hello World"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 5)
+        handler.selectionAnchor = 0  // Select "Hello"
+
+        // Delete selection
+        _ = handler.handleKeyEvent(KeyEvent(key: .backspace))
+        #expect(text == " World")
+
+        // Undo
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(text == "Hello World")
+    }
+
+    @Test("Multiple undos work correctly")
+    func multipleUndosWorkCorrectly() {
+        var text = "Hi"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+
+        // Type "ABC"
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("A")))
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("B")))
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("C")))
+        #expect(text == "HiABC")
+
+        // Undo three times
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(text == "HiAB")
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(text == "HiA")
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+        #expect(text == "Hi")
+    }
+
+    @Test("Undo on empty stack does nothing")
+    func undoOnEmptyStackDoesNothing() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding)
+
+        // Try to undo without any changes
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("z"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(text == "Hello")  // Unchanged
+    }
+
+    // MARK: - Copy/Cut/Paste Key Handling
+
+    @Test("Ctrl+C is handled (copy)")
+    func ctrlCIsHandled() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 3)
+        handler.selectionAnchor = 0
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("c"), ctrl: true))
+
+        #expect(handled == true)
+        // Text should be unchanged (copy, not cut)
+        #expect(text == "Hello")
+        #expect(handler.hasSelection == true)  // Selection preserved
+    }
+
+    @Test("Ctrl+X is handled (cut)")
+    func ctrlXIsHandled() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 3)
+        handler.selectionAnchor = 0  // Select "Hel"
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("x"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(text == "lo")  // "Hel" was cut
+        #expect(handler.hasSelection == false)
+    }
+
+    @Test("Ctrl+V is handled (paste)")
+    func ctrlVIsHandled() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 5)
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("v"), ctrl: true))
+
+        #expect(handled == true)
+        // Actual paste result depends on clipboard content
+    }
+
+    @Test("Ctrl+C without selection does nothing")
+    func ctrlCWithoutSelectionDoesNothing() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 3)
+        // No selection
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("c"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(text == "Hello")  // Unchanged
+    }
+
+    @Test("Ctrl+X without selection does nothing")
+    func ctrlXWithoutSelectionDoesNothing() {
+        var text = "Hello"
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let handler = TextFieldHandler(focusID: "test", text: binding, cursorPosition: 3)
+        // No selection
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("x"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(text == "Hello")  // Unchanged
+    }
+
 }

@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A focus handler for text field components.
 ///
 /// `TextFieldHandler` manages text editing state and keyboard input for
@@ -12,6 +14,7 @@
 /// - Backspace/delete for removing characters
 /// - Cursor navigation (left/right/home/end)
 /// - Text selection with Shift+Arrow keys
+/// - Copy/Cut/Paste via system clipboard
 /// - Submit action on Enter
 ///
 /// ## Usage
@@ -44,6 +47,11 @@
 /// | Shift+Down | Select to end of text |
 /// | Shift+Home | Select to start of text |
 /// | Shift+End | Select to end of text |
+/// | Ctrl+A | Select all text |
+/// | Ctrl+C | Copy selection to clipboard |
+/// | Ctrl+X | Cut selection to clipboard |
+/// | Ctrl+V | Paste from clipboard |
+/// | Ctrl+Z | Undo last change |
 /// | Enter | Trigger submit action |
 final class TextFieldHandler: Focusable {
     /// The unique identifier for this focusable element.
@@ -65,6 +73,12 @@ final class TextFieldHandler: Focusable {
 
     /// Callback triggered when the user presses Enter.
     var onSubmit: (() -> Void)?
+
+    /// Undo history stack storing previous text states and cursor positions.
+    private var undoStack: [(text: String, cursor: Int)] = []
+
+    /// Maximum number of undo states to keep.
+    private let maxUndoStates = 50
 
     /// Creates a text field handler.
     ///
@@ -124,8 +138,20 @@ extension TextFieldHandler {
 
     /// Deletes the text in the given range and positions cursor at start.
     ///
+    /// Pushes the current state to the undo stack before deleting.
+    ///
     /// - Parameter range: The range of characters to delete.
     func deleteRange(_ range: Range<Int>) {
+        pushUndoState()
+        deleteRangeWithoutUndo(range)
+    }
+
+    /// Deletes the text in the given range without pushing to undo stack.
+    ///
+    /// Used internally when undo state has already been pushed.
+    ///
+    /// - Parameter range: The range of characters to delete.
+    private func deleteRangeWithoutUndo(_ range: Range<Int>) {
         var current = text.wrappedValue
         let startIndex = current.index(current.startIndex, offsetBy: range.lowerBound)
         let endIndex = current.index(current.startIndex, offsetBy: range.upperBound)
@@ -169,6 +195,29 @@ extension TextFieldHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
         case .character(let char):
+            // Handle Ctrl+key shortcuts
+            if event.ctrl {
+                switch char {
+                case "a", "A":
+                    selectAll()
+                    return true
+                case "c", "C":
+                    copySelection()
+                    return true
+                case "x", "X":
+                    cutSelection()
+                    return true
+                case "v", "V":
+                    paste()
+                    return true
+                case "z", "Z":
+                    undo()
+                    return true
+                default:
+                    return false
+                }
+            }
+
             // Ignore control characters except printable ones
             if char.isLetter || char.isNumber || char.isPunctuation ||
                char.isSymbol || char.isWhitespace || char == " " {
@@ -258,9 +307,11 @@ extension TextFieldHandler {
     ///
     /// - Parameter char: The character to insert.
     func insertCharacter(_ char: Character) {
+        pushUndoState()
+
         // Replace selection if present
         if let range = selectionRange {
-            deleteRange(range)
+            deleteRangeWithoutUndo(range)
             clearSelection()
         }
 
@@ -277,12 +328,14 @@ extension TextFieldHandler {
     func deleteBackward() {
         // Delete selection if present
         if let range = selectionRange {
-            deleteRange(range)
+            pushUndoState()
+            deleteRangeWithoutUndo(range)
             clearSelection()
             return
         }
 
         guard cursorPosition > 0 else { return }
+        pushUndoState()
         var current = text.wrappedValue
         let index = current.index(current.startIndex, offsetBy: cursorPosition - 1)
         current.remove(at: index)
@@ -296,13 +349,15 @@ extension TextFieldHandler {
     func deleteForward() {
         // Delete selection if present
         if let range = selectionRange {
-            deleteRange(range)
+            pushUndoState()
+            deleteRangeWithoutUndo(range)
             clearSelection()
             return
         }
 
         var current = text.wrappedValue
         guard cursorPosition < current.count else { return }
+        pushUndoState()
         let index = current.index(current.startIndex, offsetBy: cursorPosition)
         current.remove(at: index)
         text.wrappedValue = current
@@ -333,6 +388,201 @@ extension TextFieldHandler {
         if let anchor = selectionAnchor {
             selectionAnchor = max(0, min(anchor, maxPos))
         }
+    }
+}
+
+// MARK: - Undo
+
+extension TextFieldHandler {
+    /// Pushes the current state onto the undo stack.
+    private func pushUndoState() {
+        let state = (text: text.wrappedValue, cursor: cursorPosition)
+
+        // Avoid duplicate states
+        if let last = undoStack.last, last.text == state.text {
+            return
+        }
+
+        undoStack.append(state)
+
+        // Limit stack size
+        if undoStack.count > maxUndoStates {
+            undoStack.removeFirst()
+        }
+    }
+
+    /// Restores the previous text state from the undo stack.
+    func undo() {
+        guard let previous = undoStack.popLast() else { return }
+        text.wrappedValue = previous.text
+        cursorPosition = min(previous.cursor, previous.text.count)
+        clearSelection()
+    }
+}
+
+// MARK: - Clipboard Operations
+
+extension TextFieldHandler {
+    /// Selects all text in the field.
+    func selectAll() {
+        guard !text.wrappedValue.isEmpty else { return }
+        selectionAnchor = 0
+        cursorPosition = text.wrappedValue.count
+    }
+
+    /// Copies the selected text to the system clipboard.
+    ///
+    /// Uses `pbcopy` on macOS. Does nothing if no text is selected.
+    func copySelection() {
+        guard let range = selectionRange else { return }
+
+        let current = text.wrappedValue
+        let startIndex = current.index(current.startIndex, offsetBy: range.lowerBound)
+        let endIndex = current.index(current.startIndex, offsetBy: range.upperBound)
+        let selectedText = String(current[startIndex..<endIndex])
+
+        copyToClipboard(selectedText)
+    }
+
+    /// Cuts the selected text to the system clipboard.
+    ///
+    /// Uses `pbcopy` on macOS. Does nothing if no text is selected.
+    func cutSelection() {
+        guard let range = selectionRange else { return }
+
+        let current = text.wrappedValue
+        let startIndex = current.index(current.startIndex, offsetBy: range.lowerBound)
+        let endIndex = current.index(current.startIndex, offsetBy: range.upperBound)
+        let selectedText = String(current[startIndex..<endIndex])
+
+        copyToClipboard(selectedText)
+        pushUndoState()
+        deleteRangeWithoutUndo(range)
+        clearSelection()
+    }
+
+    /// Pastes text from the system clipboard at the cursor position.
+    ///
+    /// Uses `pbpaste` on macOS. Replaces selection if any.
+    func paste() {
+        guard let pastedText = pasteFromClipboard() else { return }
+        guard !pastedText.isEmpty else { return }
+
+        pushUndoState()
+
+        // Replace selection if present
+        if let range = selectionRange {
+            deleteRangeWithoutUndo(range)
+            clearSelection()
+        }
+
+        // Insert pasted text
+        var current = text.wrappedValue
+        let index = current.index(current.startIndex, offsetBy: min(cursorPosition, current.count))
+        current.insert(contentsOf: pastedText, at: index)
+        text.wrappedValue = current
+        cursorPosition += pastedText.count
+    }
+}
+
+// MARK: - Clipboard Helpers
+
+private extension TextFieldHandler {
+    /// Copies text to the system clipboard using platform-specific command.
+    func copyToClipboard(_ text: String) {
+        #if os(macOS)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pbcopy")
+
+        let pipe = Pipe()
+        process.standardInput = pipe
+
+        do {
+            try process.run()
+            pipe.fileHandleForWriting.write(Data(text.utf8))
+            pipe.fileHandleForWriting.closeFile()
+            process.waitUntilExit()
+        } catch {
+            // Silently fail if clipboard is unavailable
+        }
+        #elseif os(Linux)
+        // Try xclip first, then xsel
+        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] {
+            if FileManager.default.fileExists(atPath: command) {
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: command)
+                process.arguments = command.contains("xclip") ? ["-selection", "clipboard"] : ["--clipboard", "--input"]
+
+                let pipe = Pipe()
+                process.standardInput = pipe
+
+                do {
+                    try process.run()
+                    pipe.fileHandleForWriting.write(Data(text.utf8))
+                    pipe.fileHandleForWriting.closeFile()
+                    process.waitUntilExit()
+                    return
+                } catch {
+                    continue
+                }
+            }
+        }
+        #endif
+    }
+
+    /// Pastes text from the system clipboard using platform-specific command.
+    func pasteFromClipboard() -> String? {
+        #if os(macOS)
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pbpaste")
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            // Strip trailing newline that pbpaste adds
+            var result = String(data: data, encoding: .utf8) ?? ""
+            if result.hasSuffix("\n") {
+                result.removeLast()
+            }
+            return result
+        } catch {
+            return nil
+        }
+        #elseif os(Linux)
+        // Try xclip first, then xsel
+        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] {
+            if FileManager.default.fileExists(atPath: command) {
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: command)
+                process.arguments = command.contains("xclip") ? ["-selection", "clipboard", "-o"] : ["--clipboard", "--output"]
+
+                let pipe = Pipe()
+                process.standardOutput = pipe
+
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    var result = String(data: data, encoding: .utf8) ?? ""
+                    if result.hasSuffix("\n") {
+                        result.removeLast()
+                    }
+                    return result
+                } catch {
+                    continue
+                }
+            }
+        }
+        return nil
+        #else
+        return nil
+        #endif
     }
 }
 
