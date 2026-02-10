@@ -313,7 +313,7 @@ private extension _NavigationSplitViewCore {
 
     /// Fixed column widths for sidebar and content (TUI-specific).
     /// Only the rightmost column adapts to terminal width changes.
-    private var fixedSidebarWidth: Int { 20 }
+    private var fixedSidebarWidth: Int { 25 }
     private var fixedContentWidth: Int { 30 }
 
     /// Calculates the width for each visible column.

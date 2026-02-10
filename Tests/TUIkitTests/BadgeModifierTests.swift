@@ -14,7 +14,7 @@ struct BadgeModifierTests {
     @Test("Badge with count 5 displays")
     func testIntBadgeDisplaysCount() {
         let badge = BadgeValue.int(5)
-        #expect(badge.displayText == "(5)")
+        #expect(badge.displayText == "5")
         #expect(!badge.isHidden)
     }
 
@@ -27,14 +27,14 @@ struct BadgeModifierTests {
     @Test("Badge with negative count displays")
     func testIntBadgeNegativeDisplays() {
         let badge = BadgeValue.int(-1)
-        #expect(badge.displayText == "(-1)")
+        #expect(badge.displayText == "-1")
         #expect(!badge.isHidden)
     }
 
     @Test("Badge with large count displays")
     func testIntBadgeLargeCount() {
         let badge = BadgeValue.int(999)
-        #expect(badge.displayText == "(999)")
+        #expect(badge.displayText == "999")
         #expect(!badge.isHidden)
     }
 
