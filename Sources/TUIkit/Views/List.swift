@@ -786,8 +786,10 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
 
                 // Calculate padding to push badge to right edge
                 // Layout: [1 pad][content][fill padding][badge][1 pad]
+                // Total width should equal rowWidth
                 let badgeWidth = badgeText.count
-                let fillPadding = max(1, rowWidth - 1 - lineLength - 1 - badgeWidth - 1)
+                let usedWidth = 1 + lineLength + badgeWidth + 1  // left pad + content + badge + right pad
+                let fillPadding = max(1, rowWidth - usedWidth)
                 let paddedLine = " " + line + String(repeating: " ", count: fillPadding) + styledBadge + " "
 
                 if let bgColor = backgroundColor {
@@ -797,7 +799,10 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
                 }
             } else {
                 // Regular line without badge
-                let rightPadding = max(1, rowWidth - 1 - lineLength)
+                // Layout: [1 pad][content][right padding]
+                // Total width should equal rowWidth
+                let usedWidth = 1 + lineLength  // left pad + content
+                let rightPadding = max(1, rowWidth - usedWidth)
                 let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
 
                 if let bgColor = backgroundColor {
