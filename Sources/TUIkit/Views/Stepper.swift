@@ -304,12 +304,21 @@ private struct _StepperCore<Label: View>: View, Renderable {
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
 
+        // Get or create persistent focusID from state storage.
+        // focusID must be stable across renders for focus state to persist.
+        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
+        let focusIDBox: StateBox<String> = stateStorage.storage(
+            for: focusIDKey,
+            default: focusID
+        )
+        let persistedFocusID = focusIDBox.value
+
         // Get or create persistent handler from state storage
         let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
         let handlerBox: StateBox<StepperHandler<Int>> = stateStorage.storage(
             for: handlerKey,
             default: StepperHandler(
-                focusID: focusID,
+                focusID: persistedFocusID,
                 value: value,
                 bounds: bounds,
                 step: step,
@@ -331,7 +340,7 @@ private struct _StepperCore<Label: View>: View, Renderable {
         stateStorage.markActive(context.identity)
 
         // Determine focus state
-        let isFocused = focusManager.isFocused(id: focusID)
+        let isFocused = focusManager.isFocused(id: persistedFocusID)
 
         // Build the stepper content
         let content = buildContent(
@@ -349,11 +358,11 @@ private struct _StepperCore<Label: View>: View, Renderable {
         palette: any Palette,
         pulsePhase: Double
     ) -> String {
-        // Arrow and value colors
+        // Arrow and value colors: pulsing accent when focused, dimmed when unfocused
         let arrowColor: Color
         let valueColor: Color
         if isDisabled {
-            arrowColor = palette.foregroundTertiary
+            arrowColor = palette.foregroundTertiary.opacity(0.5)
             valueColor = palette.foregroundTertiary
         } else if isFocused {
             // Pulse between 35% and 100% accent
@@ -361,7 +370,8 @@ private struct _StepperCore<Label: View>: View, Renderable {
             arrowColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
             valueColor = palette.foreground
         } else {
-            arrowColor = palette.foregroundTertiary
+            // Dimmed arrows when unfocused
+            arrowColor = palette.foregroundTertiary.opacity(0.5)
             valueColor = palette.foregroundSecondary
         }
 
@@ -372,15 +382,7 @@ private struct _StepperCore<Label: View>: View, Renderable {
         // Build value display
         let valueText = ANSIRenderer.colorize(" \(value.wrappedValue) ", foreground: valueColor)
 
-        // Build with focus indicators
-        if isFocused && !isDisabled {
-            let dimAccent = palette.accent.opacity(0.35)
-            let barColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
-            let bar = ANSIRenderer.colorize("❙", foreground: barColor)
-            return "\(bar) \(leftArrow)\(valueText)\(rightArrow) \(bar)"
-        }
-
-        // Unfocused: spaces instead of bars for alignment
-        return "  \(leftArrow)\(valueText)\(rightArrow)  "
+        // Pulsing arrows indicate focus - no extra markers needed
+        return "\(leftArrow)\(valueText)\(rightArrow)"
     }
 }
