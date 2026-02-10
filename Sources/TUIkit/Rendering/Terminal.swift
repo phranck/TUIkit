@@ -212,24 +212,60 @@ extension Terminal {
 
     /// Reads raw bytes from the terminal, handling escape sequences.
     ///
+    /// Reads exactly one key event worth of bytes. For escape sequences,
+    /// reads byte-by-byte until a CSI terminator is found, preventing
+    /// multiple sequences from being read at once during fast key repeat.
+    ///
     /// - Parameter maxBytes: Maximum bytes to read (default: 8).
     /// - Returns: The bytes read, or empty array on timeout/error.
     func readBytes(maxBytes: Int = 8) -> [UInt8] {
-        var buffer = [UInt8](repeating: 0, count: maxBytes)
+        var buffer = [UInt8](repeating: 0, count: 1)
         let bytesRead = read(STDIN_FILENO, &buffer, 1)
 
         guard bytesRead > 0 else { return [] }
 
-        if buffer[0] == 0x1B {
-            var seqBuffer = [UInt8](repeating: 0, count: maxBytes - 1)
-            let seqBytesRead = read(STDIN_FILENO, &seqBuffer, maxBytes - 1)
-
-            if seqBytesRead > 0 {
-                return [buffer[0]] + Array(seqBuffer.prefix(Int(seqBytesRead)))
-            }
+        // Not an escape sequence - return single byte
+        guard buffer[0] == 0x1B else {
+            return [buffer[0]]
         }
 
-        return [buffer[0]]
+        // Read the next byte to determine sequence type
+        var result: [UInt8] = [0x1B]
+        var nextByte = [UInt8](repeating: 0, count: 1)
+
+        let nextRead = read(STDIN_FILENO, &nextByte, 1)
+        guard nextRead > 0 else {
+            // Just ESC alone
+            return result
+        }
+
+        result.append(nextByte[0])
+
+        // CSI sequence: ESC [
+        if nextByte[0] == 0x5B {  // '['
+            // Read until we find a CSI terminator (letter A-Za-z or ~)
+            for _ in 0..<(maxBytes - 2) {
+                let paramRead = read(STDIN_FILENO, &nextByte, 1)
+                guard paramRead > 0 else { break }
+
+                result.append(nextByte[0])
+
+                // CSI terminators: letters (0x40-0x7E) mark end of sequence
+                // Common: A-D (arrows), H/F (home/end), Z (shift-tab), ~ (extended)
+                if nextByte[0] >= 0x40 && nextByte[0] <= 0x7E {
+                    break
+                }
+            }
+        } else if nextByte[0] == 0x4F {  // SS3 sequence: ESC O
+            // Read one more byte for F1-F4 keys
+            let funcRead = read(STDIN_FILENO, &nextByte, 1)
+            if funcRead > 0 {
+                result.append(nextByte[0])
+            }
+        }
+        // Alt+key: ESC followed by single key - already have both bytes
+
+        return result
     }
 
     /// Reads a key event from the terminal.
