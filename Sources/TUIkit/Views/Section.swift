@@ -311,7 +311,7 @@ extension Section: ListRowExtractor {
         // Fallback: render content as a single row (rare case)
         let buffer = TUIkit.renderToBuffer(content, context: context)
         if let indexID = 0 as? RowID {
-            return [ListRow(id: indexID, buffer: buffer)]
+            return [ListRow(id: indexID, buffer: buffer, badge: nil)]
         }
         return []
     }

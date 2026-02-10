@@ -221,11 +221,15 @@ public struct RenderContext {
     /// Used by layout containers (e.g., NavigationSplitView) to constrain
     /// child views to a specific column width.
     ///
+    /// This also sets `hasExplicitWidth` to true so that child views
+    /// (like List) know to expand to fill the available width.
+    ///
     /// - Parameter width: The new available width in characters.
     /// - Returns: A new RenderContext with the updated width.
     func withAvailableWidth(_ width: Int) -> Self {
         var copy = self
         copy.availableWidth = width
+        copy.hasExplicitWidth = true
         return copy
     }
 }

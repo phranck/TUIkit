@@ -19,6 +19,9 @@ struct ListRow<ID: Hashable> {
     /// The rendered content buffer for this row.
     let buffer: FrameBuffer
 
+    /// The badge value for this row (from environment).
+    let badge: BadgeValue?
+
     /// The height of this row in lines.
     var height: Int { buffer.height }
 }
@@ -615,7 +618,7 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         // Check for ListRowExtractor (ForEach)
         if let extractor = content as? ListRowExtractor {
             let rows: [ListRow<SelectionValue>] = extractor.extractListRows(context: context)
-            return rows.map { SelectableListRow(type: .content(id: $0.id), buffer: $0.buffer) }
+            return rows.map { SelectableListRow(type: .content(id: $0.id), buffer: $0.buffer, badge: $0.badge) }
         }
 
         // Check for ChildInfoProvider (handles TupleView with multiple children)
@@ -670,7 +673,7 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         if let extractor = section as? ListRowExtractor {
             let contentRows: [ListRow<SelectionValue>] = extractor.extractListRows(context: context)
             for row in contentRows {
-                rows.append(SelectableListRow(type: .content(id: row.id), buffer: row.buffer))
+                rows.append(SelectableListRow(type: .content(id: row.id), buffer: row.buffer, badge: row.badge))
             }
         } else {
             // Fallback: render content as single row (if Section content is not ForEach)
@@ -766,8 +769,8 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             }
         }
 
-        // Check for badge in environment (only for content rows, on first line only)
-        let badge = context.environment.badgeValue
+        // Check for badge on the row (only for content rows, on first line only)
+        let badge = row.badge
         let shouldRenderBadge = badge != nil && !badge!.isHidden && row.isSelectable
 
         // Render each line - row content keeps its own styling
@@ -855,10 +858,15 @@ extension ForEach: ListRowExtractor {
         data.compactMap { element -> ListRow<RowID>? in
             let elementID = element[keyPath: idKeyPath]
             let view = content(element)
+
+            // Extract badge if the view is wrapped in a BadgeModifier
+            let badge = extractBadgeValue(from: view)
+
+            // Render the view
             let buffer = TUIkit.renderToBuffer(view, context: context)
 
             guard let rowID = elementID as? RowID else { return nil }
-            return ListRow(id: rowID, buffer: buffer)
+            return ListRow(id: rowID, buffer: buffer, badge: badge)
         }
     }
 }

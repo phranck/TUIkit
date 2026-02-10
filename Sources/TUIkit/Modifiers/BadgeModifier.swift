@@ -78,6 +78,23 @@ extension BadgeValue: Equatable {
     }
 }
 
+// MARK: - Badge Extraction
+
+/// Extracts the badge value from a view if it's wrapped in a BadgeModifier.
+///
+/// This is used by List to extract badge values during row extraction.
+@MainActor
+public func extractBadgeValue<V: View>(from view: V) -> BadgeValue? {
+    // Use Mirror to check if the view is a BadgeModifier
+    let mirror = Mirror(reflecting: view)
+    for child in mirror.children {
+        if child.label == "value", let badge = child.value as? BadgeValue {
+            return badge
+        }
+    }
+    return nil
+}
+
 // MARK: - Renderable
 
 extension BadgeModifier: Renderable {
