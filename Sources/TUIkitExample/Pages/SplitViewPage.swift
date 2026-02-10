@@ -97,12 +97,8 @@ struct SplitViewPage: View {
                         HStack(spacing: 1) {
                             Text(folder.icon)
                             Text(folder.name)
-                            if folder.unreadCount > 0 {
-                                Spacer()
-                                Text("(\(folder.unreadCount))")
-                                    .foregroundStyle(.palette.foregroundSecondary)
-                            }
                         }
+                        .badge(folder.unreadCount)
                     }
                 }
             } content: {
