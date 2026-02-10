@@ -37,6 +37,7 @@
 
 ### 2026-02-10
 
+- [x] **TextField Clipboard & Undo**: Ctrl+A/C/X/V/Z support, clipboard via pbcopy/pbpaste (macOS) and xclip/xsel (Linux), 50-state undo stack, 12 new tests
 - [x] **NavigationSplitView**: Two/three-column layouts, visibility control, focus sections, styles, 39 tests
 
 ### 2026-02-09
