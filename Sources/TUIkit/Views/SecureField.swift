@@ -198,10 +198,9 @@ private struct _SecureFieldCore: View, Renderable {
         let cursorStyle = context.environment.textCursorStyle
 
         // Determine content width: use available width if explicit frame set, otherwise default
-        // Account for focus indicators (2 chars for ❙ on each side)
         let contentWidth: Int
         if context.hasExplicitWidth && context.availableWidth > 2 {
-            contentWidth = context.availableWidth - 2  // Subtract space for focus indicators
+            contentWidth = context.availableWidth
         } else {
             contentWidth = defaultContentWidth
         }
