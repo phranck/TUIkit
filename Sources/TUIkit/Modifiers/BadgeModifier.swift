@@ -50,7 +50,7 @@ public enum BadgeValue: Sendable {
     public var displayText: String {
         switch self {
         case .int(let intValue):
-            return "(\(intValue))"
+            return "\(intValue)"
         case .string(let string):
             return string ?? ""
         }
