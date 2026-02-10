@@ -573,8 +573,21 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             contentLines = lines
         }
 
+        // Pad content to fill available height (SwiftUI behavior: List is greedy)
+        // Reserve space for: title line (1) + top border (1) + bottom border (1) + footer if present
+        let footerHeight = footer != nil ? 2 : 0  // footer line + separator
+        let borderOverhead = style.showsBorder ? 2 : 0  // top + bottom border
+        let titleOverhead = title != nil ? 1 : 0
+        let targetContentHeight = max(1, context.availableHeight - borderOverhead - titleOverhead - footerHeight)
+
+        var paddedContentLines = contentLines
+        if paddedContentLines.count < targetContentHeight {
+            let emptyLinesToAdd = targetContentHeight - paddedContentLines.count
+            paddedContentLines.append(contentsOf: Array(repeating: "", count: emptyLinesToAdd))
+        }
+
         // Create the list content as a simple view
-        let listContent = _ListContentView(lines: contentLines)
+        let listContent = _ListContentView(lines: paddedContentLines)
 
         // Render using the shared container helper with footer support
         // Apply list style: border from showsBorder, padding from style
