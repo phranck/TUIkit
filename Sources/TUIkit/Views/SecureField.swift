@@ -197,13 +197,10 @@ private struct _SecureFieldCore: View, Renderable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // SecureField expands to fill available width (like SwiftUI).
-        let contentWidth: Int
-        if context.availableWidth > 0 {
-            contentWidth = context.availableWidth
-        } else {
-            contentWidth = defaultContentWidth
-        }
+        // SecureField uses default width. In TUI we can't reliably detect
+        // remaining space in HStack, so we use a fixed width.
+        // Use .frame(width:) to set a specific width.
+        let contentWidth = defaultContentWidth
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
