@@ -240,11 +240,16 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // Determine content width: use available width if explicit frame set, otherwise default
-        // Account for focus indicators (2 chars for ❙ on each side)
+        // Render the label first to know its width
+        let labelBuffer = TUIkit.renderToBuffer(label, context: context)
+        let labelWidth = labelBuffer.width
+        let labelText = labelBuffer.lines.first ?? ""
+
+        // Determine content width: use available width minus label, otherwise default
         let contentWidth: Int
-        if context.hasExplicitWidth && context.availableWidth > 2 {
-            contentWidth = context.availableWidth - 2  // Subtract space for focus indicators
+        if context.hasExplicitWidth && context.availableWidth > labelWidth + 2 {
+            // Subtract label width and 1 space separator
+            contentWidth = context.availableWidth - labelWidth - 1
         } else {
             contentWidth = defaultContentWidth
         }
@@ -285,7 +290,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let isFocused = focusManager.isFocused(id: persistedFocusID)
 
         // Build the text field content
-        let content = buildContent(
+        let fieldContent = buildContent(
             handler: handler,
             isFocused: isFocused,
             palette: palette,
@@ -294,7 +299,12 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             contentWidth: contentWidth
         )
 
-        return FrameBuffer(text: content)
+        // Combine label and field content
+        if labelWidth > 0 {
+            return FrameBuffer(text: labelText + " " + fieldContent)
+        } else {
+            return FrameBuffer(text: fieldContent)
+        }
     }
 
     /// Builds the rendered text field content.
