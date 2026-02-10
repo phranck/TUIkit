@@ -322,11 +322,10 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         let palette = context.environment.palette
         let borderColor = style.borderColor?.resolve(with: palette) ?? palette.border
 
-        // Context with reduced width for content inside borders.
-        // Subtract 2 for the left and right border characters so that
-        // Spacer() and other layout views calculate available space correctly.
-        var innerContext = context
-        innerContext.availableWidth = max(0, context.availableWidth - 2)
+        // Create inner context for content inside borders using shared helper.
+        // Also subtract padding from available width so Spacers don't over-expand.
+        var innerContext = context.forBorderedContent()
+        innerContext.availableWidth = max(0, innerContext.availableWidth - padding.leading - padding.trailing)
 
         // Consume focus indicator so nested containers don't also show it.
         let indicatorColor = context.focusIndicatorColor
@@ -356,19 +355,14 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
             initialFooterBuffer = nil
         }
 
-        // Calculate inner width from title, body, AND footer.
+        // Calculate inner width using shared helper
         let titleWidth = title.map { $0.count + 4 } ?? 0  // " Title " + borders
         let footerNaturalWidth = initialFooterBuffer?.width ?? 0
         let contentBasedWidth = max(titleWidth, bodyBuffer.width, footerNaturalWidth)
-
-        // If an explicit frame width was set, expand to fill that width.
-        // Otherwise, use the content-based width (shrink to fit).
-        let innerWidth: Int
-        if context.hasExplicitWidth {
-            innerWidth = max(contentBasedWidth, innerContext.availableWidth)
-        } else {
-            innerWidth = contentBasedWidth
-        }
+        let innerWidth = context.resolveContainerWidth(
+            contentWidth: contentBasedWidth,
+            innerAvailableWidth: innerContext.availableWidth
+        )
 
         // Re-render footer constrained to the final innerWidth so that
         // Spacer() fills exactly the container's inner width.

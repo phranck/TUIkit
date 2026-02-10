@@ -236,6 +236,8 @@ extension RenderLoop {
             environment: environment,
             tuiContext: tuiContext
         )
+        context.hasExplicitWidth = true  // Terminal has a fixed width
+        context.hasExplicitHeight = true  // Terminal has a fixed height
         context.pulsePhase = pulsePhase
         context.cursorTimer = cursorTimer
 
@@ -262,6 +264,8 @@ extension RenderLoop {
                 environment: environment,
                 tuiContext: tuiContext
             )
+            correctedContext.hasExplicitWidth = true
+            correctedContext.hasExplicitHeight = true
             correctedContext.pulsePhase = pulsePhase
             correctedContext.cursorTimer = cursorTimer
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))

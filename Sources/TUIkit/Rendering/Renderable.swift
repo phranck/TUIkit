@@ -131,6 +131,13 @@ public struct RenderContext {
     /// the available width or shrink to fit their content.
     var hasExplicitWidth: Bool = false
 
+    /// Whether an explicit frame height constraint has been set.
+    ///
+    /// Set by layout containers (e.g., NavigationSplitView) when a fixed height is specified.
+    /// Container views use this to decide whether to expand to fill
+    /// the available height or shrink to fit their content.
+    var hasExplicitHeight: Bool = false
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
@@ -237,6 +244,94 @@ public struct RenderContext {
         copy.availableWidth = width
         copy.hasExplicitWidth = true
         return copy
+    }
+
+    /// Creates a copy with updated available height.
+    ///
+    /// Used by layout containers (e.g., NavigationSplitView) to constrain
+    /// child views to a specific height.
+    ///
+    /// This also sets `hasExplicitHeight` to true so that child views
+    /// (like List) know to expand to fill the available height.
+    ///
+    /// - Parameter height: The new available height in lines.
+    /// - Returns: A new RenderContext with the updated height.
+    func withAvailableHeight(_ height: Int) -> Self {
+        var copy = self
+        copy.availableHeight = height
+        copy.hasExplicitHeight = true
+        return copy
+    }
+
+    /// Creates a copy with updated available width and height.
+    ///
+    /// Used by layout containers to constrain child views to specific dimensions.
+    ///
+    /// - Parameters:
+    ///   - width: The new available width in characters.
+    ///   - height: The new available height in lines.
+    /// - Returns: A new RenderContext with the updated dimensions.
+    func withAvailableSize(width: Int, height: Int) -> Self {
+        var copy = self
+        copy.availableWidth = width
+        copy.availableHeight = height
+        copy.hasExplicitWidth = true
+        copy.hasExplicitHeight = true
+        return copy
+    }
+
+    // MARK: - Container Layout Helpers
+
+    /// Creates a context for rendering content inside a bordered container.
+    ///
+    /// Subtracts the border width (2 characters for left + right) from available width.
+    /// Propagates `hasExplicitWidth` from parent so children know whether to expand.
+    ///
+    /// - Parameter hasBorder: Whether the container has a border (default: true).
+    /// - Returns: A new context with adjusted width for inner content.
+    func forBorderedContent(hasBorder: Bool = true) -> Self {
+        var copy = self
+        if hasBorder {
+            copy.availableWidth = max(0, availableWidth - 2)
+        }
+        // Propagate hasExplicitWidth from parent - if parent has explicit width,
+        // children should also expand to fill the (reduced) available space.
+        return copy
+    }
+
+    /// Calculates the inner width for a container based on content and constraints.
+    ///
+    /// If `hasExplicitWidth` is set, expands to fill available space.
+    /// Otherwise, shrinks to fit the content width.
+    ///
+    /// - Parameters:
+    ///   - contentWidth: The natural width of the content.
+    ///   - innerAvailableWidth: The available width inside the container (after border).
+    /// - Returns: The calculated inner width.
+    func resolveContainerWidth(contentWidth: Int, innerAvailableWidth: Int) -> Int {
+        if hasExplicitWidth {
+            return max(contentWidth, innerAvailableWidth)
+        } else {
+            return contentWidth
+        }
+    }
+
+    /// Calculates the inner height for a container based on content and constraints.
+    ///
+    /// If `hasExplicitHeight` is set, expands to fill available space.
+    /// Otherwise, shrinks to fit the content height.
+    ///
+    /// - Parameters:
+    ///   - contentHeight: The natural height of the content.
+    ///   - borderOverhead: Lines used by borders/title/footer.
+    /// - Returns: The calculated inner height.
+    func resolveContainerHeight(contentHeight: Int, borderOverhead: Int = 0) -> Int {
+        if hasExplicitHeight {
+            let targetHeight = max(1, availableHeight - borderOverhead)
+            return max(contentHeight, targetHeight)
+        } else {
+            return contentHeight
+        }
     }
 }
 

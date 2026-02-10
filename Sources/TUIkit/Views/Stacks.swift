@@ -227,9 +227,19 @@ private struct _HStackCore<Content: View>: View, Renderable {
         }
 
         let totalSpacing = max(0, infos.count - 1) * spacing
-        let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
-        let spacerWidth = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
+
+        // Spacers only expand to fill available space if hasExplicitWidth is set.
+        // Otherwise, they use their minLength (or 1 as default).
+        let spacerWidth: Int
+        let spacerRemainder: Int
+        if context.hasExplicitWidth && spacerCount > 0 {
+            let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
+            spacerWidth = availableForSpacers / spacerCount
+            spacerRemainder = availableForSpacers % spacerCount
+        } else {
+            spacerWidth = 0  // Will use minLength or default
+            spacerRemainder = 0
+        }
 
         var result = FrameBuffer()
         var spacerIndex = 0
@@ -237,7 +247,7 @@ private struct _HStackCore<Content: View>: View, Renderable {
             let spacingToApply = index > 0 ? spacing : 0
             if info.isSpacer {
                 let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
-                let width = max(info.spacerMinLength ?? 0, spacerWidth + extraWidth)
+                let width = max(info.spacerMinLength ?? 1, spacerWidth + extraWidth)
                 let spacerBuffer = FrameBuffer(
                     lines: Array(
                         repeating: String(repeating: " ", count: width),
