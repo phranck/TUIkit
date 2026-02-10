@@ -214,24 +214,24 @@ extension Toggle {
     /// - Returns: A new toggle with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Toggle {
         Toggle(
-            _isOn: isOn,
-            _label: label,
-            _focusID: focusID,
-            _isDisabled: disabled
+            binding: isOn,
+            content: label,
+            id: focusID,
+            disabled: disabled
         )
     }
 
     /// Internal initializer with all parameters.
     private init(
-        _isOn: Binding<Bool>,
-        _label: Label,
-        _focusID: String,
-        _isDisabled: Bool
+        binding: Binding<Bool>,
+        content: Label,
+        id: String,
+        disabled: Bool
     ) {
-        self.isOn = _isOn
-        self.label = _label
-        self.focusID = _focusID
-        self.isDisabled = _isDisabled
+        self.isOn = binding
+        self.label = content
+        self.focusID = id
+        self.isDisabled = disabled
     }
 }
 

@@ -39,13 +39,12 @@ struct LayoutPage: View {
             }
 
             DemoSection("Spacer") {
-                Box(color: .brightBlack) {
-                    HStack {
-                        Text("Start")
-                        Spacer()
-                        Text("End")
-                    }
+                HStack {
+                    Text("Start")
+                    Spacer()
+                    Text("End")
                 }
+                .border()
             }
 
             DemoSection("Padding & Frame") {
