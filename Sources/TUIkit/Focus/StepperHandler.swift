@@ -82,16 +82,16 @@ final class StepperHandler<V: Strideable>: Focusable where V.Stride: SignedNumer
         onIncrement: (() -> Void)?,
         onDecrement: (() -> Void)?,
         canBeFocused: Bool = true
-    ) {
+    ) where V: ExpressibleByIntegerLiteral, V.Stride: ExpressibleByIntegerLiteral {
         self.focusID = focusID
         // Create a dummy binding that does nothing
         var dummy: V? = nil
         self.value = Binding(
-            get: { dummy ?? (0 as! V) },
+            get: { dummy ?? 0 },
             set: { dummy = $0 }
         )
         self.bounds = nil
-        self.step = 1 as! V.Stride
+        self.step = 1
         self.canBeFocused = canBeFocused
         self.onIncrement = onIncrement
         self.onDecrement = onDecrement
@@ -158,7 +158,7 @@ extension StepperHandler {
             onDecrement()
         } else {
             // For Strideable, we need to negate the step
-            let negativeStep = (0 as! V.Stride) - step
+            let negativeStep = V.Stride.zero - step
             let newValue = value.wrappedValue.advanced(by: negativeStep)
             if let bounds {
                 value.wrappedValue = max(bounds.lowerBound, newValue)
