@@ -51,8 +51,7 @@ struct ListPage: View {
             HStack(spacing: 2) {
                 List(
                     "Single Selection",
-                    selection: $singleSelection,
-                    maxVisibleRows: 6
+                    selection: $singleSelection
                 ) {
                     ForEach(FileItem.sampleFiles) { file in
                         HStack(spacing: 1) {
@@ -64,8 +63,7 @@ struct ListPage: View {
 
                 List(
                     "Multi Selection",
-                    selection: $multiSelection,
-                    maxVisibleRows: 6
+                    selection: $multiSelection
                 ) {
                     ForEach(FileItem.sampleFiles) { file in
                         HStack(spacing: 1) {

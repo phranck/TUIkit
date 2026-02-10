@@ -101,9 +101,6 @@ public struct List<SelectionValue: Hashable & Sendable, Content: View, Footer: V
     /// Whether the list is disabled.
     var isDisabled: Bool
 
-    /// The maximum number of visible rows (nil = use available height).
-    let maxVisibleRows: Int?
-
     /// The placeholder text shown when the list is empty.
     let emptyPlaceholder: String
 
@@ -120,7 +117,6 @@ public struct List<SelectionValue: Hashable & Sendable, Content: View, Footer: V
             selectionMode: selectionMode,
             focusID: focusID,
             isDisabled: isDisabled,
-            maxVisibleRows: maxVisibleRows,
             emptyPlaceholder: emptyPlaceholder,
             showFooterSeparator: showFooterSeparator
         )
@@ -136,7 +132,7 @@ extension List {
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the selected item's ID (nil = no selection).
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
@@ -145,7 +141,7 @@ extension List {
         _ title: String,
         selection: Binding<SelectionValue?>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
@@ -158,7 +154,7 @@ extension List {
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = showFooterSeparator
     }
@@ -168,7 +164,7 @@ extension List {
     /// - Parameters:
     ///   - selection: A binding to the selected item's ID (nil = no selection).
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
@@ -176,7 +172,7 @@ extension List {
     public init(
         selection: Binding<SelectionValue?>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
@@ -189,7 +185,7 @@ extension List {
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = showFooterSeparator
     }
@@ -204,14 +200,14 @@ extension List where Footer == EmptyView {
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the selected item's ID (nil = no selection).
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         _ title: String,
         selection: Binding<SelectionValue?>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
@@ -222,7 +218,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = false
     }
@@ -232,13 +228,13 @@ extension List where Footer == EmptyView {
     /// - Parameters:
     ///   - selection: A binding to the selected item's ID (nil = no selection).
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         selection: Binding<SelectionValue?>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
@@ -249,7 +245,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = nil
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = false
     }
@@ -264,7 +260,7 @@ extension List {
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the set of selected item IDs.
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
@@ -273,7 +269,7 @@ extension List {
         _ title: String,
         selection: Binding<Set<SelectionValue>>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
@@ -286,7 +282,7 @@ extension List {
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = showFooterSeparator
     }
@@ -296,7 +292,7 @@ extension List {
     /// - Parameters:
     ///   - selection: A binding to the set of selected item IDs.
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
@@ -304,7 +300,7 @@ extension List {
     public init(
         selection: Binding<Set<SelectionValue>>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
@@ -317,7 +313,7 @@ extension List {
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = showFooterSeparator
     }
@@ -332,14 +328,14 @@ extension List where Footer == EmptyView {
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the set of selected item IDs.
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         _ title: String,
         selection: Binding<Set<SelectionValue>>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
@@ -350,7 +346,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = false
     }
@@ -360,13 +356,13 @@ extension List where Footer == EmptyView {
     /// - Parameters:
     ///   - selection: A binding to the set of selected item IDs.
     ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - maxVisibleRows: Maximum visible rows (default: nil = available height).
+
     ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         selection: Binding<Set<SelectionValue>>,
         focusID: String? = nil,
-        maxVisibleRows: Int? = nil,
+
         emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
@@ -377,7 +373,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = selection
         self.focusID = focusID
         self.isDisabled = false
-        self.maxVisibleRows = maxVisibleRows
+
         self.emptyPlaceholder = emptyPlaceholder
         self.showFooterSeparator = false
     }
@@ -409,7 +405,6 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
     let selectionMode: SelectionMode
     let focusID: String?
     let isDisabled: Bool
-    let maxVisibleRows: Int?
     let emptyPlaceholder: String
     let showFooterSeparator: Bool
 
@@ -436,7 +431,7 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         } else {
             // Calculate viewport height (reserve space for scroll indicators if needed)
             let availableHeight = context.availableHeight
-            let viewportHeight = maxVisibleRows ?? max(1, availableHeight - 4) // Reserve for border + indicators
+            let viewportHeight = max(1, availableHeight - 4) // Reserve for border + indicators
 
             // Get or create persistent focusID
             let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
