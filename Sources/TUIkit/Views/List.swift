@@ -775,24 +775,33 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         return row.buffer.lines.enumerated().map { lineIndex, line in
             let lineLength = line.strippedLength
 
-            // First line: make room for badge if present
-            let badgeWidth = shouldRenderBadge && lineIndex == 0 ? badge!.displayText.count + 2 : 0
-            // Calculate right padding: rowWidth - 1 (left pad) - content - badge - 1 (right pad min)
-            let rightPadding = max(1, rowWidth - 1 - lineLength - badgeWidth)
-            var paddedLine = " " + line + String(repeating: " ", count: rightPadding)
-
-            // Add badge to first line if needed
+            // First line: badge is right-aligned
             if shouldRenderBadge && lineIndex == 0 {
                 let badgeText = badge!.displayText
                 let dimmedForeground = palette.foregroundTertiary
                 let styledBadge = ANSIRenderer.colorize(badgeText, foreground: dimmedForeground)
-                paddedLine = paddedLine + " " + styledBadge
-            }
 
-            if let bgColor = backgroundColor {
-                return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
+                // Calculate padding to push badge to right edge
+                // Layout: [1 pad][content][fill padding][badge][1 pad]
+                let badgeWidth = badgeText.count
+                let fillPadding = max(1, rowWidth - 1 - lineLength - 1 - badgeWidth - 1)
+                let paddedLine = " " + line + String(repeating: " ", count: fillPadding) + styledBadge + " "
+
+                if let bgColor = backgroundColor {
+                    return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
+                } else {
+                    return paddedLine
+                }
             } else {
-                return paddedLine
+                // Regular line without badge
+                let rightPadding = max(1, rowWidth - 1 - lineLength)
+                let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
+
+                if let bgColor = backgroundColor {
+                    return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
+                } else {
+                    return paddedLine
+                }
             }
         }
     }
