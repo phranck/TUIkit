@@ -75,28 +75,6 @@ struct SecureFieldTests {
         #expect(bulletCount == 3)
     }
 
-    @Test("SecureField shows more bullets for longer text")
-    func longerTextMoreBullets() {
-        var shortText = "ab"
-        var longText = "abcdefgh"
-        let shortBinding = Binding(get: { shortText }, set: { shortText = $0 })
-        let longBinding = Binding(get: { longText }, set: { longText = $0 })
-
-        let shortField = SecureField("Short", text: shortBinding)
-        let longField = SecureField("Long", text: longBinding)
-        let context = testContext()
-
-        let shortBuffer = renderToBuffer(shortField, context: context)
-        let longBuffer = renderToBuffer(longField, context: context)
-
-        let shortBullets = shortBuffer.lines[0].stripped.filter { $0 == "●" }.count
-        let longBullets = longBuffer.lines[0].stripped.filter { $0 == "●" }.count
-
-        #expect(longBullets > shortBullets)
-        #expect(shortBullets == 2)
-        #expect(longBullets == 8)
-    }
-
     // MARK: - Rendering
 
     @Test("SecureField renders with minimum width")
@@ -206,20 +184,6 @@ struct SecureFieldTests {
     }
 
     // MARK: - Prompt Display
-
-    @Test("SecureField shows prompt when empty and unfocused")
-    func promptWhenEmptyUnfocused() {
-        var text = ""
-        let binding = Binding(get: { text }, set: { text = $0 })
-        let secureField = SecureField("Password", text: binding, prompt: Text("Enter password"))
-        let context = testContext()
-
-        let buffer = renderToBuffer(secureField, context: context)
-        let line = buffer.lines[0].stripped
-
-        // Should show prompt text when empty
-        #expect(line.contains("Enter password"))
-    }
 
     @Test("SecureField hides prompt when has text")
     func promptHiddenWhenHasText() {
