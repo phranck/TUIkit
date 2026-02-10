@@ -240,13 +240,14 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // Render the label first to know its width
-        let labelBuffer = TUIkit.renderToBuffer(label, context: context)
-        let labelWidth = labelBuffer.width
-        let labelText = labelBuffer.lines.first ?? ""
-
-        // TextField uses fixed default width. Use .frame() to change size.
-        let contentWidth = defaultContentWidth
+        // TextField expands to fill available width (like SwiftUI).
+        // The label is for accessibility only and not rendered visually.
+        let contentWidth: Int
+        if context.availableWidth > 0 {
+            contentWidth = context.availableWidth
+        } else {
+            contentWidth = defaultContentWidth
+        }
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
@@ -283,7 +284,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         // Determine focus state
         let isFocused = focusManager.isFocused(id: persistedFocusID)
 
-        // Build the text field content
+        // Build the text field content (label is not rendered - it's for accessibility only)
         let fieldContent = buildContent(
             handler: handler,
             isFocused: isFocused,
@@ -293,12 +294,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
             contentWidth: contentWidth
         )
 
-        // Combine label and field content
-        if labelWidth > 0 {
-            return FrameBuffer(text: labelText + " " + fieldContent)
-        } else {
-            return FrameBuffer(text: fieldContent)
-        }
+        return FrameBuffer(text: fieldContent)
     }
 
     /// Builds the rendered text field content.
