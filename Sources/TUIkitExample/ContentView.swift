@@ -26,6 +26,7 @@ enum DemoPage: Int, CaseIterable {
     case tables
     case sliders
     case steppers
+    case splitView
 }
 
 // MARK: - Content View (Page Router)
@@ -87,6 +88,10 @@ struct ContentView: View {
                     // Quick jump to Steppers
                     currentPage = .steppers
                     return true
+                case .character(";"):
+                    // Quick jump to Split View
+                    currentPage = .splitView
+                    return true
                 default:
                     return false  // Let other handlers process
                 }
@@ -146,6 +151,9 @@ struct ContentView: View {
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         case .steppers:
             StepperPage()
+                .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .splitView:
+            SplitViewPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
         }
     }
