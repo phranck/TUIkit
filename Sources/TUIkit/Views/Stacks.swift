@@ -63,7 +63,7 @@ public struct VStack<Content: View>: View {
 // MARK: - Internal VStack Core
 
 /// Internal view that handles the actual rendering of VStack.
-private struct _VStackCore<Content: View>: View, Renderable {
+private struct _VStackCore<Content: View>: View, Renderable, Layoutable {
     let alignment: HorizontalAlignment
     let spacing: Int
     let content: Content
@@ -72,45 +72,97 @@ private struct _VStackCore<Content: View>: View, Renderable {
         fatalError("_VStackCore renders via Renderable")
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
+    /// Measures the VStack without rendering.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let children = resolveChildViews(from: content, context: context)
+        guard !children.isEmpty else { return ViewSize.fixed(0, 0) }
 
-        // Single pass to compute spacer count, fixed height, and max width
-        var spacerCount = 0
-        var fixedHeight = 0
-        var childMaxWidth = 0
+        var totalHeight = 0
+        var maxWidth = 0
+        var hasFlexibleHeight = false
 
-        for info in infos {
-            if info.isSpacer {
-                spacerCount += 1
-            } else if let buffer = info.buffer {
-                fixedHeight += buffer.height
-                childMaxWidth = max(childMaxWidth, buffer.width)
+        for child in children {
+            let size = child.measure(proposal: proposal, context: context)
+            totalHeight += size.height
+            maxWidth = max(maxWidth, size.width)
+            if child.isSpacer || size.isHeightFlexible {
+                hasFlexibleHeight = true
             }
         }
 
-        let totalSpacing = max(0, infos.count - 1) * spacing
-        let availableForSpacers = max(0, context.availableHeight - fixedHeight - totalSpacing)
-        let spacerHeight = spacerCount > 0 ? availableForSpacers / spacerCount : 0
-        let spacerRemainder = spacerCount > 0 ? availableForSpacers % spacerCount : 0
+        let totalSpacing = max(0, children.count - 1) * spacing
+        totalHeight += totalSpacing
+
+        return ViewSize(
+            width: maxWidth,
+            height: totalHeight,
+            isWidthFlexible: false,
+            isHeightFlexible: hasFlexibleHeight
+        )
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let children = resolveChildViews(from: content, context: context)
+        guard !children.isEmpty else { return FrameBuffer() }
+
+        // === PASS 1: Measure all children ===
+        var childSizes: [ViewSize] = []
+        var totalMinHeight = 0
+        var flexibleCount = 0
+        var maxWidth = 0
+
+        for child in children {
+            let size = child.measure(proposal: .unspecified, context: context)
+            childSizes.append(size)
+
+            if child.isSpacer || size.isHeightFlexible {
+                flexibleCount += 1
+                totalMinHeight += size.height  // minimum height for flexible views
+            } else {
+                totalMinHeight += size.height
+            }
+            maxWidth = max(maxWidth, size.width)
+        }
+
+        // Calculate spacing
+        let totalSpacing = max(0, children.count - 1) * spacing
+
+        // Calculate remaining space for flexible views
+        let remainingHeight = max(0, context.availableHeight - totalMinHeight - totalSpacing)
+        let flexibleHeight = flexibleCount > 0 ? remainingHeight / flexibleCount : 0
+        let flexibleRemainder = flexibleCount > 0 ? remainingHeight % flexibleCount : 0
 
         // Use available width for alignment when spacers are present
-        let maxWidth = spacerCount > 0 ? context.availableWidth : childMaxWidth
+        let alignmentWidth = flexibleCount > 0 ? context.availableWidth : maxWidth
 
+        // === PASS 2: Render with final sizes ===
         var result = FrameBuffer()
-        var spacerIndex = 0
-        for (index, info) in infos.enumerated() {
+        var flexibleIndex = 0
+
+        for (index, child) in children.enumerated() {
+            let childSize = childSizes[index]
             let spacingToApply = index > 0 ? spacing : 0
-            if info.isSpacer {
-                let extraHeight = spacerIndex < spacerRemainder ? 1 : 0
-                let height = max(info.spacerMinLength ?? 0, spacerHeight + extraHeight)
-                result.appendVertically(FrameBuffer(emptyWithHeight: height), spacing: spacingToApply)
-                spacerIndex += 1
-            } else if let buffer = info.buffer {
-                let alignedBuffer = alignBuffer(buffer, toWidth: maxWidth, alignment: alignment)
+
+            // Determine final height for this child
+            let finalHeight: Int
+            if child.isSpacer || childSize.isHeightFlexible {
+                let extraHeight = flexibleIndex < flexibleRemainder ? 1 : 0
+                finalHeight = max(child.spacerMinLength ?? childSize.height, childSize.height + flexibleHeight + extraHeight)
+                flexibleIndex += 1
+            } else {
+                finalHeight = childSize.height
+            }
+
+            // Handle spacers specially (just empty space)
+            if child.isSpacer {
+                result.appendVertically(FrameBuffer(emptyWithHeight: finalHeight), spacing: spacingToApply)
+            } else {
+                let buffer = child.render(width: context.availableWidth, height: finalHeight, context: context)
+                let alignedBuffer = alignBuffer(buffer, toWidth: alignmentWidth, alignment: alignment)
                 result.appendVertically(alignedBuffer, spacing: spacingToApply)
             }
         }
+
         return result
     }
 
@@ -200,7 +252,7 @@ public struct HStack<Content: View>: View {
 // MARK: - Internal HStack Core
 
 /// Internal view that handles the actual rendering of HStack.
-private struct _HStackCore<Content: View>: View, Renderable {
+private struct _HStackCore<Content: View>: View, Renderable, Layoutable {
     let alignment: VerticalAlignment
     let spacing: Int
     let content: Content
@@ -209,56 +261,99 @@ private struct _HStackCore<Content: View>: View, Renderable {
         fatalError("_HStackCore renders via Renderable")
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
+    /// Measures the HStack without rendering.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let children = resolveChildViews(from: content, context: context)
+        guard !children.isEmpty else { return ViewSize.fixed(0, 0) }
 
-        // Single pass to compute spacer count, fixed width, and max height
-        var spacerCount = 0
-        var fixedWidth = 0
-        var maxHeight = 1
+        var totalWidth = 0
+        var maxHeight = 0
+        var hasFlexibleWidth = false
 
-        for info in infos {
-            if info.isSpacer {
-                spacerCount += 1
-            } else if let buffer = info.buffer {
-                fixedWidth += buffer.width
-                maxHeight = max(maxHeight, buffer.height)
+        for child in children {
+            let size = child.measure(proposal: proposal, context: context)
+            totalWidth += size.width
+            maxHeight = max(maxHeight, size.height)
+            if child.isSpacer || size.isWidthFlexible {
+                hasFlexibleWidth = true
             }
         }
 
-        let totalSpacing = max(0, infos.count - 1) * spacing
+        let totalSpacing = max(0, children.count - 1) * spacing
+        totalWidth += totalSpacing
 
-        // Spacers expand to fill remaining space when there's a defined available width.
-        let spacerWidth: Int
-        let spacerRemainder: Int
-        if spacerCount > 0 {
-            let availableForSpacers = max(0, context.availableWidth - fixedWidth - totalSpacing)
-            spacerWidth = availableForSpacers / spacerCount
-            spacerRemainder = availableForSpacers % spacerCount
-        } else {
-            spacerWidth = 0
-            spacerRemainder = 0
+        return ViewSize(
+            width: totalWidth,
+            height: maxHeight,
+            isWidthFlexible: hasFlexibleWidth,
+            isHeightFlexible: false
+        )
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let children = resolveChildViews(from: content, context: context)
+        guard !children.isEmpty else { return FrameBuffer() }
+
+        // === PASS 1: Measure all children ===
+        var childSizes: [ViewSize] = []
+        var totalMinWidth = 0
+        var flexibleCount = 0
+        var maxHeight = 1
+
+        for child in children {
+            let size = child.measure(proposal: .unspecified, context: context)
+            childSizes.append(size)
+
+            if child.isSpacer || size.isWidthFlexible {
+                flexibleCount += 1
+                totalMinWidth += size.width  // minimum width for flexible views
+            } else {
+                totalMinWidth += size.width
+            }
+            maxHeight = max(maxHeight, size.height)
         }
 
+        // Calculate spacing
+        let totalSpacing = max(0, children.count - 1) * spacing
+
+        // Calculate remaining space for flexible views
+        let remainingWidth = max(0, context.availableWidth - totalMinWidth - totalSpacing)
+        let flexibleWidth = flexibleCount > 0 ? remainingWidth / flexibleCount : 0
+        let flexibleRemainder = flexibleCount > 0 ? remainingWidth % flexibleCount : 0
+
+        // === PASS 2: Render with final sizes ===
         var result = FrameBuffer()
-        var spacerIndex = 0
-        for (index, info) in infos.enumerated() {
+        var flexibleIndex = 0
+
+        for (index, child) in children.enumerated() {
+            let childSize = childSizes[index]
             let spacingToApply = index > 0 ? spacing : 0
-            if info.isSpacer {
-                let extraWidth = spacerIndex < spacerRemainder ? 1 : 0
-                let width = max(info.spacerMinLength ?? 1, spacerWidth + extraWidth)
+
+            // Determine final width for this child
+            let finalWidth: Int
+            if child.isSpacer || childSize.isWidthFlexible {
+                let extraWidth = flexibleIndex < flexibleRemainder ? 1 : 0
+                finalWidth = max(child.spacerMinLength ?? childSize.width, childSize.width + flexibleWidth + extraWidth)
+                flexibleIndex += 1
+            } else {
+                finalWidth = childSize.width
+            }
+
+            // Handle spacers specially (just empty space)
+            if child.isSpacer {
                 let spacerBuffer = FrameBuffer(
                     lines: Array(
-                        repeating: String(repeating: " ", count: width),
+                        repeating: String(repeating: " ", count: finalWidth),
                         count: maxHeight
                     )
                 )
                 result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
-                spacerIndex += 1
-            } else if let buffer = info.buffer {
+            } else {
+                let buffer = child.render(width: finalWidth, height: context.availableHeight, context: context)
                 result.appendHorizontally(buffer, spacing: spacingToApply)
             }
         }
+
         return result
     }
 }

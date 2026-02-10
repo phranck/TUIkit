@@ -228,13 +228,19 @@ func renderToBuffer(context: RenderContext) -> FrameBuffer {
 
 ## Checklist
 
-- [ ] Add `ProposedSize` struct
-- [ ] Add `ViewSize` struct
-- [ ] Add `Layoutable` protocol
-- [ ] Implement `sizeThatFits` for Text
-- [ ] Implement `sizeThatFits` for Spacer
-- [ ] Refactor HStack to two-pass layout
-- [ ] Refactor VStack to two-pass layout
+- [x] Add `ProposedSize` struct
+- [x] Add `ViewSize` struct
+- [x] Add `Layoutable` protocol
+- [x] Implement `sizeThatFits` for Text
+- [x] Implement `sizeThatFits` for Spacer
+- [x] Implement `sizeThatFits` for Divider
+- [x] Add `ChildView` type-erased wrapper for two-pass layout
+- [x] Add `ChildViewProvider` protocol
+- [x] Implement `ChildViewProvider` for TupleView
+- [x] Refactor HStack to two-pass layout
+- [x] Implement `sizeThatFits` for HStack
+- [x] Refactor VStack to two-pass layout
+- [x] Implement `sizeThatFits` for VStack
 - [ ] Make TextField width-flexible
 - [ ] Make SecureField width-flexible
 - [ ] Make Slider width-flexible
@@ -243,7 +249,7 @@ func renderToBuffer(context: RenderContext) -> FrameBuffer {
 - [ ] Update Card layout
 - [ ] Remove hasExplicitWidth
 - [ ] Remove hasExplicitHeight
-- [ ] All tests pass (1020+)
+- [x] All tests pass (1034)
 - [ ] Performance benchmarks show no regression
 - [ ] Example app works correctly
 - [ ] Document new layout system in render-cycle.md

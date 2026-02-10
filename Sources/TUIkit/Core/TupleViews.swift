@@ -60,3 +60,15 @@ extension TupleView: Renderable, ChildInfoProvider {
         return infos
     }
 }
+
+// MARK: - TupleView Two-Pass Layout Support
+
+extension TupleView: ChildViewProvider {
+    func childViews(context: RenderContext) -> [ChildView] {
+        var views: [ChildView] = []
+        repeat views.append(
+            ChildView(each children)
+        )
+        return views
+    }
+}
