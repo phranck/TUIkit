@@ -6,6 +6,10 @@
 
 ## Open
 
+### High Priority
+
+- [ ] **Render Cycle Documentation**: Create detailed Markdown doc explaining the complete render cycle from view tree to terminal output. Include Mermaid diagrams showing: view hierarchy traversal, FrameBuffer composition, HStack/VStack layout algorithm, modifier application order, environment propagation. Location: `docs/render-cycle.md`
+
 ### Medium Priority
 
 - [ ] **DisclosureGroup**: Expandable/collapsible sections
@@ -44,4 +48,4 @@
 - SwiftUI docs: `http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui`
 
 ---
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-10 (Render Cycle Docs added)
