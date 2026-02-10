@@ -114,7 +114,6 @@ extension Spacer: Renderable, Layoutable {
 extension Divider: Renderable, Layoutable {
     func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         // Divider has height 1 and expands to fill width
-        let width = proposal.width ?? context.availableWidth
         return ViewSize.flexibleWidth(minWidth: 1, height: 1)
     }
 
