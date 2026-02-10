@@ -161,9 +161,11 @@ extension RenderLoop {
     ///
     /// See the class-level documentation for the complete pipeline steps.
     ///
-    /// - Parameter pulsePhase: The current breathing indicator phase (0–1).
-    ///   Passed from ``PulseTimer`` via ``AppRunner``.
-    func render(pulsePhase: Double = 0) {
+    /// - Parameters:
+    ///   - pulsePhase: The current breathing indicator phase (0–1).
+    ///     Passed from ``PulseTimer`` via ``AppRunner``.
+    ///   - cursorTimer: The cursor timer for TextField/SecureField animations.
+    func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
         // Clear per-frame state before re-rendering
         tuiContext.keyEventDispatcher.clearHandlers()
         tuiContext.preferences.beginRenderPass()
@@ -235,6 +237,7 @@ extension RenderLoop {
             tuiContext: tuiContext
         )
         context.pulsePhase = pulsePhase
+        context.cursorTimer = cursorTimer
 
         // Render main content into a FrameBuffer.
         // app.body is evaluated fresh each frame. @State values survive
@@ -260,6 +263,7 @@ extension RenderLoop {
                 tuiContext: tuiContext
             )
             correctedContext.pulsePhase = pulsePhase
+            correctedContext.cursorTimer = cursorTimer
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
 
