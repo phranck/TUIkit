@@ -204,8 +204,10 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
     /// The minimum width for any column in characters.
     private let minimumColumnWidth = 10
 
-    /// The separator character between columns.
-    private let separator = "│"
+    /// The separator between columns (single space for TUI).
+    /// TUI-specific: We use a space instead of a line to avoid double borders
+    /// when columns contain bordered components like List.
+    private let separator = " "
 
     var body: Never {
         fatalError("_NavigationSplitViewCore renders via Renderable")
@@ -214,7 +216,6 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let style = context.environment.navigationSplitViewStyle
         let visibility = resolveVisibility()
-        let palette = context.environment.palette
 
         // Calculate visible columns based on visibility
         let visibleColumns = calculateVisibleColumns(visibility: visibility)
@@ -261,8 +262,8 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
         // Combine buffers horizontally with separators
         return combineColumns(
             buffers: buffers,
+            columnWidths: columnWidths,
             separator: separator,
-            separatorColor: palette.border,
             availableHeight: context.availableHeight
         )
     }
@@ -310,7 +311,13 @@ private extension _NavigationSplitViewCore {
         }
     }
 
+    /// Fixed column widths for sidebar and content (TUI-specific).
+    /// Only the rightmost column adapts to terminal width changes.
+    private var fixedSidebarWidth: Int { 20 }
+    private var fixedContentWidth: Int { 30 }
+
     /// Calculates the width for each visible column.
+    /// TUI-specific: Left columns have fixed widths, only the rightmost column is flexible.
     func calculateColumnWidths(
         visibleColumns: [NavigationSplitViewColumn],
         style: any NavigationSplitViewStyle,
@@ -323,34 +330,29 @@ private extension _NavigationSplitViewCore {
             return Array(repeating: 0, count: visibleColumns.count)
         }
 
-        // Calculate proportions based on style and column count
-        let proportions: [Double]
-        if isThreeColumn && visibleColumns.count == 3 {
-            let props = style.threeColumnProportions
-            proportions = [props.sidebar, props.content, props.detail]
-        } else if visibleColumns.count == 2 {
-            if visibleColumns.contains(.sidebar) {
-                proportions = [style.sidebarProportion, 1.0 - style.sidebarProportion]
-            } else {
-                // content + detail (sidebar hidden in 3-column)
-                proportions = [0.4, 0.6]
-            }
-        } else {
-            // Single column (detail only)
-            proportions = [1.0]
-        }
-
-        // Convert proportions to integer widths
+        // TUI-specific: Fixed widths for left columns, flexible rightmost column
         var widths: [Int] = []
         var remainingWidth = usableWidth
 
-        for (index, proportion) in proportions.enumerated() {
-            if index == proportions.count - 1 {
-                // Last column gets remaining width
+        for (index, column) in visibleColumns.enumerated() {
+            let isLastColumn = index == visibleColumns.count - 1
+
+            if isLastColumn {
+                // Last column gets all remaining width
                 widths.append(max(minimumColumnWidth, remainingWidth))
             } else {
-                let width = max(minimumColumnWidth, Int(Double(usableWidth) * proportion))
-                widths.append(width)
+                // Fixed width for left columns
+                let fixedWidth: Int
+                switch column {
+                case .sidebar:
+                    fixedWidth = fixedSidebarWidth
+                case .content:
+                    fixedWidth = fixedContentWidth
+                default:
+                    fixedWidth = minimumColumnWidth
+                }
+                let width = min(fixedWidth, remainingWidth - minimumColumnWidth)
+                widths.append(max(minimumColumnWidth, width))
                 remainingWidth -= width
             }
         }
@@ -389,28 +391,28 @@ private extension _NavigationSplitViewCore {
     /// Combines column buffers horizontally with separators.
     func combineColumns(
         buffers: [FrameBuffer],
+        columnWidths: [Int],
         separator: String,
-        separatorColor: Color,
         availableHeight: Int
     ) -> FrameBuffer {
         guard !buffers.isEmpty else { return FrameBuffer() }
 
         // Normalize all buffers to the same height
         let maxHeight = max(availableHeight, buffers.map(\.height).max() ?? 1)
-        let styledSeparator = ANSIRenderer.colorize(separator, foreground: separatorColor)
 
         var result = FrameBuffer()
 
         for (index, buffer) in buffers.enumerated() {
-            // Pad buffer to full height
-            let paddedBuffer = padToHeight(buffer, height: maxHeight)
+            // Pad buffer to full height and width
+            let targetWidth = index < columnWidths.count ? columnWidths[index] : buffer.width
+            let paddedBuffer = padToSize(buffer, width: targetWidth, height: maxHeight)
 
             if index == 0 {
                 result = paddedBuffer
             } else {
-                // Add separator column
+                // Add separator column (just a space, no styling needed)
                 let separatorBuffer = FrameBuffer(
-                    lines: Array(repeating: styledSeparator, count: maxHeight)
+                    lines: Array(repeating: separator, count: maxHeight)
                 )
                 result.appendHorizontally(separatorBuffer, spacing: 0)
                 result.appendHorizontally(paddedBuffer, spacing: 0)
@@ -420,16 +422,27 @@ private extension _NavigationSplitViewCore {
         return result
     }
 
-    /// Pads a buffer to the specified height.
-    func padToHeight(_ buffer: FrameBuffer, height: Int) -> FrameBuffer {
-        guard buffer.height < height else { return buffer }
-
+    /// Pads a buffer to the specified width and height.
+    func padToSize(_ buffer: FrameBuffer, width: Int, height: Int) -> FrameBuffer {
         var lines = buffer.lines
-        let emptyLine = String(repeating: " ", count: buffer.width)
+
+        // Pad each line to the target width
+        let paddedLines = lines.map { line -> String in
+            let lineWidth = line.strippedLength
+            if lineWidth < width {
+                return line + String(repeating: " ", count: width - lineWidth)
+            }
+            return line
+        }
+        lines = paddedLines
+
+        // Pad to target height
+        let emptyLine = String(repeating: " ", count: width)
         while lines.count < height {
             lines.append(emptyLine)
         }
-        return FrameBuffer(lines: lines, width: buffer.width)
+
+        return FrameBuffer(lines: lines, width: width)
     }
 }
 
