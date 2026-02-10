@@ -102,23 +102,23 @@ struct ProgressViewRow: View, Equatable {
                     Text("Styles:").dim()
                     HStack(spacing: 1) {
                         Text("block    ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.block)
+                        ProgressView(value: 0.6).trackStyle(.block)
                     }
                     HStack(spacing: 1) {
                         Text("blockFine").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.blockFine)
+                        ProgressView(value: 0.6).trackStyle(.blockFine)
                     }
                     HStack(spacing: 1) {
                         Text("shade    ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.shade)
+                        ProgressView(value: 0.6).trackStyle(.shade)
                     }
                     HStack(spacing: 1) {
                         Text("bar      ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.bar)
+                        ProgressView(value: 0.6).trackStyle(.bar)
                     }
                     HStack(spacing: 1) {
                         Text("dot      ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.dot)
+                        ProgressView(value: 0.6).trackStyle(.dot)
                     }
                 }
             }
