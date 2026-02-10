@@ -272,19 +272,29 @@ private struct _ButtonCore: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Get focus manager from environment
         let focusManager = context.environment.focusManager
+        let stateStorage = context.tuiContext.stateStorage
+
+        // Get or create persistent focusID from state storage.
+        // focusID must be stable across renders for focus state to persist.
+        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let focusIDBox: StateBox<String> = stateStorage.storage(
+            for: focusIDKey,
+            default: focusID
+        )
+        let persistedFocusID = focusIDBox.value
 
         // Register this button with the focus manager
         let handler = ActionHandler(
-            focusID: focusID,
+            focusID: persistedFocusID,
             action: action,
             canBeFocused: !isDisabled
         )
         focusManager.register(handler, inSection: context.activeFocusSectionID)
+        stateStorage.markActive(context.identity)
 
         // Determine if focused
-        let isFocused = focusManager.isFocused(id: focusID)
+        let isFocused = focusManager.isFocused(id: persistedFocusID)
         let currentStyle = isFocused ? focusedStyle : style
         let palette = context.environment.palette
         let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold
