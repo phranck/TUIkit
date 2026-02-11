@@ -33,7 +33,7 @@ public struct TupleView<each V: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension TupleView: @preconcurrency Equatable where repeat each V: Equatable {
+extension TupleView: @MainActor Equatable where repeat each V: Equatable {
     public static func == (lhs: TupleView, rhs: TupleView) -> Bool {
         func isEqual<T: Equatable>(_ left: T, _ right: T) -> Bool { left == right }
         var result = true
