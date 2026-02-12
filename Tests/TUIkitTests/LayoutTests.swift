@@ -169,4 +169,32 @@ struct LayoutableTests {
         #expect(size.isWidthFlexible == true)
         #expect(size.isHeightFlexible == false)
     }
+
+    @Test("HStack with Text and flexible TextField fits available width")
+    func hstackTextFieldWidth() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let hstack = HStack(spacing: 1) {
+            Text("Search:")
+            TextField("Search", text: binding, prompt: Text("Enter search term..."))
+        }
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let buffer = renderToBuffer(hstack, context: context)
+
+        #expect(buffer.width == 80, "HStack should fill exactly available width, got \(buffer.width)")
+        #expect(buffer.height == 1)
+    }
+
+    @Test("measureChild traverses composite View body for Layoutable")
+    func measureChildTraversesBody() {
+        var text = ""
+        let binding = Binding(get: { text }, set: { text = $0 })
+        let textField = TextField("Test", text: binding)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+
+        let size = measureChild(textField, proposal: .unspecified, context: context)
+
+        #expect(size.isWidthFlexible == true, "TextField should report flexible width through body traversal")
+        #expect(size.width == 20, "TextField default width should be 20, got \(size.width)")
+    }
 }

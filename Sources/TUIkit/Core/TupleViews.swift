@@ -67,7 +67,7 @@ extension TupleView: ChildViewProvider {
     func childViews(context: RenderContext) -> [ChildView] {
         var views: [ChildView] = []
         repeat views.append(
-            ChildView(each children)
+            ChildView(each children, childIndex: views.count)
         )
         return views
     }

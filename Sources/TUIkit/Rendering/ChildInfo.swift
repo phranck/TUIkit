@@ -38,6 +38,34 @@ struct ChildView {
         }
     }
 
+    /// Creates a child view wrapper with an explicit child index for identity propagation.
+    ///
+    /// Use this initializer when wrapping children from a ``TupleView`` or similar
+    /// container so that each child receives a unique ``ViewIdentity`` during
+    /// measure and render passes.
+    ///
+    /// - Parameters:
+    ///   - view: The child view to wrap.
+    ///   - childIndex: The positional index used for identity disambiguation.
+    init<V: View>(_ view: V, childIndex: Int) {
+        if let spacer = view as? Spacer {
+            self.isSpacer = true
+            self.spacerMinLength = spacer.minLength
+        } else {
+            self.isSpacer = false
+            self.spacerMinLength = nil
+        }
+
+        self._measure = { proposal, context in
+            let childContext = context.withChildIdentity(type: V.self, index: childIndex)
+            return measureChild(view, proposal: proposal, context: childContext)
+        }
+        self._render = { width, height, context in
+            let childContext = context.withChildIdentity(type: V.self, index: childIndex)
+            return renderChild(view, width: width, height: height, context: childContext)
+        }
+    }
+
     /// Measures this child view without rendering.
     func measure(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         _measure(proposal, context)
@@ -135,13 +163,24 @@ func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderCon
         return ViewSize(width: min, height: min, isWidthFlexible: true, isHeightFlexible: true)
     }
 
-    // Use Layoutable if available
+    // Use Layoutable if available (mark as measuring to suppress side-effects)
     if let layoutable = view as? Layoutable {
-        return layoutable.sizeThatFits(proposal: proposal, context: context)
+        var measureContext = context
+        measureContext.isMeasuring = true
+        return layoutable.sizeThatFits(proposal: proposal, context: measureContext)
     }
 
-    // Fallback: render to measure
+    // For composite views (Body != Never), traverse into the body to find
+    // an inner Layoutable. This handles cases like TextField<Text> whose body
+    // is _TextFieldCore<Text> which IS Layoutable.
+    if V.Body.self != Never.self {
+        let body = view.body
+        return measureChild(body, proposal: proposal, context: context)
+    }
+
+    // Fallback: render to measure (without side-effects)
     var measureContext = context
+    measureContext.isMeasuring = true
     if let width = proposal.width {
         measureContext.availableWidth = width
     }
