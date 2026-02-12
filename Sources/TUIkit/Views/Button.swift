@@ -284,17 +284,19 @@ private struct _ButtonCore: View, Renderable {
         )
         let persistedFocusID = focusIDBox.value
 
-        // Register this button with the focus manager
+        // Register this button with the focus manager (skip during measurement)
         let handler = ActionHandler(
             focusID: persistedFocusID,
             action: action,
             canBeFocused: !isDisabled
         )
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        if !context.isMeasuring {
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+        }
 
-        // Determine if focused
-        let isFocused = focusManager.isFocused(id: persistedFocusID)
+        // Determine if focused (never focused during measurement)
+        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
         let currentStyle = isFocused ? focusedStyle : style
         let palette = context.environment.palette
         let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold

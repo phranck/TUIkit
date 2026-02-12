@@ -500,12 +500,14 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
 
-            // Register with focus manager
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
+            // Register with focus manager (skip during measurement)
+            if !context.isMeasuring {
+                focusManager.register(handler, inSection: context.activeFocusSectionID)
+                stateStorage.markActive(context.identity)
+            }
 
-            // Check if this list has focus
-            listHasFocus = focusManager.isFocused(id: persistedFocusID)
+            // Check if this list has focus (never focused during measurement)
+            listHasFocus = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
 
             // Calculate visible rows
             let visibleRows = calculateVisibleRows(

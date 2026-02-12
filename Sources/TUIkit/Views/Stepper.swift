@@ -335,12 +335,14 @@ private struct _StepperCore<Label: View>: View, Renderable {
         handler.onEditingChanged = onEditingChanged
         handler.clampValue()
 
-        // Register with focus manager
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        // Register with focus manager (skip during measurement)
+        if !context.isMeasuring {
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+        }
 
-        // Determine focus state
-        let isFocused = focusManager.isFocused(id: persistedFocusID)
+        // Determine focus state (never focused during measurement)
+        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
 
         // Build the stepper content
         let content = buildContent(

@@ -279,6 +279,12 @@ public struct RenderContext {
     /// the available height or shrink to fit their content.
     var hasExplicitHeight: Bool = false
 
+    /// Whether this is a measurement pass (no side-effects should occur).
+    ///
+    /// Set to true during two-pass layout when measuring non-Layoutable views.
+    /// Views should skip side-effects like focus registration when this is true.
+    var isMeasuring: Bool = false
+
     /// Creates a new RenderContext.
     ///
     /// - Parameters:
