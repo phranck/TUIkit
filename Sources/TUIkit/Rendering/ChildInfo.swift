@@ -181,6 +181,10 @@ func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderCon
     // Fallback: render to measure (without side-effects)
     var measureContext = context
     measureContext.isMeasuring = true
+    // Clear hasExplicitWidth so views report their natural (minimum) size
+    // instead of expanding to fill the full available width.
+    let wasExplicitWidth = measureContext.hasExplicitWidth
+    measureContext.hasExplicitWidth = false
     if let width = proposal.width {
         measureContext.availableWidth = width
     }
@@ -188,6 +192,11 @@ func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderCon
         measureContext.availableHeight = height
     }
     let buffer = renderToBuffer(view, context: measureContext)
+    // If the view had explicit width, report it as width-flexible so the
+    // parent stack can distribute remaining space to it.
+    if wasExplicitWidth {
+        return ViewSize.flexibleWidth(minWidth: buffer.width, height: buffer.height)
+    }
     return ViewSize.fixed(buffer.width, buffer.height)
 }
 
