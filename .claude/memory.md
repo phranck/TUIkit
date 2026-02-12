@@ -244,12 +244,14 @@ if isFocused {
 - HStack/VStack: Measure-then-render with flexible space distribution
 - TextField/SecureField/Slider: Now width-flexible (expand in HStack)
 - ChildView: Type-erased wrapper for two-pass layout
-- Performance test threshold relaxed for two-pass overhead
+- Focus fix: RenderContext.isMeasuring flag prevents double registration
+- All focusable views skip focusManager.register() during measurement pass
 
 ### Pending
 
+- Verify focus behavior in Example App (TextField Demo page)
 - Phase 5: Remove hasExplicitWidth/hasExplicitHeight (deferred)
 - List/Table: Not yet Layoutable
 
 ---
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-11
