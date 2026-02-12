@@ -29,6 +29,24 @@ public protocol ViewModifier {
     ///   - context: The rendering context.
     /// - Returns: The modified buffer.
     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer
+
+    /// Adjusts the rendering context before the wrapped content is rendered.
+    ///
+    /// Override this method in modifiers that consume space (like padding)
+    /// to reduce `availableWidth` or `availableHeight` so that flexible
+    /// child views size themselves correctly.
+    ///
+    /// The default implementation returns the context unchanged.
+    ///
+    /// - Parameter context: The current rendering context.
+    /// - Returns: The adjusted context for content rendering.
+    func adjustContext(_ context: RenderContext) -> RenderContext
+}
+
+extension ViewModifier {
+    public func adjustContext(_ context: RenderContext) -> RenderContext {
+        context
+    }
 }
 
 // MARK: - ModifiedView
@@ -63,7 +81,8 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
 
 extension ModifiedView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let childBuffer = TUIkit.renderToBuffer(content, context: context)
+        let adjustedContext = modifier.adjustContext(context)
+        let childBuffer = TUIkit.renderToBuffer(content, context: adjustedContext)
         return modifier.modify(buffer: childBuffer, context: context)
     }
 }

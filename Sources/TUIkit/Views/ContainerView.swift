@@ -323,9 +323,8 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         let borderColor = style.borderColor?.resolve(with: palette) ?? palette.border
 
         // Create inner context for content inside borders using shared helper.
-        // Also subtract padding from available width so Spacers don't over-expand.
+        // Padding width reduction is handled by PaddingModifier.adjustContext.
         var innerContext = context.forBorderedContent()
-        innerContext.availableWidth = max(0, innerContext.availableWidth - padding.leading - padding.trailing)
 
         // Consume focus indicator so nested containers don't also show it.
         let indicatorColor = context.focusIndicatorColor
