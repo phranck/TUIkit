@@ -266,12 +266,14 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
 
-            // Register with focus manager
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
+            // Register with focus manager (skip during measurement)
+            if !context.isMeasuring {
+                focusManager.register(handler, inSection: context.activeFocusSectionID)
+                stateStorage.markActive(context.identity)
+            }
 
-            // Check if this table has focus
-            let tableHasFocus = focusManager.isFocused(id: persistedFocusID)
+            // Check if this table has focus (never focused during measurement)
+            let tableHasFocus = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
 
             // Build content lines
             var lines: [String] = []

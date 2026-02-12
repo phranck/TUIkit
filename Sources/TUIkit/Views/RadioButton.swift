@@ -253,11 +253,13 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         handler.itemValues = itemValues
         handler.canBeFocused = !isDisabled
 
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        if !context.isMeasuring {
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+        }
 
-        // Check if this group has focus (after registering, so isFocused works correctly)
-        let groupHasFocus = focusManager.isFocused(id: persistedFocusID)
+        // Check if this group has focus (never focused during measurement)
+        let groupHasFocus = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
 
         // Render items based on orientation
         let lines: [String]
