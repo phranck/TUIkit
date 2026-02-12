@@ -268,11 +268,13 @@ private struct _ToggleCore<Label: View>: View, Renderable {
             action: { binding.wrappedValue.toggle() },
             canBeFocused: !isDisabled
         )
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        if !context.isMeasuring {
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+        }
 
-        // Determine if focused
-        let isFocused = focusManager.isFocused(id: persistedFocusID)
+        // Determine if focused (never focused during measurement)
+        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
         let isOnValue = isOn.wrappedValue
 
         // Render the label to get its text

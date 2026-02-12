@@ -319,12 +319,14 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Lay
         handler.onEditingChanged = onEditingChanged
         handler.clampValue()
 
-        // Register with focus manager
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        // Register with focus manager (skip during measurement)
+        if !context.isMeasuring {
+            focusManager.register(handler, inSection: context.activeFocusSectionID)
+            stateStorage.markActive(context.identity)
+        }
 
-        // Determine focus state
-        let isFocused = focusManager.isFocused(id: persistedFocusID)
+        // Determine focus state (never focused during measurement)
+        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
 
         // Calculate fraction
         let range = bounds.upperBound - bounds.lowerBound
