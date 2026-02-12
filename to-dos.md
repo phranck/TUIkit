@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [ ] **Two-Pass Layout Refactor**: Phase 5 pending (hasExplicitWidth removal)
+- [ ] **Two-Pass Layout Focus Fix**: Verify TextField focus works correctly after isMeasuring flag fix
 
 ## Open
 
@@ -11,6 +11,11 @@
 #### High
 
 (none)
+
+#### High
+
+- [ ] **Image View**: ASCII art rendering with full 24-bit color support (plan complete)
+- [ ] **Bundle Resource Loading**: SPM resource integration for Image support (plan complete, deferred)
 
 #### Medium
 
@@ -34,6 +39,10 @@
 - [ ] **Code Examples**: Counter, Todo List, Form, Table/List
 
 ## Completed
+
+### 2026-02-11
+
+- [x] **Two-Pass Layout Focus Bug**: Added isMeasuring flag to prevent double focus registration during measure/render passes
 
 ### 2026-02-10
 
@@ -114,4 +123,4 @@
 
 ---
 
-**Last Updated:** 2026-02-10 (evening)
+**Last Updated:** 2026-02-11

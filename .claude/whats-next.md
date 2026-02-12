@@ -6,14 +6,14 @@
 
 ## Active
 
-Two-pass layout refactor (Phases 1-4 complete, Phase 5 deferred)
+Two-pass layout focus fix: isMeasuring flag prevents double registration
 
 ## Next Steps
 
-1. Test Example App with new layout system
+1. Verify focus works in Example App (TextField Demo page)
 2. Create PR for two-pass-layout branch
 3. Phase 5: Remove hasExplicitWidth/Height (separate PR)
-4. DisclosureGroup: Expandable/collapsible sections
+4. Image view with ASCII art rendering
 
 ---
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-11
