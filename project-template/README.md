@@ -73,7 +73,7 @@ tuikit-uninstall
 
 ## Documentation
 
-- [TUIkit Documentation](https://tuikit.layered.work/documentation/tuikit/)
+- [TUIkit Documentation](https://tuikit.dev/documentation/tuikit/)
 - [TUIkit GitHub](https://github.com/phranck/TUIkit)
 
 ## License

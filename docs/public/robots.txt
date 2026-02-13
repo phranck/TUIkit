@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tuikit.layered.work/sitemap.xml
+Sitemap: https://tuikit.dev/sitemap.xml
