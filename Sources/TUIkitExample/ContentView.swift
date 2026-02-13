@@ -27,6 +27,8 @@ enum DemoPage: Int, CaseIterable {
     case sliders
     case steppers
     case splitView
+    case imageFile
+    case imageURL
 }
 
 // MARK: - Content View (Page Router)
@@ -56,44 +58,12 @@ struct ContentView: View {
                         return true  // Consumed
                     }
                     return false  // Let default handler exit the app
-                case .character("8"):
-                    // Quick jump to Text Fields
-                    currentPage = .textFields
-                    return true
-                case .character("\\"):
-                    // Quick jump to Secure Fields
-                    currentPage = .secureFields
-                    return true
-                case .character("9"):
-                    // Quick jump to Radio Buttons
-                    currentPage = .radioButtons
-                    return true
-                case .character("0"):
-                    // Quick jump to Spinners
-                    currentPage = .spinners
-                    return true
-                case .character("-"):
-                    // Quick jump to Lists
-                    currentPage = .lists
-                    return true
-                case .character("="):
-                    // Quick jump to Tables
-                    currentPage = .tables
-                    return true
-                case .character("["):
-                    // Quick jump to Sliders
-                    currentPage = .sliders
-                    return true
-                case .character("]"):
-                    // Quick jump to Steppers
-                    currentPage = .steppers
-                    return true
-                case .character(";"):
-                    // Quick jump to Split View
-                    currentPage = .splitView
-                    return true
                 default:
-                    return false  // Let other handlers process
+                    // Quick-jump shortcuts only work from the menu page.
+                    // On sub-pages they would conflict with text input
+                    // (e.g. TextField, SecureField).
+                    guard currentPage == .menu else { return false }
+                    return handleMenuShortcut(event.key)
                 }
             }
     }
@@ -155,6 +125,10 @@ struct ContentView: View {
         case .splitView:
             SplitViewPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+        case .imageFile:
+            ImageFilePage()
+        case .imageURL:
+            ImageURLPage()
         }
     }
 
@@ -166,5 +140,25 @@ struct ContentView: View {
             },
             StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
         ]
+    }
+
+    /// Handles quick-jump shortcuts from the menu page.
+    ///
+    /// - Returns: `true` if the key was consumed, `false` otherwise.
+    private func handleMenuShortcut(_ key: Key) -> Bool {
+        let mapping: [Character: DemoPage] = [
+            "1": .textStyles, "2": .colors, "3": .containers,
+            "4": .overlays, "5": .layout, "6": .buttons,
+            "7": .toggles, "8": .textFields, "\\": .secureFields,
+            "9": .radioButtons, "0": .spinners, "-": .lists,
+            "=": .tables, "[": .sliders, "]": .steppers,
+            ";": .splitView, "'": .imageFile, ",": .imageURL,
+        ]
+
+        if case .character(let ch) = key, let page = mapping[ch] {
+            currentPage = page
+            return true
+        }
+        return false
     }
 }

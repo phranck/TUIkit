@@ -138,11 +138,21 @@ extension Terminal {
 
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
         isRawMode = true
+
+        // Enable bracketed paste mode so that terminal paste operations
+        // are wrapped in ESC[200~ ... ESC[201~ markers. This allows the
+        // application to detect pasted text and insert it as a single
+        // bulk operation instead of processing each character individually.
+        writeImmediate("\u{1B}[?2004h")
     }
 
     /// Disables raw mode and restores normal terminal operation.
     func disableRawMode() {
         guard isRawMode, var original = originalTermios else { return }
+
+        // Disable bracketed paste mode before restoring terminal state.
+        writeImmediate("\u{1B}[?2004l")
+
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &original)
         isRawMode = false
     }
@@ -270,11 +280,65 @@ extension Terminal {
 
     /// Reads a key event from the terminal.
     ///
+    /// When bracketed paste mode is active the terminal wraps pasted text
+    /// in `ESC[200~` ... `ESC[201~` markers. This method detects the start
+    /// marker, buffers all bytes until the end marker, and returns the
+    /// entire pasted text as a single `Key.paste(String)` event.
+    ///
     /// - Returns: The key event, or nil on timeout/error.
     func readKeyEvent() -> KeyEvent? {
         let bytes = readBytes()
         guard !bytes.isEmpty else { return nil }
+
+        // Detect bracketed paste start: ESC [ 2 0 0 ~
+        if bytes == [0x1B, 0x5B, 0x32, 0x30, 0x30, 0x7E] {
+            let pastedText = readBracketedPasteContent()
+            return KeyEvent(key: .paste(pastedText))
+        }
+
         return KeyEvent.parse(bytes)
+    }
+
+    /// Reads bytes until the bracketed paste end marker `ESC[201~` is found.
+    ///
+    /// Called after the paste start marker `ESC[200~` has been detected.
+    /// Reads byte-by-byte, watching for the 6-byte end sequence. All bytes
+    /// before the end marker are collected and returned as a UTF-8 string.
+    ///
+    /// - Returns: The pasted text content.
+    private func readBracketedPasteContent() -> String {
+        var content: [UInt8] = []
+        // The end marker is: ESC [ 2 0 1 ~
+        let endMarker: [UInt8] = [0x1B, 0x5B, 0x32, 0x30, 0x31, 0x7E]
+
+        // Safety limit to prevent infinite buffering on malformed input.
+        let maxPasteBytes = 65_536
+
+        while content.count < maxPasteBytes {
+            var byte = [UInt8](repeating: 0, count: 1)
+            let bytesRead = read(STDIN_FILENO, &byte, 1)
+            guard bytesRead > 0 else {
+                // No more data available right now. For non-blocking reads
+                // (VMIN=0, VTIME=0) this means the paste end marker has not
+                // yet arrived. Wait briefly and retry.
+                usleep(1_000)  // 1ms
+                continue
+            }
+
+            content.append(byte[0])
+
+            // Check if content ends with the paste end marker.
+            if content.count >= endMarker.count {
+                let tail = Array(content.suffix(endMarker.count))
+                if tail == endMarker {
+                    // Remove the end marker from the content.
+                    content.removeLast(endMarker.count)
+                    break
+                }
+            }
+        }
+
+        return String(bytes: content, encoding: .utf8) ?? String(content.map { Character(UnicodeScalar($0)) })
     }
 }
 

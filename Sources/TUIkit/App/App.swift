@@ -174,10 +174,11 @@ extension AppRunner {
             }
 
             // Read key events (non-blocking with VTIME=0)
-            // Process multiple events per frame to prevent input buffering lag,
-            // but limit to avoid render starvation and keep CPU usage low.
+            // Process all available events per frame. A high limit prevents
+            // input buffering lag during paste operations while still avoiding
+            // infinite loops if input arrives faster than we can process.
             var eventsProcessed = 0
-            let maxEventsPerFrame = 5
+            let maxEventsPerFrame = 128
             while eventsProcessed < maxEventsPerFrame,
                   let keyEvent = terminal.readKeyEvent() {
                 inputHandler.handle(keyEvent)

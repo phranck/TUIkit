@@ -27,11 +27,19 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "TUIkit"
+            name: "CSTBImage",
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "TUIkit",
+            dependencies: ["CSTBImage"]
         ),
         .executableTarget(
             name: "TUIkitExample",
-            dependencies: ["TUIkit"]
+            dependencies: ["TUIkit"],
+            resources: [
+                .copy("Resources"),
+            ]
         ),
         .testTarget(
             name: "TUIkitTests",
