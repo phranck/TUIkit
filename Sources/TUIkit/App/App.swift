@@ -62,9 +62,9 @@ extension App {
 ///
 /// `AppRunner` is the main coordinator that owns the run loop and
 /// delegates to specialized managers:
-/// - ``SignalManager`` — POSIX signal handling (SIGINT, SIGWINCH)
-/// - ``InputHandler`` — Key event dispatch (status bar → views → defaults)
-/// - ``RenderLoop`` — Rendering pipeline (scene + status bar)
+/// - `SignalManager` - POSIX signal handling (SIGINT, SIGWINCH)
+/// - `InputHandler` - Key event dispatch (status bar, views, defaults)
+/// - `RenderLoop` — Rendering pipeline (scene + status bar)
 @MainActor
 internal final class AppRunner<A: App> {
     private let app: A
@@ -227,8 +227,8 @@ private extension AppRunner {
 internal protocol SceneRenderable {
     /// Renders the scene's content into a ``FrameBuffer``.
     ///
-    /// The caller (``RenderLoop``) is responsible for writing the buffer
-    /// to the terminal via ``FrameDiffWriter``.
+    /// The caller (`RenderLoop`) is responsible for writing the buffer
+    /// to the terminal via `FrameDiffWriter`.
     ///
     /// - Parameter context: The rendering context with layout constraints.
     /// - Returns: The rendered frame buffer.
@@ -240,7 +240,7 @@ internal protocol SceneRenderable {
 /// This is the bridge from `Scene` to `View` rendering:
 /// calls ``renderToBuffer(_:context:)`` on `content` and returns the
 /// resulting ``FrameBuffer``. Terminal output (diffing, writing) is
-/// handled by ``RenderLoop`` via ``FrameDiffWriter``.
+/// handled by `RenderLoop` via `FrameDiffWriter`.
 ///
 /// Renders the window group's content view into a ``FrameBuffer``.
 ///

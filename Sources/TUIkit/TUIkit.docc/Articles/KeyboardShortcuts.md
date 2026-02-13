@@ -155,7 +155,7 @@ VStack {
 
 ## Focus Navigation
 
-The ``FocusManager`` handles two navigation keys:
+The `FocusManager` handles two navigation keys:
 
 | Key | Action |
 |-----|--------|
@@ -332,7 +332,6 @@ statusBar.showAppearanceItem = false    // Hide only appearance cycling
 
 ### Focus
 
-- ``FocusManager``
 - ``FocusState``
 - ``Focusable``
 

@@ -12,7 +12,7 @@ import Foundation
 ///
 /// Each entry carries the message, timing, and a unique identifier
 /// for lifecycle tracking. Entries are created by ``NotificationService/post(_:duration:)``
-/// and consumed by the ``NotificationHostModifier`` during rendering.
+/// and consumed by the `NotificationHostModifier` during rendering.
 struct NotificationEntry: Identifiable, Sendable {
     /// Unique identifier for this notification.
     let id: UUID
@@ -45,7 +45,7 @@ struct NotificationEntry: Identifiable, Sendable {
 ///
 /// `NotificationService` lives in the environment and accepts fire-and-forget
 /// notification posts from anywhere in the view hierarchy. The
-/// ``NotificationHostModifier`` reads the active entries and renders them
+/// `NotificationHostModifier` reads the active entries and renders them
 /// as a stacked overlay.
 ///
 /// ## Usage
@@ -82,7 +82,7 @@ public final class NotificationService: @unchecked Sendable {
     /// render context and therefore cannot read `EnvironmentValues`. A static
     /// reference is the only way to reach the service from those call sites.
     ///
-    /// The same pattern is used by ``RenderNotifier/current`` for the same
+    /// The same pattern is used by `RenderNotifier.current` for the same
     /// reason. For tests, create a fresh instance instead of using `current`.
     ///
     /// ```swift
@@ -154,7 +154,7 @@ private struct NotificationServiceKey: EnvironmentKey {
 extension EnvironmentValues {
     /// The notification service for posting and managing notifications.
     ///
-    /// Used internally by the ``NotificationHostModifier`` to read active entries.
+    /// Used internally by the `NotificationHostModifier` to read active entries.
     /// Post notifications via the static accessor:
     ///
     /// ```swift

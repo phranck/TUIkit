@@ -9,9 +9,9 @@
 
 /// A snapshot of environment values that affect rendered output.
 ///
-/// Used by ``RenderLoop`` to detect environment changes (theme, appearance)
+/// Used by `RenderLoop` to detect environment changes (theme, appearance)
 /// between frames. When the snapshot differs from the previous frame, the
-/// render cache is cleared so ``EquatableView``-cached subtrees re-render
+/// render cache is cleared so `EquatableView`-cached subtrees re-render
 /// with the updated values.
 ///
 /// Only tracks values that affect visual output — reference-type infrastructure
@@ -34,7 +34,7 @@ private struct EnvironmentSnapshot: Equatable {
 
 /// Manages the full rendering pipeline for each frame.
 ///
-/// `RenderLoop` is owned by ``AppRunner`` and called once per frame.
+/// `RenderLoop` is owned by `AppRunner` and called once per frame.
 /// It orchestrates the complete render pass from `App.body` to
 /// terminal output.
 ///
@@ -59,15 +59,15 @@ private struct EnvironmentSnapshot: Equatable {
 ///
 /// ## Diff-Based Rendering
 ///
-/// `RenderLoop` uses a ``FrameDiffWriter`` to compare each frame's output
+/// `RenderLoop` uses a `FrameDiffWriter` to compare each frame's output
 /// with the previous frame. Only lines that actually changed are written
 /// to the terminal, reducing I/O by ~94% for mostly-static UIs.
 ///
 /// ## Output Buffering
 ///
-/// All diff writes (content + status bar) are collected in ``Terminal``'s
+/// All diff writes (content + status bar) are collected in `Terminal`'s
 /// frame buffer and flushed as a single `write()` syscall via
-/// ``Terminal/beginFrame()`` / ``Terminal/endFrame()``. This reduces
+/// `Terminal.beginFrame()` / `Terminal.endFrame()`. This reduces
 /// per-frame syscalls from ~40+ to exactly 1.
 ///
 /// On terminal resize (SIGWINCH), the diff cache is invalidated to force
@@ -76,11 +76,11 @@ private struct EnvironmentSnapshot: Equatable {
 /// ## Responsibilities
 ///
 /// - Assembling ``EnvironmentValues`` from all subsystems
-/// - Rendering the main scene content via ``SceneRenderable``
+/// - Rendering the main scene content via `SceneRenderable`
 /// - Rendering the status bar separately (never dimmed)
 /// - Coordinating lifecycle tracking (appear/disappear)
-/// - Diff-based terminal output via ``FrameDiffWriter``
-/// - Buffered frame output via ``Terminal``
+/// - Diff-based terminal output via `FrameDiffWriter`
+/// - Buffered frame output via `Terminal`
 @MainActor
 internal final class RenderLoop<A: App> {
     /// The user's app instance (provides `body`).
@@ -114,7 +114,7 @@ internal final class RenderLoop<A: App> {
     ///
     /// Compared after `buildEnvironment()` each frame. When the snapshot
     /// differs (e.g. palette or appearance changed), the render cache is
-    /// cleared automatically. This ensures ``EquatableView``-cached subtrees
+    /// cleared automatically. This ensures `EquatableView`-cached subtrees
     /// never serve stale content after theme changes — without requiring
     /// callers to manually invalidate the cache.
     private var lastEnvironmentSnapshot: EnvironmentSnapshot?
@@ -163,7 +163,7 @@ extension RenderLoop {
     ///
     /// - Parameters:
     ///   - pulsePhase: The current breathing indicator phase (0–1).
-    ///     Passed from ``PulseTimer`` via ``AppRunner``.
+    ///     Passed from `PulseTimer` via `AppRunner`.
     ///   - cursorTimer: The cursor timer for TextField/SecureField animations.
     func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
         // Clear per-frame state before re-rendering
@@ -366,11 +366,11 @@ private extension RenderLoop {
     /// Clears the render cache when environment values affecting visual output changed.
     ///
     /// Compares the current palette and appearance identifiers with the previous
-    /// frame's snapshot. On mismatch, all ``EquatableView``-cached subtrees are
+    /// frame's snapshot. On mismatch, all `EquatableView`-cached subtrees are
     /// invalidated so they re-render with the new theme/appearance.
     ///
-    /// This runs once per frame (two string comparisons) and ensures developers
-    /// never need to manually invalidate the cache after theme changes.
+    /// This runs once per frame (two string comparisons) and ensures
+    /// developers never need to manually invalidate the cache after theme changes.
     func invalidateCacheIfEnvironmentChanged(environment: EnvironmentValues) {
         let currentSnapshot = EnvironmentSnapshot(from: environment)
         if let lastSnapshot = lastEnvironmentSnapshot, lastSnapshot != currentSnapshot {
@@ -392,7 +392,7 @@ private extension RenderLoop {
         }
     }
 
-    /// Renders a scene by delegating to ``SceneRenderable``.
+    /// Renders a scene by delegating to `SceneRenderable`.
     func renderScene<S: Scene>(_ scene: S, context: RenderContext) -> FrameBuffer {
         if let renderable = scene as? SceneRenderable {
             return renderable.renderScene(context: context)

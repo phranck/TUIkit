@@ -165,9 +165,45 @@ When content extends beyond the viewport, scroll indicators appear:
 └──────────────────────────────┘
 ```
 
-## Disabled State
+## Sections
 
-Disable a list or table to prevent interaction:
+Use ``Section`` to group list items with headers and optional footers:
+
+```swift
+List("Settings", selection: $selected) {
+    Section("General") {
+        ForEach(generalItems) { item in
+            Text(item.name)
+        }
+    }
+    Section("Advanced") {
+        ForEach(advancedItems) { item in
+            Text(item.name)
+        }
+    }
+}
+```
+
+Section headers are rendered with secondary foreground color and bold styling above the group.
+
+## Badges
+
+Add badges to list rows using the `.badge(_:)` modifier:
+
+```swift
+List("Inbox", selection: $selected) {
+    ForEach(mailboxes) { mailbox in
+        Text(mailbox.name)
+            .badge(mailbox.unreadCount)
+    }
+}
+```
+
+Badges appear right-aligned in the row and support both integer and string values.
+
+## List Modifiers
+
+Lists support several TUI-specific modifiers:
 
 ```swift
 List("Items", selection: $selected) {
@@ -175,8 +211,18 @@ List("Items", selection: $selected) {
         Text(item.name)
     }
 }
-.disabled(isLoading)
+.focusID("my-list")                    // Explicit focus identifier
+.listEmptyPlaceholder("Nothing here")  // Custom empty state text
+.listFooterSeparator(false)            // Hide footer separator
+.disabled(isLoading)                   // Disable interaction
 ```
+
+| Modifier | Description |
+|----------|-------------|
+| `.focusID(_:)` | Sets a stable, explicit focus identifier |
+| `.listEmptyPlaceholder(_:)` | Text shown when the list has no items (default: "No items") |
+| `.listFooterSeparator(_:)` | Controls the separator line before the footer |
+| `.disabled(_:)` | Prevents keyboard interaction |
 
 ## Environment Propagation
 
@@ -196,5 +242,8 @@ List("Items", selection: $selected) {
 - ``List``
 - ``Table``
 - ``TableColumn``
+- ``ColumnWidth``
+- ``Section``
 - ``ForEach``
+- ``SelectionMode``
 - <doc:FocusSystem>

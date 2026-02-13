@@ -204,7 +204,7 @@ public extension FocusManager {
     /// Clears all sections and focusable elements, including selection state.
     ///
     /// This is a hard reset. For per-frame clearing that preserves the active
-    /// section and focused element, use ``beginRenderPass()`` instead.
+    /// section and focused element, use `beginRenderPass()` instead.
     func clear() {
         sections.removeAll()
         activeSectionID = nil
@@ -547,7 +547,7 @@ extension EnvironmentValues {
 
 /// Tracks focus state for a specific element.
 ///
-/// `FocusState` is a lightweight wrapper around a ``FocusManager`` that
+/// `FocusState` is a lightweight wrapper around a `FocusManager` that
 /// provides a simple focused/unfocused API for a single element.
 ///
 /// Create a `FocusState` with a reference to the focus manager

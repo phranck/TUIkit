@@ -13,7 +13,7 @@ extension View {
     /// the border characters. The total width overhead is 4 characters
     /// (2 for borders + 2 for inner padding).
     ///
-    /// Internally this creates a ``ContainerView`` without title or footer,
+    /// Internally this creates a `ContainerView` without title or footer,
     /// ensuring consistent padding and rendering across all bordered views.
     ///
     /// # Example

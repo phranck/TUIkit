@@ -62,7 +62,7 @@ public final class StatusBarState: @unchecked Sendable {
 
     /// The focus manager used to determine the active section.
     ///
-    /// Set by ``RenderLoop`` at the start of each render pass.
+    /// Set by `RenderLoop` at the start of each render pass.
     weak var focusManager: FocusManager?
 
     /// The ID of the currently active focus section, read from the FocusManager.

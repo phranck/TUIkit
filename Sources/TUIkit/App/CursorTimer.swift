@@ -12,7 +12,7 @@ import Foundation
 /// - `blinkVisible`: Boolean for sharp on/off blinking
 /// - `pulsePhase`: Smooth 0-1 sine wave for pulsing
 ///
-/// The timer runs independently from the ``PulseTimer`` (which handles focus indicators)
+/// The timer runs independently from the `PulseTimer` (which handles focus indicators)
 /// to allow different animation speeds and precise control over cursor timing.
 ///
 /// ## Animation Speeds

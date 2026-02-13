@@ -213,7 +213,7 @@ extension View {
     ///
     /// When used inside a `.focusSection()`, items are composed with parent
     /// items using the `.merge` strategy (default). Use
-    /// ``statusBarItems(_:_:)-2f9gk`` to specify a different strategy.
+    /// ``statusBarItems(_:_:)`` to specify a different strategy.
     ///
     /// # Example
     ///
@@ -305,7 +305,7 @@ extension View {
     /// between sections with Tab/Shift+Tab.
     ///
     /// Focus sections are **declarative** — they are registered during rendering,
-    /// not added/removed imperatively. The ``FocusManager`` tracks which section
+    /// not added/removed imperatively. The `FocusManager` tracks which section
     /// is active and routes focus events accordingly.
     ///
     /// # Example

@@ -124,7 +124,7 @@ exists for this position. If it does, the existing value is used instead of the 
 
 When a ``State`` value changes:
 
-1. The ``StateBox`` triggers ``RenderNotifier/current`` → ``AppState/setNeedsRender()``
+1. The `StateBox` triggers `RenderNotifier.current` -> `AppState.setNeedsRender()`
 2. The observer registered by `AppRunner` requests a re-render
 3. The main loop re-evaluates `app.body` fresh: reconstructing all views
 4. Each `@State.init` self-hydrates from `StateStorage`, recovering persisted values

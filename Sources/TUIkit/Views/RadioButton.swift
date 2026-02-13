@@ -65,7 +65,7 @@ public struct RadioButtonItem<Value: Hashable> {
 /// `RadioButtonGroupBuilder` enables the declarative syntax for defining multiple
 /// options within a ``RadioButtonGroup``. You don't use this type directly; instead,
 /// the `@RadioButtonGroupBuilder` attribute is applied to the trailing closure of
-/// ``RadioButtonGroup/init(selection:orientation:_:)``.
+/// ``RadioButtonGroup/init(selection:orientation:isDisabled:builder:)``.
 ///
 /// ## Overview
 ///
