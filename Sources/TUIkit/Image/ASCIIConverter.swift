@@ -246,7 +246,7 @@ extension ASCIIConverter {
 
                 // Average color for this cell
                 let avgPixel: RGBA
-                if count > 0 {
+                if count > 0 { // swiftlint:disable:this empty_count
                     avgPixel = RGBA(
                         r: UInt8(clamping: totalR / count),
                         g: UInt8(clamping: totalG / count),
