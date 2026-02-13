@@ -91,7 +91,7 @@ Section(title: "Settings") {
 
 ### Building Custom Containers
 
-For richer containers, compose existing container views like ``Panel``, ``Card``, ``Box``, or ``Dialog``:
+For richer containers, compose existing container views like ``Panel``, ``Card``, or ``Dialog``:
 
 ```swift
 struct SettingsGroup<Content: View>: View {

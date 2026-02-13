@@ -40,8 +40,8 @@ struct ChildView {
 
     /// Creates a child view wrapper with an explicit child index for identity propagation.
     ///
-    /// Use this initializer when wrapping children from a ``TupleView`` or similar
-    /// container so that each child receives a unique ``ViewIdentity`` during
+    /// Use this initializer when wrapping children from a `TupleView` or similar
+    /// container so that each child receives a unique `ViewIdentity` during
     /// measure and render passes.
     ///
     /// - Parameters:

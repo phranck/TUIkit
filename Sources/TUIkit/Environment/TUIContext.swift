@@ -213,13 +213,13 @@ final class TUIContext: @unchecked Sendable {
     /// Preference value collection during rendering.
     let preferences: PreferenceStorage
 
-    /// Persistent `@State` value storage indexed by ``ViewIdentity``.
+    /// Persistent `@State` value storage indexed by `ViewIdentity`.
     let stateStorage: StateStorage
 
     /// Cache for memoized subtree rendering results.
     ///
     /// Stores rendered ``FrameBuffer`` output for ``EquatableView`` instances,
-    /// keyed by ``ViewIdentity``. Cleared on every `@State` change; entries
+    /// keyed by `ViewIdentity`. Cleared on every `@State` change; entries
     /// for removed views are garbage-collected at the end of each render pass.
     let renderCache: RenderCache
 

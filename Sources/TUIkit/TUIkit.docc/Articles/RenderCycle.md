@@ -13,7 +13,7 @@ Three things cause `RenderLoop` to produce a new frame:
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
 | Terminal resize | `SIGWINCH` signal | `SignalManager` sets a boolean flag |
-| State mutation | `@State` property change | ``AppState`` notifies its observer via ``RenderNotifier``, which sets the rerender flag |
+| State mutation | `@State` property change | `AppState` notifies its observer via `RenderNotifier`, which sets the rerender flag |
 | Programmatic | `appState.setNeedsRender()` | Same observer path as above (services receive `AppState` via constructor injection) |
 
 All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread: signal handlers never render directly.
@@ -30,7 +30,7 @@ Three subsystems are reset at the start of every frame:
 
 - **`KeyEventDispatcher`**: All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
 - **`PreferenceStorage`**: All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
-- **``FocusManager``**: All focus registrations are cleared. Focusable views re-register during rendering.
+- **`FocusManager`**: All focus registrations are cleared. Focusable views re-register during rendering.
 
 This ensures that views which disappeared between frames don't leave stale handlers or registrations behind.
 
@@ -65,7 +65,7 @@ A ``RenderContext`` bundles everything a view needs to render:
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
 | `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences, state storage) |
-| `identity` | The current view's structural identity (``ViewIdentity``) |
+| `identity` | The current view's structural identity (`ViewIdentity`) |
 
 `RenderContext` is a pure data container: it does not hold a reference to `Terminal`. All terminal I/O happens after the view tree has been rendered into a ``FrameBuffer``.
 
@@ -144,14 +144,14 @@ This path is used by:
 - **Layout containers**: `VStack`, `HStack`, `ZStack`
 - **Interactive views**: ``Button``, ``ButtonRow``, ``Menu``
 - **Container views**: ``Panel``, ``Card``, ``Alert``, ``Dialog``
-- **Modifier wrappers**: `ModifiedView`, `BorderedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
+- **Modifier wrappers**: `ModifiedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
 
 ### Path 2: Composition (body)
 
 Views that are **not** `Renderable` declare their content through `body`. The rendering system recursively renders the body until it hits a `Renderable` leaf.
 
 This path is used by:
-- **Composite views**: ``Box`` returns `content.border(...)`, which wraps in a `BorderedView` (which is `Renderable`)
+- **Composite views**: ``Card`` returns `content.padding().border(...)`, which wraps in a `ContainerView` (whose `_ContainerViewCore` is `Renderable`)
 - **User-defined views**: Your custom views compose other views in `body`
 
 ### The Dispatch Function
@@ -260,10 +260,11 @@ These transform a ``FrameBuffer`` after the content has rendered:
 ```swift
 public protocol ViewModifier {
     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer
+    func adjustContext(_ context: RenderContext) -> RenderContext  // default: returns context unchanged
 }
 ```
 
-`ModifiedView` wraps a view and a modifier: it renders the content first, then calls `modify(buffer:context:)`. Examples:
+`ModifiedView` wraps a view and a modifier. It first calls `adjustContext(_:)` to let the modifier reduce available space (e.g. padding), then renders the content, then calls `modify(buffer:context:)`. Examples:
 
 - **`PaddingModifier`**: Adds empty lines (top/bottom) and spaces (leading/trailing) around the buffer
 - **`BackgroundModifier`**: Wraps each line with background ANSI codes, padded to full width
@@ -272,12 +273,12 @@ public protocol ViewModifier {
 
 More complex modifiers are full `View + Renderable` implementations that control when and how their content renders:
 
-- **`BorderedView`**: Reduces `availableWidth` by 2, renders content, adds border characters via `BorderRenderer`
+- **`ContainerView` / `_ContainerViewCore`**: Reduces `availableWidth` by 2, renders content, adds border characters via `BorderRenderer`
 - **`FlexibleFrameView`**: Modifies `availableWidth`/`availableHeight` before rendering, applies min/max constraints and alignment after
 - **`OverlayModifier`**: Renders base and overlay separately, composites via `FrameBuffer.composited(with:at:)`
 - **`DimmedModifier`**: Renders content, then applies ANSI dim code to every line
 - **`EnvironmentModifier`**: Creates modified context, renders content with it
-- **``EquatableView``**: Checks ``RenderCache`` before rendering; returns cached buffer on hit, renders and stores on miss (see <doc:RenderCycle#Subtree-Memoization>)
+- **``EquatableView``**: Checks `RenderCache` before rendering; returns cached buffer on hit, renders and stores on miss (see <doc:RenderCycle#Subtree-Memoization>)
 
 ## Lifecycle Tracking
 
@@ -340,7 +341,7 @@ While the view tree is reconstructed each frame, ``EquatableView`` allows **indi
 
 When a view is wrapped in `.equatable()`, the rendering system:
 
-1. Looks up the cached ``FrameBuffer`` for this view's ``ViewIdentity``
+1. Looks up the cached ``FrameBuffer`` for this view's `ViewIdentity`
 2. Compares the **current view value** with the cached snapshot via `Equatable.==`
 3. Checks that the available **width and height** haven't changed
 4. On **cache hit**: returns the cached buffer: the entire subtree is skipped
@@ -368,7 +369,7 @@ FeatureBox("Pure Swift", "No ncurses").equatable()
 
 ### Cache Invalidation
 
-The ``RenderCache`` is **fully cleared** in two situations:
+The `RenderCache` is **fully cleared** in two situations:
 
 | Trigger | Mechanism |
 |---------|-----------|
@@ -397,7 +398,7 @@ The following types have `Equatable` conformance, enabling `.equatable()` on vie
 
 **Leaf views:** ``Text``
 
-**Container views** (conditional: `where Content: Equatable`): `VStack`, `HStack`, `ZStack`, ``Box``, ``Panel``, ``Card``, ``Dialog``, `ContainerView`, ``BorderedView``
+**Container views** (conditional: `where Content: Equatable`): `VStack`, `HStack`, `ZStack`, ``Panel``, ``Card``, ``Dialog``, `ContainerView`
 
 **Modifier views** (conditional): `FlexibleFrameView`, `OverlayModifier`, `DimmedModifier`
 

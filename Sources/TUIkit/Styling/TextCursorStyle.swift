@@ -139,7 +139,7 @@ extension TextCursorStyle {
     /// The speed of the cursor animation.
     ///
     /// Each speed defines specific cycle durations for blink and pulse animations,
-    /// controlled by the ``CursorTimer``.
+    /// controlled by the `CursorTimer`.
     public enum Speed: String, CaseIterable, Sendable {
         /// Slow animation.
         ///

@@ -22,7 +22,7 @@
 /// | Footer | No | Optional | **Optional** |
 /// | Rendering | Composite (`body`) | Primitive (`Renderable`) | Primitive (`Renderable`) |
 ///
-/// Use `Panel` when the section **must have a label**. A ``Box`` has no
+/// Use `Panel` when the section **must have a label**. A plain border has no
 /// title at all, and a ``Card`` makes it optional — so if you skip the
 /// title on a Card, there's nothing telling the user what they're looking
 /// at. Panel enforces that every instance has a visible heading.

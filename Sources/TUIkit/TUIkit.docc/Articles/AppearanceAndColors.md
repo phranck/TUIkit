@@ -38,7 +38,7 @@ VStack {
 
 ### Cycling Appearances at Runtime
 
-Users can press `a` to cycle through appearances. The ``ThemeManager`` handles this via the `AppearanceRegistry`.
+Users can press `a` to cycle through appearances. The `ThemeManager` handles this via the `AppearanceRegistry`.
 
 ### Custom Appearances
 

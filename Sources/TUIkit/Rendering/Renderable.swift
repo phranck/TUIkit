@@ -114,8 +114,8 @@ public struct ViewSize: Equatable, Sendable {
 /// ## Composite views (body only)
 ///
 /// Views that do **not** conform to `Renderable` use `body` to compose
-/// other views. Example: ``Box`` returns `content.border(...)` from its
-/// `body`, delegating rendering to ``ContainerView`` which *is* `Renderable`.
+/// other views. Example: `Box` returns `content.border(...)` from its
+/// `body`, delegating rendering to `ContainerView` which *is* `Renderable`.
 ///
 /// ## Adding a new view type
 ///
@@ -133,7 +133,7 @@ protocol Renderable {
     /// consulted in this case.
     ///
     /// - Parameter context: The rendering context with layout constraints,
-    ///   environment values, and the ``TUIContext``.
+    ///   environment values, and the `TUIContext`.
     /// - Returns: A buffer containing the rendered terminal output.
     func renderToBuffer(context: RenderContext) -> FrameBuffer
 }
@@ -206,7 +206,7 @@ extension Layoutable {
 /// access framework services.
 ///
 /// `RenderContext` is a pure data container — it does not hold a reference
-/// to `Terminal`. All terminal I/O happens in ``RenderLoop`` after the
+/// to `Terminal`. All terminal I/O happens in `RenderLoop` after the
 /// view tree has been rendered into a ``FrameBuffer``.
 ///
 /// - Important: This is framework infrastructure passed to
@@ -234,32 +234,32 @@ public struct RenderContext {
     ///
     /// Built incrementally as `renderToBuffer` traverses the view hierarchy.
     /// Container views append child indices, composite views append type names.
-    /// Used by ``StateStorage`` to persist `@State` values across render passes.
+    /// Used by `StateStorage` to persist `@State` values across render passes.
     var identity: ViewIdentity
 
     /// The ID of the focus section that child views should register in.
     ///
-    /// Set by ``FocusSectionModifier`` during rendering. Focusable children
+    /// Set by `FocusSectionModifier` during rendering. Focusable children
     /// (buttons, menus) read this to register in the correct section.
     /// When nil, elements register in the active or default section.
     var activeFocusSectionID: String?
 
     /// The current breathing animation phase (0–1) for the focus indicator.
     ///
-    /// Set by ``RenderLoop`` from the ``PulseTimer`` at the start of each frame.
-    /// Read by ``BorderRenderer`` to interpolate the ● indicator color.
+    /// Set by `RenderLoop` from the `PulseTimer` at the start of each frame.
+    /// Read by `BorderRenderer` to interpolate the ● indicator color.
     /// A value of 0 means dimmest, 1 means brightest.
     var pulsePhase: Double = 0
 
     /// The cursor timer for TextField/SecureField animations.
     ///
-    /// Set by ``RenderLoop`` at the start of each frame.
+    /// Set by `RenderLoop` at the start of each frame.
     /// Read by text fields to compute blink and pulse phases.
     var cursorTimer: CursorTimer?
 
     /// The focus indicator color for the first border encountered in this subtree.
     ///
-    /// Set by ``FocusSectionModifier`` when the section is active.
+    /// Set by `FocusSectionModifier` when the section is active.
     /// The first view that renders a border (Panel, Box, `.border()`) reads
     /// this color, renders the ● indicator, and sets it to nil so that
     /// nested borders don't also show the indicator.
@@ -267,7 +267,7 @@ public struct RenderContext {
 
     /// Whether an explicit frame width constraint has been set.
     ///
-    /// Set by ``FlexibleFrameView`` when a fixed width is specified.
+    /// Set by `FlexibleFrameView` when a fixed width is specified.
     /// Container views use this to decide whether to expand to fill
     /// the available width or shrink to fit their content.
     var hasExplicitWidth: Bool = false
@@ -347,7 +347,7 @@ public struct RenderContext {
 
     /// Creates a new context with a branch identity.
     ///
-    /// Used by ``ConditionalView`` to distinguish between if/else branches.
+    /// Used by `ConditionalView` to distinguish between if/else branches.
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).
     /// - Returns: A new RenderContext with the branch identity.
@@ -362,7 +362,7 @@ public struct RenderContext {
     /// Used by modal presentation modifiers to render background content
     /// visually without letting its buttons and key handlers interfere
     /// with the modal's interactive elements. The returned context has a
-    /// throwaway ``FocusManager`` and ``KeyEventDispatcher`` while sharing
+    /// throwaway `FocusManager` and `KeyEventDispatcher` while sharing
     /// lifecycle, preferences, and state storage with the real context.
     func isolatedForBackground() -> Self {
         var copy = self

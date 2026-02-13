@@ -9,7 +9,7 @@
 /// A modifier that declares the app header content for a view.
 ///
 /// The header content is rendered to a ``FrameBuffer`` and stored in
-/// ``AppHeaderState`` during the render pass. The ``RenderLoop`` then
+/// `AppHeaderState` during the render pass. The `RenderLoop` then
 /// renders it at the top of the terminal, outside the view tree.
 ///
 /// If multiple views set `.appHeader { ... }`, the last one rendered wins.

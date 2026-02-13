@@ -14,7 +14,7 @@ import Foundation
 /// Palettes provide semantic colors that views use for consistent styling.
 /// TUIkit includes several predefined palettes inspired by classic terminals.
 ///
-/// Conforms to ``Cyclable`` so it can be managed by a ``ThemeManager``.
+/// Conforms to ``Cyclable`` so it can be managed by a `ThemeManager`.
 ///
 /// # Usage
 ///

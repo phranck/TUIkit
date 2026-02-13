@@ -11,13 +11,13 @@ import Foundation
 /// Caches rendered ``FrameBuffer`` results for views that opt into subtree memoization.
 ///
 /// `RenderCache` is Phase 5 of TUIKit's render pipeline optimization. It stores
-/// the output of ``EquatableView`` instances keyed by their ``ViewIdentity``,
+/// the output of ``EquatableView`` instances keyed by their `ViewIdentity`,
 /// allowing unchanged subtrees to skip rendering entirely.
 ///
 /// ## How It Works
 ///
 /// When an ``EquatableView<V>`` renders, it:
-/// 1. Looks up a cached entry by the current ``ViewIdentity``
+/// 1. Looks up a cached entry by the current `ViewIdentity`
 /// 2. Compares the new view value with the stored snapshot (`Equatable.==`)
 /// 3. Checks that the available size hasn't changed
 /// 4. On hit: returns the cached ``FrameBuffer`` — **the entire subtree is skipped**
@@ -26,7 +26,7 @@ import Foundation
 /// ## Invalidation
 ///
 /// The cache is **fully cleared** whenever any `@State` value changes
-/// (via ``StateBox/value``'s `didSet`). This is conservative but correct:
+/// (via `StateBox.value`'s `didSet`). This is conservative but correct:
 /// state changes can propagate to any subtree through bindings or environment.
 ///
 /// Between state changes (e.g. animation frames, pulse ticks), the cache
@@ -34,9 +34,9 @@ import Foundation
 ///
 /// ## Garbage Collection
 ///
-/// Cache entries for ``ViewIdentity`` paths not seen during the current
+/// Cache entries for `ViewIdentity` paths not seen during the current
 /// render pass are removed in ``removeInactive()``, matching
-/// ``StateStorage``'s existing GC pattern.
+/// `StateStorage`'s existing GC pattern.
 ///
 /// ## Debug Logging
 ///
@@ -237,7 +237,7 @@ extension RenderCache {
     ///
     /// Called when any `@State` value changes, because state changes
     /// can propagate to any subtree through bindings or environment.
-    /// Also called by ``RenderLoop`` when environment values change
+    /// Also called by `RenderLoop` when environment values change
     /// (theme, appearance).
     func clearAll() {
         stats.clears += 1

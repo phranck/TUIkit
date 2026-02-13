@@ -13,7 +13,7 @@
 ///
 /// ## Conforming Types
 ///
-/// - ``Terminal``: The real implementation that interacts with the terminal.
+/// - `Terminal`: The real implementation that interacts with the terminal.
 /// - `MockTerminal`: A test double that captures output for verification.
 ///
 /// ## Thread Safety

@@ -11,13 +11,13 @@ import Foundation
 /// Application state that triggers re-renders when modified.
 ///
 /// `AppState` is thread-safe: ``setNeedsRender()`` can be called from any thread
-/// (e.g., from ``PulseTimer`` on a background queue). Internal state is protected
+/// (e.g., from `PulseTimer` on a background queue). Internal state is protected
 /// by an `NSLock`.
 ///
-/// The ``AppRunner`` subscribes to state changes and re-renders when notified.
-/// `AppRunner` creates the instance and registers it with ``RenderNotifier``
+/// The `AppRunner` subscribes to state changes and re-renders when notified.
+/// `AppRunner` creates the instance and registers it with `RenderNotifier`
 /// on startup. Property wrappers like ``State`` and ``AppStorage`` access it
-/// through ``RenderNotifier/current``.
+/// through `RenderNotifier.current`.
 ///
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
@@ -44,8 +44,8 @@ public extension AppState {
     /// This method is thread-safe and can be called from any thread.
     ///
     /// Callers that change visual output (theme, palette, appearance) do
-    /// **not** need to manually clear the render cache. ``RenderLoop``
-    /// automatically detects environment changes via ``EnvironmentSnapshot``
+    /// **not** need to manually clear the render cache. `RenderLoop`
+    /// automatically detects environment changes via `EnvironmentSnapshot`
     /// comparison and clears the cache when needed.
     func setNeedsRender() {
         let observers = lock.withLock { state -> [@Sendable () -> Void] in
@@ -93,13 +93,13 @@ extension AppState {
 
 // MARK: - Render Notifier
 
-/// Framework-internal registry that connects property wrappers to the active ``AppState``.
+/// Framework-internal registry that connects property wrappers to the active `AppState`.
 ///
 /// Property wrappers (`@State`, `@AppStorage`) use `RenderNotifier.current` to signal
-/// re-renders when values change. `AppRunner` sets ``current`` once at startup before
+/// re-renders when values change. `AppRunner` sets `current` once at startup before
 /// entering the run loop.
 ///
-/// Services like `StatusBarState` and `ThemeManager` receive ``AppState`` directly
+/// Services like `StatusBarState` and `ThemeManager` receive `AppState` directly
 /// via constructor injection. `RenderNotifier` exists specifically for property wrappers
 /// which have no access to `RenderContext` or `TUIContext` at mutation time.
 ///
@@ -120,10 +120,10 @@ extension AppState {
 ///
 /// - Important: This type is framework-internal. User code should never access it directly.
 enum RenderNotifier {
-    /// The active ``AppState`` for the running application.
+    /// The active `AppState` for the running application.
     ///
     /// This is a static accessor because `@State`, `@AppStorage`, and
-    /// ``NotificationService`` need to trigger re-renders from contexts
+    /// `NotificationService` need to trigger re-renders from contexts
     /// that have no access to `EnvironmentValues` — property wrapper
     /// setters, button callbacks, and `onSelect` handlers all run outside
     /// the render pipeline. A static reference is the only way to reach
@@ -136,7 +136,7 @@ enum RenderNotifier {
 
     /// The active render cache for subtree memoization.
     ///
-    /// Set by `AppRunner` alongside ``current``. Cleared on every
+    /// Set by `AppRunner` alongside `current`. Cleared on every
     /// `@State` mutation to invalidate memoized subtrees.
     nonisolated(unsafe) static var renderCache: RenderCache?
 }
@@ -145,7 +145,7 @@ enum RenderNotifier {
 
 /// The active render context used by `@State` during self-hydration.
 ///
-/// Set by ``renderToBuffer(_:context:)`` before evaluating a composite view's `body`,
+/// Set by `renderToBuffer(_:context:)` before evaluating a composite view's `body`,
 /// and cleared immediately after. Provides the view identity and state storage
 /// that `@State.init` needs to retrieve or create persistent state.
 struct HydrationContext {
@@ -160,13 +160,13 @@ struct HydrationContext {
 
 /// Framework-internal state for `@State` self-hydration during rendering.
 ///
-/// When ``renderToBuffer(_:context:)`` is about to evaluate a composite view's `body`,
+/// When `renderToBuffer(_:context:)` is about to evaluate a composite view's `body`,
 /// it sets ``activeContext`` and resets ``counter`` to 0. Each `@State.init` that runs
 /// during `body` evaluation checks ``activeContext``:
 ///
 /// - **Non-nil:** Claims the next property index from ``counter`` and retrieves a
-///   persistent ``StateBox`` from ``StateStorage``.
-/// - **Nil:** Creates a local ``StateBox`` (pre-render or outside the render tree).
+///   persistent `StateBox` from `StateStorage`.
+/// - **Nil:** Creates a local `StateBox` (pre-render or outside the render tree).
 ///
 /// This is safe because TUIKit runs on a single thread — no concurrent access.
 enum StateRegistration {
@@ -269,31 +269,31 @@ public struct Binding<Value> {
 /// # Render Integration
 ///
 /// `@State` uses **self-hydrating init**: when `@State.init` runs while a
-/// render context is active (``StateRegistration/activeContext``), it claims
-/// the next property index and retrieves (or creates) a persistent ``StateBox``
-/// from ``StateStorage``.
+/// render context is active (`StateRegistration.activeContext`), it claims
+/// the next property index and retrieves (or creates) a persistent `StateBox`
+/// from `StateStorage`.
 ///
 /// The render loop sets the active context **before** evaluating `App.body`,
 /// so views constructed inside `WindowGroup { ... }` closures self-hydrate
-/// immediately. For nested composite views, ``renderToBuffer(_:context:)``
+/// immediately. For nested composite views, `renderToBuffer(_:context:)`
 /// saves and restores the context around each `body` evaluation.
 ///
-/// State is keyed by ``ViewIdentity`` and property index, ensuring values
+/// State is keyed by `ViewIdentity` and property index, ensuring values
 /// survive view reconstruction across render passes.
 ///
-/// Mutations signal re-renders through ``RenderNotifier``.
+/// Mutations signal re-renders through `RenderNotifier`.
 @propertyWrapper
 public struct State<Value> {
     /// The backing storage box for this state value.
     ///
     /// Either a local box (when no render context is active) or a persistent
-    /// box from ``StateStorage`` (during rendering). Since ``StateBox`` is a
+    /// box from `StateStorage` (during rendering). Since `StateBox` is a
     /// reference type, mutations through `nonmutating set` are visible everywhere.
     private let box: StateBox<Value>
 
     /// The default value provided at init time.
     ///
-    /// Used by ``StateStorage`` to create a new entry when no persistent
+    /// Used by `StateStorage` to create a new entry when no persistent
     /// value exists for this property yet.
     let defaultValue: Value
 
@@ -313,11 +313,11 @@ public struct State<Value> {
 
     /// Creates a state with an initial value.
     ///
-    /// If a render context is active (``StateRegistration/activeContext``),
+    /// If a render context is active (`StateRegistration.activeContext`),
     /// the state self-hydrates: it claims a property index and retrieves
-    /// or creates a persistent ``StateBox`` from ``StateStorage``.
+    /// or creates a persistent `StateBox` from `StateStorage`.
     ///
-    /// Otherwise, a local ``StateBox`` is created with the default value.
+    /// Otherwise, a local `StateBox` is created with the default value.
     ///
     /// - Parameter wrappedValue: The initial/default value.
     public init(wrappedValue: Value) {

@@ -8,11 +8,11 @@ import Foundation
 
 // MARK: - State Storage
 
-/// Persistent store for `@State` values, indexed by ``ViewIdentity``.
+/// Persistent store for `@State` values, indexed by `ViewIdentity`.
 ///
 /// `StateStorage` is the backbone of TUIKit's state persistence across render
 /// passes. It maps each `@State` property to a stable key derived from the
-/// view's structural position in the tree (``ViewIdentity``) and the property's
+/// view's structural position in the tree (`ViewIdentity`) and the property's
 /// declaration order within that view.
 ///
 /// ## Lifecycle
@@ -132,7 +132,7 @@ extension StateStorage {
 /// It is a reference type so that mutations are visible across all copies
 /// of the `@State` struct (which uses `nonmutating set`).
 ///
-/// On value change, signals a re-render through ``RenderNotifier``.
+/// On value change, signals a re-render through `RenderNotifier`.
 final class StateBox<Value>: @unchecked Sendable {
     /// The current value.
     var value: Value {

@@ -10,10 +10,10 @@ import Foundation
 
 // MARK: - Cyclable Protocol
 
-/// A type that can be managed and cycled through by a ``ThemeManager``.
+/// A type that can be managed and cycled through by a `ThemeManager`.
 ///
 /// Conforming types provide a unique identifier and a display name,
-/// enabling the ``ThemeManager`` to cycle, look up, and display items.
+/// enabling the `ThemeManager` to cycle, look up, and display items.
 ///
 /// Both ``Palette`` (color palettes) and ``Appearance`` (border styles)
 /// conform to this protocol.
@@ -141,7 +141,7 @@ public extension ThemeManager {
 // MARK: - Private Helpers
 
 private extension ThemeManager {
-    /// Triggers a re-render so the ``RenderLoop`` picks up the new current item.
+    /// Triggers a re-render so the `RenderLoop` picks up the new current item.
     func applyCurrentItem() {
         appState.setNeedsRender()
     }

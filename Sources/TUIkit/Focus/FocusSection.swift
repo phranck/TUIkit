@@ -11,7 +11,7 @@
 /// and each section can declare its own StatusBar items.
 ///
 /// Focus sections are registered during rendering by the
-/// ``FocusSectionModifier``. The ``FocusManager`` tracks all sections
+/// `FocusSectionModifier`. The `FocusManager` tracks all sections
 /// and manages which one is currently active.
 final class FocusSection {
     /// The unique identifier for this section.

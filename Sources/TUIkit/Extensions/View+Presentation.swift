@@ -37,14 +37,10 @@ extension View {
     ///     to present the alert.
     ///   - actions: A ViewBuilder returning the alert action buttons.
     ///   - message: A ViewBuilder returning the alert message content.
+    ///   - borderStyle: Custom border style for the alert (TUIKit extension, default: nil).
+    ///   - borderColor: Custom border color (TUIKit extension, default: nil).
+    ///   - titleColor: Custom title text color (TUIKit extension, default: nil).
     /// - Returns: A view that presents an alert conditionally.
-    ///
-    /// ## TUIKit Extensions
-    ///
-    /// TUIKit adds optional styling parameters not present in SwiftUI:
-    /// - `borderStyle`: Custom border style for the alert
-    /// - `borderColor`: Custom border color
-    /// - `titleColor`: Custom title text color
     public func alert<Actions: View, Message: View>(
         _ title: String,
         isPresented: Binding<Bool>,

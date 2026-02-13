@@ -24,7 +24,7 @@
 /// | Rendering | Composite (`body`) | Primitive (`Renderable`) | Primitive (`Renderable`) |
 ///
 /// Use `Card` when content needs **visual padding and optional structure**.
-/// A ``Box`` is too tight (no padding), and a ``Panel`` forces you to
+/// A simple bordered view is too tight (no padding), and a ``Panel`` forces you to
 /// provide a title. `Card` sits in between: comfortable defaults, with the
 /// option to add a title, footer, and background as needed.
 ///

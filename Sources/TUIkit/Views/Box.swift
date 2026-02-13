@@ -85,7 +85,7 @@
 ///
 /// `Box` is a **composite view** — it does not conform to `Renderable`.
 /// Instead, it uses `body` to delegate to `content.border(...)`, which
-/// creates a ``ContainerView`` without title or footer. This is intentional:
+/// creates a `ContainerView` without title or footer. This is intentional:
 /// `Box` is purely compositional sugar and carries no rendering logic.
 ///
 /// - Note: This is an internal type. Use `.border()` modifier directly instead.
