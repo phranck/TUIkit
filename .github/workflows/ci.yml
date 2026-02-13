@@ -10,8 +10,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -106,69 +104,6 @@ jobs:
           # [skip ci] prevents the push from triggering another workflow run
           git commit -m "Chore: Update test count badge to ${{ steps.counts.outputs.tests }} tests [skip ci]"
           git push
-
-  # ── Landing Page (Astro → tuikit.dev) ─────────────────────────
-  build-landing:
-    name: Build Landing Page
-    needs: build
-    runs-on: macos-15
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Determine version
-        id: version
-        run: |
-          # Use tag name if triggered by a tag push, otherwise latest tag
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/}"
-          else
-            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.1.0")
-          fi
-          # Strip leading 'v' if present (v1.2.3 -> 1.2.3)
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Resolved version: $VERSION"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: docs/package-lock.json
-
-      - name: Build landing page
-        working-directory: docs
-        env:
-          TUIKIT_VERSION: ${{ steps.version.outputs.version }}
-          PUBLIC_GITHUB_TOKEN: ${{ secrets.DASHBOARD_GITHUB_TOKEN }}
-        run: |
-          npm ci
-          npm run build
-
-      - name: Add CNAME for custom domain
-        run: echo "tuikit.dev" > docs/dist/CNAME
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/dist
-
-  # ── Deploy Landing Page to GitHub Pages ──────────────────────
-  deploy-landing:
-    name: Deploy Landing Page
-    needs: build-landing
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
   # ── DocC Documentation (→ docs.tuikit.dev) ───────────────────
   deploy-docs:
