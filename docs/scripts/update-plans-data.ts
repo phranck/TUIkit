@@ -1,5 +1,5 @@
 /**
- * Extracts plan data from plans/open/ and plans/done/ directories.
+ * Extracts plan data from .claude/plans/open/ and .claude/plans/done/ directories.
  * Generates plans.json with all open and done plans.
  * 
  * Runs via GitHub Actions (hourly) or manual npm script.
@@ -83,8 +83,8 @@ function readPlansFromDir(dirPath: string, status: "open" | "done"): PlanData[] 
  */
 function main() {
   const projectRoot = path.resolve(process.cwd(), "..");
-  const openDir = path.join(projectRoot, "plans", "open");
-  const doneDir = path.join(projectRoot, "plans", "done");
+  const openDir = path.join(projectRoot, ".claude", "plans", "open");
+  const doneDir = path.join(projectRoot, ".claude", "plans", "done");
 
   // Read all plans
   const openPlans = readPlansFromDir(openDir, "open");
