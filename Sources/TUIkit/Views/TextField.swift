@@ -285,6 +285,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
         handler.text = text
         handler.canBeFocused = !isDisabled
         handler.onSubmit = onSubmitAction
+        handler.textContentType = context.environment.textContentType
         handler.clampCursorPosition()
 
         FocusRegistration.register(context: context, handler: handler)

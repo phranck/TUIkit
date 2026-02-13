@@ -42,6 +42,19 @@ extension InputHandler {
     ///
     /// - Parameter event: The key event to handle.
     func handle(_ event: KeyEvent) {
+        // Text-Input Priority: when a text-input element (TextField/SecureField)
+        // is focused, let it handle the event FIRST. This ensures printable
+        // characters, backspace, delete, arrows, home, end, and enter reach the
+        // text field before any other layer can intercept them.
+        //
+        // Only structural/navigation keys that the text field does NOT consume
+        // (Escape, Tab, unhandled Ctrl+shortcuts) fall through to other layers.
+        if focusManager.hasTextInputFocus {
+            if focusManager.dispatchKeyEvent(event) {
+                return
+            }
+        }
+
         // Layer 1: Status bar items with actions
         if statusBar.handleKeyEvent(event) {
             return
@@ -53,8 +66,11 @@ extension InputHandler {
         }
 
         // Layer 3: Focus system (Tab navigation, Enter/Space on focused buttons)
-        if focusManager.dispatchKeyEvent(event) {
-            return
+        // Skipped when text-input has focus since it was already dispatched above.
+        if !focusManager.hasTextInputFocus {
+            if focusManager.dispatchKeyEvent(event) {
+                return
+            }
         }
 
         // Layer 4: Default key bindings
