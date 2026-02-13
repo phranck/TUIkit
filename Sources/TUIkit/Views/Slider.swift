@@ -162,7 +162,8 @@ extension Slider where Label == Text, ValueLabel == EmptyView {
         self.label = Text(String(title))
         self.valueLabel = nil
         self.trackStyle = .block
-        self.focusID = "slider-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }

@@ -154,7 +154,10 @@ public struct Button: View {
     let focusedStyle: ButtonStyle
 
     /// The unique focus identifier.
-    var focusID: String
+    ///
+    /// If `nil`, automatically generated from the view's identity path.
+    /// Use the `.focusID()` modifier to override.
+    var focusID: String?
 
     /// Whether the button is disabled.
     var isDisabled: Bool
@@ -178,8 +181,8 @@ public struct Button: View {
         self.action = action
         self.role = nil
         self.style = style
-        // Use label as default focusID for stability across render cycles
-        self.focusID = "button-\(label)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = isDisabled
 
         // Default focused style: bold version of the normal style
@@ -213,7 +216,8 @@ public struct Button: View {
         self.label = label
         self.action = action
         self.role = role
-        self.focusID = "button-\(label)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
 
         // Style based on role
@@ -260,7 +264,7 @@ private struct _ButtonCore: View, Renderable {
     let role: ButtonRole?
     let style: ButtonStyle
     let focusedStyle: ButtonStyle
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
 
     var body: Never {

@@ -51,14 +51,15 @@ struct ButtonTests {
         #expect(enabledButton.isDisabled == false)
     }
 
-    @Test("Button generates unique focus ID by default")
+    @Test("Button focusID defaults to nil (auto-generated during rendering)")
     func buttonGeneratesUniqueID() {
         let button1 = Button("One") {}
         let button2 = Button("Two") {}
 
-        #expect(button1.focusID != button2.focusID)
-        // UUID format check
-        #expect(button1.focusID.contains("-"))
+        // FocusID is now nil by default, allowing auto-generation from context.identity.path
+        // during rendering via FocusRegistration.persistFocusID()
+        #expect(button1.focusID == nil)
+        #expect(button2.focusID == nil)
     }
 
     @Test("Default button renders as single-line bracket style")

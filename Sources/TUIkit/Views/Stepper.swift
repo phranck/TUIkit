@@ -119,7 +119,8 @@ extension Stepper where Label == Text {
         self.label = Text(String(title))
         self.onIncrement = nil
         self.onDecrement = nil
-        self.focusID = "stepper-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -145,7 +146,8 @@ extension Stepper where Label == Text {
         self.label = Text(String(title))
         self.onIncrement = nil
         self.onDecrement = nil
-        self.focusID = "stepper-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -174,7 +176,8 @@ extension Stepper where Label == Text {
         self.label = Text(String(title))
         self.onIncrement = onIncrement
         self.onDecrement = onDecrement
-        self.focusID = "stepper-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }

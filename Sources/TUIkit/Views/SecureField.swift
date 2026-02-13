@@ -103,7 +103,8 @@ extension SecureField {
         self.title = title
         self.text = text
         self.prompt = nil
-        self.focusID = "securefield-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onSubmitAction = nil
     }
@@ -119,7 +120,8 @@ extension SecureField {
         self.title = title
         self.text = text
         self.prompt = prompt
-        self.focusID = "securefield-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onSubmitAction = nil
     }
