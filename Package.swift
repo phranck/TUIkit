@@ -3,6 +3,8 @@
 
 import PackageDescription
 
+public let TUIkitVersion = "0.3.0"
+
 let package = Package(
     name: "TUIkit",
     // Minimum deployment targets for Apple platforms
