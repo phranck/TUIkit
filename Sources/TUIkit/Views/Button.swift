@@ -154,10 +154,10 @@ public struct Button: View {
     let focusedStyle: ButtonStyle
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String
 
     /// Whether the button is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Creates a button with a label and action.
     ///
@@ -165,14 +165,12 @@ public struct Button: View {
     ///   - label: The button's label text.
     ///   - style: The button style (default: `.default`).
     ///   - focusedStyle: The style when focused (default: bold variant).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
     ///   - isDisabled: Whether the button is disabled (default: false).
     ///   - action: The action to perform when pressed.
     public init(
         _ label: String,
         style: ButtonStyle = .default,
         focusedStyle: ButtonStyle? = nil,
-        focusID: String? = nil,
         isDisabled: Bool = false,
         action: @escaping () -> Void
     ) {
@@ -181,7 +179,7 @@ public struct Button: View {
         self.role = nil
         self.style = style
         // Use label as default focusID for stability across render cycles
-        self.focusID = focusID ?? "button-\(label)"
+        self.focusID = "button-\(label)"
         self.isDisabled = isDisabled
 
         // Default focused style: bold version of the normal style
@@ -206,18 +204,16 @@ public struct Button: View {
     /// - Parameters:
     ///   - label: The button's label text.
     ///   - role: An optional semantic role describing the button.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
     ///   - action: The action to perform when pressed.
     public init(
         _ label: String,
         role: ButtonRole?,
-        focusID: String? = nil,
         action: @escaping () -> Void
     ) {
         self.label = label
         self.action = action
         self.role = role
-        self.focusID = focusID ?? "button-\(label)"
+        self.focusID = "button-\(label)"
         self.isDisabled = false
 
         // Style based on role
@@ -271,32 +267,24 @@ private struct _ButtonCore: View, Renderable {
         fatalError("_ButtonCore renders via Renderable")
     }
 
+    private enum StateIndex {
+        static let focusID = 0
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
-        let stateStorage = context.tuiContext.stateStorage
-
-        // Get or create persistent focusID from state storage.
-        // focusID must be stable across renders for focus state to persist.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "button",
+            propertyIndex: StateIndex.focusID
         )
-        let persistedFocusID = focusIDBox.value
-
-        // Register this button with the focus manager (skip during measurement)
         let handler = ActionHandler(
             focusID: persistedFocusID,
             action: action,
             canBeFocused: !isDisabled
         )
-        if !context.isMeasuring {
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
-        }
-
-        // Determine if focused (never focused during measurement)
-        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
         let currentStyle = isFocused ? focusedStyle : style
         let palette = context.environment.palette
         let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold
@@ -354,8 +342,8 @@ private struct _ButtonCore: View, Renderable {
                 resolvedCapColor = buttonBg
             }
 
-            let openCap = ANSIRenderer.colorize("\u{2590}", foreground: resolvedCapColor)
-            let closeCap = ANSIRenderer.colorize("\u{258C}", foreground: resolvedCapColor)
+            let openCap = ANSIRenderer.colorize(String(TerminalSymbols.openCap), foreground: resolvedCapColor)
+            let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: resolvedCapColor)
             let styledLabel = ANSIRenderer.colorize(
                 paddedLabel,
                 foreground: labelFg,
@@ -377,33 +365,18 @@ extension Button {
     /// - Parameter disabled: Whether the button is disabled.
     /// - Returns: A new button with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Button {
-        Button(
-            label: label,
-            action: action,
-            role: role,
-            style: style,
-            focusedStyle: focusedStyle,
-            focusID: focusID,
-            isDisabled: disabled
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
     }
 
-    /// Internal initializer with all properties.
-    private init(
-        label: String,
-        action: @escaping () -> Void,
-        role: ButtonRole?,
-        style: ButtonStyle,
-        focusedStyle: ButtonStyle,
-        focusID: String,
-        isDisabled: Bool
-    ) {
-        self.label = label
-        self.action = action
-        self.role = role
-        self.style = style
-        self.focusedStyle = focusedStyle
-        self.focusID = focusID
-        self.isDisabled = isDisabled
+    /// Sets a custom focus identifier for this button.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A button with the specified focus identifier.
+    public func focusID(_ id: String) -> Button {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
