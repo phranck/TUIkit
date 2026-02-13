@@ -51,6 +51,9 @@ public protocol Palette: Cyclable {
     /// Tertiary text color (even less prominent).
     var foregroundTertiary: Color { get }
 
+    /// Quaternary text color (dimmest foreground, used for subtle UI elements like spinner tracks).
+    var foregroundQuaternary: Color { get }
+
     // MARK: - Accent Colors
 
     /// Primary accent color for interactive elements.
@@ -98,6 +101,7 @@ extension Palette {
 
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
+    public var foregroundQuaternary: Color { foregroundTertiary }
 
     // MARK: - UI Element Defaults
 
