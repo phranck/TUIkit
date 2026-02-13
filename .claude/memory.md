@@ -15,8 +15,8 @@ TUIkit/
 ├── Sources/TUIkit/          # Main library
 ├── Sources/TUIkitExample/   # Demo app (15 pages)
 ├── Tests/TUIkitTests/       # Swift Testing
-├── docs/                    # Astro site + DocC
-└── plans/                   # Feature plans
+├── .claude/plans/           # Feature plans (open/ + done/)
+└── docs/                    # Astro site + DocC
 ```
 
 ### Dependencies
@@ -39,6 +39,27 @@ struct MyView: View
 
 **Renderable ONLY for leaf nodes:** Text, Spacer, Divider, internal `_*Core` types.
 
+### Two-Pass Layout System (NEW)
+
+```
+Phase 1: Measure          Phase 2: Render
+──────────────────        ─────────────────
+sizeThatFits(proposal)    renderToBuffer(context)
+  └─ returns ViewSize       └─ uses allocated size
+     (width, height,
+      isWidthFlexible,
+      isHeightFlexible)
+```
+
+**Key Types:**
+- `ProposedSize` - Parent suggests size (nil = ideal, value = constraint)
+- `ViewSize` - View reports needed size + flexibility
+- `Layoutable` - Protocol for views supporting two-pass layout
+- `ChildView` - Type-erased wrapper for measure/render
+
+**Flexible Views:** TextField, SecureField, Slider, Spacer
+**Fixed Views:** Text, Button, Toggle
+
 ### Directory Map
 
 | Directory | Purpose |
@@ -48,7 +69,7 @@ struct MyView: View
 | `Environment/` | EnvironmentValues, EnvironmentKey, TUIContext |
 | `Focus/` | FocusManager, Focusable, ActionHandler, ItemListHandler, TextFieldHandler, SliderHandler, StepperHandler |
 | `Modifiers/` | All ViewModifier implementations |
-| `Rendering/` | Terminal, FrameBuffer, RenderCache, ANSIRenderer, TrackRenderer, BorderRenderer |
+| `Rendering/` | Terminal, FrameBuffer, RenderCache, ANSIRenderer, TrackRenderer, BorderRenderer, ChildInfo |
 | `State/` | @State, StateStorage, StateBox, AppState |
 | `StatusBar/` | StatusBarState, StatusBarItem |
 | `Styling/` | Color, Palette, Appearance, ThemeManager, TrackStyle |
@@ -64,6 +85,10 @@ AppRunner.run()
        │    └─ RenderLoop.render(pulsePhase)
        │         ├─ focusManager.beginRenderPass()
        │         ├─ renderToBuffer(scene, context)
+       │         │    └─ Two-pass for HStack/VStack:
+       │         │         1. Measure all children
+       │         │         2. Distribute space
+       │         │         3. Render with final sizes
        │         ├─ focusManager.endRenderPass()
        │         └─ FrameDiffWriter.write(buffer)
        └─ terminal.readKeyEvent()
@@ -78,10 +103,20 @@ AppRunner.run()
 |----------|---------|-----------------|
 | `View` | User-facing component | `var body: some View` |
 | `Renderable` | Internal rendering (leaf nodes only) | `func renderToBuffer(context:) -> FrameBuffer` |
+| `Layoutable` | Two-pass layout support | `func sizeThatFits(proposal:context:) -> ViewSize` |
 | `Focusable` | Keyboard focus | `func handleKeyEvent(_:) -> Bool` |
+| `ChildViewProvider` | Extract children for layout | `func childViews(context:) -> [ChildView]` |
 | `ViewModifier` | View transformation | `func modify(buffer:context:) -> FrameBuffer` |
 | `Palette` | Color theme | foreground, background, accent, etc. |
-| `TerminalProtocol` | Terminal abstraction | `func write(_:)`, `func readKeyEvent()` |
+
+### Layout Types
+
+| Type | Purpose | Key Members |
+|------|---------|-------------|
+| `ProposedSize` | Parent's size suggestion | `width: Int?`, `height: Int?`, `.unspecified` |
+| `ViewSize` | View's size response | `width`, `height`, `isWidthFlexible`, `isHeightFlexible` |
+| `ChildView` | Type-erased child | `measure(proposal:context:)`, `render(width:height:context:)` |
+| `ChildInfo` | Legacy child info | `buffer`, `isSpacer`, `size` |
 
 ### Focus Handlers
 
@@ -89,31 +124,27 @@ AppRunner.run()
 |---------|---------|--------------|
 | `ActionHandler` | Button, Toggle | Simple action on Enter/Space |
 | `ItemListHandler` | List, Table | Up/Down/PgUp/PgDn, selection, F-keys |
-| `TextFieldHandler` | TextField, SecureField | Text editing, cursor, selection |
+| `TextFieldHandler` | TextField, SecureField | Text editing, cursor, selection, clipboard |
 | `SliderHandler` | Slider | Arrow/+- keys, Home/End |
 | `StepperHandler` | Stepper | Arrow/+- keys, optional bounds |
 
 ### Views
 
-| View | Purpose | Handler |
-|------|---------|---------|
-| `Text` | Styled text (leaf) | - |
-| `Button` | Action trigger | ActionHandler |
-| `Toggle` | Boolean switch | ActionHandler |
-| `TextField` | Text input | TextFieldHandler |
-| `SecureField` | Password input | TextFieldHandler |
-| `Slider` | Range selection | SliderHandler |
-| `Stepper` | Inc/dec control | StepperHandler |
-| `RadioButtonGroup` | Single-select | ActionHandler per option |
-| `List` | Scrollable list | ItemListHandler |
-| `Table` | Tabular data | ItemListHandler |
-| `Menu` | Selection menu | ActionHandler |
-| `Alert` | Modal dialog | ActionHandler per button |
-| `ProgressView` | Progress bar | - |
-| `Spinner` | Loading indicator | - |
-| `Box`, `Card`, `Panel` | Containers | - |
-| `VStack`, `HStack`, `ZStack` | Layout | - |
-| `Section` | Group with header | - |
+| View | Purpose | Layoutable | Handler |
+|------|---------|------------|---------|
+| `Text` | Styled text (leaf) | ✓ fixed | - |
+| `Spacer` | Flexible space | ✓ flexible | - |
+| `Divider` | Horizontal line | ✓ width-flex | - |
+| `HStack` | Horizontal layout | ✓ depends | - |
+| `VStack` | Vertical layout | ✓ depends | - |
+| `TextField` | Text input | ✓ width-flex | TextFieldHandler |
+| `SecureField` | Password input | ✓ width-flex | TextFieldHandler |
+| `Slider` | Range selection | ✓ width-flex | SliderHandler |
+| `Button` | Action trigger | - | ActionHandler |
+| `Toggle` | Boolean switch | - | ActionHandler |
+| `List` | Scrollable list | - | ItemListHandler |
+| `Table` | Tabular data | - | ItemListHandler |
+| `Panel`, `Card` | Containers | - (content-based) | - |
 
 ### Modifiers
 
@@ -127,66 +158,64 @@ AppRunner.run()
 | `.disabled(_:)` | Disable interaction |
 | `.focusSection(_:)` | Named focus region |
 | `.equatable()` | Enable render caching |
-| `.alert(isPresented:)` | Show modal alert |
-| `.badge(_:)` | Show badge on list row |
-| `.trackStyle(_:)` | Set track appearance (Slider, ProgressView) |
-| `.onSubmit(_:)` | TextField submit action |
-
-### TrackStyle
-
-```swift
-public enum TrackStyle {
-    case block      // ████████░░░░░░░░
-    case blockFine  // ████████▍░░░░░░░ (sub-char precision)
-    case shade      // ▓▓▓▓▓▓▓▓░░░░░░░░
-    case bar        // ▌▌▌▌▌▌▌▌────────
-    case dot        // ▬▬▬▬▬▬▬▬●───────
-}
-```
-
-Used by: `ProgressView`, `Slider`
+| `.trackStyle(_:)` | Set track appearance |
 
 ## Patterns
 
-### New Interactive View
+### Two-Pass Layout in Stacks
 
 ```swift
-// 1. Create handler in Focus/
-final class MyHandler: Focusable {
-    let focusID: String
-    var canBeFocused: Bool = true
+// HStack/VStack renderToBuffer pattern
+func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    let children = resolveChildViews(from: content, context: context)
     
-    func handleKeyEvent(_ event: KeyEvent) -> Bool {
-        switch event.key {
-        case .enter: doAction(); return true
-        default: return false
+    // Pass 1: Measure
+    var childSizes: [ViewSize] = []
+    var totalFixed = 0, flexibleCount = 0
+    for child in children {
+        let size = child.measure(proposal: .unspecified, context: context)
+        childSizes.append(size)
+        if child.isSpacer || size.isWidthFlexible {
+            flexibleCount += 1
+            totalFixed += size.width  // minimum
+        } else {
+            totalFixed += size.width
         }
     }
-}
-
-// 2. Create view in Views/
-public struct MyView: View {
-    public var body: some View {
-        _MyViewCore(...)
+    
+    // Calculate flexible allocation
+    let remaining = context.availableWidth - totalFixed - spacing
+    let flexWidth = flexibleCount > 0 ? remaining / flexibleCount : 0
+    
+    // Pass 2: Render with final sizes
+    for (child, size) in zip(children, childSizes) {
+        let finalWidth = size.isWidthFlexible ? size.width + flexWidth : size.width
+        let buffer = child.render(width: finalWidth, height: ..., context: context)
+        result.appendHorizontally(buffer, spacing: ...)
     }
 }
+```
 
-private struct _MyViewCore: View, Renderable {
-    var body: Never { fatalError() }
+### Making a View Width-Flexible
+
+```swift
+private struct _MyViewCore: View, Renderable, Layoutable {
+    private let minWidth = 10
+    private let defaultWidth = 20
+    
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let width = proposal.width ?? defaultWidth
+        return ViewSize(
+            width: max(minWidth, width),
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
+    }
     
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Get handler from StateStorage
-        let key = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let box: StateBox<MyHandler> = context.tuiContext.stateStorage.storage(for: key, default: MyHandler(...))
-        
-        // Register with FocusManager
-        context.environment.focusManager.register(box.value, inSection: context.activeFocusSectionID)
-        context.tuiContext.stateStorage.markActive(context.identity)
-        
-        // Check focus state
-        let isFocused = context.environment.focusManager.isFocused(id: focusID)
-        
-        // Render...
+        let width = max(minWidth, context.availableWidth)
+        // render with width...
     }
 }
 ```
@@ -194,73 +223,35 @@ private struct _MyViewCore: View, Renderable {
 ### Focus Indicator Pattern
 
 ```swift
-// Pulsing vertical bars for focused state (TextField, Slider, Stepper)
+// Pulsing vertical bars for focused state
 if isFocused {
     let dimAccent = palette.accent.opacity(0.35)
     let barColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
     let bar = ANSIRenderer.colorize("❙", foreground: barColor)
     return "\(bar) \(content) \(bar)"
 }
-return "  \(content)  "  // Unfocused: spaces for alignment
-```
-
-### TextField Selection
-
-```swift
-// TextFieldHandler manages selection state
-var selectionAnchor: Int?  // nil = no selection
-var selectionRange: Range<Int>? {
-    guard let anchor = selectionAnchor, anchor != cursorPosition else { return nil }
-    return min(anchor, cursorPosition)..<max(anchor, cursorPosition)
-}
-
-// Shift+Arrow extends selection
-func extendSelectionLeft() {
-    startOrExtendSelection()
-    if cursorPosition > 0 { cursorPosition -= 1 }
-}
-
-// Arrow without Shift clears selection
-case .left:
-    if event.shift { extendSelectionLeft() }
-    else { clearSelection(); moveCursorLeft() }
-```
-
-### Keyboard Navigation
-
-- Handler's `handleKeyEvent` called first
-- Return `true` = consumed, `false` = pass to FocusManager
-- Tab = cycle focus sections
-- Up/Down/Left/Right = navigate within section
-- Enter/Space = activate focused element
-
-### CSI Modifier Parsing
-
-```swift
-// xterm modifier codes: ESC [1;2A = Shift+Up
-// Modifier code - 1 = bit flags (bit0=Shift, bit1=Alt, bit2=Ctrl)
-let bits = modifier - 1
-let shift = (bits & 1) != 0
-let alt = (bits & 2) != 0
-let ctrl = (bits & 4) != 0
 ```
 
 ## Current State
 
-**Branch:** `main`  
-**Tests:** 986 / 139 suites  
+**Branch:** `refactor/two-pass-layout`  
+**Tests:** 1034 / 143 suites  
 **Build:** clean
 
-### Recent Changes (2026-02-10)
+### Recent Changes
 
-- NavigationSplitView: Two/three-column layouts with focus sections (39 tests)
-- NavigationSplitViewVisibility, NavigationSplitViewColumn, NavigationSplitViewStyle
-- Column width modifiers: `.navigationSplitViewColumnWidth(_:)`
-- Style modifier: `.navigationSplitViewStyle(_:)`
+- Two-pass layout: ProposedSize, ViewSize, Layoutable protocol
+- HStack/VStack: Measure-then-render with flexible space distribution
+- TextField/SecureField/Slider: Now width-flexible (expand in HStack)
+- ChildView: Type-erased wrapper for two-pass layout
+- Focus fix: RenderContext.isMeasuring flag prevents double registration
+- All focusable views skip focusManager.register() during measurement pass
 
-### Known Issues
+### Pending
 
-- None
+- Verify focus behavior in Example App (TextField Demo page)
+- Phase 5: Remove hasExplicitWidth/hasExplicitHeight (deferred)
+- List/Table: Not yet Layoutable
 
 ---
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-11

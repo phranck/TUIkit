@@ -91,6 +91,13 @@ public struct PaddingModifier: ViewModifier {
     /// The padding insets.
     let insets: EdgeInsets
 
+    public func adjustContext(_ context: RenderContext) -> RenderContext {
+        var adjusted = context
+        adjusted.availableWidth = max(0, context.availableWidth - insets.leading - insets.trailing)
+        adjusted.availableHeight = max(0, context.availableHeight - insets.top - insets.bottom)
+        return adjusted
+    }
+
     public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         var result: [String] = []
 

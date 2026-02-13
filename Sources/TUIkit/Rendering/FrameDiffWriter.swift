@@ -46,8 +46,11 @@ final class FrameDiffWriter {
 extension FrameDiffWriter {
     /// Converts a ``FrameBuffer`` into terminal-ready output lines.
     ///
-    /// Each output line includes background color, padding, and reset codes.
-    /// Lines beyond the buffer's content are filled with background-colored spaces.
+    /// Each output line begins with the background color followed by `ESC[2K`
+    /// (Erase Entire Line). This fills the terminal line with the app background
+    /// before any content is drawn, preventing stale content from previous pages
+    /// from showing through when `strippedLength` miscalculates padding.
+    ///
     /// This is a **pure function** — no side effects.
     ///
     /// - Parameters:
@@ -67,7 +70,12 @@ extension FrameDiffWriter {
         var lines: [String] = []
         lines.reserveCapacity(terminalHeight)
 
-        let emptyLine = bgCode + String(repeating: " ", count: terminalWidth) + reset
+        // ESC[2K erases the entire line using the current background color.
+        // Placed after bgCode so the erase uses the app background, not the
+        // terminal default. This acts as a safety net for any strippedLength
+        // inaccuracies in the padding calculation.
+        let eraseLine = "\u{1B}[2K"
+        let emptyLine = bgCode + eraseLine + reset
 
         for row in 0..<terminalHeight {
             if row < buffer.height {
@@ -75,7 +83,7 @@ extension FrameDiffWriter {
                 let visibleWidth = line.strippedLength
                 let padding = max(0, terminalWidth - visibleWidth)
                 let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
-                let paddedLine = bgCode + lineWithBg + String(repeating: " ", count: padding) + reset
+                let paddedLine = bgCode + eraseLine + lineWithBg + String(repeating: " ", count: padding) + reset
                 lines.append(paddedLine)
             } else {
                 lines.append(emptyLine)
@@ -136,10 +144,15 @@ private extension FrameDiffWriter {
             terminal.write(newLines[row])
         }
 
+        // Clear excess old lines when the previous frame had more rows.
+        // Each output line already contains ESC[2K (from buildOutputLines),
+        // but these extra rows have no corresponding new line, so we erase
+        // them explicitly with the terminal's default background.
         if previousLines.count > newLines.count {
+            let eraseEntireLine = "\u{1B}[2K"
             for row in newLines.count..<previousLines.count {
                 terminal.moveCursor(toRow: startRow + row, column: 1)
-                terminal.write(String(repeating: " ", count: previousLines[row].strippedLength))
+                terminal.write(eraseEntireLine)
             }
         }
     }

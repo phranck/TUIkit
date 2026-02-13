@@ -141,15 +141,15 @@ They can be worked on in parallel ONLY if no dependencies.
 
 ## Next Steps
 
-1. Review Phase 1 plan: `plans/open/2026-02-06-imp-containerview.md`
+1. Review Phase 1 plan: `.claude/plans/done/2026-02-06-imp-containerview.md`
 2. Checkout `refactor/containerview` branch
 3. Start implementation when ready
 
 Questions? Check the detailed plans:
-- `plans/open/2026-02-06-imp-containerview.md`
-- `plans/open/2026-02-06-imp-shared-handlers.md`
-- `plans/open/2026-02-06-imp-list-table.md`
+- `.claude/plans/done/2026-02-06-imp-containerview.md`
+- `.claude/plans/done/2026-02-06-imp-shared-handlers.md`
+- `.claude/plans/done/2026-02-06-imp-list-table.md`
 
 And the architecture analysis:
-- `plans/open/2026-02-06-list-table-shared-architecture.md`
-- `plans/open/2026-02-06-containerization-composition.md`
+- `.claude/plans/done/2026-02-06-list-table-shared-architecture.md`
+- `.claude/plans/done/2026-02-06-containerization-composition.md`

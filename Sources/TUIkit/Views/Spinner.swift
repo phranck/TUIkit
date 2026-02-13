@@ -109,11 +109,13 @@ extension SpinnerStyle {
     ///
     /// - Parameters:
     ///   - frameIndex: The current frame index in the bounce sequence.
-    ///   - color: The resolved highlight color.
+    ///   - color: The resolved highlight color for the leading dot.
+    ///   - trackColor: The color for inactive track positions.
     /// - Returns: An ANSI-colored string representing the track.
     static func renderBouncingFrame(
         frameIndex: Int,
-        color: Color
+        color: Color,
+        trackColor: Color
     ) -> String {
         let positions = bouncingPositions(trackLength: trackWidth)
         let currentPos = positions[frameIndex % positions.count]
@@ -132,10 +134,17 @@ extension SpinnerStyle {
             )
 
             if let distance, distance < trailOpacities.count {
-                let fadedColor = color.opacity(trailOpacities[distance])
-                result += ANSIRenderer.colorize("●", foreground: fadedColor)
+                if distance == 0 {
+                    // Leading highlight dot uses accent color
+                    result += ANSIRenderer.colorize("●", foreground: color)
+                } else {
+                    // Trail interpolates from highlight to trackColor
+                    let phase = 1.0 - trailOpacities[distance]
+                    let fadedColor = Color.lerp(color, trackColor, phase: phase)
+                    result += ANSIRenderer.colorize("●", foreground: fadedColor)
+                }
             } else {
-                result += ANSIRenderer.colorize("●", foreground: color.opacity(0.15))
+                result += ANSIRenderer.colorize("●", foreground: trackColor)
             }
         }
 
@@ -273,7 +282,7 @@ private struct _SpinnerCore: View, Renderable {
         if !lifecycle.hasAppeared(token: token) {
             _ = lifecycle.recordAppear(token: token) {}
 
-            let triggerNanos: UInt64 = 33_000_000  // 33ms — matches run loop poll rate (~30 FPS)
+            let triggerNanos: UInt64 = 28_000_000  // 28ms — matches run loop poll rate (~35 FPS)
             lifecycle.startTask(token: token, priority: .medium) {
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: triggerNanos)
@@ -301,8 +310,8 @@ private struct _SpinnerCore: View, Renderable {
         }
         let frameIndex = Int(elapsed / style.interval) % frameCount
 
-        // Resolve color - use environment foregroundColor if no explicit color set
-        let effectiveColor = color ?? context.environment.foregroundStyle ?? .palette.accent
+        // Resolve color: explicit color > environment foregroundStyle > palette accent
+        let effectiveColor = color ?? context.environment.foregroundStyle ?? context.environment.palette.accent
         let resolvedColor = effectiveColor.resolve(with: context.environment.palette)
 
         // Build spinner text — bouncing renders with colored trail, others are plain.
@@ -311,7 +320,8 @@ private struct _SpinnerCore: View, Renderable {
         case .bouncing:
             coloredSpinner = SpinnerStyle.renderBouncingFrame(
                 frameIndex: frameIndex,
-                color: resolvedColor
+                color: resolvedColor,
+                trackColor: context.environment.palette.foregroundQuaternary.opacity(0.4)
             )
         case .dots, .line:
             coloredSpinner = ANSIRenderer.colorize(
@@ -322,7 +332,8 @@ private struct _SpinnerCore: View, Renderable {
 
         let output: String
         if let label {
-            output = coloredSpinner + " " + label
+            let styledLabel = ANSIRenderer.colorize(label, foreground: context.environment.palette.foreground)
+            output = coloredSpinner + " " + styledLabel
         } else {
             output = coloredSpinner
         }

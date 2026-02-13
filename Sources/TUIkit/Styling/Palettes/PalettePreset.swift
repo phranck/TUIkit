@@ -53,6 +53,7 @@ public struct SystemPalette: Palette {
     public let foreground: Color
     public let foregroundSecondary: Color
     public let foregroundTertiary: Color
+    public let foregroundQuaternary: Color
 
     // Accent
     public let accent: Color
@@ -66,6 +67,7 @@ public struct SystemPalette: Palette {
     // UI elements
     public let border: Color
     public let focusBackground: Color
+    public let cursorColor: Color
 
     // Additional backgrounds
     public let statusBarBackground: Color
@@ -92,6 +94,7 @@ public struct SystemPalette: Palette {
         self.foreground = Color.hsl(tuning.fgHue, tuning.fgSaturation, tuning.fgLightness)
         self.foregroundSecondary = Color.hsl(tuning.fgHue, tuning.fgSecSaturation, tuning.fgSecLightness)
         self.foregroundTertiary = Color.hsl(tuning.fgHue, tuning.fgTerSaturation, tuning.fgTerLightness)
+        self.foregroundQuaternary = Color.hsl(tuning.fgHue, tuning.fgQuatSaturation, tuning.fgQuatLightness)
 
         // Accent
         self.accent = Color.hsl(tuning.accentHue, tuning.accentSaturation, tuning.accentLightness)
@@ -105,6 +108,7 @@ public struct SystemPalette: Palette {
         // UI elements
         self.border = Color.hsl(hue, tuning.borderSaturation, tuning.borderLightness)
         self.focusBackground = Color.hsl(tuning.fgHue, tuning.fgTerSaturation, tuning.focusBgLightness)
+        self.cursorColor = Color.hsl(tuning.cursorHue, tuning.cursorSaturation, tuning.cursorLightness)
     }
 }
 
@@ -126,6 +130,8 @@ private extension SystemPalette {
         let fgSecLightness: Double
         let fgTerSaturation: Double
         let fgTerLightness: Double
+        let fgQuatSaturation: Double
+        let fgQuatLightness: Double
 
         // Accent
         let accentHue: Double
@@ -152,6 +158,11 @@ private extension SystemPalette {
 
         // Focus background
         let focusBgLightness: Double
+
+        // Cursor
+        let cursorHue: Double
+        let cursorSaturation: Double
+        let cursorLightness: Double
     }
 }
 
@@ -167,13 +178,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 120, fgSaturation: 100, fgLightness: 60,
                 fgSecSaturation: 67, fgSecLightness: 46,
                 fgTerSaturation: 64, fgTerLightness: 34,
+                fgQuatSaturation: 60, fgQuatLightness: 22,
                 accentHue: 120, accentSaturation: 100, accentLightness: 70,
                 successHue: 120, successSaturation: 100, successLightness: 60,
                 warningHue: wrapHue(120 - 45), warningSaturation: 100, warningLightness: 60,
                 errorHue: wrapHue(120 - 105), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(120 + 45), infoSaturation: 100, infoLightness: 60,
-                borderSaturation: 33, borderLightness: 26,
-                focusBgLightness: 15
+                borderSaturation: 60, borderLightness: 26,
+                focusBgLightness: 15,
+                cursorHue: 120, cursorSaturation: 100, cursorLightness: 70
             )
 
         case .amber:
@@ -182,13 +195,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 40, fgSaturation: 100, fgLightness: 50,
                 fgSecSaturation: 100, fgSecLightness: 40,
                 fgTerSaturation: 100, fgTerLightness: 28,
+                fgQuatSaturation: 100, fgQuatLightness: 18,
                 accentHue: 45, accentSaturation: 100, accentLightness: 60,
                 successHue: wrapHue(40 + 40), successSaturation: 100, successLightness: 60,
                 warningHue: wrapHue(40 + 20), warningSaturation: 100, warningLightness: 70,
                 errorHue: wrapHue(40 - 25), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(40 + 10), infoSaturation: 100, infoLightness: 70,
-                borderSaturation: 33, borderLightness: 26,
-                focusBgLightness: 12
+                borderSaturation: 100, borderLightness: 26,
+                focusBgLightness: 12,
+                cursorHue: 45, cursorSaturation: 100, cursorLightness: 60
             )
 
         case .red:
@@ -197,13 +212,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 0, fgSaturation: 100, fgLightness: 63,
                 fgSecSaturation: 60, fgSecLightness: 50,
                 fgTerSaturation: 62, fgTerLightness: 35,
+                fgQuatSaturation: 60, fgQuatLightness: 22,
                 accentHue: 0, accentSaturation: 100, accentLightness: 70,
                 successHue: wrapHue(0 + 30), successSaturation: 100, successLightness: 75,
                 warningHue: wrapHue(0 + 30), warningSaturation: 100, warningLightness: 70,
                 errorHue: 0, errorSaturation: 0, errorLightness: 100,
                 infoHue: 0, infoSaturation: 100, infoLightness: 80,
-                borderSaturation: 33, borderLightness: 26,
-                focusBgLightness: 15
+                borderSaturation: 60, borderLightness: 26,
+                focusBgLightness: 15,
+                cursorHue: 0, cursorSaturation: 100, cursorLightness: 70
             )
 
         case .violet:
@@ -212,13 +229,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 270, fgSaturation: 80, fgLightness: 70,
                 fgSecSaturation: 70, fgSecLightness: 55,
                 fgTerSaturation: 60, fgTerLightness: 40,
+                fgQuatSaturation: 55, fgQuatLightness: 26,
                 accentHue: 270, accentSaturation: 85, accentLightness: 78,
                 successHue: wrapHue(270 + 120), successSaturation: 70, successLightness: 65,
                 warningHue: wrapHue(270 + 60), warningSaturation: 80, warningLightness: 70,
                 errorHue: wrapHue(270 + 180), errorSaturation: 85, errorLightness: 65,
                 infoHue: wrapHue(270 - 60), infoSaturation: 70, infoLightness: 70,
-                borderSaturation: 40, borderLightness: 25,
-                focusBgLightness: 18
+                borderSaturation: 55, borderLightness: 25,
+                focusBgLightness: 18,
+                cursorHue: 270, cursorSaturation: 85, cursorLightness: 78
             )
 
         case .blue:
@@ -227,13 +246,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 200, fgSaturation: 100, fgLightness: 50,
                 fgSecSaturation: 100, fgSecLightness: 40,
                 fgTerSaturation: 100, fgTerLightness: 30,
+                fgQuatSaturation: 100, fgQuatLightness: 20,
                 accentHue: 200, accentSaturation: 100, accentLightness: 60,
                 successHue: wrapHue(200 + 10), successSaturation: 100, successLightness: 60,
                 warningHue: wrapHue(200 + 20), warningSaturation: 100, warningLightness: 70,
                 errorHue: wrapHue(200 - 185), errorSaturation: 100, errorLightness: 60,
                 infoHue: wrapHue(200 + 5), infoSaturation: 100, infoLightness: 75,
-                borderSaturation: 33, borderLightness: 26,
-                focusBgLightness: 13
+                borderSaturation: 100, borderLightness: 26,
+                focusBgLightness: 13,
+                cursorHue: 200, cursorSaturation: 100, cursorLightness: 60
             )
 
         case .white:
@@ -242,13 +263,15 @@ private extension SystemPalette.Tuning {
                 fgHue: 0, fgSaturation: 0, fgLightness: 91,
                 fgSecSaturation: 0, fgSecLightness: 69,
                 fgTerSaturation: 0, fgTerLightness: 47,
+                fgQuatSaturation: 0, fgQuatLightness: 32,
                 accentHue: 0, accentSaturation: 0, accentLightness: 100,
                 successHue: 120, successSaturation: 50, successLightness: 75,
                 warningHue: 40, warningSaturation: 60, warningLightness: 75,
                 errorHue: 0, errorSaturation: 60, errorLightness: 75,
                 infoHue: 210, infoSaturation: 60, infoLightness: 75,
                 borderSaturation: 0, borderLightness: 28,
-                focusBgLightness: 20
+                focusBgLightness: 20,
+                cursorHue: 0, cursorSaturation: 0, cursorLightness: 100
             )
         }
     }

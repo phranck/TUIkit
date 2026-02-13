@@ -99,6 +99,7 @@ struct SecureFieldPage: View {
 
             Spacer()
         }
+        .padding(.horizontal, 1)
         .appHeader {
             HStack {
                 Text("SecureField Demo").bold().foregroundStyle(.palette.accent)

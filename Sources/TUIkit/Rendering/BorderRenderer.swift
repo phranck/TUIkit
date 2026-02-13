@@ -209,12 +209,7 @@ extension BorderRenderer {
         backgroundColor: Color? = nil
     ) -> String {
         let paddedLine = content.padToVisibleWidth(innerWidth)
-        let styledContent: String
-        if let bgColor = backgroundColor {
-            styledContent = ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
-        } else {
-            styledContent = paddedLine
-        }
+        let styledContent = paddedLine.withPersistentBackground(backgroundColor)
         let vertical = ANSIRenderer.colorize(String(style.vertical), foreground: color)
         return vertical + styledContent + ANSIRenderer.reset + vertical
     }

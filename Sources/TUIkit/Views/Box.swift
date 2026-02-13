@@ -87,15 +87,17 @@
 /// Instead, it uses `body` to delegate to `content.border(...)`, which
 /// creates a ``ContainerView`` without title or footer. This is intentional:
 /// `Box` is purely compositional sugar and carries no rendering logic.
-public struct Box<Content: View>: View {
+///
+/// - Note: This is an internal type. Use `.border()` modifier directly instead.
+struct Box<Content: View>: View {
     /// The content of the box.
-    public let content: Content
+    let content: Content
 
     /// The border style (nil uses appearance default).
-    public let borderStyle: BorderStyle?
+    let borderStyle: BorderStyle?
 
     /// The border color.
-    public let borderColor: Color?
+    let borderColor: Color?
 
     /// Creates a box with the specified border.
     ///
@@ -103,7 +105,7 @@ public struct Box<Content: View>: View {
     ///   - borderStyle: The border style (default: appearance borderStyle).
     ///   - color: The border color (default: theme border).
     ///   - content: The content of the box.
-    public init(
+    init(
         _ borderStyle: BorderStyle? = nil,
         color: Color? = nil,
         @ViewBuilder content: () -> Content
@@ -113,7 +115,7 @@ public struct Box<Content: View>: View {
         self.borderColor = color
     }
 
-    public var body: some View {
+    var body: some View {
         content.border(borderStyle, color: borderColor)
     }
 }
@@ -165,7 +167,7 @@ struct BufferView: View, Renderable {
 // MARK: - Equatable Conformance
 
 extension Box: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: Box<Content>, rhs: Box<Content>) -> Bool {
+    nonisolated static func == (lhs: Box<Content>, rhs: Box<Content>) -> Bool {
         MainActor.assumeIsolated {
             lhs.content == rhs.content &&
             lhs.borderStyle == rhs.borderStyle &&

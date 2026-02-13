@@ -78,10 +78,10 @@ public struct Slider<Label: View, ValueLabel: View>: View {
     var trackStyle: TrackStyle
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the slider is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Callback when editing begins or ends.
     let onEditingChanged: ((Bool) -> Void)?
@@ -129,7 +129,7 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
         self.label = nil
         self.valueLabel = nil
         self.trackStyle = .block
-        self.focusID = "slider-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -195,7 +195,7 @@ extension Slider where ValueLabel == EmptyView {
         self.label = label()
         self.valueLabel = nil
         self.trackStyle = .block
-        self.focusID = "slider-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -224,69 +224,86 @@ extension Slider {
     /// - Parameter disabled: Whether the slider is disabled.
     /// - Returns: A new slider with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Slider {
-        Slider(
-            value: value,
-            bounds: bounds,
-            step: step,
-            label: label,
-            valueLabel: valueLabel,
-            trackStyle: trackStyle,
-            focusID: focusID,
-            isDisabled: disabled,
-            onEditingChanged: onEditingChanged
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
+    }
+
+    /// Sets a custom focus identifier for this slider.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A slider with the specified focus identifier.
+    public func focusID(_ id: String) -> Slider {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
 
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of Slider.
-private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
+private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Layoutable {
     let value: Binding<Double>
     let bounds: ClosedRange<Double>
     let step: Double
     let label: Label?
     let valueLabel: ValueLabel?
     let trackStyle: TrackStyle
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
     let onEditingChanged: ((Bool) -> Void)?
 
+    /// Minimum track width.
+    private let minTrackWidth = 10
+
     /// Default track width when no explicit frame is set.
     private let defaultTrackWidth = 20
+
+    /// Fixed width for arrows and value label.
+    /// Layout: ◀ [track] ▶ [value]
+    /// Arrows: 4 chars ("◀ " + " ▶"), Value: 5 chars (" 100%")
+    private let fixedWidth = 9  // arrowsWidth(4) + valueLabelWidth(5)
 
     var body: Never {
         fatalError("_SliderCore renders via Renderable")
     }
 
+    /// Returns the size this slider needs.
+    ///
+    /// Slider is width-flexible: it has a minimum width but expands
+    /// to fill available horizontal space in HStack.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let proposedWidth = proposal.width ?? (defaultTrackWidth + fixedWidth)
+        let trackWidth = max(minTrackWidth, proposedWidth - fixedWidth)
+        return ViewSize(
+            width: trackWidth + fixedWidth,
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
 
-        // Determine track width: use available width minus arrows and value label space
-        // Layout: [label] ❙ ◀ [track] ▶ ❙ [value]
-        // Focus indicators: 2 chars each side (❙ + space)
-        // Arrows: 2 chars each (◀ + space, space + ▶)
-        // Value label: ~5 chars (e.g., "100%")
-        let arrowsWidth = 4  // "◀ " + " ▶"
-        let focusWidth = 4   // "❙ " on each side when focused (or "  " when not)
-        let valueLabelWidth = 6  // " 100%"
+        // Slider expands to fill available width (with minimum)
+        let trackWidth = max(minTrackWidth, context.availableWidth - fixedWidth)
 
-        let trackWidth: Int
-        if context.hasExplicitWidth {
-            let availableForTrack = context.availableWidth - arrowsWidth - focusWidth - valueLabelWidth
-            trackWidth = max(5, availableForTrack)
-        } else {
-            trackWidth = defaultTrackWidth
-        }
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "slider",
+            propertyIndex: 1  // focusID
+        )
 
         // Get or create persistent handler from state storage
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
         let handlerBox: StateBox<SliderHandler<Double>> = stateStorage.storage(
             for: handlerKey,
             default: SliderHandler(
-                focusID: focusID,
+                focusID: persistedFocusID,
                 value: value,
                 bounds: bounds,
                 step: step,
@@ -301,12 +318,8 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
         handler.onEditingChanged = onEditingChanged
         handler.clampValue()
 
-        // Register with focus manager
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
-
-        // Determine focus state
-        let isFocused = focusManager.isFocused(id: focusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
         // Calculate fraction
         let range = bounds.upperBound - bounds.lowerBound
@@ -332,16 +345,17 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
         pulsePhase: Double,
         trackWidth: Int
     ) -> String {
-        // Arrow colors
+        // Arrow colors: pulsing accent when focused, dimmed when unfocused
         let arrowColor: Color
         if isDisabled {
-            arrowColor = palette.foregroundTertiary
+            arrowColor = palette.foregroundTertiary.opacity(0.5)
         } else if isFocused {
             // Pulse between 35% and 100% accent
             let dimAccent = palette.accent.opacity(0.35)
             arrowColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
         } else {
-            arrowColor = palette.foregroundTertiary
+            // Dimmed arrows when unfocused
+            arrowColor = palette.foregroundTertiary.opacity(0.5)
         }
 
         // Build track
@@ -355,8 +369,8 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
         )
 
         // Build arrows
-        let leftArrow = ANSIRenderer.colorize("◀", foreground: arrowColor)
-        let rightArrow = ANSIRenderer.colorize("▶", foreground: arrowColor)
+        let leftArrow = ANSIRenderer.colorize(TerminalSymbols.leftArrow, foreground: arrowColor)
+        let rightArrow = ANSIRenderer.colorize(TerminalSymbols.rightArrow, foreground: arrowColor)
 
         // Build value label (percentage)
         let percentage = Int((fraction * 100).rounded())
@@ -364,15 +378,7 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable {
         let valueLabelColor = isDisabled ? palette.foregroundTertiary : palette.foregroundSecondary
         let valueLabel = ANSIRenderer.colorize(valueText, foreground: valueLabelColor)
 
-        // Build with focus indicators
-        if isFocused && !isDisabled {
-            let dimAccent = palette.accent.opacity(0.35)
-            let barColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
-            let bar = ANSIRenderer.colorize("❙", foreground: barColor)
-            return "\(bar) \(leftArrow) \(track) \(rightArrow) \(bar) \(valueLabel)"
-        }
-
-        // Unfocused: spaces instead of bars for alignment
-        return "  \(leftArrow) \(track) \(rightArrow)   \(valueLabel)"
+        // Pulsing arrows indicate focus - no extra markers needed
+        return "\(leftArrow) \(track) \(rightArrow) \(valueLabel)"
     }
 }

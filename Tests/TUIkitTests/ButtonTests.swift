@@ -68,12 +68,12 @@ struct ButtonTests {
         let button = Button("OK") {}
         let buffer = renderToBuffer(button, context: context)
 
-        // Bracket-style buttons are single line: [ OK ]
+        // Cap-style buttons are single line: ▐ OK ▌
         #expect(buffer.height == 1)
         let allContent = buffer.lines.joined()
         #expect(allContent.contains("OK"))
-        #expect(allContent.contains("["))
-        #expect(allContent.contains("]"))
+        #expect(allContent.stripped.contains("\u{2590}"))
+        #expect(allContent.stripped.contains("\u{258C}"))
     }
 
     @Test("Default button is single line height")
@@ -104,13 +104,13 @@ struct ButtonTests {
     func focusedButtonHasAccentBrackets() {
         let context = createTestContext()
 
-        let button = Button("Focus Me", focusID: "focused-button") {}
+        let button = Button("Focus Me") {}.focusID("focused-button")
         let buffer = renderToBuffer(button, context: context)
 
-        // First button is auto-focused — brackets should be styled (contain ANSI codes)
+        // First button is auto-focused — caps should be styled (contain ANSI codes)
         let allContent = buffer.lines.joined()
-        #expect(allContent.contains("["), "Button should have opening bracket")
-        #expect(allContent.contains("]"), "Button should have closing bracket")
+        #expect(allContent.stripped.contains("\u{2590}"), "Button should have opening cap")
+        #expect(allContent.stripped.contains("\u{258C}"), "Button should have closing cap")
         #expect(allContent.contains("\u{1b}["), "Focused button should have ANSI styling")
     }
 
@@ -119,17 +119,17 @@ struct ButtonTests {
         let context = createTestContext()
 
         // Create two buttons — second one will be unfocused
-        let button1 = Button("First", focusID: "first") {}
-        let button2 = Button("Second", focusID: "second") {}
+        let button1 = Button("First") {}.focusID("first")
+        let button2 = Button("Second") {}.focusID("second")
 
         // Render first to register it (it gets focus)
         _ = renderToBuffer(button1, context: context)
         let buffer2 = renderToBuffer(button2, context: context)
 
-        // Second button is not focused — should still have brackets with styling
+        // Second button is not focused — should still have caps with styling
         let allContent = buffer2.lines.joined()
-        #expect(allContent.contains("["), "Unfocused button should have opening bracket")
-        #expect(allContent.contains("]"), "Unfocused button should have closing bracket")
+        #expect(allContent.stripped.contains("\u{2590}"), "Unfocused button should have opening cap")
+        #expect(allContent.stripped.contains("\u{258C}"), "Unfocused button should have closing cap")
     }
 
     @Test("Destructive button uses palette error color, not hardcoded red")
