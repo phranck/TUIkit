@@ -115,4 +115,5 @@ type_name:
     - _PanelCore
     - _CardCore
     - _ListCore
+    - _ListContentView
     - _TableCore
