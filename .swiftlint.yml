@@ -59,7 +59,7 @@ opt_in_rules:
 
 # Rule Configuration
 line_length:
-  warning: 140
+  warning: 160
   error: 200
   ignores_urls: true
   ignores_comments: true
