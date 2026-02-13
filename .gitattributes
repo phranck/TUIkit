@@ -1,1 +1,19 @@
 docs/** linguist-documentation=false
+
+# Exclude non-essential files from source archives (git archive / GitHub releases).
+# SPM consumers only need Sources/, Tests/, Package.swift, README.md, and LICENSE.
+.claude/           export-ignore
+.cursor/           export-ignore
+.github/           export-ignore
+.serena/           export-ignore
+.vscode/           export-ignore
+project-template/  export-ignore
+AGENTS.md          export-ignore
+CONTRIBUTING.md    export-ignore
+WHATS-NEXT.md      export-ignore
+to-dos.md          export-ignore
+gource-swift.sh    export-ignore
+.gource.conf       export-ignore
+.windsurfrules     export-ignore
+.swift-format      export-ignore
+.swiftlint.yml     export-ignore
