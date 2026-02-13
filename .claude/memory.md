@@ -15,8 +15,8 @@ TUIkit/
 ├── Sources/TUIkit/          # Main library
 ├── Sources/TUIkitExample/   # Demo app (15 pages)
 ├── Tests/TUIkitTests/       # Swift Testing
-├── docs/                    # Astro site + DocC
-└── plans/                   # Feature plans
+├── .claude/plans/           # Feature plans (open/ + done/)
+└── docs/                    # Astro site + DocC
 ```
 
 ### Dependencies

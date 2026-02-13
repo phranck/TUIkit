@@ -1,0 +1,60 @@
+# TUIkit - Windsurf Rules
+
+## Hard Constraints (non-negotiable)
+
+- Swift 6.0 only (`swift-tools-version: 6.0`). Never use features from a newer compiler.
+- Cross-platform: must build on macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
+- CI must pass before merge.
+
+## Project
+
+TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure Swift (no ncurses, no C dependencies).
+
+## Build & Test
+
+- `swift build` to build
+- `swift test` to run all tests (1037+, Swift Testing framework)
+- `swiftlint` to lint
+- `swift-format format -i -r Sources Tests` to format (optional)
+
+## Architecture
+
+### View System
+
+- Every **public** control must be a `View` with a real `body: some View`
+- `body` must return actual Views (not `Never`, not `fatalError()`)
+- `Renderable` is only for leaf nodes (`Text`, `Spacer`, `Divider`) and private `_*Core` views
+- All modifiers must propagate through the entire View hierarchy
+- Environment values must flow down automatically
+- Prefer pure composition over `_*Core` + `Renderable`
+
+### SwiftUI API Parity
+
+Public APIs must match SwiftUI signatures exactly:
+- Parameter names: exact (`isPresented`, not `isVisible`)
+- Parameter order: exact
+- Parameter types: match closely (ViewBuilder closures, not pre-built values)
+- Before implementing: look up the exact SwiftUI signature first
+
+### General Principles
+
+- No singletons; all state flows through the Environment system
+- Search the codebase for similar patterns before implementing anything new
+- Consolidate and reuse before adding new functions or types
+
+## Code Style
+
+- Line length: 140 characters (warning), 200 (error)
+- 4-space indentation
+- Trailing commas in multi-line collections
+- See `.swiftlint.yml` and `.swift-format` for configuration
+
+## Testing
+
+- Swift Testing framework (`@Test`, `#expect`, `@Suite`)
+- Tests run in parallel
+- Test files mirror source structure in `Tests/TUIkitTests/`
+
+## References
+
+See `CONTRIBUTING.md` for full details and `.claude/CLAUDE.md` for comprehensive architecture docs.
