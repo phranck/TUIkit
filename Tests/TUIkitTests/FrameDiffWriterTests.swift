@@ -64,7 +64,9 @@ struct BuildOutputLinesTests {
             reset: "[R]"
         )
 
-        let expected = "[BG]" + String(repeating: " ", count: 5) + "[R]"
+        // Empty lines use bgCode + ESC[2K (erase entire line with bg color) + reset
+        let eraseLine = "\u{1B}[2K"
+        let expected = "[BG]" + eraseLine + "[R]"
         #expect(lines[0] == expected)
         #expect(lines[1] == expected)
     }

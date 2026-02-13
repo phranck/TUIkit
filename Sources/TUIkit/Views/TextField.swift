@@ -257,8 +257,8 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
-        // TextField expands to fill available width (with minimum)
-        let contentWidth = max(minContentWidth, context.availableWidth)
+        // TextField expands to fill available width (reserve 2 chars for caps)
+        let contentWidth = max(minContentWidth, context.availableWidth - 2)
 
         // Get or create persistent focusID from state storage.
         // focusID must be stable across renders for focus state to persist.
@@ -307,7 +307,11 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
             contentWidth: contentWidth
         )
 
-        return FrameBuffer(text: fieldContent)
+        // Wrap with half-block caps (matching Button style)
+        let capColor = palette.accent.opacity(0.2)
+        let openCap = ANSIRenderer.colorize("\u{2590}", foreground: capColor)
+        let closeCap = ANSIRenderer.colorize("\u{258C}", foreground: capColor)
+        return FrameBuffer(text: openCap + fieldContent + closeCap)
     }
 
     /// Builds the rendered text field content.
@@ -321,7 +325,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
     ) -> String {
         let textValue = text.wrappedValue
         let isEmpty = textValue.isEmpty
-        let backgroundColor = palette.focusBackground
+        let backgroundColor = palette.accent.opacity(0.2)
 
         // Build inner content with background
         let innerContent: String
