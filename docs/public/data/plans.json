@@ -1,6 +1,30 @@
 {
-  "generated": "2026-02-13T14:50:04.111Z",
+  "generated": "2026-02-13T15:18:25.902Z",
   "open": [
+    {
+      "date": "2026-02-13",
+      "slug": "codebase-refactoring",
+      "title": "Refactor: Codebase Quality & SwiftUI API Parity",
+      "preface": "Konsolidierte Findings aus zwei Audits:\n1. **SwiftUI API Parity** - Vergleich der oeffentlichen APIs mit SwiftUI-Signaturen\n2. **Code Quality** - Duplikate, Inkonsistenzen, grosse Dateien\n\n---"
+    },
+    {
+      "date": "2026-02-10",
+      "slug": "bundle-resource-loading",
+      "title": "Bundle Resource Loading Support",
+      "preface": "This plan integrates Foundation.Bundle into TUIkit for resource loading (images, data files, localized strings). Rather than reimplementing Bundle, we leverage SPM's automatic Bundle.module generation for resource management. The implementation adds resource declarations to Package.swift, organizes assets in a Resources directory, and provides type-safe resource accessors. This enables Image(_:bundle:) API and future features like localized strings, custom fonts, and data-driven UI components. The approach is cross-platform (macOS + Linux), requires zero custom Bundle code, and follows Apple's SPM resource conventions."
+    },
+    {
+      "date": "2026-02-10",
+      "slug": "image-view-ascii-art",
+      "title": "Image View with ASCII Art Rendering",
+      "preface": "This plan introduces SwiftUI-conformant Image view support for TUIkit using ASCII art rendering with full 24-bit true color support. The implementation converts raster images (PNG, JPEG) to colored ASCII/Unicode characters, enabling rich visual content in terminal UIs. The system uses platform-specific image decoding (CoreGraphics on macOS, swift-png on Linux) and sophisticated algorithms including brightness mapping, color quantization, Floyd-Steinberg dithering, and aspect ratio correction. The public API mirrors SwiftUI's Image API with terminal-specific modifiers for character set selection and color modes. Performance is optimized through caching, downsampling, and lazy rendering."
+    },
+    {
+      "date": "2026-02-10",
+      "slug": "layout-system-refactor",
+      "title": "Layout System Refactor: Two-Pass Layout Like SwiftUI",
+      "preface": "This plan refactors TUIKit's layout system to use a proper two-pass layout algorithm similar to SwiftUI. The current system renders all children with the same `availableWidth`, causing layout bugs when views need to share horizontal space (e.g., TextField in HStack). The new system will measure views first, then distribute remaining space, ensuring predictable and correct layouts."
+    },
     {
       "date": "2026-02-02",
       "slug": "state-persistence",

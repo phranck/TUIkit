@@ -22,10 +22,10 @@ struct ContainerTypesRow: View, Equatable {
             }
 
             VStack(alignment: .leading) {
-                Text("Box").bold().foregroundStyle(.palette.accent)
-                Box(color: .palette.border) {
-                    Text("Simple Box").foregroundStyle(.palette.foreground)
-                }
+                Text(".border()").bold().foregroundStyle(.palette.accent)
+                Text("Simple bordered content")
+                    .foregroundStyle(.palette.foreground)
+                    .border()
             }
 
             VStack(alignment: .leading) {
@@ -57,24 +57,23 @@ struct SettingsAndAlignmentRow: View, Equatable {
 
             DemoSection("Content Alignment") {
                 HStack(spacing: 1) {
-                    Box {
-                        VStack(alignment: .leading) {
-                            Text("Leading align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    VStack(alignment: .leading) {
+                        Text("Leading align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
-                    Box {
-                        VStack(alignment: .center) {
-                            Text("Center align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    .border()
+
+                    VStack(alignment: .center) {
+                        Text("Center align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
-                    Box {
-                        VStack(alignment: .trailing) {
-                            Text("Trailing align").foregroundStyle(.palette.foreground)
-                            Text("short").foregroundStyle(.palette.foregroundSecondary)
-                        }
+                    .border()
+
+                    VStack(alignment: .trailing) {
+                        Text("Trailing align").foregroundStyle(.palette.foreground)
+                        Text("short").foregroundStyle(.palette.foregroundSecondary)
                     }
+                    .border()
                 }
             }
         }
@@ -102,23 +101,23 @@ struct ProgressViewRow: View, Equatable {
                     Text("Styles:").dim()
                     HStack(spacing: 1) {
                         Text("block    ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.block)
+                        ProgressView(value: 0.6).trackStyle(.block)
                     }
                     HStack(spacing: 1) {
                         Text("blockFine").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.blockFine)
+                        ProgressView(value: 0.6).trackStyle(.blockFine)
                     }
                     HStack(spacing: 1) {
                         Text("shade    ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.shade)
+                        ProgressView(value: 0.6).trackStyle(.shade)
                     }
                     HStack(spacing: 1) {
                         Text("bar      ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.bar)
+                        ProgressView(value: 0.6).trackStyle(.bar)
                     }
                     HStack(spacing: 1) {
                         Text("dot      ").dim()
-                        ProgressView(value: 0.6).progressBarStyle(.dot)
+                        ProgressView(value: 0.6).trackStyle(.dot)
                     }
                 }
             }
@@ -155,18 +154,17 @@ struct ContainersPage: View {
                     if showDetails {
                         Panel("Padding Examples", titleColor: .palette.accent) {
                             HStack(spacing: 1) {
-                                Box {
-                                    Text("h:1 v:0").foregroundStyle(.palette.foreground)
-                                        .padding(.horizontal, 1)
-                                }
-                                Box {
-                                    Text("h:1 v:1").foregroundStyle(.palette.foreground)
-                                        .padding(EdgeInsets(horizontal: 1, vertical: 1))
-                                }
-                                Box {
-                                    Text("h:1 v:2").foregroundStyle(.palette.foreground)
-                                        .padding(EdgeInsets(horizontal: 1, vertical: 2))
-                                }
+                                Text("h:1 v:0").foregroundStyle(.palette.foreground)
+                                    .padding(.horizontal, 1)
+                                    .border()
+
+                                Text("h:1 v:1").foregroundStyle(.palette.foreground)
+                                    .padding(EdgeInsets(horizontal: 1, vertical: 1))
+                                    .border()
+
+                                Text("h:1 v:2").foregroundStyle(.palette.foreground)
+                                    .padding(EdgeInsets(horizontal: 1, vertical: 2))
+                                    .border()
                             }
                         }
                     }

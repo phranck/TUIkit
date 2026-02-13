@@ -191,7 +191,6 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let palette = context.environment.palette
         let stateStorage = context.tuiContext.stateStorage
 
@@ -217,16 +216,16 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             let availableHeight = context.availableHeight
             let viewportHeight = max(1, availableHeight - 6) // Reserve for border + header + indicators
 
-            // Get or create persistent focusID
-            let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-            let focusIDBox: StateBox<String> = stateStorage.storage(
-                for: focusIDKey,
-                default: focusID ?? "table-\(context.identity.path)"
+            // Focus registration via shared helper
+            let persistedFocusID = FocusRegistration.persistFocusID(
+                context: context,
+                explicitFocusID: focusID,
+                defaultPrefix: "table",
+                propertyIndex: 1  // focusID
             )
-            let persistedFocusID = focusIDBox.value
 
             // Get or create persistent handler
-            let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+            let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
             let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
                 for: handlerKey,
                 default: ItemListHandler(
@@ -266,12 +265,8 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
 
-            // Register with focus manager
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
-
-            // Check if this table has focus
-            let tableHasFocus = focusManager.isFocused(id: persistedFocusID)
+            FocusRegistration.register(context: context, handler: handler)
+            let tableHasFocus = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
             // Build content lines
             var lines: [String] = []
@@ -393,39 +388,16 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         palette: any Palette
     ) -> String {
         let spacing = String(repeating: " ", count: columnSpacing)
+        let visualState = rowVisualState(
+            isFocused: isFocused, isSelected: isSelected,
+            context: context, palette: palette
+        )
 
-        // Determine visual state - only affects indicator and background
-        // Cell content uses environment foregroundColor (via context)
-        let indicator: String
-        let indicatorColor: Color
-        let backgroundColor: Color?
+        let styledIndicator = ANSIRenderer.colorize(
+            visualState.indicator, foreground: visualState.indicatorColor
+        )
 
-        if isFocused && isSelected {
-            // Focused + Selected: pulsing accent background, selected indicator
-            let dimAccent = palette.accent.opacity(0.35)
-            backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
-            indicatorColor = palette.accent
-            indicator = "●"
-        } else if isFocused {
-            // Focused only: highlight background bar, no indicator
-            backgroundColor = palette.focusBackground
-            indicatorColor = palette.foregroundTertiary
-            indicator = " "
-        } else if isSelected {
-            // Selected only: accent indicator, no background
-            backgroundColor = nil
-            indicatorColor = palette.accent.opacity(0.6)
-            indicator = "●"
-        } else {
-            // Neither: no indicator, no background
-            backgroundColor = nil
-            indicatorColor = palette.foregroundTertiary
-            indicator = " "
-        }
-
-        let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
-
-        // Build cells - use environment foreground color, not hardcoded palette
+        // Build cells using environment foreground color
         let foregroundColor = context.environment.foregroundStyle ?? palette.foreground
         let cells = zip(columns, columnWidths).map { column, width -> String in
             let value = column.value(for: item)
@@ -435,14 +407,33 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
 
         let content = styledIndicator + " " + cells.joined(separator: spacing)
 
-        if let bgColor = backgroundColor {
-            // Apply background bar across entire row width
+        if let bgColor = visualState.backgroundColor {
             let visibleLength = content.strippedLength
             let padding = max(0, rowWidth - visibleLength)
             let paddedContent = content + String(repeating: " ", count: padding)
-            return ANSIRenderer.applyPersistentBackground(paddedContent, color: bgColor)
+            return paddedContent.withPersistentBackground(bgColor)
         } else {
             return content
+        }
+    }
+
+    /// Determines indicator symbol, indicator color, and background color for a table row.
+    private func rowVisualState(
+        isFocused: Bool,
+        isSelected: Bool,
+        context: RenderContext,
+        palette: any Palette
+    ) -> (indicator: String, indicatorColor: Color, backgroundColor: Color?) {
+        if isFocused && isSelected {
+            let dimAccent = palette.accent.opacity(0.35)
+            let bg = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+            return ("●", palette.accent, bg)
+        } else if isFocused {
+            return (" ", palette.foregroundTertiary, palette.focusBackground)
+        } else if isSelected {
+            return ("●", palette.accent.opacity(0.6), nil)
+        } else {
+            return (" ", palette.foregroundTertiary, nil)
         }
     }
 

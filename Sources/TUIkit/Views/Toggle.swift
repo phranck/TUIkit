@@ -1,4 +1,4 @@
-//  🖥️ TUIKit — Terminal UI Kit for Swift
+//  TUIKit - Terminal UI Kit for Swift
 //  Toggle.swift
 //
 //  Created by LAYERED.work
@@ -6,166 +6,206 @@
 
 import Foundation
 
-// MARK: - Toggle Style
+// MARK: - ToggleStyle Protocol
 
-/// Defines the visual style of a toggle component.
-public enum ToggleStyle: Sendable {
-    /// Slider style: `[●○]` when off, `[○●]` when on.
-    case toggle
+/// The appearance and behavior of a toggle.
+///
+/// To configure the style for a single `Toggle` or for all toggle instances
+/// in a view hierarchy, use the `toggleStyle(_:)` modifier.
+///
+/// ## Built-in Styles
+///
+/// | Style | Description |
+/// |-------|-------------|
+/// | `.automatic` | Platform default (checkbox in TUI) |
+/// | `.checkbox` | Classic checkbox: `[ ]` / `[x]` |
+/// | `.switch` | Switch style (renders same as checkbox in TUI) |
+///
+/// > Note: In TUIkit, all styles render identically as `[ ]` / `[x]`
+/// > due to terminal constraints. The API matches SwiftUI for compatibility.
+public protocol ToggleStyle: Sendable {}
 
-    /// Checkbox style: `[ ]` when off, `[x]` when on.
-    case checkbox
+// MARK: - Built-in Toggle Styles
+
+/// The default toggle style.
+///
+/// In TUIkit, the default style is checkbox: `[ ]` / `[x]`.
+public struct DefaultToggleStyle: ToggleStyle {
+    public init() {}
+}
+
+/// A toggle style that displays a checkbox followed by its label.
+///
+/// ```
+/// [ ] Label     (OFF)
+/// [x] Label     (ON)
+/// ```
+public struct CheckboxToggleStyle: ToggleStyle {
+    public init() {}
+}
+
+/// A toggle style that displays a leading label and a trailing switch.
+///
+/// > Note: In TUIkit, this renders identically to `CheckboxToggleStyle`
+/// > due to terminal constraints. The API exists for SwiftUI compatibility.
+public struct SwitchToggleStyle: ToggleStyle {
+    public init() {}
+}
+
+// MARK: - ToggleStyle Static Extensions
+
+extension ToggleStyle where Self == DefaultToggleStyle {
+    /// The default toggle style.
+    public static var automatic: DefaultToggleStyle { DefaultToggleStyle() }
+}
+
+extension ToggleStyle where Self == CheckboxToggleStyle {
+    /// A toggle style that displays a checkbox followed by its label.
+    public static var checkbox: CheckboxToggleStyle { CheckboxToggleStyle() }
+}
+
+extension ToggleStyle where Self == SwitchToggleStyle {
+    /// A toggle style that displays a leading label and a trailing switch.
+    ///
+    /// > Note: In TUIkit, this renders identically to checkbox style.
+    public static var `switch`: SwitchToggleStyle { SwitchToggleStyle() }
+}
+
+// MARK: - Environment Key
+
+/// Environment key for toggle style.
+private struct ToggleStyleKey: EnvironmentKey {
+    static let defaultValue: any ToggleStyle = DefaultToggleStyle()
+}
+
+extension EnvironmentValues {
+    /// The toggle style for this environment.
+    public var toggleStyle: any ToggleStyle {
+        get { self[ToggleStyleKey.self] }
+        set { self[ToggleStyleKey.self] = newValue }
+    }
+}
+
+// MARK: - Toggle Style Modifier
+
+extension View {
+    /// Sets the style for toggles within this view.
+    ///
+    /// Use this modifier to set a specific style for all toggles within a view:
+    ///
+    /// ```swift
+    /// VStack {
+    ///     Toggle("Option 1", isOn: $option1)
+    ///     Toggle("Option 2", isOn: $option2)
+    /// }
+    /// .toggleStyle(.checkbox)
+    /// ```
+    ///
+    /// > Note: In TUIkit, all styles currently render as checkbox `[ ]` / `[x]`.
+    ///
+    /// - Parameter style: The toggle style to use.
+    /// - Returns: A view with the toggle style set.
+    public func toggleStyle<S: ToggleStyle>(_ style: S) -> some View {
+        environment(\.toggleStyle, style)
+    }
 }
 
 // MARK: - Toggle
 
-/// An interactive toggle component for boolean state.
+/// A control that toggles between on and off states.
 ///
-/// Toggles can receive focus and respond to keyboard input (Space or Enter).
-/// They display with a focus indicator when focused, matching the Button focus behavior.
-///
-/// ## Rendering
-///
-/// The toggle renders as `[focus●] [toggle/checkbox] label`, where the focus indicator
-/// only appears when focused (pulsing accent dot).
-///
-/// # Basic Example
+/// You create a toggle by providing an `isOn` binding and a label:
 ///
 /// ```swift
-/// @State var isEnabled = false
+/// @State private var isEnabled = false
 ///
 /// Toggle("Enable notifications", isOn: $isEnabled)
 /// ```
 ///
-/// # Checkbox Style
+/// ## Rendering
+///
+/// ```
+/// [ ] Label     (OFF - dimmed)
+/// [x] Label     (ON - accent color)
+/// ```
+///
+/// When focused, the brackets pulse in the accent color.
+///
+/// ## Styling
+///
+/// Use the `toggleStyle(_:)` modifier to customize appearance:
 ///
 /// ```swift
-/// Toggle("Dark mode", isOn: $darkMode, style: .checkbox)
+/// Toggle("Option", isOn: $isOn)
+///     .toggleStyle(.checkbox)
 /// ```
-public struct Toggle: View {
+///
+/// Available styles: `.automatic`, `.checkbox`, `.switch`
+///
+/// > Note: In TUIkit, all styles currently render identically as checkbox
+/// > due to terminal constraints.
+public struct Toggle<Label: View>: View {
     /// The binding to the toggle's boolean state.
     let isOn: Binding<Bool>
 
-    /// The label text to display next to the toggle.
-    let label: String
-
-    /// The visual style of the toggle.
-    let style: ToggleStyle
+    /// The label view.
+    let label: Label
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the toggle is disabled.
-    let isDisabled: Bool
-
-    /// Creates a toggle with a string label and binding.
-    ///
-    /// - Parameters:
-    ///   - title: The toggle's label text.
-    ///   - isOn: A binding to the toggle's boolean state.
-    ///   - style: The visual style (default: `.toggle`).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-    ///   - isDisabled: Whether the toggle is disabled (default: false).
-    public init(
-        _ title: String,
-        isOn: Binding<Bool>,
-        style: ToggleStyle = .toggle,
-        focusID: String? = nil,
-        isDisabled: Bool = false
-    ) {
-        self.isOn = isOn
-        self.label = title
-        self.style = style
-        self.focusID = focusID ?? "toggle-\(title)"
-        self.isDisabled = isDisabled
-    }
+    var isDisabled: Bool
 
     public var body: some View {
         _ToggleCore(
             isOn: isOn,
             label: label,
-            style: style,
             focusID: focusID,
             isDisabled: isDisabled
         )
     }
 }
 
-// MARK: - Internal Core View
+// MARK: - Toggle Initializers (String Label)
 
-/// Internal view that handles the actual rendering of Toggle.
-private struct _ToggleCore: View, Renderable {
-    let isOn: Binding<Bool>
-    let label: String
-    let style: ToggleStyle
-    let focusID: String
-    let isDisabled: Bool
-
-    var body: Never {
-        fatalError("_ToggleCore renders via Renderable")
-    }
-
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Register with focus manager
-        let focusManager = context.environment.focusManager
-        let binding = isOn
-        let handler = ActionHandler(
-            focusID: focusID,
-            action: { binding.wrappedValue.toggle() },
-            canBeFocused: !isDisabled
-        )
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-
-        // Determine if focused
-        let isFocused = focusManager.isFocused(id: focusID)
-        let palette = context.environment.palette
-
-        // Build the toggle content (indicator inside brackets)
-        let indicatorContent: String
-        switch style {
-        case .toggle:
-            indicatorContent = isOn.wrappedValue ? "●○" : "○●"
-        case .checkbox:
-            indicatorContent = isOn.wrappedValue ? "●" : " "
-        }
-
-        // Determine bracket color: pulsing accent when focused, border when unfocused
-        let bracketColor: Color
-        if isDisabled {
-            bracketColor = palette.foregroundTertiary
-        } else if isFocused {
-            // Subtle pulse: interpolate between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
-            bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-        } else {
-            bracketColor = palette.border
-        }
-
-        // Render brackets with pulse, content without pulse
-        let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused && !isDisabled)
-        let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused && !isDisabled)
-
-        // Indicator color: accent if focused, foreground if not focused/disabled
-        let indicatorColor: Color
-        if isDisabled {
-            indicatorColor = palette.foregroundTertiary
-        } else if isFocused {
-            indicatorColor = palette.accent
-        } else {
-            indicatorColor = palette.foregroundSecondary
-        }
-        let styledContent = ANSIRenderer.colorize(indicatorContent, foreground: indicatorColor)
-
-        // Combine: [indicator] label
-        let styledToggle = openBracket + styledContent + closeBracket
-        let combinedLine = styledToggle + " " + label
-
-        // Return frame buffer with the combined line
-        return FrameBuffer(lines: [combinedLine])
+extension Toggle where Label == Text {
+    /// Creates a toggle with a string label.
+    ///
+    /// - Parameters:
+    ///   - title: The toggle's label text.
+    ///   - isOn: A binding to the toggle's boolean state.
+    public init<S: StringProtocol>(
+        _ title: S,
+        isOn: Binding<Bool>
+    ) {
+        self.isOn = isOn
+        self.label = Text(String(title))
+        self.focusID = "toggle-\(title)"
+        self.isDisabled = false
     }
 }
 
-// MARK: - Toggle Convenience Modifiers
+// MARK: - Toggle Initializers (ViewBuilder Label)
+
+extension Toggle {
+    /// Creates a toggle with a custom label.
+    ///
+    /// - Parameters:
+    ///   - isOn: A binding to the toggle's boolean state.
+    ///   - label: A view that describes the purpose of the toggle.
+    public init(
+        isOn: Binding<Bool>,
+        @ViewBuilder label: () -> Label
+    ) {
+        self.isOn = isOn
+        self.label = label()
+        self.focusID = nil
+        self.isDisabled = false
+    }
+}
+
+// MARK: - Toggle Modifiers
 
 extension Toggle {
     /// Creates a disabled version of this toggle.
@@ -173,12 +213,89 @@ extension Toggle {
     /// - Parameter disabled: Whether the toggle is disabled.
     /// - Returns: A new toggle with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Toggle {
-        Toggle(
-            label,
-            isOn: isOn,
-            style: style,
-            focusID: focusID,
-            isDisabled: disabled
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
+    }
+
+    /// Sets a custom focus identifier for this toggle.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A toggle with the specified focus identifier.
+    public func focusID(_ id: String) -> Toggle {
+        var copy = self
+        copy.focusID = id
+        return copy
+    }
+}
+
+// MARK: - Internal Core View
+
+/// Internal view that handles the actual rendering of Toggle.
+private struct _ToggleCore<Label: View>: View, Renderable {
+    let isOn: Binding<Bool>
+    let label: Label
+    let focusID: String?
+    let isDisabled: Bool
+
+    var body: Never {
+        fatalError("_ToggleCore renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let palette = context.environment.palette
+
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "toggle",
+            propertyIndex: 0  // focusID
         )
+        let binding = isOn
+        let handler = ActionHandler(
+            focusID: persistedFocusID,
+            action: { binding.wrappedValue.toggle() },
+            canBeFocused: !isDisabled
+        )
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
+        let isOnValue = isOn.wrappedValue
+
+        // Render the label to get its text
+        let labelBuffer = TUIkit.renderToBuffer(label, context: context)
+        let labelText = labelBuffer.lines.joined(separator: " ").stripped
+
+        // Bracket color: pulsing accent when focused, dimmed otherwise
+        let bracketColor: Color
+        if isDisabled {
+            bracketColor = palette.foregroundTertiary.opacity(0.5)
+        } else if isFocused {
+            let dimAccent = palette.accent.opacity(0.35)
+            bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+        } else {
+            bracketColor = palette.foregroundTertiary.opacity(0.5)
+        }
+
+        let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor)
+        let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor)
+
+        // Content: [ ] (OFF) or [x] (ON)
+        let contentColor: Color
+        if isDisabled {
+            contentColor = palette.foregroundTertiary.opacity(0.5)
+        } else if isOnValue {
+            contentColor = palette.accent
+        } else {
+            contentColor = palette.foregroundTertiary.opacity(0.5)
+        }
+
+        let content = isOnValue ? "x" : " "
+        let styledContent = ANSIRenderer.colorize(content, foreground: contentColor)
+        let styledIndicator = openBracket + styledContent + closeBracket
+
+        // Combine: [indicator] label
+        let combinedLine = styledIndicator + " " + labelText
+
+        return FrameBuffer(lines: [combinedLine])
     }
 }

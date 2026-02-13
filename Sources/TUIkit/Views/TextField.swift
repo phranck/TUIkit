@@ -79,13 +79,13 @@ public struct TextField<Label: View>: View {
     let prompt: Text?
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the text field is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Action to perform when the user submits (presses Enter).
-    let onSubmitAction: (() -> Void)?
+    var onSubmitAction: (() -> Void)?
 
     public var body: some View {
         _TextFieldCore(
@@ -164,7 +164,7 @@ extension TextField {
         self.label = label()
         self.text = text
         self.prompt = prompt
-        self.focusID = "textfield-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onSubmitAction = nil
     }
@@ -178,14 +178,9 @@ extension TextField {
     /// - Parameter disabled: Whether the text field is disabled.
     /// - Returns: A new text field with the disabled state.
     public func disabled(_ disabled: Bool = true) -> TextField {
-        TextField(
-            label: label,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: disabled,
-            onSubmitAction: onSubmitAction
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
     }
 
     /// Adds an action to perform when the user submits (presses Enter).
@@ -205,64 +200,75 @@ extension TextField {
     /// - Parameter action: The action to perform on submit.
     /// - Returns: A text field that performs the action on submit.
     public func onSubmit(_ action: @escaping () -> Void) -> TextField {
-        TextField(
-            label: label,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: isDisabled,
-            onSubmitAction: action
-        )
+        var copy = self
+        copy.onSubmitAction = action
+        return copy
+    }
+
+    /// Sets a custom focus identifier for this text field.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A text field with the specified focus identifier.
+    public func focusID(_ id: String) -> TextField {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
 
 // MARK: - Internal Core View
 
 /// Internal view that handles the actual rendering of TextField.
-private struct _TextFieldCore<Label: View>: View, Renderable {
+private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
     let label: Label
     let text: Binding<String>
     let prompt: Text?
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
 
-    /// The cursor character shown when focused.
-    private let cursorChar: Character = "█"
+    /// Minimum width for the text field content area.
+    private let minContentWidth = 10
 
-    /// Default visible width for the text field content area.
+    /// Default visible width for the text field content area when no proposal is given.
     private let defaultContentWidth = 20
 
     var body: Never {
         fatalError("_TextFieldCore renders via Renderable")
     }
 
+    /// Returns the size this text field needs.
+    ///
+    /// TextField is width-flexible: it has a minimum width but expands
+    /// to fill available horizontal space in HStack.
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let width = proposal.width ?? defaultContentWidth
+        return ViewSize(
+            width: max(minContentWidth, width),
+            height: 1,
+            isWidthFlexible: true,
+            isHeightFlexible: false
+        )
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
+        let cursorStyle = context.environment.textCursorStyle
 
-        // Determine content width: use available width if explicit frame set, otherwise default
-        // Account for focus indicators (2 chars for ❙ on each side)
-        let contentWidth: Int
-        if context.hasExplicitWidth && context.availableWidth > 2 {
-            contentWidth = context.availableWidth - 2  // Subtract space for focus indicators
-        } else {
-            contentWidth = defaultContentWidth
-        }
+        // TextField expands to fill available width (reserve 2 chars for caps)
+        let contentWidth = max(minContentWidth, context.availableWidth - 2)
 
-        // Get or create persistent focusID from state storage.
-        // focusID must be stable across renders for focus state to persist.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "textfield",
+            propertyIndex: 1  // focusID
         )
-        let persistedFocusID = focusIDBox.value
 
         // Get or create persistent handler from state storage.
         // The handler maintains cursor position across renders.
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
         let handlerBox: StateBox<TextFieldHandler> = stateStorage.storage(
             for: handlerKey,
             default: TextFieldHandler(
@@ -279,169 +285,33 @@ private struct _TextFieldCore<Label: View>: View, Renderable {
         handler.onSubmit = onSubmitAction
         handler.clampCursorPosition()
 
-        // Register with focus manager
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
-        // Determine focus state
-        let isFocused = focusManager.isFocused(id: persistedFocusID)
+        // Build the text field content using shared renderer
+        let renderer = TextFieldContentRenderer(
+            prompt: prompt,
+            isDisabled: isDisabled,
+            displayCharacter: { index, text in
+                text[text.index(text.startIndex, offsetBy: index)]
+            }
+        )
 
-        // Build the text field content
-        let content = buildContent(
-            handler: handler,
+        let fieldContent = renderer.buildContent(
+            text: text.wrappedValue,
+            cursorPosition: handler.cursorPosition,
+            selectionRange: handler.selectionRange,
             isFocused: isFocused,
             palette: palette,
-            pulsePhase: context.pulsePhase,
+            cursorStyle: cursorStyle,
+            cursorTimer: context.cursorTimer,
             contentWidth: contentWidth
         )
 
-        return FrameBuffer(text: content)
-    }
-
-    /// Builds the rendered text field content.
-    private func buildContent(
-        handler: TextFieldHandler,
-        isFocused: Bool,
-        palette: any Palette,
-        pulsePhase: Double,
-        contentWidth: Int
-    ) -> String {
-        let textValue = text.wrappedValue
-        let isEmpty = textValue.isEmpty
-        let backgroundColor = palette.focusBackground
-
-        // Build inner content with background
-        let innerContent: String
-        if isEmpty && !isFocused && prompt != nil {
-            // Show prompt when empty and unfocused
-            innerContent = buildPromptContent(palette: palette, background: backgroundColor, width: contentWidth)
-        } else if isFocused {
-            // Show text with cursor (scrolling if needed)
-            innerContent = buildTextWithCursor(
-                text: textValue,
-                cursorPosition: handler.cursorPosition,
-                selectionRange: handler.selectionRange,
-                palette: palette,
-                background: backgroundColor,
-                width: contentWidth
-            )
-        } else {
-            // Show text without cursor (scrolling if needed)
-            innerContent = buildTextContent(
-                text: textValue,
-                palette: palette,
-                background: backgroundColor,
-                width: contentWidth
-            )
-        }
-
-        // Add medium vertical bars when focused (outside the content area)
-        if isFocused && !isDisabled {
-            // Pulse between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
-            let accentColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
-
-            let bar = ANSIRenderer.colorize("❙", foreground: accentColor)
-            return "\(bar)\(innerContent)\(bar)"
-        }
-
-        // Unfocused: add space placeholders to maintain alignment
-        return " \(innerContent) "
-    }
-
-    /// Builds the prompt content (shown when empty and unfocused).
-    private func buildPromptContent(palette: any Palette, background: Color, width: Int) -> String {
-        let promptText: String
-        if let prompt {
-            let buffer = TUIkit.renderToBuffer(prompt, context: RenderContext(availableWidth: 100, availableHeight: 1))
-            promptText = buffer.lines.first?.stripped ?? ""
-        } else {
-            promptText = ""
-        }
-        // Truncate or pad prompt to exact width
-        let truncated = String(promptText.prefix(width))
-        let paddedPrompt = truncated.padding(toLength: width, withPad: " ", startingAt: 0)
-        return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary, background: background)
-    }
-
-    /// Builds text content without cursor (unfocused state).
-    private func buildTextContent(text: String, palette: any Palette, background: Color, width: Int) -> String {
-        // Show text from the beginning, truncated to width
-        let visibleText = String(text.prefix(width))
-        let paddedText = visibleText.padding(toLength: width, withPad: " ", startingAt: 0)
-        let foreground = isDisabled ? palette.foregroundTertiary : palette.foreground
-        return ANSIRenderer.colorize(paddedText, foreground: foreground, background: background)
-    }
-
-    /// Builds text content with cursor at the specified position (focused state).
-    /// Implements horizontal scrolling to keep cursor visible.
-    /// Selection is highlighted with accent background if present.
-    private func buildTextWithCursor(
-        text: String,
-        cursorPosition: Int,
-        selectionRange: Range<Int>?,
-        palette: any Palette,
-        background: Color,
-        width: Int
-    ) -> String {
-        let clampedPosition = max(0, min(cursorPosition, text.count))
-
-        // Calculate scroll offset to keep cursor visible
-        // The cursor needs 1 character, so visible text area is (width - 1)
-        let visibleTextWidth = width - 1  // Reserve 1 char for cursor
-        let scrollOffset: Int
-        if clampedPosition <= visibleTextWidth {
-            // Cursor fits without scrolling
-            scrollOffset = 0
-        } else {
-            // Scroll so cursor is at the right edge
-            scrollOffset = clampedPosition - visibleTextWidth
-        }
-
-        // The visible window in the text
-        let visibleStart = scrollOffset
-
-        // Build output character by character
-        var result = ""
-        var outputWidth = 0
-
-        for visibleIndex in 0..<width {
-            let textIndex = visibleStart + visibleIndex
-
-            if textIndex == clampedPosition {
-                // Render cursor
-                result += ANSIRenderer.colorize(String(cursorChar), foreground: palette.accent, background: background)
-                outputWidth += 1
-            } else if textIndex < text.count && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
-                // Render character
-                let charIndex = text.index(text.startIndex, offsetBy: textIndex)
-                let char = text[charIndex]
-
-                // Check if this character is in the selection
-                let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
-
-                if isSelected {
-                    // Selection highlight: accent background, foreground contrasts
-                    result += ANSIRenderer.colorize(
-                        String(char),
-                        foreground: palette.background,
-                        background: palette.accent
-                    )
-                } else {
-                    result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
-                }
-                outputWidth += 1
-            } else if outputWidth < width {
-                // Padding
-                result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
-                outputWidth += 1
-            }
-
-            if outputWidth >= width {
-                break
-            }
-        }
-
-        return result
+        // Wrap with half-block caps
+        let capColor = palette.accent.opacity(0.2)
+        let openCap = ANSIRenderer.colorize(String(TerminalSymbols.openCap), foreground: capColor)
+        let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: capColor)
+        return FrameBuffer(text: openCap + fieldContent + closeCap)
     }
 }

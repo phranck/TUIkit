@@ -1,4 +1,4 @@
-//  🖥️ TUIKit — Terminal UI Kit for Swift
+//  TUIKit - Terminal UI Kit for Swift
 //  ToggleTests.swift
 //
 //  Created by LAYERED.work
@@ -40,21 +40,6 @@ struct ToggleTests {
         let toggle = Toggle("Enable", isOn: binding)
 
         #expect(toggle.isDisabled == false)
-        #expect(toggle.style == .toggle)
-    }
-
-    @Test("Toggle string initializer creates binding")
-    func toggleStringInitializer() {
-        var isDarkMode = false
-        let binding = Binding(
-            get: { isDarkMode },
-            set: { isDarkMode = $0 }
-        )
-
-        let toggle = Toggle("Dark mode", isOn: binding, style: .checkbox)
-
-        #expect(toggle.isDisabled == false)
-        #expect(toggle.style == .checkbox)
     }
 
     @Test("Toggle disabled modifier")
@@ -74,21 +59,8 @@ struct ToggleTests {
         #expect(enabledToggle.isDisabled == false)
     }
 
-    @Test("Toggle generates unique focus ID by default")
-    func toggleGeneratesUniqueID() {
-        var state1 = false
-        var state2 = false
-        let binding1 = Binding(get: { state1 }, set: { state1 = $0 })
-        let binding2 = Binding(get: { state2 }, set: { state2 = $0 })
-
-        let toggle1 = Toggle("One", isOn: binding1)
-        let toggle2 = Toggle("Two", isOn: binding2)
-
-        #expect(toggle1.focusID != toggle2.focusID)
-    }
-
-    @Test("Toggle style toggle renders correct states")
-    func toggleStyleRender() {
+    @Test("Toggle renders with brackets")
+    func toggleRenders() {
         let context = createTestContext()
 
         // Off state
@@ -98,36 +70,47 @@ struct ToggleTests {
             set: { isOn = $0 }
         )
 
-        let toggle = Toggle("Test", isOn: binding, style: .toggle)
+        let toggle = Toggle("Test", isOn: binding)
         let buffer = renderToBuffer(toggle, context: context)
 
-        // Should render as single line with ○● indicator
+        // Should render as single line with [ ] indicator (OFF)
         #expect(buffer.height == 1)
         let content = buffer.lines.joined()
-        #expect(content.contains("○●"))
-    }
-
-    @Test("Toggle style checkbox renders correct states")
-    func checkboxStyleRender() {
-        let context = createTestContext()
-
-        // Off state
-        var isOn = false
-        let binding = Binding(
-            get: { isOn },
-            set: { isOn = $0 }
-        )
-
-        let toggle = Toggle("Test", isOn: binding, style: .checkbox)
-        let buffer = renderToBuffer(toggle, context: context)
-
-        // Should render as single line with checkbox
-        #expect(buffer.height == 1)
-        let content = buffer.lines.joined()
-        // Off state: [ ], on state: [●] — check for brackets and content
         #expect(content.contains("[") && content.contains("]"))
-        let visibleText = content.stripped
-        #expect(visibleText.contains("Test"))
+    }
+
+    @Test("Toggle OFF renders empty brackets")
+    func toggleOffState() {
+        let context = createTestContext()
+
+        var isOn = false
+        let binding = Binding(
+            get: { isOn },
+            set: { isOn = $0 }
+        )
+
+        let toggle = Toggle("Test", isOn: binding)
+        let buffer = renderToBuffer(toggle, context: context)
+
+        let content = buffer.lines.joined().stripped
+        #expect(content.contains("[ ]"))
+    }
+
+    @Test("Toggle ON renders x in brackets")
+    func toggleOnState() {
+        let context = createTestContext()
+
+        var isOn = true
+        let binding = Binding(
+            get: { isOn },
+            set: { isOn = $0 }
+        )
+
+        let toggle = Toggle("Test", isOn: binding)
+        let buffer = renderToBuffer(toggle, context: context)
+
+        let content = buffer.lines.joined().stripped
+        #expect(content.contains("[x]"))
     }
 
     @Test("Toggle renders focus indicator when focused")
@@ -140,11 +123,11 @@ struct ToggleTests {
             set: { isOn = $0 }
         )
 
-        let toggle = Toggle("Focused", isOn: binding, focusID: "test-toggle")
+        let toggle = Toggle("Focused", isOn: binding)
 
         let buffer = renderToBuffer(toggle, context: context)
 
-        // Focused toggle should have ANSI codes (pulsing brackets, no dot)
+        // Focused toggle should have ANSI codes (pulsing brackets)
         let content = buffer.lines.joined()
         #expect(content.contains("\u{1b}["), "Focused toggle should have ANSI styling for pulsing brackets")
     }
@@ -158,8 +141,8 @@ struct ToggleTests {
         let binding1 = Binding(get: { state1 }, set: { state1 = $0 })
         let binding2 = Binding(get: { state2 }, set: { state2 = $0 })
 
-        let toggle1 = Toggle("First", isOn: binding1, focusID: "first")
-        let toggle2 = Toggle("Second", isOn: binding2, focusID: "second")
+        let toggle1 = Toggle("First", isOn: binding1)
+        let toggle2 = Toggle("Second", isOn: binding2)
 
         // Render first (gets focus), then second
         _ = renderToBuffer(toggle1, context: context)
@@ -185,25 +168,6 @@ struct ToggleTests {
 
         let content = buffer.lines.joined()
         #expect(content.contains("My Setting"))
-    }
-
-    @Test("Toggle with text label renders correctly")
-    func toggleWithTextLabel() {
-        let context = createTestContext()
-
-        var isOn = true
-        let binding = Binding(
-            get: { isOn },
-            set: { isOn = $0 }
-        )
-
-        let toggle = Toggle("Feature enabled", isOn: binding, style: .toggle)
-
-        let buffer = renderToBuffer(toggle, context: context)
-
-        #expect(buffer.height == 1)
-        let content = buffer.lines.joined()
-        #expect(content.contains("Feature enabled"))
     }
 
     @Test("Disabled toggle uses tertiary color")
@@ -281,32 +245,5 @@ struct ToggleActionHandlerIntegrationTests {
 
         #expect(handled == false)
         #expect(isOn == false)
-    }
-}
-
-// MARK: - Toggle Style Tests
-
-@MainActor
-@Suite("Toggle Style Tests")
-struct ToggleStyleTests {
-
-    @Test("ToggleStyle values are distinct")
-    func toggleStyleValuesDistinct() {
-        let toggleStyle: ToggleStyle = .toggle
-        let checkboxStyle: ToggleStyle = .checkbox
-
-        // Verify they're different
-        #expect(toggleStyle != checkboxStyle)
-    }
-
-    @Test("ToggleStyle is Sendable")
-    func toggleStyleSendable() {
-        let style: ToggleStyle = .toggle
-
-        // Verify it can be stored and compared
-        var receivedStyle: ToggleStyle = style
-        receivedStyle = .checkbox
-
-        #expect(receivedStyle == .checkbox)
     }
 }

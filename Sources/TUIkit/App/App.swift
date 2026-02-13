@@ -121,6 +121,7 @@ extension AppRunner {
             tuiContext: tuiContext
         )
         let pulseTimer = PulseTimer(renderNotifier: appState)
+        let cursorTimer = CursorTimer(renderNotifier: appState)
 
         // Setup
         signals.install()
@@ -145,11 +146,12 @@ extension AppRunner {
 
         isRunning = true
 
-        // Start the breathing focus indicator animation
+        // Start animation timers
         pulseTimer.start()
+        cursorTimer.start()
 
         // Initial render
-        renderer.render(pulsePhase: pulseTimer.phase)
+        renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
 
         // Main loop
         while isRunning {
@@ -168,7 +170,7 @@ extension AppRunner {
             // Check if terminal was resized or state changed
             if signals.consumeRerenderFlag() || appState.needsRender {
                 appState.didRender()
-                renderer.render(pulsePhase: pulseTimer.phase)
+                renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
             }
 
             // Read key events (non-blocking with VTIME=0)
@@ -182,10 +184,10 @@ extension AppRunner {
                 eventsProcessed += 1
             }
 
-            // Sleep 33ms to yield CPU.
-            // This sets the maximum frame rate to ~30 FPS.
-            // The sleep ensures low CPU usage even during continuous input.
-            usleep(33_000)
+            // Sleep 28ms to yield CPU.
+            // This sets the maximum frame rate to ~35 FPS.
+            //
+            usleep(28_000)
         }
 
         // Stop pulse timer before cleanup

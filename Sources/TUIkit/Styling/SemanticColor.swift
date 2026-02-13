@@ -27,6 +27,7 @@ enum SemanticColor: String, Sendable, Equatable {
     case foreground
     case foregroundSecondary
     case foregroundTertiary
+    case foregroundQuaternary
 
     // Accent
     case accent
@@ -57,6 +58,7 @@ extension SemanticColor {
         case .foreground: palette.foreground
         case .foregroundSecondary: palette.foregroundSecondary
         case .foregroundTertiary: palette.foregroundTertiary
+        case .foregroundQuaternary: palette.foregroundQuaternary
         case .accent: palette.accent
         case .success: palette.success
         case .warning: palette.warning

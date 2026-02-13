@@ -132,6 +132,7 @@ public struct Color: Sendable, Equatable {
         public static let foreground = Color(value: .semantic(.foreground))
         public static let foregroundSecondary = Color(value: .semantic(.foregroundSecondary))
         public static let foregroundTertiary = Color(value: .semantic(.foregroundTertiary))
+        public static let foregroundQuaternary = Color(value: .semantic(.foregroundQuaternary))
 
         // Accent colors
         public static let accent = Color(value: .semantic(.accent))

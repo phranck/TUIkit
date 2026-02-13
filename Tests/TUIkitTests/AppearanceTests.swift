@@ -53,9 +53,9 @@ struct AppearanceTests {
     @Test("AppearanceRegistry cycling order is correct")
     func registryCyclingOrder() {
         let all = AppearanceRegistry.all
-        // Order: line → rounded → doubleLine → heavy
-        #expect(all[0].rawId == .line)
-        #expect(all[1].rawId == .rounded)
+        // Order: rounded (default) → line → doubleLine → heavy
+        #expect(all[0].rawId == .rounded)
+        #expect(all[1].rawId == .line)
         #expect(all[2].rawId == .doubleLine)
         #expect(all[3].rawId == .heavy)
     }

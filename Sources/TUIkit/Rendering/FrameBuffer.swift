@@ -86,6 +86,19 @@ public struct FrameBuffer: Sendable, Equatable {
         self.width = 1
     }
 
+    /// Creates a buffer of empty spaces with the specified width and height.
+    ///
+    /// Used by horizontal stacks for Spacer views which need to occupy
+    /// horizontal space across multiple rows.
+    ///
+    /// - Parameters:
+    ///   - width: The width in characters.
+    ///   - height: The number of lines.
+    public init(emptyWithWidth width: Int, height: Int) {
+        self.lines = Array(repeating: String(repeating: " ", count: width), count: height)
+        self.width = width
+    }
+
     // MARK: - Combining Arrays
 
     /// Creates a vertically stacked buffer from an array of buffers.
