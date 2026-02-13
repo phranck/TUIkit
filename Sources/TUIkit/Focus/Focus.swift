@@ -141,6 +141,14 @@ public final class FocusManager: @unchecked Sendable {
     public var currentFocusedID: String? {
         focusedID
     }
+
+    /// Whether the currently focused element is a text-input handler.
+    ///
+    /// When `true`, the input handler should give the focused element
+    /// priority for key events before dispatching to other layers.
+    var hasTextInputFocus: Bool {
+        currentFocused is TextFieldHandler
+    }
 }
 
 // MARK: - Public API
