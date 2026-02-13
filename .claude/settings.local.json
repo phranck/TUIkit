@@ -1,24 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(xargs basename:*)",
-      "Bash(git checkout:*)",
-      "Bash(swift package generate-documentation:*)",
-      "Bash(swift:*)",
-      "Bash(xcrun docc convert:*)",
+      "Bash",
       "WebSearch",
-      "WebFetch(domain:github.com)",
-      "Bash(npm run docs:build:*)",
-      "Bash(grep:*)",
-      "Bash(swiftlint:*)",
-      "Bash(gh run:*)",
-      "Bash(git push)",
-      "Bash(git pull:*)",
-      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch",
       "mcp__serena__list_dir",
-      "Bash(xargs:*)",
       "mcp__serena__initial_instructions",
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__find_symbol",
@@ -29,10 +15,24 @@
       "mcp__serena__insert_after_symbol",
       "mcp__serena__think_about_whether_you_are_done",
       "mcp__serena__find_file",
-      "Bash(git stash:*)",
       "mcp__serena__replace_symbol_body",
-      "WebFetch(domain:127.0.0.1)",
-      "mcp__serena__find_referencing_symbols"
+      "mcp__serena__find_referencing_symbols",
+      "mcp__serena__list_memories",
+      "mcp__serena__onboarding",
+      "mcp__serena__write_memory"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Run /remember now to restore project context and session state.'",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
