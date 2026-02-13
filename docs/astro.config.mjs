@@ -16,7 +16,7 @@ try {
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://tuikit.layered.work',
+  site: 'https://tuikit.dev',
   output: 'static',
   integrations: [
     react(),

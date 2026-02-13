@@ -164,7 +164,7 @@ jobs:
           cp -r docs/dist/* docs-output/
 
       - name: Add CNAME for custom domain
-        run: echo "tuikit.layered.work" > docs-output/CNAME
+        run: echo "tuikit.dev" > docs-output/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

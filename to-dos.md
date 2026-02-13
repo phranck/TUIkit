@@ -118,7 +118,7 @@
 ## Notes
 
 - DocC: `swift-docc-plugin`, GitHub Pages with `theme-settings.json` workaround
-- Landing Page: Astro + React + Tailwind 4, CI-deployed, tuikit.layered.work
+- Landing Page: Astro + React + Tailwind 4, CI-deployed, tuikit.dev
 - Xcode Template: `~/Library/Developer/Xcode/Templates/Project Templates/macOS/Application/`
 
 ---
