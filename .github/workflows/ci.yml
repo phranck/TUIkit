@@ -125,6 +125,26 @@ jobs:
             --output-path docc-output \
             --transform-for-static-hosting
 
+      - name: Add routing support for GitHub Pages
+        run: |
+          # 404.html = copy of SPA index so all deep-link paths route through DocC
+          cp docc-output/index.html docc-output/404.html
+          # Root redirect: docs.tuikit.dev/ -> docs.tuikit.dev/documentation/tuikit/
+          cat > docc-output/index.html << 'REDIRECT'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=/documentation/tuikit/">
+            <link rel="canonical" href="/documentation/tuikit/">
+            <title>Redirecting to TUIkit Documentation</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="/documentation/tuikit/">TUIkit Documentation</a>...</p>
+          </body>
+          </html>
+          REDIRECT
+
       - name: Deploy to tuikit-docs
         uses: peaceiris/actions-gh-pages@v4
         with:
