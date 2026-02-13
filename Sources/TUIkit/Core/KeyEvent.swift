@@ -69,6 +69,9 @@ public enum Key: Hashable, Sendable {
     // Character key
     case character(Character)
 
+    // Bracketed paste (bulk text from terminal paste operation)
+    case paste(String)
+
     /// Creates a Key from a character if it's a simple character.
     public static func from(_ char: Character) -> Self {
         .character(char)
