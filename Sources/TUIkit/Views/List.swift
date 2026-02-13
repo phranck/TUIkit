@@ -99,16 +99,16 @@ public struct List<SelectionValue: Hashable & Sendable, Content: View, Footer: V
     }
 
     /// The unique focus identifier for this list.
-    let focusID: String?
+    var focusID: String?
 
     /// Whether the list is disabled.
     var isDisabled: Bool
 
     /// The placeholder text shown when the list is empty.
-    let emptyPlaceholder: String
+    var emptyPlaceholder: String
 
     /// Whether to show separator before footer.
-    let showFooterSeparator: Bool
+    var showFooterSeparator: Bool
 
     public var body: some View {
         _ListCore(
@@ -134,19 +134,11 @@ extension List {
     /// - Parameters:
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the selected item's ID (nil = no selection).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
-    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
     ///   - footer: A ViewBuilder that defines the footer content.
     public init(
         _ title: String,
         selection: Binding<SelectionValue?>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
-        showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
@@ -155,29 +147,20 @@ extension List {
         self.footer = footer()
         self.singleSelection = selection
         self.multiSelection = nil
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
-        self.showFooterSeparator = showFooterSeparator
+        self.emptyPlaceholder = "No items"
+        self.showFooterSeparator = true
     }
 
     /// Creates a list with single selection and footer, without a title.
     ///
     /// - Parameters:
     ///   - selection: A binding to the selected item's ID (nil = no selection).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
-    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
     ///   - footer: A ViewBuilder that defines the footer content.
     public init(
         selection: Binding<SelectionValue?>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
-        showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
@@ -186,11 +169,10 @@ extension List {
         self.footer = footer()
         self.singleSelection = selection
         self.multiSelection = nil
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
-        self.showFooterSeparator = showFooterSeparator
+        self.emptyPlaceholder = "No items"
+        self.showFooterSeparator = true
     }
 }
 
@@ -202,16 +184,10 @@ extension List where Footer == EmptyView {
     /// - Parameters:
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the selected item's ID (nil = no selection).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         _ title: String,
         selection: Binding<SelectionValue?>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -219,10 +195,9 @@ extension List where Footer == EmptyView {
         self.footer = nil
         self.singleSelection = selection
         self.multiSelection = nil
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
+        self.emptyPlaceholder = "No items"
         self.showFooterSeparator = false
     }
 
@@ -230,15 +205,9 @@ extension List where Footer == EmptyView {
     ///
     /// - Parameters:
     ///   - selection: A binding to the selected item's ID (nil = no selection).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         selection: Binding<SelectionValue?>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
         self.title = nil
@@ -246,10 +215,9 @@ extension List where Footer == EmptyView {
         self.footer = nil
         self.singleSelection = selection
         self.multiSelection = nil
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
+        self.emptyPlaceholder = "No items"
         self.showFooterSeparator = false
     }
 }
@@ -262,19 +230,11 @@ extension List {
     /// - Parameters:
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the set of selected item IDs.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
-    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
     ///   - footer: A ViewBuilder that defines the footer content.
     public init(
         _ title: String,
         selection: Binding<Set<SelectionValue>>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
-        showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
@@ -283,29 +243,20 @@ extension List {
         self.footer = footer()
         self.singleSelection = nil
         self.multiSelection = selection
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
-        self.showFooterSeparator = showFooterSeparator
+        self.emptyPlaceholder = "No items"
+        self.showFooterSeparator = true
     }
 
     /// Creates a list with multi-selection and footer, without a title.
     ///
     /// - Parameters:
     ///   - selection: A binding to the set of selected item IDs.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
-    ///   - showFooterSeparator: Whether to show separator before footer (default: true).
     ///   - content: A ViewBuilder that defines the list content.
     ///   - footer: A ViewBuilder that defines the footer content.
     public init(
         selection: Binding<Set<SelectionValue>>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
-        showFooterSeparator: Bool = true,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
@@ -314,11 +265,10 @@ extension List {
         self.footer = footer()
         self.singleSelection = nil
         self.multiSelection = selection
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
-        self.showFooterSeparator = showFooterSeparator
+        self.emptyPlaceholder = "No items"
+        self.showFooterSeparator = true
     }
 }
 
@@ -330,16 +280,10 @@ extension List where Footer == EmptyView {
     /// - Parameters:
     ///   - title: The title displayed in the border.
     ///   - selection: A binding to the set of selected item IDs.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         _ title: String,
         selection: Binding<Set<SelectionValue>>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -347,10 +291,9 @@ extension List where Footer == EmptyView {
         self.footer = nil
         self.singleSelection = nil
         self.multiSelection = selection
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
+        self.emptyPlaceholder = "No items"
         self.showFooterSeparator = false
     }
 
@@ -358,15 +301,9 @@ extension List where Footer == EmptyView {
     ///
     /// - Parameters:
     ///   - selection: A binding to the set of selected item IDs.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
-
-    ///   - emptyPlaceholder: Placeholder text when empty (default: "No items").
     ///   - content: A ViewBuilder that defines the list content.
     public init(
         selection: Binding<Set<SelectionValue>>,
-        focusID: String? = nil,
-
-        emptyPlaceholder: String = "No items",
         @ViewBuilder content: () -> Content
     ) {
         self.title = nil
@@ -374,10 +311,9 @@ extension List where Footer == EmptyView {
         self.footer = nil
         self.singleSelection = nil
         self.multiSelection = selection
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = false
-
-        self.emptyPlaceholder = emptyPlaceholder
+        self.emptyPlaceholder = "No items"
         self.showFooterSeparator = false
     }
 }
@@ -392,6 +328,40 @@ extension List {
     public func disabled(_ disabled: Bool = true) -> List<SelectionValue, Content, Footer> {
         var copy = self
         copy.isDisabled = disabled
+        return copy
+    }
+
+    /// Sets an explicit focus identifier for this list.
+    ///
+    /// By default, lists generate a focus identifier from their position
+    /// in the view hierarchy. Use this modifier when you need a stable,
+    /// explicit identifier for programmatic focus management.
+    ///
+    /// - Parameter id: The focus identifier.
+    /// - Returns: A list with the specified focus identifier.
+    public func focusID(_ id: String) -> List<SelectionValue, Content, Footer> {
+        var copy = self
+        copy.focusID = id
+        return copy
+    }
+
+    /// Sets the placeholder text displayed when the list has no items.
+    ///
+    /// - Parameter placeholder: The text to show when the list is empty.
+    /// - Returns: A list with the specified empty placeholder.
+    public func listEmptyPlaceholder(_ placeholder: String) -> List<SelectionValue, Content, Footer> {
+        var copy = self
+        copy.emptyPlaceholder = placeholder
+        return copy
+    }
+
+    /// Controls whether a separator line is shown before the footer.
+    ///
+    /// - Parameter show: Whether to show the footer separator. Defaults to `true`.
+    /// - Returns: A list with the specified footer separator visibility.
+    public func listFooterSeparator(_ show: Bool = true) -> List<SelectionValue, Content, Footer> {
+        var copy = self
+        copy.showFooterSeparator = show
         return copy
     }
 }
@@ -416,7 +386,6 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let palette = context.environment.palette
         let style = context.environment.listStyle
         let stateStorage = context.tuiContext.stateStorage
@@ -436,16 +405,15 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             let availableHeight = context.availableHeight
             let viewportHeight = max(1, availableHeight - 4) // Reserve for border + indicators
 
-            // Get or create persistent focusID
-            let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-            let focusIDBox: StateBox<String> = stateStorage.storage(
-                for: focusIDKey,
-                default: focusID ?? "list-\(context.identity.path)"
+            let persistedFocusID = FocusRegistration.persistFocusID(
+                context: context,
+                explicitFocusID: focusID,
+                defaultPrefix: "list",
+                propertyIndex: 1  // focusID
             )
-            let persistedFocusID = focusIDBox.value
 
             // Get or create persistent handler
-            let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+            let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
             let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
                 for: handlerKey,
                 default: ItemListHandler(
@@ -500,14 +468,8 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
 
-            // Register with focus manager (skip during measurement)
-            if !context.isMeasuring {
-                focusManager.register(handler, inSection: context.activeFocusSectionID)
-                stateStorage.markActive(context.identity)
-            }
-
-            // Check if this list has focus (never focused during measurement)
-            listHasFocus = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
+            FocusRegistration.register(context: context, handler: handler)
+            listHasFocus = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
             // Calculate visible rows
             let visibleRows = calculateVisibleRows(
@@ -734,86 +696,99 @@ private struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Foo
         context: RenderContext,
         palette: any Palette
     ) -> [String] {
-        // Determine visual state based on row type
-        // Headers and footers never show focus/selection background
-        var backgroundColor: Color?
-
-        switch row.type {
-        case .header, .footer:
-            // Headers/footers: no focus/selection/alternating background
-            // They are already styled with dim via SectionInfo extraction
-            backgroundColor = nil
-
-        case .content:
-            // Content rows: apply focus/selection/alternating logic
-            if isFocused && isSelected {
-                // Focused + Selected: pulsing accent background (highest priority)
-                let dimAccent = palette.accent.opacity(0.35)
-                backgroundColor = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
-            } else if isFocused {
-                // Focused only: highlight background bar
-                backgroundColor = palette.focusBackground
-            } else if isSelected {
-                // Selected only: subtle background (darker than focus)
-                backgroundColor = palette.accent.opacity(0.25)
-            } else if style.alternatingRowColors {
-                // Apply alternating row colors using section-relative index
-                if sectionContentIndex.isMultiple(of: 2) {
-                    // Even rows within section: subtle accent background
-                    backgroundColor = palette.accent.opacity(0.15)
-                } else {
-                    // Odd rows within section: no background
-                    backgroundColor = nil
-                }
-            } else {
-                // No background
-                backgroundColor = nil
-            }
-        }
+        let backgroundColor = rowBackgroundColor(
+            rowType: row.type,
+            isFocused: isFocused,
+            isSelected: isSelected,
+            sectionContentIndex: sectionContentIndex,
+            style: style,
+            context: context,
+            palette: palette
+        )
 
         // Check for badge on the row (only for content rows, on first line only)
         let badge = row.badge
         let shouldRenderBadge = badge != nil && !badge!.isHidden && row.isSelectable
 
-        // Render each line - row content keeps its own styling
-        // Add 1 char padding on each side, with background color extending to edges
+        // Render each line with padding and optional badge
         return row.buffer.lines.enumerated().map { lineIndex, line in
-            let lineLength = line.strippedLength
-
-            // First line: badge is right-aligned
             if shouldRenderBadge && lineIndex == 0 {
-                let badgeText = badge!.displayText
-                let dimmedForeground = palette.foregroundTertiary
-                let styledBadge = ANSIRenderer.colorize(badgeText, foreground: dimmedForeground)
-
-                // Calculate padding to push badge to right edge
-                // Layout: [1 pad][content][fill padding][badge][1 pad]
-                // Total width should equal rowWidth
-                let badgeWidth = badgeText.count
-                let usedWidth = 1 + lineLength + badgeWidth + 1  // left pad + content + badge + right pad
-                let fillPadding = max(1, rowWidth - usedWidth)
-                let paddedLine = " " + line + String(repeating: " ", count: fillPadding) + styledBadge + " "
-
-                if let bgColor = backgroundColor {
-                    return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
-                } else {
-                    return paddedLine
-                }
+                return renderLineWithBadge(
+                    line: line, badge: badge!, rowWidth: rowWidth,
+                    backgroundColor: backgroundColor, palette: palette
+                )
             } else {
-                // Regular line without badge
-                // Layout: [1 pad][content][right padding]
-                // Total width should equal rowWidth
-                let usedWidth = 1 + lineLength  // left pad + content
-                let rightPadding = max(1, rowWidth - usedWidth)
-                let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
-
-                if let bgColor = backgroundColor {
-                    return ANSIRenderer.applyPersistentBackground(paddedLine, color: bgColor)
-                } else {
-                    return paddedLine
-                }
+                return renderPlainLine(
+                    line: line, rowWidth: rowWidth, backgroundColor: backgroundColor
+                )
             }
         }
+    }
+
+    /// Determines the background color for a row based on its type and visual state.
+    private func rowBackgroundColor(
+        rowType: ListRowType<SelectionValue>,
+        isFocused: Bool,
+        isSelected: Bool,
+        sectionContentIndex: Int,
+        style: any ListStyle,
+        context: RenderContext,
+        palette: any Palette
+    ) -> Color? {
+        switch rowType {
+        case .header, .footer:
+            return nil
+
+        case .content:
+            if isFocused && isSelected {
+                let dimAccent = palette.accent.opacity(0.35)
+                return Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+            } else if isFocused {
+                return palette.focusBackground
+            } else if isSelected {
+                return palette.accent.opacity(0.25)
+            } else if style.alternatingRowColors && sectionContentIndex.isMultiple(of: 2) {
+                return palette.accent.opacity(0.15)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    /// Renders a line with a right-aligned badge.
+    /// Layout: [1 pad][content][fill padding][badge][1 pad]
+    private func renderLineWithBadge(
+        line: String,
+        badge: BadgeValue,
+        rowWidth: Int,
+        backgroundColor: Color?,
+        palette: any Palette
+    ) -> String {
+        let lineLength = line.strippedLength
+        let badgeText = badge.displayText
+        let styledBadge = ANSIRenderer.colorize(badgeText, foreground: palette.foregroundTertiary)
+
+        let badgeWidth = badgeText.count
+        let usedWidth = 1 + lineLength + badgeWidth + 1
+        let fillPadding = max(1, rowWidth - usedWidth)
+        let paddedLine = " " + line + String(repeating: " ", count: fillPadding) + styledBadge + " "
+
+        return paddedLine.withPersistentBackground(backgroundColor)
+    }
+
+    /// Renders a plain line without badge.
+    /// Layout: [1 pad][content][right padding]
+    private func renderPlainLine(
+        line: String,
+        rowWidth: Int,
+        backgroundColor: Color?
+    ) -> String {
+        let lineLength = line.strippedLength
+        let usedWidth = 1 + lineLength
+        let rightPadding = max(1, rowWidth - usedWidth)
+        let paddedLine = " " + line + String(repeating: " ", count: rightPadding)
+
+        return paddedLine.withPersistentBackground(backgroundColor)
     }
 
     // MARK: - Scroll Indicators

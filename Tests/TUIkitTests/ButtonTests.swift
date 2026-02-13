@@ -104,7 +104,7 @@ struct ButtonTests {
     func focusedButtonHasAccentBrackets() {
         let context = createTestContext()
 
-        let button = Button("Focus Me", focusID: "focused-button") {}
+        let button = Button("Focus Me") {}.focusID("focused-button")
         let buffer = renderToBuffer(button, context: context)
 
         // First button is auto-focused — caps should be styled (contain ANSI codes)
@@ -119,8 +119,8 @@ struct ButtonTests {
         let context = createTestContext()
 
         // Create two buttons — second one will be unfocused
-        let button1 = Button("First", focusID: "first") {}
-        let button2 = Button("Second", focusID: "second") {}
+        let button1 = Button("First") {}.focusID("first")
+        let button2 = Button("Second") {}.focusID("second")
 
         // Render first to register it (it gets focus)
         _ = renderToBuffer(button1, context: context)
