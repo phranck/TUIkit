@@ -111,7 +111,8 @@ extension TextField where Label == Text {
         self.label = Text(title)
         self.text = text
         self.prompt = nil
-        self.focusID = "textfield-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onSubmitAction = nil
     }
@@ -127,7 +128,8 @@ extension TextField where Label == Text {
         self.label = Text(title)
         self.text = text
         self.prompt = prompt
-        self.focusID = "textfield-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
         self.onSubmitAction = nil
     }
