@@ -198,7 +198,7 @@ struct RadioButtonGroupTests {
             set: { selection = $0 }
         )
 
-        let group = RadioButtonGroup(selection: binding, focusID: "test-group") {
+        let group = RadioButtonGroup(selection: binding) {
             RadioButtonItem("x", "X")
             RadioButtonItem("y", "Y")
         }

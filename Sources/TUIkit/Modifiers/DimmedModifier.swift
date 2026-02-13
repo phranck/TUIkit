@@ -102,9 +102,7 @@ extension DimmedModifier: Renderable {
         style.backgroundColor = background
         style.isDim = true
 
-        return ANSIRenderer.applyPersistentBackground(
-            ANSIRenderer.render(paddedText, with: style),
-            color: background
-        )
+        return ANSIRenderer.render(paddedText, with: style)
+            .withPersistentBackground(background)
     }
 }

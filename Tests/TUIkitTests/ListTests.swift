@@ -56,11 +56,11 @@ struct ListRenderingTests {
             selection: Binding(
                 get: { selection },
                 set: { selection = $0 }
-            ),
-            emptyPlaceholder: "Nothing here"
+            )
         ) {
             EmptyView()
         }
+        .listEmptyPlaceholder("Nothing here")
 
         let buffer = renderToBuffer(list, context: context)
         let content = buffer.lines.joined()

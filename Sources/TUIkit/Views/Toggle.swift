@@ -152,10 +152,10 @@ public struct Toggle<Label: View>: View {
     let label: Label
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the toggle is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     public var body: some View {
         _ToggleCore(
@@ -200,7 +200,7 @@ extension Toggle {
     ) {
         self.isOn = isOn
         self.label = label()
-        self.focusID = "toggle-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
     }
 }
@@ -213,25 +213,19 @@ extension Toggle {
     /// - Parameter disabled: Whether the toggle is disabled.
     /// - Returns: A new toggle with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Toggle {
-        Toggle(
-            binding: isOn,
-            content: label,
-            id: focusID,
-            disabled: disabled
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
     }
 
-    /// Internal initializer with all parameters.
-    private init(
-        binding: Binding<Bool>,
-        content: Label,
-        id: String,
-        disabled: Bool
-    ) {
-        self.isOn = binding
-        self.label = content
-        self.focusID = id
-        self.isDisabled = disabled
+    /// Sets a custom focus identifier for this toggle.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A toggle with the specified focus identifier.
+    public func focusID(_ id: String) -> Toggle {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
 
@@ -241,7 +235,7 @@ extension Toggle {
 private struct _ToggleCore<Label: View>: View, Renderable {
     let isOn: Binding<Bool>
     let label: Label
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
 
     var body: Never {
@@ -249,32 +243,22 @@ private struct _ToggleCore<Label: View>: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
-        let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
 
-        // Get or create persistent focusID from state storage.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "toggle",
+            propertyIndex: 0  // focusID
         )
-        let persistedFocusID = focusIDBox.value
-
-        // Register with focus manager
         let binding = isOn
         let handler = ActionHandler(
             focusID: persistedFocusID,
             action: { binding.wrappedValue.toggle() },
             canBeFocused: !isDisabled
         )
-        if !context.isMeasuring {
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
-        }
-
-        // Determine if focused (never focused during measurement)
-        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
         let isOnValue = isOn.wrappedValue
 
         // Render the label to get its text

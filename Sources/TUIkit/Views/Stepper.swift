@@ -74,10 +74,10 @@ public struct Stepper<Label: View>: View {
     let onDecrement: (() -> Void)?
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the stepper is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Callback when editing begins or ends.
     let onEditingChanged: ((Bool) -> Void)?
@@ -202,7 +202,7 @@ extension Stepper {
         self.label = label()
         self.onIncrement = nil
         self.onDecrement = nil
-        self.focusID = "stepper-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -228,7 +228,7 @@ extension Stepper {
         self.label = label()
         self.onIncrement = nil
         self.onDecrement = nil
-        self.focusID = "stepper-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -253,7 +253,7 @@ extension Stepper {
         self.label = label()
         self.onIncrement = onIncrement
         self.onDecrement = onDecrement
-        self.focusID = "stepper-\(UUID().uuidString)"
+        self.focusID = nil
         self.isDisabled = false
         self.onEditingChanged = onEditingChanged
     }
@@ -267,17 +267,19 @@ extension Stepper {
     /// - Parameter disabled: Whether the stepper is disabled.
     /// - Returns: A new stepper with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Stepper {
-        Stepper(
-            value: value,
-            bounds: bounds,
-            step: step,
-            label: label,
-            onIncrement: onIncrement,
-            onDecrement: onDecrement,
-            focusID: focusID,
-            isDisabled: disabled,
-            onEditingChanged: onEditingChanged
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
+    }
+
+    /// Sets a custom focus identifier for this stepper.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A stepper with the specified focus identifier.
+    public func focusID(_ id: String) -> Stepper {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
 
@@ -291,7 +293,7 @@ private struct _StepperCore<Label: View>: View, Renderable {
     let label: Label?
     let onIncrement: (() -> Void)?
     let onDecrement: (() -> Void)?
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
     let onEditingChanged: ((Bool) -> Void)?
 
@@ -300,21 +302,18 @@ private struct _StepperCore<Label: View>: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
 
-        // Get or create persistent focusID from state storage.
-        // focusID must be stable across renders for focus state to persist.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "stepper",
+            propertyIndex: 1  // focusID
         )
-        let persistedFocusID = focusIDBox.value
 
         // Get or create persistent handler from state storage
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
         let handlerBox: StateBox<StepperHandler<Int>> = stateStorage.storage(
             for: handlerKey,
             default: StepperHandler(
@@ -335,14 +334,8 @@ private struct _StepperCore<Label: View>: View, Renderable {
         handler.onEditingChanged = onEditingChanged
         handler.clampValue()
 
-        // Register with focus manager (skip during measurement)
-        if !context.isMeasuring {
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
-        }
-
-        // Determine focus state (never focused during measurement)
-        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
         // Build the stepper content
         let content = buildContent(
@@ -378,8 +371,8 @@ private struct _StepperCore<Label: View>: View, Renderable {
         }
 
         // Build arrows
-        let leftArrow = ANSIRenderer.colorize("◀", foreground: arrowColor)
-        let rightArrow = ANSIRenderer.colorize("▶", foreground: arrowColor)
+        let leftArrow = ANSIRenderer.colorize(TerminalSymbols.leftArrow, foreground: arrowColor)
+        let rightArrow = ANSIRenderer.colorize(TerminalSymbols.rightArrow, foreground: arrowColor)
 
         // Build value display
         let valueText = ANSIRenderer.colorize(" \(value.wrappedValue) ", foreground: valueColor)

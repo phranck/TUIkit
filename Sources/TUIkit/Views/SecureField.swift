@@ -72,13 +72,13 @@ public struct SecureField: View {
     let prompt: Text?
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String?
 
     /// Whether the secure field is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Action to perform when the user submits (presses Enter).
-    let onSubmitAction: (() -> Void)?
+    var onSubmitAction: (() -> Void)?
 
     public var body: some View {
         _SecureFieldCore(
@@ -133,14 +133,9 @@ extension SecureField {
     /// - Parameter disabled: Whether the secure field is disabled.
     /// - Returns: A new secure field with the disabled state.
     public func disabled(_ disabled: Bool = true) -> SecureField {
-        SecureField(
-            title: title,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: disabled,
-            onSubmitAction: onSubmitAction
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
     }
 
     /// Adds an action to perform when the user submits (presses Enter).
@@ -160,14 +155,19 @@ extension SecureField {
     /// - Parameter action: The action to perform on submit.
     /// - Returns: A secure field that performs the action on submit.
     public func onSubmit(_ action: @escaping () -> Void) -> SecureField {
-        SecureField(
-            title: title,
-            text: text,
-            prompt: prompt,
-            focusID: focusID,
-            isDisabled: isDisabled,
-            onSubmitAction: action
-        )
+        var copy = self
+        copy.onSubmitAction = action
+        return copy
+    }
+
+    /// Sets a custom focus identifier for this secure field.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A secure field with the specified focus identifier.
+    public func focusID(_ id: String) -> SecureField {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }
 
@@ -177,12 +177,9 @@ extension SecureField {
 private struct _SecureFieldCore: View, Renderable, Layoutable {
     let text: Binding<String>
     let prompt: Text?
-    let focusID: String
+    let focusID: String?
     let isDisabled: Bool
     let onSubmitAction: (() -> Void)?
-
-    /// The masking character for password display (U+25CF Black Circle).
-    private let maskChar: Character = "●"
 
     /// Minimum width for the secure field content area.
     private let minContentWidth = 10
@@ -209,7 +206,6 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let stateStorage = context.tuiContext.stateStorage
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
@@ -217,19 +213,16 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
         // SecureField expands to fill available width (reserve 2 chars for caps)
         let contentWidth = max(minContentWidth, context.availableWidth - 2)
 
-        // Get or create persistent focusID from state storage.
-        // focusID must be stable across renders for focus state to persist.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "securefield",
+            propertyIndex: 1  // focusID
         )
-        let persistedFocusID = focusIDBox.value
 
         // Get or create persistent handler from state storage.
-        // The handler maintains cursor position across renders.
-        // Reuse TextFieldHandler since key handling is identical.
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        // Reuses TextFieldHandler since key handling is identical.
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
         let handlerBox: StateBox<TextFieldHandler> = stateStorage.storage(
             for: handlerKey,
             default: TextFieldHandler(
@@ -246,18 +239,20 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
         handler.onSubmit = onSubmitAction
         handler.clampCursorPosition()
 
-        // Register with focus manager (skip during measurement)
-        if !context.isMeasuring {
-            focusManager.register(handler, inSection: context.activeFocusSectionID)
-            stateStorage.markActive(context.identity)
-        }
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
-        // Determine focus state (never focused during measurement)
-        let isFocused = context.isMeasuring ? false : focusManager.isFocused(id: persistedFocusID)
+        // Build the secure field content using shared renderer
+        let renderer = TextFieldContentRenderer(
+            prompt: prompt,
+            isDisabled: isDisabled,
+            displayCharacter: { _, _ in TerminalSymbols.maskBullet }
+        )
 
-        // Build the secure field content
-        let content = buildContent(
-            handler: handler,
+        let fieldContent = renderer.buildContent(
+            text: text.wrappedValue,
+            cursorPosition: handler.cursorPosition,
+            selectionRange: handler.selectionRange,
             isFocused: isFocused,
             palette: palette,
             cursorStyle: cursorStyle,
@@ -265,197 +260,11 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
             contentWidth: contentWidth
         )
 
-        // Wrap with half-block caps (matching Button style)
+        // Wrap with half-block caps
         let capColor = palette.accent.opacity(0.2)
-        let openCap = ANSIRenderer.colorize("\u{2590}", foreground: capColor)
-        let closeCap = ANSIRenderer.colorize("\u{258C}", foreground: capColor)
-        return FrameBuffer(text: openCap + content + closeCap)
+        let openCap = ANSIRenderer.colorize(String(TerminalSymbols.openCap), foreground: capColor)
+        let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: capColor)
+        return FrameBuffer(text: openCap + fieldContent + closeCap)
     }
 
-    /// Builds the rendered secure field content.
-    private func buildContent(
-        handler: TextFieldHandler,
-        isFocused: Bool,
-        palette: any Palette,
-        cursorStyle: TextCursorStyle,
-        cursorTimer: CursorTimer?,
-        contentWidth: Int
-    ) -> String {
-        let textValue = text.wrappedValue
-        let isEmpty = textValue.isEmpty
-        let backgroundColor = palette.accent.opacity(0.2)
-
-        // Build inner content with background
-        let innerContent: String
-        if isEmpty && !isFocused && prompt != nil {
-            // Show prompt when empty and unfocused
-            innerContent = buildPromptContent(palette: palette, background: backgroundColor, width: contentWidth)
-        } else if isFocused {
-            // Show masked text with cursor (scrolling if needed)
-            innerContent = buildMaskedTextWithCursor(
-                textLength: textValue.count,
-                cursorPosition: handler.cursorPosition,
-                selectionRange: handler.selectionRange,
-                palette: palette,
-                cursorStyle: cursorStyle,
-                cursorTimer: cursorTimer,
-                background: backgroundColor,
-                width: contentWidth
-            )
-        } else {
-            // Show masked text without cursor (scrolling if needed)
-            innerContent = buildMaskedTextContent(
-                textLength: textValue.count,
-                palette: palette,
-                background: backgroundColor,
-                width: contentWidth
-            )
-        }
-
-        // No focus markers needed - the cursor itself indicates focus
-        return innerContent
-    }
-
-    /// Builds the prompt content (shown when empty and unfocused).
-    private func buildPromptContent(palette: any Palette, background: Color, width: Int) -> String {
-        let promptText: String
-        if let prompt {
-            let buffer = TUIkit.renderToBuffer(prompt, context: RenderContext(availableWidth: 100, availableHeight: 1))
-            promptText = buffer.lines.first?.stripped ?? ""
-        } else {
-            promptText = ""
-        }
-        // Truncate or pad prompt to exact width
-        let truncated = String(promptText.prefix(width))
-        let paddedPrompt = truncated.padding(toLength: width, withPad: " ", startingAt: 0)
-        return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary, background: background)
-    }
-
-    /// Builds masked text content without cursor (unfocused state).
-    private func buildMaskedTextContent(textLength: Int, palette: any Palette, background: Color, width: Int) -> String {
-        // Show bullets from the beginning, truncated to width
-        let bulletCount = min(textLength, width)
-        let maskedText = String(repeating: maskChar, count: bulletCount)
-        let paddedText = maskedText.padding(toLength: width, withPad: " ", startingAt: 0)
-        let foreground = isDisabled ? palette.foregroundTertiary : palette.foreground
-        return ANSIRenderer.colorize(paddedText, foreground: foreground, background: background)
-    }
-
-    /// Builds masked text content with cursor at the specified position (focused state).
-    /// Implements horizontal scrolling to keep cursor visible.
-    /// Selection is highlighted with accent background if present.
-    private func buildMaskedTextWithCursor(
-        textLength: Int,
-        cursorPosition: Int,
-        selectionRange: Range<Int>?,
-        palette: any Palette,
-        cursorStyle: TextCursorStyle,
-        cursorTimer: CursorTimer?,
-        background: Color,
-        width: Int
-    ) -> String {
-        let clampedPosition = max(0, min(cursorPosition, textLength))
-
-        // Calculate scroll offset to keep cursor visible
-        // The cursor needs 1 character, so visible text area is (width - 1)
-        let visibleTextWidth = width - 1  // Reserve 1 char for cursor
-        let scrollOffset: Int
-        if clampedPosition <= visibleTextWidth {
-            // Cursor fits without scrolling
-            scrollOffset = 0
-        } else {
-            // Scroll so cursor is at the right edge
-            scrollOffset = clampedPosition - visibleTextWidth
-        }
-
-        // The visible window in the text
-        let visibleStart = scrollOffset
-
-        // Compute cursor visibility and color based on animation style
-        let (cursorVisible, cursorColor) = computeCursorState(
-            baseColor: palette.cursorColor,
-            animation: cursorStyle.animation,
-            speed: cursorStyle.speed,
-            cursorTimer: cursorTimer
-        )
-
-        // Build output character by character
-        var result = ""
-        var outputWidth = 0
-
-        for visibleIndex in 0..<width {
-            let textIndex = visibleStart + visibleIndex
-
-            if textIndex == clampedPosition {
-                if cursorVisible {
-                    // Cursor visible: show cursor character
-                    let cursorChar = cursorStyle.shape.character
-                    result += ANSIRenderer.colorize(String(cursorChar), foreground: cursorColor, background: background)
-                } else {
-                    // Cursor hidden (blink off): show underlying bullet or space
-                    if textIndex < textLength {
-                        result += ANSIRenderer.colorize(String(maskChar), foreground: palette.foreground, background: background)
-                    } else {
-                        result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
-                    }
-                }
-                outputWidth += 1
-            } else if textIndex < textLength && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
-                // Render bullet
-
-                // Check if this character is in the selection
-                let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
-
-                if isSelected {
-                    // Selection highlight: dimmed accent background, foreground contrasts
-                    result += ANSIRenderer.colorize(
-                        String(maskChar),
-                        foreground: palette.background,
-                        background: palette.accent.opacity(0.6)
-                    )
-                } else {
-                    result += ANSIRenderer.colorize(String(maskChar), foreground: palette.foreground, background: background)
-                }
-                outputWidth += 1
-            } else if outputWidth < width {
-                // Padding
-                result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
-                outputWidth += 1
-            }
-
-            if outputWidth >= width {
-                break
-            }
-        }
-
-        return result
-    }
-
-    /// Computes the cursor visibility and color based on the animation style and cursor timer.
-    ///
-    /// - Returns: A tuple of (visible, color) where visible indicates if the cursor should be shown.
-    private func computeCursorState(
-        baseColor: Color,
-        animation: TextCursorStyle.Animation,
-        speed: TextCursorStyle.Speed,
-        cursorTimer: CursorTimer?
-    ) -> (visible: Bool, color: Color) {
-        switch animation {
-        case .none:
-            // Static cursor, always visible at full brightness
-            return (true, baseColor)
-
-        case .blink:
-            // Classic blink: on/off based on cursor timer
-            let visible = cursorTimer?.blinkVisible(for: speed) ?? true
-            return (visible, baseColor)
-
-        case .pulse:
-            // Smooth pulse: always visible, color varies
-            let phase = cursorTimer?.pulsePhase(for: speed) ?? 1.0
-            let dimColor = baseColor.opacity(0.35)
-            let color = Color.lerp(dimColor, baseColor, phase: phase)
-            return (true, color)
-        }
-    }
 }
