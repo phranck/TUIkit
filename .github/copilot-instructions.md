@@ -1,5 +1,13 @@
 # Copilot Instructions for TUIkit
 
+## Hard Constraints (non-negotiable)
+
+- **Swift 6.0 only**: `swift-tools-version: 6.0`. Never use features that require a newer compiler.
+- **Cross-platform**: Must build and run on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
+- **CI must pass**: All tests and linting must pass before merge.
+
+## Project
+
 TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure Swift: no ncurses or C dependencies.
 
 ## Build, Test & Lint
@@ -8,36 +16,57 @@ TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure
 # Build
 swift build
 
-# Run all tests (503 tests, Swift Testing framework)
+# Run all tests (1037+ tests, Swift Testing framework)
 swift test
 
-# Run a single test file
+# Run a single test suite
 swift test --filter <TestSuiteName>
-
-# Run a specific test
-swift test --filter <TestSuiteName>/<testMethodName>
 
 # Lint
 swiftlint
 
-# Format (optional - configured but not enforced in CI)
+# Format (configured but not enforced in CI)
 swift-format format -i -r Sources Tests
 ```
 
 ## Architecture
 
-### Dual Rendering System
+### View System
 
-TUIkit uses two rendering paths:
+TUIkit uses a dual rendering system:
 
 1. **Composite views**: Implement `body` to compose other views. The renderer recurses into `body`.
-2. **Primitive views**: Conform to `Renderable` protocol and produce a `FrameBuffer` directly. Set `body: Never` (with `fatalError()`).
+2. **Primitive views**: Conform to `Renderable` and produce a `FrameBuffer` directly. Set `body: Never`.
 
 The `renderToBuffer(_:context:)` function checks `Renderable` first, then falls back to `body`.
 
-**When adding a new view:**
-- Composing other views → implement `body`, skip `Renderable`
-- Producing terminal output directly → conform to `Renderable`, set `body: Never`
+### View Architecture Rules
+
+- Every **public** control must be a `View` with a real `body: some View`
+- The `body` must return actual Views (not `Never`, not `fatalError()`)
+- `Renderable` is only for leaf nodes (`Text`, `Spacer`, `Divider`) and private `_*Core` views
+- All modifiers must propagate through the entire View hierarchy
+- Environment values must flow down automatically
+
+**The `_*Core` pattern:**
+```swift
+// Public View: real body, environment flows through
+public struct MyControl<Content: View>: View {
+    let content: Content
+    public var body: some View {
+        _MyControlCore(content: content)
+    }
+}
+
+// Private Core: Renderable for terminal-specific rendering
+private struct _MyControlCore<Content: View>: View, Renderable {
+    let content: Content
+    var body: Never { fatalError() }
+    func renderToBuffer(context: RenderContext) -> FrameBuffer { ... }
+}
+```
+
+Prefer pure composition (combining existing Views + modifiers) over `_*Core` + `Renderable`.
 
 ### Key Components
 
@@ -62,9 +91,7 @@ Sources/TUIkit/
 └── StatusBar/     StatusBar, StatusBarItem
 ```
 
-## Key Conventions
-
-### SwiftUI API Parity (Non-Negotiable)
+## SwiftUI API Parity (non-negotiable)
 
 Public APIs **must** match SwiftUI signatures exactly unless terminal constraints require deviation.
 
@@ -77,21 +104,22 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 
 **Before implementing any SwiftUI-equivalent API:** Look up the exact SwiftUI signature first.
 
-### Architecture Rules
+## General Rules
 
 - **No singletons**: All state flows through the Environment system
-- **Consolidate existing functions** before adding new ones
+- **Search the codebase** for similar patterns before implementing anything new
+- **Consolidate and reuse** before adding new functions or types
 - **Never merge PRs autonomously**: Stop after creating, let the user merge
 
-### Testing
+## Testing
 
 - Uses Swift Testing framework (`@Test`, `#expect`, `@Suite`)
 - Tests run in parallel
 - Test files mirror source structure in `Tests/TUIkitTests/`
 
-### Code Style
+## Code Style
 
 - Line length: 140 characters (warning), 200 (error)
 - 4-space indentation
-- Trailing commas in multi-line collections (swift-format enforced)
+- Trailing commas in multi-line collections
 - See `.swiftlint.yml` and `.swift-format` for full configuration

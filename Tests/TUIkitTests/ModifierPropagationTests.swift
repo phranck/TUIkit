@@ -90,10 +90,10 @@ struct ModifierPropagationTests {
         let context = testContext()
         let buffer = renderToBuffer(button, context: context)
 
-        // Button should render with brackets
-        #expect(buffer.lines[0].stripped.contains("["))
+        // Button should render with caps
+        #expect(buffer.lines[0].stripped.contains("\u{2590}"))
         #expect(buffer.lines[0].stripped.contains("Test"))
-        #expect(buffer.lines[0].stripped.contains("]"))
+        #expect(buffer.lines[0].stripped.contains("\u{258C}"))
         #expect(!actionCalled, "Action should not be called during render")
     }
 
@@ -119,9 +119,8 @@ struct ModifierPropagationTests {
         let context = testContext()
         let buffer = renderToBuffer(toggle, context: context)
 
-        // Toggle should render with indicator and label
-        #expect(buffer.lines[0].stripped.contains("["))
-        #expect(buffer.lines[0].stripped.contains("]"))
+        // Toggle should render with brackets and label
+        #expect(buffer.lines[0].stripped.contains("[") && buffer.lines[0].stripped.contains("]"))
         #expect(buffer.lines[0].contains("Enable"))
     }
 

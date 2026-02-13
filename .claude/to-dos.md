@@ -8,8 +8,7 @@
 
 ### High Priority
 
-- [ ] **TextField Selection**: Shift+Arrow selection, visual highlight, delete/replace selection (see plans/open/2026-02-09-textfield-selection.md)
-- [ ] **TextCursor Modifier**: `.textCursor(_:)` for TextField/SecureField cursor styling (block, thinBlock, underscore, bar) and animation (static, blink, pulse)
+- [ ] **Render Cycle Documentation**: Create detailed Markdown doc explaining the complete render cycle from view tree to terminal output. Include Mermaid diagrams showing: view hierarchy traversal, FrameBuffer composition, HStack/VStack layout algorithm, modifier application order, environment propagation. Location: `docs/render-cycle.md`
 
 ### Medium Priority
 
@@ -20,6 +19,9 @@
 - [ ] **Fix Flaky Test**: FocusManager shared static instance issue
 
 ## Completed
+
+### 2026-02-10
+- TextCursor Modifier: `.textCursor(_:)` with shape (block, bar, underscore) and animation (none, blink, pulse), cursorColor in Palette (17 tests)
 
 ### 2026-02-09
 - SecureField: password masking with ● bullets, reuses TextFieldHandler (15 tests)
@@ -46,4 +48,4 @@
 - SwiftUI docs: `http://127.0.0.1:51703/Dash/dash-apple-api/load?request_key=ls/documentation/swiftui`
 
 ---
-**Last Updated:** 2026-02-09
+**Last Updated:** 2026-02-10 (Render Cycle Docs added)

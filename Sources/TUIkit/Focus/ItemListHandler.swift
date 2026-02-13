@@ -219,8 +219,8 @@ extension ItemListHandler {
             let maxAttempts = itemCount + 1
             var attempts = 0
 
-            // Keep skipping until we find a selectable index or hit max attempts
-            while !selectableIndices.contains(newIndex) && attempts < maxAttempts {
+            // Keep moving until we find a selectable index or hit max attempts
+            while attempts < maxAttempts {
                 if wrap {
                     // Wrap around: -1 becomes last, count becomes 0
                     newIndex = ((newIndex % itemCount) + itemCount) % itemCount
@@ -230,6 +230,12 @@ extension ItemListHandler {
                         return
                     }
                 }
+
+                // Check if this index is selectable
+                if selectableIndices.contains(newIndex) {
+                    break
+                }
+
                 newIndex += delta
                 attempts += 1
             }

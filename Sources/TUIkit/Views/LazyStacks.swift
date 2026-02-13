@@ -257,12 +257,7 @@ private struct _LazyHStackCore<Content: View>: View, Renderable {
                 }
 
                 let maxHeight = infos.compactMap(\.buffer).map(\.height).max() ?? 1
-                let spacerBuffer = FrameBuffer(
-                    lines: Array(
-                        repeating: String(repeating: " ", count: width),
-                        count: maxHeight
-                    )
-                )
+                let spacerBuffer = FrameBuffer(emptyWithWidth: width, height: maxHeight)
                 result.appendHorizontally(spacerBuffer, spacing: spacingToApply)
                 currentWidth += spacingToApply + width
                 spacerIndex += 1

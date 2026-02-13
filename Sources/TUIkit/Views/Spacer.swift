@@ -89,7 +89,19 @@ public struct Divider: View, Equatable {
 
 // MARK: - Spacer Rendering
 
-extension Spacer: Renderable {
+extension Spacer: Renderable, Layoutable {
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        // Spacer is fully flexible - it expands to fill available space.
+        // The minLength is its minimum size requirement.
+        let min = minLength ?? 0
+        return ViewSize(
+            width: min,
+            height: min,
+            isWidthFlexible: true,
+            isHeightFlexible: true
+        )
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Standalone spacer (outside a stack): render as empty lines
         let count = minLength ?? 1
@@ -99,7 +111,12 @@ extension Spacer: Renderable {
 
 // MARK: - Divider Rendering
 
-extension Divider: Renderable {
+extension Divider: Renderable, Layoutable {
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        // Divider has height 1 and expands to fill width
+        return ViewSize.flexibleWidth(minWidth: 1, height: 1)
+    }
+
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let line = String(repeating: character, count: context.availableWidth)
         return FrameBuffer(text: line)

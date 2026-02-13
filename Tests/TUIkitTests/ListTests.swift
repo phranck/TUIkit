@@ -56,11 +56,11 @@ struct ListRenderingTests {
             selection: Binding(
                 get: { selection },
                 set: { selection = $0 }
-            ),
-            emptyPlaceholder: "Nothing here"
+            )
         ) {
             EmptyView()
         }
+        .listEmptyPlaceholder("Nothing here")
 
         let buffer = renderToBuffer(list, context: context)
         let content = buffer.lines.joined()
@@ -222,5 +222,57 @@ struct ListRenderingTests {
         // The border should also be 20 characters wide (not just padded)
         let firstLine = buffer.lines.first ?? ""
         #expect(firstLine.strippedLength == 20, "Border should be 20 chars wide")
+    }
+
+    @Test("Two Lists in HStack both render")
+    func twoListsInHStack() {
+        // Use wider terminal to match real usage, with explicit width like WindowGroup
+        var context = createTestContext(width: 160, height: 40)
+        context.hasExplicitWidth = true
+
+        var sel1: String?
+        var sel2: Set<String> = []
+
+        let items: [(String, String, String)] = [
+            ("1", "README.md", "📄"), ("2", "Package.swift", "📦"),
+            ("3", "Sources", "📁"), ("4", "Tests", "📁"),
+            ("5", ".gitignore", "📄"), ("6", "LICENSE", "📄"),
+            ("7", "docs", "📁"), ("8", "plans", "📁"),
+            ("9", ".swiftlint.yml", "⚙️"), ("10", ".github", "📁"),
+            ("11", "Makefile", "📄"), ("12", ".claude", "📁"),
+        ]
+
+        let view = HStack(spacing: 2) {
+            List("Single Selection", selection: Binding(get: { sel1 }, set: { sel1 = $0 })) {
+                ForEach(items, id: \.0) { item in
+                    HStack(spacing: 1) {
+                        Text(item.2)
+                        Text(item.1)
+                    }
+                }
+            }
+            List("Multi Selection", selection: Binding(get: { sel2 }, set: { sel2 = $0 })) {
+                ForEach(items, id: \.0) { item in
+                    HStack(spacing: 1) {
+                        Text(item.2)
+                        Text(item.1)
+                    }
+                }
+            }
+        }
+
+        let buffer = renderToBuffer(view, context: context)
+        let allContent = buffer.lines.map { $0.stripped }.joined()
+
+        #expect(allContent.contains("Single Selection"), "Should contain first list title")
+        #expect(allContent.contains("Multi Selection"), "Should contain second list title, got buffer width \(buffer.width)")
+        #expect(buffer.width <= 160, "Buffer should not exceed available width 160, got \(buffer.width)")
+
+        // All lines should have the same visible width (consistent borders)
+        let lineWidths = buffer.lines.map { $0.strippedLength }
+        let maxLineWidth = lineWidths.max() ?? 0
+        let minLineWidth = lineWidths.filter { $0 > 0 }.min() ?? 0
+        #expect(minLineWidth == maxLineWidth,
+                "All lines should have same width but min=\(minLineWidth) max=\(maxLineWidth)")
     }
 }

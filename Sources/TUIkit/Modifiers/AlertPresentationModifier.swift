@@ -98,8 +98,10 @@ extension AlertPresentationModifier: Renderable {
         // The alert section becomes the active section, so Tab/arrows
         // only navigate within the alert's focusable elements (buttons).
         let sectionID = Self.alertSectionID
-        focusManager.registerSection(id: sectionID)
-        focusManager.activateSection(id: sectionID)
+        if !context.isMeasuring {
+            focusManager.registerSection(id: sectionID)
+            focusManager.activateSection(id: sectionID)
+        }
 
         // Register ESC handler to dismiss the alert
         let isPresentedBinding = isPresented

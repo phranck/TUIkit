@@ -156,7 +156,7 @@ public struct RadioButtonGroup<Value: Hashable>: View {
 
     /// The unique focus identifier for the group.
     /// Auto-generated if not provided, but must be stable across renders.
-    let focusID: String?
+    var focusID: String?
 
     /// Whether the group is disabled.
     var isDisabled: Bool
@@ -166,20 +166,18 @@ public struct RadioButtonGroup<Value: Hashable>: View {
     /// - Parameters:
     ///   - selection: A binding to the selected value.
     ///   - orientation: The layout orientation (default: `.vertical`).
-    ///   - focusID: The unique focus identifier (default: auto-generated from identity).
     ///   - isDisabled: Whether the group is disabled (default: false).
     ///   - builder: A builder closure that returns radio button items.
     public init(
         selection: Binding<Value>,
         orientation: RadioButtonOrientation = .vertical,
-        focusID: String? = nil,
         isDisabled: Bool = false,
         @RadioButtonGroupBuilder<Value> builder: () -> [RadioButtonItem<Value>]
     ) {
         self.selection = selection
         self.items = builder()
         self.orientation = orientation
-        self.focusID = focusID
+        self.focusID = nil
         self.isDisabled = isDisabled
     }
 
@@ -209,7 +207,6 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let focusManager = context.environment.focusManager
         let palette = context.environment.palette
         let stateStorage = context.tuiContext.stateStorage
 
@@ -224,18 +221,16 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         )
         let itemValues = items.map { AnyHashable($0.value) }
 
-        // Get or create persistent focusID from state storage.
-        // focusID must be stable across renders for focus state to persist.
-        let focusIDKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 1)
-        let focusIDBox: StateBox<String> = stateStorage.storage(
-            for: focusIDKey,
-            default: focusID ?? "radio-group-\(context.identity.path)"
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "radio-group",
+            propertyIndex: 1  // focusID
         )
-        let persistedFocusID = focusIDBox.value
 
         // Get or create persistent handler from state storage.
         // The handler maintains focusedIndex across renders, enabling Tab navigation.
-        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
         let handlerBox: StateBox<RadioButtonGroupHandler> = stateStorage.storage(
             for: handlerKey,
             default: RadioButtonGroupHandler(
@@ -253,11 +248,8 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         handler.itemValues = itemValues
         handler.canBeFocused = !isDisabled
 
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-        stateStorage.markActive(context.identity)
-
-        // Check if this group has focus (after registering, so isFocused works correctly)
-        let groupHasFocus = focusManager.isFocused(id: persistedFocusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let groupHasFocus = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
 
         // Render items based on orientation
         let lines: [String]
@@ -323,26 +315,22 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         palette: Palette
     ) -> String {
         // Radio indicator: ● if selected OR focused, ◯ if neither
-        let indicator = (isSelected || isFocused) ? "●" : "◯"
+        let indicator = (isSelected || isFocused) ? TerminalSymbols.radioSelected : TerminalSymbols.radioUnselected
 
         // Determine indicator color based on state
         let indicatorColor: Color
         if isDisabled {
-            indicatorColor = palette.foregroundTertiary
-        } else if isSelected {
-            // Selected: accent color, pulses if group has focus
-            if groupHasFocus {
-                let dimAccent = palette.accent.opacity(0.35)
-                indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
-            } else {
-                indicatorColor = palette.accent
-            }
+            indicatorColor = palette.foregroundTertiary.opacity(0.5)
         } else if isFocused {
-            // Focused but not selected: dimmed accent (static, no pulse)
-            indicatorColor = palette.accent.opacity(0.5)
+            // Focused: pulsing accent (whether selected or not)
+            let dimAccent = palette.accent.opacity(0.35)
+            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+        } else if isSelected {
+            // Selected but not focused: solid accent
+            indicatorColor = palette.accent
         } else {
-            // Unselected and unfocused: tertiary (dimmed)
-            indicatorColor = palette.foregroundTertiary
+            // Unselected and unfocused: dimmed
+            indicatorColor = palette.foregroundTertiary.opacity(0.5)
         }
 
         let styledIndicator = ANSIRenderer.colorize(indicator, foreground: indicatorColor)
@@ -460,5 +448,15 @@ extension RadioButtonGroup {
         var newGroup = self
         newGroup.isDisabled = disabled
         return newGroup
+    }
+
+    /// Sets a custom focus identifier for this radio button group.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A group with the specified focus identifier.
+    public func focusID(_ id: String) -> RadioButtonGroup<Value> {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }

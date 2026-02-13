@@ -154,10 +154,10 @@ public struct Button: View {
     let focusedStyle: ButtonStyle
 
     /// The unique focus identifier.
-    let focusID: String
+    var focusID: String
 
     /// Whether the button is disabled.
-    let isDisabled: Bool
+    var isDisabled: Bool
 
     /// Creates a button with a label and action.
     ///
@@ -165,14 +165,12 @@ public struct Button: View {
     ///   - label: The button's label text.
     ///   - style: The button style (default: `.default`).
     ///   - focusedStyle: The style when focused (default: bold variant).
-    ///   - focusID: The unique focus identifier (default: auto-generated).
     ///   - isDisabled: Whether the button is disabled (default: false).
     ///   - action: The action to perform when pressed.
     public init(
         _ label: String,
         style: ButtonStyle = .default,
         focusedStyle: ButtonStyle? = nil,
-        focusID: String? = nil,
         isDisabled: Bool = false,
         action: @escaping () -> Void
     ) {
@@ -181,7 +179,7 @@ public struct Button: View {
         self.role = nil
         self.style = style
         // Use label as default focusID for stability across render cycles
-        self.focusID = focusID ?? "button-\(label)"
+        self.focusID = "button-\(label)"
         self.isDisabled = isDisabled
 
         // Default focused style: bold version of the normal style
@@ -206,18 +204,16 @@ public struct Button: View {
     /// - Parameters:
     ///   - label: The button's label text.
     ///   - role: An optional semantic role describing the button.
-    ///   - focusID: The unique focus identifier (default: auto-generated).
     ///   - action: The action to perform when pressed.
     public init(
         _ label: String,
         role: ButtonRole?,
-        focusID: String? = nil,
         action: @escaping () -> Void
     ) {
         self.label = label
         self.action = action
         self.role = role
-        self.focusID = focusID ?? "button-\(label)"
+        self.focusID = "button-\(label)"
         self.isDisabled = false
 
         // Style based on role
@@ -271,20 +267,24 @@ private struct _ButtonCore: View, Renderable {
         fatalError("_ButtonCore renders via Renderable")
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        // Get focus manager from environment
-        let focusManager = context.environment.focusManager
+    private enum StateIndex {
+        static let focusID = 0
+    }
 
-        // Register this button with the focus manager
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        let persistedFocusID = FocusRegistration.persistFocusID(
+            context: context,
+            explicitFocusID: focusID,
+            defaultPrefix: "button",
+            propertyIndex: StateIndex.focusID
+        )
         let handler = ActionHandler(
-            focusID: focusID,
+            focusID: persistedFocusID,
             action: action,
             canBeFocused: !isDisabled
         )
-        focusManager.register(handler, inSection: context.activeFocusSectionID)
-
-        // Determine if focused
-        let isFocused = focusManager.isFocused(id: focusID)
+        FocusRegistration.register(context: context, handler: handler)
+        let isFocused = FocusRegistration.isFocused(context: context, focusID: persistedFocusID)
         let currentStyle = isFocused ? focusedStyle : style
         let palette = context.environment.palette
         let isPlainStyle = currentStyle.horizontalPadding == 0 && style.foregroundColor == nil && !style.isBold
@@ -319,23 +319,39 @@ private struct _ButtonCore: View, Renderable {
             let fullLine = focusPrefix + styledLabel
             return FrameBuffer(lines: [fullLine])
         } else {
-            // Standard: brackets change to accent color when focused (with subtle pulse)
-            let bracketColor: Color
+            // Standard: half-block caps with accent-tinted background
+            let buttonBg = palette.accent.opacity(0.2)
+
+            // Label foreground: primary = accent/highlight, others = dimmed foreground
+            let labelFg: Color
             if isDisabled {
-                bracketColor = palette.foregroundTertiary
-            } else if isFocused {
-                // Subtle pulse: interpolate between 35% and 100% accent
-                let dimAccent = palette.accent.opacity(0.35)
-                bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+                labelFg = palette.foregroundTertiary.opacity(0.5)
+            } else if currentStyle.isBold {
+                labelFg = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
             } else {
-                bracketColor = palette.border
+                labelFg = palette.foregroundSecondary
             }
 
-            let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused)
-            let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused)
-            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
+            // Caps: match button background normally, pulse to accent when focused
+            let resolvedCapColor: Color
+            if isDisabled {
+                resolvedCapColor = buttonBg
+            } else if isFocused {
+                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(0.45), phase: context.pulsePhase)
+            } else {
+                resolvedCapColor = buttonBg
+            }
 
-            let line = openBracket + styledLabel + closeBracket
+            let openCap = ANSIRenderer.colorize(String(TerminalSymbols.openCap), foreground: resolvedCapColor)
+            let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: resolvedCapColor)
+            let styledLabel = ANSIRenderer.colorize(
+                paddedLabel,
+                foreground: labelFg,
+                background: buttonBg,
+                bold: currentStyle.isBold && !isDisabled
+            )
+
+            let line = openCap + styledLabel + closeCap
             return FrameBuffer(lines: [line])
         }
     }
@@ -349,33 +365,18 @@ extension Button {
     /// - Parameter disabled: Whether the button is disabled.
     /// - Returns: A new button with the disabled state.
     public func disabled(_ disabled: Bool = true) -> Button {
-        Button(
-            label: label,
-            action: action,
-            role: role,
-            style: style,
-            focusedStyle: focusedStyle,
-            focusID: focusID,
-            isDisabled: disabled
-        )
+        var copy = self
+        copy.isDisabled = disabled
+        return copy
     }
 
-    /// Internal initializer with all properties.
-    private init(
-        label: String,
-        action: @escaping () -> Void,
-        role: ButtonRole?,
-        style: ButtonStyle,
-        focusedStyle: ButtonStyle,
-        focusID: String,
-        isDisabled: Bool
-    ) {
-        self.label = label
-        self.action = action
-        self.role = role
-        self.style = style
-        self.focusedStyle = focusedStyle
-        self.focusID = focusID
-        self.isDisabled = isDisabled
+    /// Sets a custom focus identifier for this button.
+    ///
+    /// - Parameter id: The unique focus identifier.
+    /// - Returns: A button with the specified focus identifier.
+    public func focusID(_ id: String) -> Button {
+        var copy = self
+        copy.focusID = id
+        return copy
     }
 }

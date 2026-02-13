@@ -38,14 +38,11 @@ Public APIs MUST match SwiftUI signatures exactly unless terminal constraints re
 
 ### View Architecture (non-negotiable)
 
-#### 100% SwiftUI Conformity - EVERYTHING is a View!
-
-This is the **MOST IMPORTANT RULE**. No exceptions. No shortcuts.
+#### Public API: Every control is a View with a real body
 
 **The Rule:**
-- Every public control MUST be a `View` with a real `body: some View`
+- Every **public** control MUST be a `View` with a real `body: some View`
 - The `body` MUST return actual Views (not `Never`, not `fatalError()`)
-- `Renderable` is ONLY for leaf nodes (Text, Spacer) - NEVER for controls
 - All modifiers MUST propagate through the entire View hierarchy
 - Environment values MUST flow down automatically
 
@@ -61,14 +58,48 @@ List("Items", selection: $selection) {
 .disabled(true)         // MUST disable the entire List!
 ```
 
-**Correct Pattern (Box.swift is the reference):**
+#### Renderable: When and where it is allowed
+
+Terminal UI requires procedural buffer assembly (ANSI codes, Unicode borders,
+buffer overlays). `Renderable` is the mechanism for this. It is allowed in
+these cases:
+
+| Layer | Example | Renderable? |
+|-------|---------|-------------|
+| **Leaf nodes** | `Text`, `Spacer`, `Divider` | Yes (terminal primitives) |
+| **Private `_*Core` views** | `_ButtonCore`, `_VStackCore` | Yes (procedural ANSI rendering) |
+| **Layout primitives** | `_VStackCore`, `_HStackCore` | Yes + `Layoutable` (two-pass layout) |
+| **Modifier infrastructure** | `ModifiedView`, `EnvironmentModifier` | Yes (context/buffer pipeline) |
+| **Public controls** | `Button`, `VStack`, `List` | **No** (must use `body: some View`) |
+
+**The `_*Core` pattern:**
+```swift
+// Public View: real body, environment flows through
+public struct MyControl<Content: View>: View {
+    let content: Content
+
+    public var body: some View {
+        _MyControlCore(content: content)
+    }
+}
+
+// Private Core: Renderable for terminal-specific rendering
+private struct _MyControlCore<Content: View>: View, Renderable {
+    let content: Content
+    var body: Never { fatalError("_MyControlCore renders via Renderable") }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        // Read environment from context, render with ANSI codes
+    }
+}
+```
+
+**Preferred: Pure composition (Box.swift is the reference):**
 ```swift
 public struct MyControl<Content: View>: View {
     let content: Content
-    
+
     public var body: some View {
-        // Compose using other Views and modifiers
-        // Environment flows through automatically
         content
             .padding()
             .border()
@@ -76,37 +107,85 @@ public struct MyControl<Content: View>: View {
 }
 ```
 
-**WRONG Pattern (breaks modifier propagation):**
+When possible, prefer composition over `_*Core`. Use `_*Core` + `Renderable`
+only when the rendering requires procedural buffer manipulation that cannot
+be expressed as View composition.
+
+**WRONG Pattern (public control with Renderable):**
 ```swift
 public struct MyControl: View {
     public var body: Never { fatalError() }  // WRONG!
 }
 
-extension MyControl: Renderable {  // WRONG!
-    func renderToBuffer() { ... }
-}
-```
-
-**Also WRONG (hidden Renderable breaks the chain):**
-```swift
-public struct MyControl: View {
-    public var body: some View {
-        _MyControlCore(...)  // If this is Renderable, modifiers break!
-    }
-}
-
-private struct _MyControlCore: View, Renderable {  // WRONG!
-    var body: Never { fatalError() }
+extension MyControl: Renderable {  // WRONG - public types must not be Renderable!
     func renderToBuffer() { ... }
 }
 ```
 
 **Before implementing ANY control:**
 1. Can it be composed from existing Views + modifiers? (preferred)
-2. Does `body` return real Views that propagate environment?
-3. Test: `.foregroundColor()` on the control affects its content?
-4. Test: `.disabled()` on the control disables interactions?
+2. If not, does the public View have a real `body` wrapping a private `_*Core`?
+3. Does `_*Core` read environment values from `RenderContext`?
+4. Test: `.foregroundColor()` on the control affects its content?
+5. Test: `.disabled()` on the control disables interactions?
 
-**Controls that need refactoring to follow this rule:**
-- List, Table (currently use internal Renderable)
-- Any control with `body: Never`
+### Interactive Views: Focus & State (non-negotiable)
+
+All interactive views (Button, TextField, Toggle, Slider, etc.) that participate
+in the focus system MUST follow these rules:
+
+#### FocusID generation
+- Default focusIDs MUST use `context.identity.path`, never user-facing data
+- Pattern: `"\(prefix)-\(context.identity.path)"` (e.g. `"button-\(context.identity.path)"`)
+- Never use label text, titles, or other user content for focusIDs (collision risk)
+
+#### Focus registration
+- Use the shared `FocusRegistration` helper for all focus setup
+- Do NOT duplicate focus registration boilerplate in individual views
+- Registration, disabled-state check, and isFocused query are one operation
+
+#### StateStorage property indices
+- Every `_*Core` view MUST document its property indices with named constants:
+```swift
+private enum StateIndex {
+    static let focusID = 0
+    static let handler = 1
+}
+```
+- Never use bare integer literals for `propertyIndex`
+
+#### Disabled state
+- Disabled views MUST NOT register with the focus system
+- Check `isDisabled` BEFORE calling `focusManager.register()`
+- Disabled styling MUST be visually consistent across all interactive views
+
+### SwiftUI API Design (non-negotiable)
+
+#### Init signatures: Keep them minimal
+- Public inits MUST match SwiftUI parameter names and order
+- TUI-specific options (focusID, emptyPlaceholder, etc.) MUST be modifiers, not init params
+- Minimize init overloads; prefer `@ViewBuilder` label variants over String convenience inits
+
+**Correct:**
+```swift
+List(selection: $selection) { content }
+    .focusID("my-list")
+    .listEmptyPlaceholder("No items")
+```
+
+**Wrong:**
+```swift
+List(selection: $selection, focusID: "my-list", emptyPlaceholder: "No items") { content }
+```
+
+#### Modifier-first principle
+TUI-specific behavior that SwiftUI handles via modifiers MUST also be modifiers:
+- Focus identity: `.focusID(_:)`
+- Placeholder text: `.listEmptyPlaceholder(_:)`
+- Visual customization: `.trackStyle(_:)`, `.buttonStyle(_:)`, etc.
+
+### File Organization
+
+- Source files SHOULD stay under 500 lines
+- If a file exceeds 500 lines, consider splitting: public API in one file, `_*Core` in another
+- One view per file (do not combine VStack + HStack + ZStack in one file)

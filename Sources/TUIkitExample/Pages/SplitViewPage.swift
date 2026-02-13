@@ -109,33 +109,6 @@ struct SplitViewPage: View {
                 detailColumn
             }
             .navigationSplitViewStyle(.balanced)
-
-            // Navigation hints
-            DemoSection("Navigation") {
-                HStack(spacing: 2) {
-                    Text("[Tab]").foregroundStyle(.palette.accent)
-                    Text("switch columns").dim()
-                    Spacer()
-                    Text("[1/2/3]").foregroundStyle(.palette.accent)
-                    Text("visibility:").dim()
-                    Text(visibilityLabel).bold()
-                }
-            }
-            .onKeyPress { event in
-                switch event.key {
-                case .character("1"):
-                    visibility = .all
-                    return true
-                case .character("2"):
-                    visibility = .doubleColumn
-                    return true
-                case .character("3"):
-                    visibility = .detailOnly
-                    return true
-                default:
-                    return false
-                }
-            }
         }
         .appHeader {
             HStack {

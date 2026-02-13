@@ -155,10 +155,10 @@ extension Appearance {
 struct AppearanceRegistry {
     /// All available appearances in cycling order.
     ///
-    /// Order: line → rounded → doubleLine → heavy
+    /// Order: rounded (default) → line → doubleLine → heavy
     static let all: [Appearance] = [
-        .line,
         .rounded,
+        .line,
         .doubleLine,
         .heavy,
     ]

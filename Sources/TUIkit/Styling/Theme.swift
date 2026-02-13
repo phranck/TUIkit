@@ -51,6 +51,9 @@ public protocol Palette: Cyclable {
     /// Tertiary text color (even less prominent).
     var foregroundTertiary: Color { get }
 
+    /// Quaternary text color (dimmest foreground, used for subtle UI elements like spinner tracks).
+    var foregroundQuaternary: Color { get }
+
     // MARK: - Accent Colors
 
     /// Primary accent color for interactive elements.
@@ -77,6 +80,12 @@ public protocol Palette: Cyclable {
 
     /// Background color for focused list/table rows.
     var focusBackground: Color { get }
+
+    /// Text cursor color for TextField and SecureField.
+    ///
+    /// Defaults to `accent` if not explicitly set. Custom palettes can override
+    /// this to provide a distinct cursor color independent of the accent.
+    var cursorColor: Color { get }
 }
 
 // MARK: - Default Palette Implementation
@@ -92,10 +101,13 @@ extension Palette {
 
     public var foregroundSecondary: Color { foreground }
     public var foregroundTertiary: Color { foreground }
+    public var foregroundQuaternary: Color { foregroundTertiary }
 
     // MARK: - UI Element Defaults
 
     public var focusBackground: Color { foregroundTertiary.opacity(0.3) }
+
+    public var cursorColor: Color { accent }
 }
 
 // MARK: - Palette Environment Key
