@@ -455,24 +455,6 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         }
     }
 
-    // MARK: - Scroll Indicators
-
-    private enum ScrollDirection {
-        case up, down
-    }
-
-    private func renderScrollIndicator(direction: ScrollDirection, width: Int, palette: any Palette) -> String {
-        let arrow = direction == .up ? "▲" : "▼"
-        let label = direction == .up ? " more above " : " more below "
-
-        let styledArrow = ANSIRenderer.colorize(arrow, foreground: palette.foregroundTertiary)
-        let styledLabel = ANSIRenderer.colorize(label, foreground: palette.foregroundTertiary)
-
-        let indicatorWidth = 1 + label.count
-        let padding = max(0, (width - indicatorWidth) / 2)
-
-        return String(repeating: " ", count: padding) + styledArrow + styledLabel
-    }
 }
 
 // MARK: - Table Content View
