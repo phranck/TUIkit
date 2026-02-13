@@ -117,3 +117,4 @@ type_name:
     - _ListCore
     - _ListContentView
     - _TableCore
+    - _ImageCore
