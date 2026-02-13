@@ -107,9 +107,9 @@ jobs:
           git commit -m "Chore: Update test count badge to ${{ steps.counts.outputs.tests }} tests [skip ci]"
           git push
 
-  # ── Landing Page + DocC (macOS only, main/tag only) ────────────
-  build-docs:
-    name: Build Landing Page & DocC
+  # ── Landing Page (Astro → tuikit.dev) ─────────────────────────
+  build-landing:
+    name: Build Landing Page
     needs: build
     runs-on: macos-15
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -149,32 +149,18 @@ jobs:
           npm ci
           npm run build
 
-      - name: Build DocC documentation
-        env:
-          DISABLE_SWIFTLINT: "1"
-        run: |
-          swift package --allow-writing-to-directory docs-output \
-            generate-documentation \
-            --target TUIkit \
-            --output-path docs-output \
-            --transform-for-static-hosting
-
-      - name: Assemble site
-        run: |
-          cp -r docs/dist/* docs-output/
-
       - name: Add CNAME for custom domain
-        run: echo "tuikit.dev" > docs-output/CNAME
+        run: echo "tuikit.dev" > docs/dist/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs-output
+          path: docs/dist
 
-  # ── Deploy to GitHub Pages ─────────────────────────────────────
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build-docs
+  # ── Deploy Landing Page to GitHub Pages ──────────────────────
+  deploy-landing:
+    name: Deploy Landing Page
+    needs: build-landing
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -183,3 +169,32 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # ── DocC Documentation (→ docs.tuikit.dev) ───────────────────
+  deploy-docs:
+    name: Build & Deploy DocC
+    needs: build
+    runs-on: macos-15
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build DocC documentation
+        env:
+          DISABLE_SWIFTLINT: "1"
+        run: |
+          swift package --allow-writing-to-directory docc-output \
+            generate-documentation \
+            --target TUIkit \
+            --output-path docc-output \
+            --transform-for-static-hosting
+
+      - name: Deploy to tuikit-docs
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          external_repository: phranck/tuikit-docs
+          publish_branch: gh-pages
+          publish_dir: docc-output
+          cname: docs.tuikit.dev
