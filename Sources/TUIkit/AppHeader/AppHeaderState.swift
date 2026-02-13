@@ -9,7 +9,7 @@
 /// Manages the app header state for the running application.
 ///
 /// `AppHeaderState` stores the rendered content buffer that views
-/// provide via the `.appHeader { ... }` modifier. The ``RenderLoop``
+/// provide via the `.appHeader { ... }` modifier. The `RenderLoop`
 /// reads this buffer each frame and renders it at the top of the terminal.
 ///
 /// When no content is set, the header is hidden and no vertical space
@@ -35,7 +35,7 @@ final class AppHeaderState: @unchecked Sendable {
     /// The rendered content buffer for the current frame.
     ///
     /// Set by ``AppHeaderModifier`` during rendering. Reset to `nil`
-    /// at the start of each render pass by ``RenderLoop``.
+    /// at the start of each render pass by `RenderLoop`.
     var contentBuffer: FrameBuffer?
 
     /// The height from the previous render pass, used as an estimate
@@ -74,10 +74,10 @@ extension AppHeaderState {
     /// Clears the content buffer at the start of each render pass.
     ///
     /// Saves the current height as ``estimatedHeight`` before clearing,
-    /// so ``RenderLoop`` can reserve the correct space before the
+    /// so `RenderLoop` can reserve the correct space before the
     /// ``AppHeaderModifier`` populates the new buffer.
     ///
-    /// Called by ``RenderLoop`` before rendering the view tree.
+    /// Called by `RenderLoop` before rendering the view tree.
     /// If no view sets `.appHeader { ... }` during the pass,
     /// the header remains hidden.
     func beginRenderPass() {
@@ -97,7 +97,7 @@ extension EnvironmentValues {
     /// The app header state.
     ///
     /// Used internally by ``AppHeaderModifier`` to store the header content
-    /// and by ``RenderLoop`` to render it at the top of the terminal.
+    /// and by `RenderLoop` to render it at the top of the terminal.
     var appHeader: AppHeaderState {
         get { self[AppHeaderKey.self] }
         set { self[AppHeaderKey.self] = newValue }

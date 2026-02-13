@@ -8,7 +8,7 @@
 
 /// A stable identifier for a view based on its position in the view tree.
 ///
-/// `ViewIdentity` enables the ``StateStorage`` to persist `@State` values
+/// `ViewIdentity` enables the `StateStorage` to persist `@State` values
 /// across render passes. Each view gets a unique identity derived from its
 /// **structural position** — the path of type names and child indices from
 /// the root to the view.
@@ -96,7 +96,7 @@ extension ViewIdentity {
 
     /// Whether the given path is a descendant of this identity.
     ///
-    /// Used by ``StateStorage`` to invalidate all state under a branch
+    /// Used by `StateStorage` to invalidate all state under a branch
     /// when a `ConditionalView` switches.
     ///
     /// - Parameter descendant: The path to check.

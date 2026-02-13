@@ -11,7 +11,7 @@
 /// between sections, while Up/Down arrows navigate within the active section.
 ///
 /// During rendering, this modifier registers the section with the
-/// ``FocusManager`` and sets the active section ID in the ``RenderContext``
+/// `FocusManager` and sets the active section ID in the `RenderContext`
 /// so that child views register their focusable elements in the correct section.
 ///
 /// ## Example

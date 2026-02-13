@@ -4,7 +4,7 @@ Understand the layer model and rendering pipeline of TUIkit.
 
 ## Overview
 
-TUIkit is structured in five layers, each building on the one below. This clean separation makes the framework easy to extend and maintain.
+TUIkit is structured in six layers, each building on the one below. This clean separation makes the framework easy to extend and maintain.
 
 ## Layer Model
 
@@ -24,11 +24,26 @@ Every UI component conforms to the ``View`` protocol. Views are composed declara
 - Conditionals (`if`, `if-else`, `if let`)
 - Loops (`for-in` via ``ForEach``)
 
-Built-in views include ``Text``, ``Button``, ``Menu``, ``Alert``, ``Dialog``, ``Box``, ``Card``, ``Panel``, and layout primitives like ``VStack``, ``HStack``, ``ZStack``, and ``Spacer``.
+Built-in views include:
 
-### 3. Modifier Layer
+- **Content**: ``Text``, ``Spinner``, ``Divider``, ``EmptyView``
+- **Interactive controls**: ``Button``, ``TextField``, ``SecureField``, ``Toggle``, ``Slider``, ``Stepper``, ``RadioButtonGroup``, ``Menu``, ``ProgressView``
+- **Containers**: ``Card``, ``Panel``, ``Alert``, ``Dialog``, ``NavigationSplitView``
+- **Data collections**: ``List``, ``Table``, ``Section``
+- **Layout**: ``VStack``, ``HStack``, ``ZStack``, ``LazyVStack``, ``LazyHStack``, ``Spacer``, ``ForEach``
 
-View modifiers implement the ``ViewModifier`` protocol and operate at the ``FrameBuffer`` level. They transform rendered output: adding padding, borders, frames, backgrounds, or overlays.
+### 3. Layout Layer
+
+Layout containers use a two-pass system to distribute space among children:
+
+1. **Measure**: Each child is proposed a size (``ProposedSize``) and returns a ``ViewSize`` with flexibility flags
+2. **Render**: The parent distributes remaining space among flexible children and renders each with its final allocation
+
+This enables spacers, flexible text fields, and proportional sizing. See <doc:LayoutSystem> for details.
+
+### 4. Modifier Layer
+
+View modifiers implement the ``ViewModifier`` protocol. They operate in two phases: `adjustContext(_:)` modifies the ``RenderContext`` before children render (e.g. setting environment values), and `apply(to:context:)` transforms the rendered ``FrameBuffer`` (e.g. adding padding, borders, backgrounds).
 
 ```swift
 Text("Hello")
@@ -37,14 +52,14 @@ Text("Hello")
     .frame(width: 40)
 ```
 
-### 4. State & Environment Layer
+### 5. State & Environment Layer
 
 - **``State``**: Mutable per-view state that triggers re-renders
 - **``Binding``**: Two-way connection to a value owned elsewhere
 - **``EnvironmentValues``**: Values propagated down the view tree
 - **``AppStorage``**: Persistent key-value storage via `UserDefaults`
 
-### 5. Rendering Layer
+### 6. Rendering Layer
 
 The rendering pipeline converts the view tree into terminal output:
 
@@ -61,4 +76,4 @@ TUIkit runs a synchronous event loop. Each iteration checks for resize or state 
 
 ## Focus System
 
-The ``FocusManager`` manages keyboard navigation between interactive elements. Views register as focusable, and the user navigates with Tab/Shift+Tab or arrow keys.
+The `FocusManager` manages keyboard navigation between interactive elements. Views register as focusable, and the user navigates with Tab/Shift+Tab or arrow keys.

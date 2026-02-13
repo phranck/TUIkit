@@ -21,3 +21,8 @@ docs/project-stats.json
 img/
 logo-prompt.md
 session-*.md
+*.backup
+
+# Local tooling
+papers/
+.gource/

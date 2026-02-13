@@ -49,7 +49,7 @@ Before the main loop starts, `run()` prepares the terminal:
 | 2 | Enter alternate screen | Preserve the user's existing terminal content |
 | 3 | Hide cursor | Avoid cursor flicker during rendering |
 | 4 | Enable raw mode | Disable line buffering, echo, and signal processing |
-| 5 | Register state observer | ``AppState`` changes trigger re-renders (registered via ``RenderNotifier``) |
+| 5 | Register state observer | `AppState` changes trigger re-renders (registered via `RenderNotifier`) |
 | 6 | Render first frame | Show the initial UI immediately |
 
 ### Raw Mode
@@ -74,7 +74,7 @@ The main loop is synchronous and runs until shutdown:
 Three things cause a new frame to be rendered:
 
 - **SIGWINCH**: the terminal was resized
-- **``AppState``**: a `@State` property was mutated
+- **`AppState`**: a `@State` property was mutated
 - **`SignalManager`**: `requestRerender()` was called (used by the state observer)
 
 All triggers set boolean flags that the main loop checks. The actual rendering always happens on the main thread.
@@ -144,7 +144,7 @@ When the main loop exits: via Ctrl+C, the quit key, or programmatic shutdown: `c
 | 1 | Disable raw mode | Restore original terminal settings |
 | 2 | Show cursor | Make the cursor visible again |
 | 3 | Exit alternate screen | Restore the user's previous terminal content |
-| 4 | Clear state observers | Remove ``AppState`` observer callbacks |
+| 4 | Clear state observers | Remove `AppState` observer callbacks |
 | 5 | Clear focus | Remove all focus registrations |
 | 6 | Reset TUIContext | Clear lifecycle, key handlers, and preferences |
 

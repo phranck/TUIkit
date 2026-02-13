@@ -2,15 +2,15 @@
 
 ## Status Snapshot
 
-- **Branch**: refactor/code-audit-cleanup
-- **Active Task**: None (session tasks completed)
+- **Branch**: main
+- **Active Task**: None (Codebase Quality refactoring complete)
 - **Status**: pending
-- **Last Updated**: 2026-02-13T17:30:00Z
+- **Last Updated**: 2026-02-13T21:45:00Z
 
 ## Current Checkpoint
 
 - **File**: N/A
-- **What**: Plans consolidation and AI tool instruction standardization complete
+- **What**: Codebase Quality & SwiftUI API Parity refactoring complete (Phases 1-6, Phase 5 deferred)
 - **Phase**: N/A
 
 ## Blockers
@@ -19,62 +19,61 @@
 
 ## Next Steps (Immediate Actions)
 
-1. **Codebase Quality Phase 1-2:** Extract FocusRegistration helper, standardize FocusID generation (removes ~80 LOC duplikation across 9 Views)
-2. **Codebase Quality Phase 3-4:** Unify disabled-state handling, simplify List API with Modifiers
-3. Create PR for two-pass-layout Phase 5 (Remove hasExplicitWidth/Height) - separate PR, low urgency
-4. Start Bundle Resource Loading (SPM integration, TUIResource accessors)
+1. **Bundle Resource Loading** (SPM integration, TUIResource type-safe accessors)
+2. **Image View with ASCII Art** (24-bit color rendering, 6 phases)
+3. **State Persistence** (@RestoredState property wrapper, crash recovery)
+4. **Phase 5 Revisited** (File splitting for maintainability, when resources allow)
 
-## Open Plans (Prioritized)
+## Open Plans (Next Priority Queue)
 
-| # | Plan | File | Effort | Impact |
-|---|------|------|--------|--------|
-| 1 | Codebase Quality & SwiftUI API Parity | `.claude/plans/open/2026-02-13-codebase-refactoring.md` | Med/High | High |
-| 2 | Bundle Resource Loading Support | `.claude/plans/open/2026-02-10-bundle-resource-loading.md` | Medium | Medium |
-| 3 | Image View with ASCII Art Rendering | `.claude/plans/open/2026-02-10-image-view-ascii-art.md` | High | High |
-| 4 | State Persistence (Session Continuity) | `.claude/plans/open/2026-02-02-state-persistence.md` | Medium | Medium |
+| # | Plan | Effort | Impact | Status |
+|---|------|--------|--------|--------|
+| 1 | Bundle Resource Loading Support | Medium | Medium | Not Started |
+| 2 | Image View with ASCII Art Rendering | High | High | Not Started |
+| 3 | State Persistence (Session Continuity) | Medium | Medium | Not Started |
 
 ---
 
 ## In Progress
 
-(None)
+(None - all refactoring complete)
 
 ## Open (Backlog)
 
-### Components
-
-- [ ] **Image View**: ASCII art rendering with full 24-bit color support (plan complete)
-- [ ] **Bundle Resource Loading**: SPM resource integration for Image support (plan complete, deferred)
-- [ ] **DisclosureGroup**: Expandable/collapsible sections
-
-### Performance
-
-- [ ] **`View._printChanges()` Equivalent**: Debug mechanism that logs why body was re-evaluated
-
 ### Infrastructure
+- [ ] **Bundle Resource Loading**: SPM integration, type-safe TUIResource accessors (plan complete)
+- [ ] **Image View**: ASCII art rendering with 24-bit true color (plan complete, 6 phases)
+- [ ] **State Persistence**: @RestoredState wrapper, crash recovery (plan complete)
 
-- [ ] **Example App Redesign**: Feature catalog to multiple small example apps
-- [ ] **Two-Pass Layout Focus Fix**: Verify TextField focus works correctly after isMeasuring flag fix
+### Components
+- [ ] **DisclosureGroup**: Expandable/collapsible sections
+- [ ] **Phase 5 Revisited**: List.swift file splitting (deferred, low priority)
 
-### Testing & Docs
-
-- [ ] **Mobile/Tablet Docs**: Test DocC on mobile devices (landing page done)
-- [ ] **Code Examples**: Counter, Todo List, Form, Table/List
+### Performance & Docs
+- [ ] **`View._printChanges()` Equivalent**: Debug mechanism
+- [ ] **Example App Redesign**: Feature catalog improvements
+- [ ] **Mobile/Tablet Docs**: Test DocC on mobile devices
 
 ## Completed
 
-- **2026-02-13**: Two-Pass Layout system complete (Phases 1-4, Phase 5 deferred to separate PR). 1034+ tests passing, layout algorithm fixes TextField + HStack overflow bugs.
-- **2026-02-13**: Consolidated plans/ to .claude/plans/, standardized AI tool instruction files (CONTRIBUTING.md, PR template, AGENTS.md, Cursor rules, Windsurf rules, copilot-instructions rewrite), added SessionStart hook for auto /remember
-- **2026-02-13**: Code audit cleanup: withPersistentBackground extension, List/Table renderRow decomposition, String+ANSI refactoring
-- **2026-02-11**: Two-Pass Layout Focus Bug: Added isMeasuring flag to prevent double focus registration
-- **2026-02-10**: TextField Clipboard & Undo: Ctrl+A/C/X/V/Z, clipboard via pbcopy/xclip, 50-state undo stack
-- **2026-02-10**: NavigationSplitView: Two/three-column layouts, visibility control, focus sections, 39 tests
+- **2026-02-13**: Codebase Quality & SwiftUI API Parity complete (Phases 1-6)
+  - Phase 1+2: FocusID collision bugs fixed (6 Views), auto-generated from context.identity.path
+  - Phase 3: Disabled-state already consistent across 9 Views
+  - Phase 4: List API modifiers already implemented (.focusID, .listEmptyPlaceholder, .listFooterSeparator)
+  - Phase 6: SecureField made generic with ViewBuilder-Label initializer
+  - Phase 5: File splitting deferred (List.swift dependencies too complex)
+  - 1037/1037 tests passing, 2 commits pushed to main
+- **2026-02-13**: Two-Pass Layout system complete (Phases 1-4, Phase 5 deferred). 1034+ tests passing.
+- **2026-02-13**: Consolidated plans/ to .claude/plans/, standardized AI tool instruction files, added SessionStart hook
+- **2026-02-13**: Code audit cleanup: withPersistentBackground, List/Table renderRow decomposition
 
 ## Notes
 
-- DocC: `swift-docc-plugin`, GitHub Pages with `theme-settings.json` workaround
-- Landing Page: Astro + React + Tailwind 4, CI-deployed, tuikit.layered.work
-- Xcode Template: `~/Library/Developer/Xcode/Templates/Project Templates/macOS/Application/`
-- Tests: 1037 / 143 suites, build clean
+- Codebase Quality findings: Most infrastructure already in place, minimal changes needed
+- Focus registration consolidated in FocusRegistration.swift (reusable helper)
+- Disabled-state pattern unified: canBeFocused flag + 0.5 opacity tertiary color
+- SwiftUI API parity achieved: Modifiers already implemented, ViewBuilder support added
+- Tests: 1037 / 143 suites, all green
+- Architecture: Clean, maintainable, follows Swift 6.0 conventions
 
-**Last Updated**: 2026-02-13T17:30:00Z
+**Last Updated**: 2026-02-13T21:45:00Z

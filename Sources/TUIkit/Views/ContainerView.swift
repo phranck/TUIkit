@@ -116,7 +116,7 @@ struct ContainerStyle: Sendable, Equatable {
 
 // MARK: - Render Helper
 
-/// Renders a ``ContainerView`` from a ``ContainerConfig`` and content/footer views.
+/// Renders a `ContainerView` from a `ContainerConfig` and content/footer views.
 ///
 /// Eliminates the duplicated `if/else` footer pattern found in Alert, Dialog,
 /// Panel, and Card.

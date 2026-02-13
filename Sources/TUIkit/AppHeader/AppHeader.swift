@@ -8,8 +8,8 @@
 
 /// A header bar rendered at the top of the terminal, outside the view tree.
 ///
-/// `AppHeader` is an internal view used by ``RenderLoop`` to render the
-/// app header content. It renders the content buffer from ``AppHeaderState``
+/// `AppHeader` is an internal view used by `RenderLoop` to render the
+/// app header content. It renders the content buffer from `AppHeaderState`
 /// and appends a thin divider line below.
 ///
 /// ## Layout

@@ -97,7 +97,7 @@ extension SignalManager {
     /// Checks and resets the terminal resize flag (SIGWINCH).
     ///
     /// Returns `true` if the terminal was resized since the last call,
-    /// then resets the flag. Used by ``AppRunner`` to invalidate the
+    /// then resets the flag. Used by `AppRunner` to invalidate the
     /// frame diff cache on resize.
     ///
     /// - Returns: `true` if a terminal resize occurred.

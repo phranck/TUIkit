@@ -717,7 +717,7 @@ public extension SystemStatusBarItem {
 /// ## See Also
 ///
 /// - ``StatusBarItem``
-/// - ``View/statusBarItems(_:)``
+/// - ``View/statusBarItems(_:_:)``
 @resultBuilder
 public struct StatusBarItemBuilder {
 }
