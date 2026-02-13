@@ -4,7 +4,7 @@
 # Installs the TUIkit App template into Xcode's user templates directory.
 #
 # Usage:
-#   curl -fsSL https://tuikit.layered.work/install-template.sh | bash
+#   curl -fsSL https://tuikit.dev/install-template.sh | bash
 #
 # Or manually:
 #   ./install.sh
@@ -85,5 +85,5 @@ echo -e "To uninstall, run:"
 echo -e "  ${YELLOW}rm -rf \"$TEMPLATE_DIR/$TEMPLATE_NAME\"${NC}"
 echo ""
 echo -e "${BLUE}Happy coding with TUIkit!${NC}"
-echo -e "Documentation: ${YELLOW}https://tuikit.layered.work${NC}"
+echo -e "Documentation: ${YELLOW}https://tuikit.dev${NC}"
 echo ""
