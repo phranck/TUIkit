@@ -107,24 +107,40 @@ export default function HeroTerminal() {
     pendingTimersRef.current.clear();
   }, []);
 
-  /** Whether audio has been loaded (lazy-loaded on first power-on). */
-  const audioLoadedRef = useRef(false);
+  /** Whether the remaining (non-critical) audio has been loaded. */
+  const remainingAudioLoadedRef = useRef(false);
 
-  /** Lazy-load all audio files on first power-on click. */
-  const ensureAudioLoaded = useCallback(async () => {
-    if (audioLoadedRef.current) return;
-    audioLoadedRef.current = true;
+  /** Eagerly preload Howler.js + critical sounds (power-on, boot) on mount. */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!HowlClass) {
+        const module = await import("howler");
+        HowlClass = module.Howl;
+      }
+      if (cancelled) return;
+      // Only preload if not already created (e.g. by a quick power-on click)
+      if (!powerOnAudioRef.current) {
+        powerOnAudioRef.current = new HowlClass({ src: ["/sounds/power-on.mp3"], volume: 0.3, preload: true });
+      }
+      if (!bootAudioRef.current) {
+        bootAudioRef.current = new HowlClass({ src: ["/sounds/hard-drive-boot.m4a"], volume: 0.6, preload: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-    const [powerOn, boot, spin, powerOff, seek] = await Promise.all([
-      createHowl({ src: ["/sounds/power-on.mp3"], volume: 0.3 }),
-      createHowl({ src: ["/sounds/hard-drive-boot.m4a"], volume: 0.6 }),
+  /** Lazy-load remaining audio (spin, power-off, seek) on first power-on click. */
+  const ensureRemainingAudioLoaded = useCallback(async () => {
+    if (remainingAudioLoadedRef.current) return;
+    remainingAudioLoadedRef.current = true;
+
+    const [spin, powerOff, seek] = await Promise.all([
       createHowl({ src: ["/sounds/hard-drive-spin.m4a"], volume: 0.6, loop: true }),
       createHowl({ src: ["/sounds/hard-drive-power-off.m4a"], volume: 0.6 }),
       createHowl({ src: ["/sounds/hard-drive-seek1.m4a"], volume: 0.4 }),
     ]);
 
-    powerOnAudioRef.current = powerOn;
-    bootAudioRef.current = boot;
     spinAudioRef.current = spin;
     powerOffAudioRef.current = powerOff;
     seekAudioRef.current = seek;
@@ -170,13 +186,23 @@ export default function HeroTerminal() {
   }, []);
 
   /** Power on: CRT raster expansion, then play boot sound, start spin loop, add random seeks. */
-  const handlePowerOn = useCallback(async () => {
+  const handlePowerOn = useCallback(() => {
     if (powered || poweringOnRef.current) return;
     poweringOnRef.current = true;
 
-    // Lazy-load audio on first power-on (no-op on subsequent calls)
-    await ensureAudioLoaded();
-    
+    // Play critical sounds immediately (preloaded on mount)
+    if (powerOnAudioRef.current) {
+      powerOnAudioRef.current.seek(0);
+      powerOnAudioRef.current.play();
+    }
+    if (bootAudioRef.current) {
+      bootAudioRef.current.seek(0);
+      bootAudioRef.current.play();
+    }
+
+    // Lazy-load remaining sounds (spin, power-off, seek) without blocking
+    ensureRemainingAudioLoaded();
+
     // Start with horizontal line, then expand vertically
     setBootPhase(1);
     setPowered(true);
@@ -191,44 +217,37 @@ export default function HeroTerminal() {
     });
     // Clear boot phase after expansion completes
     scheduleTimer(() => setBootPhase(null), CRT_EXPAND_VERTICAL_MS + 50);
-    
-    if (powerOnAudioRef.current && bootAudioRef.current && spinAudioRef.current) {
-      powerOnAudioRef.current.seek(0);
-      powerOnAudioRef.current.play();
-      bootAudioRef.current.seek(0);
-      bootAudioRef.current.play();
-      
-      // Start gapless spin loop slightly before boot ends for seamless transition
+
+    // Start gapless spin loop slightly before boot ends for seamless transition
+    scheduleTimer(() => {
+      spinAudioRef.current?.play();
+    }, SPIN_START_DELAY_MS);
+
+    // Recursive seek scheduling: each invocation picks a fresh random delay.
+    // All timeouts go through scheduleTimer so clearAllTimers catches them.
+    const scheduleNextSeek = () => {
       scheduleTimer(() => {
-        spinAudioRef.current?.play();
-      }, SPIN_START_DELAY_MS);
-      
-      // Recursive seek scheduling: each invocation picks a fresh random delay.
-      // All timeouts go through scheduleTimer so clearAllTimers catches them.
-      const scheduleNextSeek = () => {
-        scheduleTimer(() => {
-          seekAudioRef.current?.seek(0);
-          seekAudioRef.current?.play();
-          
-          // 30% chance for a second seek shortly after
-          if (Math.random() < 0.3) {
-            scheduleTimer(() => {
-              seekAudioRef.current?.seek(0);
-              seekAudioRef.current?.play();
-            }, 200 + Math.random() * 200);
-          }
-          
-          scheduleNextSeek();
-        }, 15000 + Math.random() * 10000);
-      };
-      
-      // Start seek loop after boot finishes
-      scheduleTimer(scheduleNextSeek, SEEK_START_DELAY_MS);
-    }
-    
+        seekAudioRef.current?.seek(0);
+        seekAudioRef.current?.play();
+
+        // 30% chance for a second seek shortly after
+        if (Math.random() < 0.3) {
+          scheduleTimer(() => {
+            seekAudioRef.current?.seek(0);
+            seekAudioRef.current?.play();
+          }, 200 + Math.random() * 200);
+        }
+
+        scheduleNextSeek();
+      }, 15000 + Math.random() * 10000);
+    };
+
+    // Start seek loop after boot finishes
+    scheduleTimer(scheduleNextSeek, SEEK_START_DELAY_MS);
+
     // Zoom after 200ms delay
     scheduleTimer(() => setZoomed(true), 200);
-  }, [powered, computeCenterOffset, scheduleTimer, ensureAudioLoaded]);
+  }, [powered, computeCenterOffset, scheduleTimer, ensureRemainingAudioLoaded]);
 
   /** Power off: run CRT shutdown animation, then zoom back and kill power. */
   const handlePowerOff = useCallback(() => {
