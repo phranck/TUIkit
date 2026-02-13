@@ -331,23 +331,39 @@ private struct _ButtonCore: View, Renderable {
             let fullLine = focusPrefix + styledLabel
             return FrameBuffer(lines: [fullLine])
         } else {
-            // Standard: brackets change to accent color when focused (with subtle pulse)
-            let bracketColor: Color
+            // Standard: half-block caps with accent-tinted background
+            let buttonBg = palette.accent.opacity(0.2)
+
+            // Label foreground: primary = accent/highlight, others = dimmed foreground
+            let labelFg: Color
             if isDisabled {
-                bracketColor = palette.foregroundTertiary
-            } else if isFocused {
-                // Subtle pulse: interpolate between 35% and 100% accent
-                let dimAccent = palette.accent.opacity(0.35)
-                bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+                labelFg = palette.foregroundTertiary.opacity(0.5)
+            } else if currentStyle.isBold {
+                labelFg = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
             } else {
-                bracketColor = palette.border
+                labelFg = palette.foregroundSecondary
             }
 
-            let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor, bold: isFocused)
-            let closeBracket = ANSIRenderer.colorize("]", foreground: bracketColor, bold: isFocused)
-            let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
+            // Caps: match button background normally, pulse to accent when focused
+            let resolvedCapColor: Color
+            if isDisabled {
+                resolvedCapColor = buttonBg
+            } else if isFocused {
+                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(0.45), phase: context.pulsePhase)
+            } else {
+                resolvedCapColor = buttonBg
+            }
 
-            let line = openBracket + styledLabel + closeBracket
+            let openCap = ANSIRenderer.colorize("\u{2590}", foreground: resolvedCapColor)
+            let closeCap = ANSIRenderer.colorize("\u{258C}", foreground: resolvedCapColor)
+            let styledLabel = ANSIRenderer.colorize(
+                paddedLabel,
+                foreground: labelFg,
+                background: buttonBg,
+                bold: currentStyle.isBold && !isDisabled
+            )
+
+            let line = openCap + styledLabel + closeCap
             return FrameBuffer(lines: [line])
         }
     }
