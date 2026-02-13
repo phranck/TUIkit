@@ -74,6 +74,8 @@ struct MyApp: App {
 
 - ``View``
 - ``Text``
+- ``Image``
+- ``ImageSource``
 - ``EmptyView``
 - ``AnyView``
 - ``Spinner``
@@ -153,6 +155,7 @@ struct MyApp: App {
 
 - ``Appearance``
 - ``BorderStyle``
+- ``ContentMode``
 - ``EdgeInsets``
 - ``Edge``
 
@@ -169,6 +172,7 @@ struct MyApp: App {
 - ``InsetGroupedListStyle``
 - ``SpinnerStyle``
 - ``TextCursorStyle``
+- ``TextContentType``
 - ``NavigationSplitViewStyle``
 
 ### View Composition

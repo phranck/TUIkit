@@ -74,6 +74,13 @@ final class TextFieldHandler: Focusable {
     /// Callback triggered when the user presses Enter.
     var onSubmit: (() -> Void)?
 
+    /// The text content type used for input character filtering.
+    ///
+    /// When set, both typed characters and pasted text are filtered against
+    /// the allowed character set of the content type. Synced from the
+    /// environment during each render pass.
+    var textContentType: TextContentType?
+
     /// Undo history stack storing previous text states and cursor positions.
     private var undoStack: [(text: String, cursor: Int)] = []
 
@@ -292,6 +299,10 @@ extension TextFieldHandler {
             onSubmit?()
             return true
 
+        case .paste(let text):
+            insertText(text)
+            return true
+
         default:
             return false
         }
@@ -307,6 +318,8 @@ extension TextFieldHandler {
     ///
     /// - Parameter char: The character to insert.
     func insertCharacter(_ char: Character) {
+        guard textContentType?.isAllowed(char) ?? true else { return }
+
         pushUndoState()
 
         // Replace selection if present
@@ -466,7 +479,27 @@ extension TextFieldHandler {
     /// Uses `pbpaste` on macOS. Replaces selection if any.
     func paste() {
         guard let pastedText = pasteFromClipboard() else { return }
-        guard !pastedText.isEmpty else { return }
+        insertText(pastedText)
+    }
+
+    /// Inserts a string at the cursor position in a single operation.
+    ///
+    /// Used by both clipboard paste (`Ctrl+V`) and bracketed paste
+    /// (terminal paste via `Cmd+V`). Replaces selection if any.
+    ///
+    /// - Parameter string: The text to insert.
+    func insertText(_ string: String) {
+        guard !string.isEmpty else { return }
+
+        // For single-line text fields, strip newlines from pasted text.
+        var sanitized = string.replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: "\r", with: "")
+
+        // Filter by content type if set.
+        if let contentType = textContentType {
+            sanitized = contentType.filterString(sanitized)
+        }
+        guard !sanitized.isEmpty else { return }
 
         pushUndoState()
 
@@ -476,12 +509,12 @@ extension TextFieldHandler {
             clearSelection()
         }
 
-        // Insert pasted text
+        // Insert text
         var current = text.wrappedValue
         let index = current.index(current.startIndex, offsetBy: min(cursorPosition, current.count))
-        current.insert(contentsOf: pastedText, at: index)
+        current.insert(contentsOf: sanitized, at: index)
         text.wrappedValue = current
-        cursorPosition += pastedText.count
+        cursorPosition += sanitized.count
     }
 }
 
