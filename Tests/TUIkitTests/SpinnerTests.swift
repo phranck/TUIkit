@@ -78,7 +78,8 @@ struct SpinnerStyleTests {
     func bouncingFrameRendering() {
         let frame = SpinnerStyle.renderBouncingFrame(
             frameIndex: 3,
-            color: .red
+            color: .red,
+            trackColor: .white
         )
 
         // All positions use ● with varying opacity

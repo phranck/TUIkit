@@ -194,7 +194,7 @@ extension NavigationSplitView {
 // MARK: - Internal Core
 
 /// Internal view that handles the actual rendering of NavigationSplitView.
-private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: View>: View, Renderable {
+private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: View>: View, Renderable, Layoutable {
     let sidebar: Sidebar
     let content: Content
     let detail: Detail
@@ -211,6 +211,11 @@ private struct _NavigationSplitViewCore<Sidebar: View, Content: View, Detail: Vi
 
     var body: Never {
         fatalError("_NavigationSplitViewCore renders via Renderable")
+    }
+
+    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+        let minWidth = minimumColumnWidth * (isThreeColumn ? 3 : 2)
+        return ViewSize(width: minWidth, height: 1, isWidthFlexible: true, isHeightFlexible: true)
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
