@@ -181,7 +181,8 @@ extension Toggle where Label == Text {
     ) {
         self.isOn = isOn
         self.label = Text(String(title))
-        self.focusID = "toggle-\(title)"
+        // Auto-generated focusID from view identity (collision-free)
+        self.focusID = nil
         self.isDisabled = false
     }
 }
