@@ -225,7 +225,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
 
             // Get or create persistent handler
             let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
-            let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
+            let handlerBox: StateBox<ItemListHandler<Value.ID>> = stateStorage.storage(
                 for: handlerKey,
                 default: ItemListHandler(
                     focusID: persistedFocusID,
@@ -241,10 +241,11 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             handler.itemCount = data.count
             handler.viewportHeight = viewportHeight
             handler.canBeFocused = !isDisabled
-            handler.itemIDs = data.map { AnyHashable($0.id) }
+            handler.itemIDs = data.map { $0.id }
 
-            // Set up selection bindings
-            handler.configureSelectionBindings(single: singleSelection, multi: multiSelection)
+            // Assign selection bindings directly (type-safe, no AnyHashable conversion)
+            handler.singleSelection = singleSelection
+            handler.multiSelection = multiSelection
 
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()

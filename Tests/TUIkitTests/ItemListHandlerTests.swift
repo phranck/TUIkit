@@ -16,7 +16,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Down arrow moves focus forward")
     func moveDownSimple() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 5,
             viewportHeight: 3,
@@ -32,7 +32,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Up arrow moves focus backward")
     func moveUpSimple() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 5,
             viewportHeight: 3,
@@ -49,7 +49,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Down arrow wraps to start at end")
     func wrapDownToStart() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
@@ -65,7 +65,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Up arrow wraps to end at start")
     func wrapUpToEnd() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
@@ -81,7 +81,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Home key jumps to first item")
     func homeJumpsToFirst() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 5,
@@ -98,7 +98,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("End key jumps to last item")
     func endJumpsToLast() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 5,
@@ -115,7 +115,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("PageDown moves by viewport height")
     func pageDownMovesViewport() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 20,
             viewportHeight: 5,
@@ -132,7 +132,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("PageUp moves by viewport height")
     func pageUpMovesViewport() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 20,
             viewportHeight: 5,
@@ -149,7 +149,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("PageDown clamps at end without wrapping")
     func pageDownClampsAtEnd() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 5,
@@ -165,7 +165,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("PageUp clamps at start without wrapping")
     func pageUpClampsAtStart() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 5,
@@ -181,7 +181,7 @@ struct ItemListHandlerNavigationTests {
 
     @Test("Empty list handles navigation gracefully")
     func emptyListNavigation() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 0,
             viewportHeight: 5,
@@ -204,14 +204,14 @@ struct ItemListHandlerSelectionTests {
 
     @Test("Enter toggles single selection")
     func enterTogglesSingle() {
-        var selectedID: AnyHashable?
-        let handler = ItemListHandler(
+        var selectedID: String?
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .single
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.singleSelection = Binding(
             get: { selectedID },
             set: { selectedID = $0 }
@@ -222,19 +222,19 @@ struct ItemListHandlerSelectionTests {
         let handled = handler.handleKeyEvent(event)
 
         #expect(handled == true)
-        #expect(selectedID == AnyHashable("b"))
+        #expect(selectedID == "b")
     }
 
     @Test("Space toggles single selection")
     func spaceTogglesSingle() {
-        var selectedID: AnyHashable?
-        let handler = ItemListHandler(
+        var selectedID: String?
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .single
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.singleSelection = Binding(
             get: { selectedID },
             set: { selectedID = $0 }
@@ -245,19 +245,19 @@ struct ItemListHandlerSelectionTests {
         let handled = handler.handleKeyEvent(event)
 
         #expect(handled == true)
-        #expect(selectedID == AnyHashable("c"))
+        #expect(selectedID == "c")
     }
 
     @Test("Single selection can be deselected by selecting again")
     func singleDeselect() {
-        var selectedID: AnyHashable? = AnyHashable("a")
-        let handler = ItemListHandler(
+        var selectedID: String? = "a"
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .single
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.singleSelection = Binding(
             get: { selectedID },
             set: { selectedID = $0 }
@@ -272,14 +272,14 @@ struct ItemListHandlerSelectionTests {
 
     @Test("Multi selection adds to set")
     func multiSelectionAdds() {
-        var selected: Set<AnyHashable> = []
-        let handler = ItemListHandler(
+        var selected: Set<String> = []
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .multi
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.multiSelection = Binding(
             get: { selected },
             set: { selected = $0 }
@@ -289,20 +289,20 @@ struct ItemListHandlerSelectionTests {
         let event = KeyEvent(key: .enter)
         _ = handler.handleKeyEvent(event)
 
-        #expect(selected.contains(AnyHashable("b")))
+        #expect(selected.contains("b"))
         #expect(selected.count == 1)
     }
 
     @Test("Multi selection toggles items")
     func multiSelectionToggles() {
-        var selected: Set<AnyHashable> = [AnyHashable("b")]
-        let handler = ItemListHandler(
+        var selected: Set<String> = ["b"]
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .multi
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.multiSelection = Binding(
             get: { selected },
             set: { selected = $0 }
@@ -312,20 +312,20 @@ struct ItemListHandlerSelectionTests {
         let event = KeyEvent(key: .enter)
         _ = handler.handleKeyEvent(event)
 
-        #expect(!selected.contains(AnyHashable("b")))  // Removed
+        #expect(!selected.contains("b"))  // Removed
         #expect(selected.isEmpty)
     }
 
     @Test("isSelected returns correct state")
     func isSelectedReturnsCorrectState() {
-        var selectedID: AnyHashable? = AnyHashable("b")
-        let handler = ItemListHandler(
+        var selectedID: String? = "b"
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
             selectionMode: .single
         )
-        handler.itemIDs = [AnyHashable("a"), AnyHashable("b"), AnyHashable("c")]
+        handler.itemIDs = ["a", "b", "c"]
         handler.singleSelection = Binding(
             get: { selectedID },
             set: { selectedID = $0 }
@@ -338,7 +338,7 @@ struct ItemListHandlerSelectionTests {
 
     @Test("isFocused returns correct state")
     func isFocusedReturnsCorrectState() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 3,
             viewportHeight: 3,
@@ -360,7 +360,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("Scroll offset adjusts when focus moves below viewport")
     func scrollDownOnFocusBelowViewport() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 3,
@@ -374,7 +374,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("Scroll offset adjusts when focus moves above viewport")
     func scrollUpOnFocusAboveViewport() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 3,
@@ -389,7 +389,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("hasContentAbove returns correct state")
     func hasContentAboveState() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 3,
@@ -405,7 +405,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("hasContentBelow returns correct state")
     func hasContentBelowState() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 3,
@@ -421,7 +421,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("visibleRange returns correct range")
     func visibleRangeCorrect() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 10,
             viewportHeight: 3,
@@ -435,7 +435,7 @@ struct ItemListHandlerScrollTests {
 
     @Test("visibleRange clamps to item count")
     func visibleRangeClampsToItemCount() {
-        let handler = ItemListHandler(
+        let handler = ItemListHandler<String>(
             focusID: "test",
             itemCount: 5,
             viewportHeight: 10,

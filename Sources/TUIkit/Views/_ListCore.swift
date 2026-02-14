@@ -54,7 +54,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
 
             // Get or create persistent handler
             let handlerKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)  // handler
-            let handlerBox: StateBox<ItemListHandler> = stateStorage.storage(
+            let handlerBox: StateBox<ItemListHandler<SelectionValue>> = stateStorage.storage(
                 for: handlerKey,
                 default: ItemListHandler(
                     focusID: persistedFocusID,
@@ -73,22 +73,23 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
 
             // Build selectableIndices set and itemIDs from typed rows
             var selectableIndices = Set<Int>()
-            var itemIDs: [AnyHashable] = []
+            var itemIDs: [SelectionValue?] = []
             for (index, row) in rows.enumerated() {
                 if let id = row.id {
                     // Content row: use actual ID
-                    itemIDs.append(AnyHashable(id))
+                    itemIDs.append(id)
                     selectableIndices.insert(index)
                 } else {
-                    // Header/footer: use index as placeholder (never selected)
-                    itemIDs.append(AnyHashable(index))
+                    // Header/footer: nil (non-selectable)
+                    itemIDs.append(nil)
                 }
             }
             handler.itemIDs = itemIDs
             handler.selectableIndices = selectableIndices
 
-            // Set up selection bindings
-            handler.configureSelectionBindings(single: singleSelection, multi: multiSelection)
+            // Assign selection bindings directly (type-safe, no AnyHashable conversion)
+            handler.singleSelection = singleSelection
+            handler.multiSelection = multiSelection
 
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
@@ -285,7 +286,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
 
     private func calculateVisibleRows(
         rows: [SelectableListRow<SelectionValue>],
-        handler: ItemListHandler,
+        handler: ItemListHandler<SelectionValue>,
         viewportHeight: Int
     ) -> [(index: Int, row: SelectableListRow<SelectionValue>)] {
         var result: [(Int, SelectableListRow<SelectionValue>)] = []
