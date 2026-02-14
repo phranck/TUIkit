@@ -4,8 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
-
 /// A focus handler for text field components.
 ///
 /// `TextFieldHandler` manages text editing state and keyboard input for

@@ -4,7 +4,13 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
+#if canImport(Glibc)
+    import Glibc
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Darwin)
+    import Darwin
+#endif
 
 // MARK: - App Protocol
 

@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
 import TUIkit
 
 /// Image demo page for loading an image from a URL.

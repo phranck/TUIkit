@@ -4,8 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
-
 #if canImport(Glibc)
     import Glibc
 #elseif canImport(Musl)

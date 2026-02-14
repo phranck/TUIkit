@@ -71,10 +71,10 @@ struct ContentView: View {
 
 ### Views & Components
 
-- **Primitive views**: `Text`, `EmptyView`, `Spacer`, `Divider`
-- **Layout containers**: `VStack`, `HStack`, `ZStack` with alignment and spacing
-- **Interactive**: `Button`, `Toggle`, `Menu` with keyboard navigation
-- **Data views**: `List`, `Table`, `Section`, `ForEach`
+- **Primitive views**: `Text`, `EmptyView`, `Spacer`, `Divider`, `Image` (ASCII art rendering, multiple color modes, async loading)
+- **Layout containers**: `VStack`, `HStack`, `ZStack`, `LazyVStack`, `LazyHStack` with alignment and spacing
+- **Interactive**: `Button`, `Toggle`, `Menu`, `TextField`, `SecureField`, `Slider`, `Stepper`, `RadioButtonGroup` with keyboard navigation
+- **Data views**: `List`, `Table`, `Section`, `ForEach`, `NavigationSplitView`
 - **Containers**: `Alert`, `Dialog`, `Panel`, `Box`, `Card`
 - **Feedback**: `ProgressView` (5 bar styles), `Spinner` (animated)
 - **`StatusBar`**: context-sensitive keyboard shortcuts
@@ -88,9 +88,14 @@ struct ContentView: View {
 - **List styles**: `PlainListStyle`, `InsetGroupedListStyle` with alternating rows
 - **Badges**: `.badge()` modifier for counts and labels on list rows
 
+### Notifications
+
+- **Toast-style notifications**: transient alerts via `.notificationHost()` modifier
+
 ### Advanced
 
 - **Lifecycle modifiers**: `.onAppear()`, `.onDisappear()`, `.task()`
+- **Key handling**: `.onKeyPress()` modifier for custom keyboard shortcuts
 - **Storage**: `@AppStorage`, `@SceneStorage` with JSON backend
 - **Preferences**: bottom-up data flow with `PreferenceKey`
 - **Focus system**: Tab/Shift+Tab navigation, `.focusSection()` for grouped areas
@@ -137,6 +142,8 @@ Then add it to your target:
 )
 ```
 
+> **Tip:** `import TUIkit` re-exports all sub-modules. For finer control you can import individual modules: `TUIkitCore`, `TUIkitStyling`, `TUIkitView`, or `TUIkitImage`.
+
 ## Theming
 
 TUIkit includes predefined palettes inspired by classic terminals:
@@ -163,6 +170,7 @@ Available palettes (all via `SystemPalette`):
 
 ## Architecture
 
+- **Modular package**: 5 Swift modules + 1 C target (see Project Structure below)
 - **No singletons for state**: All state flows through the Environment system
 - **Pure ANSI rendering**: No ncurses or other C dependencies
 - **Linux compatible**: Works on macOS and Linux (XDG paths supported)
@@ -172,12 +180,19 @@ Available palettes (all via `SystemPalette`):
 
 ```
 Sources/
-├── TUIkit/
+├── CSTBImage/            C bindings for stb_image (PNG/JPEG decoding)
+├── TUIkitCore/           Primitives, key events, frame buffer, concurrency helpers
+├── TUIkitStyling/        Color, theme palettes, border styles
+├── TUIkitView/           View protocol, ViewBuilder, State, Environment, Renderable
+├── TUIkitImage/          ASCII art converter, image loading (depends on CSTBImage)
+├── TUIkit/               Main module: App, Views, Modifiers, Focus, StatusBar, Notification
 │   ├── App/              App, Scene, WindowGroup
-│   ├── Core/             View, ViewBuilder, State, Environment, Color, Theme
-│   ├── Modifiers/        Border, Frame, Padding, Overlay, Lifecycle
-│   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer, FrameBuffer
-│   └── Views/            Text, Stacks, Button, Menu, Alert, StatusBar, ...
+│   ├── Focus/            Focus system and keyboard navigation
+│   ├── Modifiers/        Border, Frame, Padding, Overlay, Lifecycle, KeyPress
+│   ├── Notification/     Toast-style notification system
+│   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer
+│   ├── StatusBar/        Context-sensitive keyboard shortcuts
+│   └── Views/            Text, Stacks, Button, TextField, Slider, List, Image, ...
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
@@ -187,7 +202,7 @@ Tests/
 ## Requirements
 
 - Swift 6.0+
-- macOS 10.15+ or Linux
+- macOS 14+ or Linux
 
 ## Developer Notes
 
