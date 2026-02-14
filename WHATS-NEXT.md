@@ -62,7 +62,7 @@
 
 ## Completed
 
-- **2026-02-14**: i18n Phase 3 Complete: Type-safe LocalizationKey enum (74 keys across 7 categories), all 5 languages expanded with new strings, LocalizationServiceTests + LocalizationKeyConsistencyTests (10/10 passing), comprehensive user and developer documentation (i18n-guide.md, i18n-developer.md). README updated with i18n features and examples. 1100+ tests passing.
+- **2026-02-14**: i18n Phase 3 Complete: Type-safe LocalizationKey enum (74 keys across 7 categories), all 5 languages expanded with new strings, LocalizationServiceTests + LocalizationKeyConsistencyTests (10/10 passing), comprehensive user and developer documentation integrated into DocC (Localization.md). README updated with i18n features and examples. 1100+ tests passing.
 - **2026-02-14**: i18n Phase 2 Complete: LocalizedString View component, Text(localized:) convenience initializer, AppState.setLanguage() extension, LocalizationExtensions for convenient access to localized strings.
 - **2026-02-14**: i18n Phase 1 Complete: LocalizationService with 5 languages (EN, DE, FR, IT, ES), XDG-compatible persistent storage, JSON-based translations with dot-notation keys, fallback chain (Current → English → Key).
 - **2026-02-14**: P4.16 Complete elimination of RenderNotifier: AppState.shared and RenderCache.shared singletons replace global registry. Pure singleton architecture. All property wrappers, render consumers, and services use direct singleton access. 1069 tests pass.
@@ -81,7 +81,7 @@
 ## Notes
 
 - Tests: 1100+ / 150+ suites, all green
-- i18n Documentation: Documentation/i18n-guide.md (user guide), Documentation/i18n-developer.md (developer guide)
+- i18n Documentation: Localization.md in DocC catalog (Sources/TUIkit/TUIkit.docc/Articles/Localization.md)
 - Project analysis report: papers/project_analysis.md
 - Improvement plan: .claude/plans/open/2026-02-14-project-analysis-improvements.md
 - P3.11 and P3.14 resolved as "already adequate" after detailed review (no code changes needed)
