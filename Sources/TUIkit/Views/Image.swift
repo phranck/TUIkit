@@ -4,6 +4,7 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
 
 // MARK: - Image Source
 
@@ -122,6 +123,16 @@ private struct ImageAspectRatioKey: EnvironmentKey {
     static let defaultValue: Double? = nil
 }
 
+/// Environment key for the maximum allowed image pixel count.
+private struct ImageMaxPixelCountKey: EnvironmentKey {
+    static let defaultValue: Int? = nil
+}
+
+/// Environment key for the URL download timeout in seconds.
+private struct ImageURLTimeoutKey: EnvironmentKey {
+    static let defaultValue: TimeInterval = 30
+}
+
 // MARK: - EnvironmentValues
 
 extension EnvironmentValues {
@@ -167,6 +178,23 @@ extension EnvironmentValues {
     var imageAspectRatio: Double? {
         get { self[ImageAspectRatioKey.self] }
         set { self[ImageAspectRatioKey.self] = newValue }
+    }
+
+    /// The maximum allowed total pixel count for loaded images.
+    ///
+    /// Images exceeding this limit will fail with `ImageLoadError.imageTooLarge`.
+    /// `nil` means no limit (default).
+    var imageMaxPixelCount: Int? {
+        get { self[ImageMaxPixelCountKey.self] }
+        set { self[ImageMaxPixelCountKey.self] = newValue }
+    }
+
+    /// The timeout in seconds for URL image downloads.
+    ///
+    /// Defaults to 30 seconds.
+    var imageURLTimeout: TimeInterval {
+        get { self[ImageURLTimeoutKey.self] }
+        set { self[ImageURLTimeoutKey.self] = newValue }
     }
 }
 
@@ -260,5 +288,38 @@ extension View {
     /// - Returns: A view that scales to fill.
     public func scaledToFill() -> some View {
         aspectRatio(contentMode: .fill)
+    }
+
+    /// Sets the maximum allowed pixel count for image loading.
+    ///
+    /// Images with more total pixels than this limit will fail to load
+    /// with `ImageLoadError.imageTooLarge`. Use this to prevent excessive
+    /// memory usage from very large images.
+    ///
+    /// ```swift
+    /// Image(.url("https://example.com/photo.png"))
+    ///     .imageMaxPixelCount(4_000_000)  // ~4 megapixels
+    /// ```
+    ///
+    /// - Parameter maxPixels: The maximum total pixel count, or `nil` for no limit.
+    /// - Returns: A modified view.
+    public func imageMaxPixelCount(_ maxPixels: Int?) -> some View {
+        environment(\.imageMaxPixelCount, maxPixels)
+    }
+
+    /// Sets the timeout for URL image downloads.
+    ///
+    /// If the download does not complete within the specified interval,
+    /// it fails with `ImageLoadError.downloadFailed`.
+    ///
+    /// ```swift
+    /// Image(.url("https://example.com/photo.png"))
+    ///     .imageURLTimeout(10)  // 10 seconds
+    /// ```
+    ///
+    /// - Parameter seconds: The timeout in seconds (default: 30).
+    /// - Returns: A modified view.
+    public func imageURLTimeout(_ seconds: TimeInterval) -> some View {
+        environment(\.imageURLTimeout, seconds)
     }
 }

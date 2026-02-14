@@ -62,6 +62,8 @@ struct _ImageCore: View, Renderable, Layoutable {
         let aspectRatioOverride = context.environment.imageAspectRatio
         let placeholderText = context.environment.imagePlaceholderText
         let showSpinner = context.environment.imagePlaceholderSpinner
+        let maxPixelCount = context.environment.imageMaxPixelCount
+        let urlTimeout = context.environment.imageURLTimeout
 
         // Retrieve or create persistent phase state
         let phaseKey = StateStorage.StateKey(identity: identity, propertyIndex: StateIndex.phase)
@@ -95,9 +97,14 @@ struct _ImageCore: View, Renderable, Layoutable {
                     let rawImage: RGBAImage
                     switch src {
                     case .file(let path):
-                        rawImage = try loader.loadImage(from: path)
+                        rawImage = try loader.loadImage(from: path, maxPixelCount: maxPixelCount)
                     case .url(let urlString):
-                        rawImage = try loader.loadImage(from: urlString, cache: .shared)
+                        rawImage = try loader.loadImage(
+                            from: urlString,
+                            cache: .shared,
+                            timeout: urlTimeout,
+                            maxPixelCount: maxPixelCount
+                        )
                     }
 
                     // Store the raw image; conversion happens per render pass.

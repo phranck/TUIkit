@@ -45,6 +45,9 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
     /// A URL download failed.
     case downloadFailed(String)
 
+    /// The image exceeds the maximum allowed pixel count.
+    case imageTooLarge(pixelCount: Int, limit: Int)
+
     var description: String {
         switch self {
         case .fileNotFound(let path):
@@ -55,6 +58,8 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
             return "Image decoding failed: \(reason)"
         case .downloadFailed(let reason):
             return "Image download failed: \(reason)"
+        case .imageTooLarge(let pixelCount, let limit):
+            return "Image too large: \(pixelCount) pixels (limit: \(limit))"
         }
     }
 
@@ -71,6 +76,21 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
 struct PlatformImageLoader: ImageLoader {
 
     func loadImage(from path: String) throws -> RGBAImage {
+        try loadImage(from: path, maxPixelCount: nil)
+    }
+
+    func loadImage(from data: Data) throws -> RGBAImage {
+        try loadImage(from: data, maxPixelCount: nil)
+    }
+
+    /// Loads an image from a file path with an optional pixel count limit.
+    ///
+    /// - Parameters:
+    ///   - path: The absolute file path to the image.
+    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
+    /// - Returns: The decoded image as `RGBAImage`.
+    /// - Throws: `ImageLoadError` if the file cannot be read, decoded, or exceeds the limit.
+    func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage {
         guard FileManager.default.fileExists(atPath: path) else {
             throw ImageLoadError.fileNotFound(path)
         }
@@ -85,10 +105,22 @@ struct PlatformImageLoader: ImageLoader {
         }
         defer { stbi_image_free(rawPixels) }
 
+        let pixelCount = Int(width) * Int(height)
+        if let limit = maxPixelCount, pixelCount > limit {
+            throw ImageLoadError.imageTooLarge(pixelCount: pixelCount, limit: limit)
+        }
+
         return pixelsFromRaw(rawPixels, width: Int(width), height: Int(height))
     }
 
-    func loadImage(from data: Data) throws -> RGBAImage {
+    /// Loads an image from raw data with an optional pixel count limit.
+    ///
+    /// - Parameters:
+    ///   - data: The image file data.
+    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
+    /// - Returns: The decoded image as `RGBAImage`.
+    /// - Throws: `ImageLoadError` if the data cannot be decoded or exceeds the limit.
+    func loadImage(from data: Data, maxPixelCount: Int?) throws -> RGBAImage {
         var width: Int32 = 0
         var height: Int32 = 0
         var channels: Int32 = 0
@@ -110,6 +142,11 @@ struct PlatformImageLoader: ImageLoader {
             throw ImageLoadError.decodingFailed("stb_image: \(reason)")
         }
         defer { stbi_image_free(pixels) }
+
+        let pixelCount = Int(width) * Int(height)
+        if let limit = maxPixelCount, pixelCount > limit {
+            throw ImageLoadError.imageTooLarge(pixelCount: pixelCount, limit: limit)
+        }
 
         return pixelsFromRaw(pixels, width: Int(width), height: Int(height))
     }
@@ -181,10 +218,19 @@ extension PlatformImageLoader {
     /// On first access the image is downloaded synchronously and cached.
     /// Subsequent calls for the same URL return the cached copy.
     ///
-    /// - Parameter urlString: The URL to download.
+    /// - Parameters:
+    ///   - urlString: The URL to download.
+    ///   - cache: The image cache to use.
+    ///   - timeout: The download timeout in seconds (default: 30).
+    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
     /// - Returns: The decoded image.
-    /// - Throws: `ImageLoadError` on network or decoding failure.
-    func loadImage(from urlString: String, cache: URLImageCache = .shared) throws -> RGBAImage {
+    /// - Throws: `ImageLoadError` on network or decoding failure, or if image exceeds size limit.
+    func loadImage(
+        from urlString: String,
+        cache: URLImageCache = .shared,
+        timeout: TimeInterval = 30,
+        maxPixelCount: Int? = nil
+    ) throws -> RGBAImage {
         if let cached = cache.get(urlString) {
             return cached
         }
@@ -195,12 +241,35 @@ extension PlatformImageLoader {
 
         let data: Data
         do {
-            data = try Data(contentsOf: url)
+            var request = URLRequest(url: url)
+            request.timeoutInterval = timeout
+
+            nonisolated(unsafe) var responseData: Data?
+            nonisolated(unsafe) var responseError: Error?
+            let semaphore = DispatchSemaphore(value: 0)
+
+            let task = URLSession.shared.dataTask(with: request) { d, _, error in
+                responseData = d
+                responseError = error
+                semaphore.signal()
+            }
+            task.resume()
+            semaphore.wait()
+
+            if let error = responseError {
+                throw error
+            }
+            guard let downloaded = responseData else {
+                throw ImageLoadError.downloadFailed("No data received")
+            }
+            data = downloaded
+        } catch let error as ImageLoadError {
+            throw error
         } catch {
             throw ImageLoadError.downloadFailed(error.localizedDescription)
         }
 
-        let image = try loadImage(from: data)
+        let image = try loadImage(from: data, maxPixelCount: maxPixelCount)
         cache.set(urlString, image: image)
         return image
     }

@@ -174,10 +174,19 @@ tracking progress.
 - [x] 4.18.5 Build and test verification
 
 ### P4.19: Add image size limits and URL timeout configuration
-- **Affected:** `ImageLoader.swift`
-- [ ] 4.19.1 Add configurable max image size limit
-- [ ] 4.19.2 Add URL request timeout configuration
-- [ ] 4.19.3 Document security considerations
+- **Affected:** `ImageLoader.swift`, `Image.swift`, `_ImageCore.swift`
+- **Approach:** Added two environment-driven configurations via modifier-first pattern:
+  - `.imageMaxPixelCount(_:)` - rejects images exceeding a total pixel count limit
+  - `.imageURLTimeout(_:)` - configurable URL download timeout (default: 30s)
+  Replaced `Data(contentsOf:)` with `URLSession.dataTask` + semaphore for proper
+  timeout support. Added `ImageLoadError.imageTooLarge` error case. Both limits
+  propagate through environment and are captured before the async loading task.
+- [x] 4.19.1 Add environment keys and View modifiers (`imageMaxPixelCount`, `imageURLTimeout`)
+- [x] 4.19.2 Add `imageTooLarge` error case to `ImageLoadError`
+- [x] 4.19.3 Add `maxPixelCount` parameter to `PlatformImageLoader.loadImage` methods
+- [x] 4.19.4 Replace `Data(contentsOf:)` with `URLSession` + configurable timeout
+- [x] 4.19.5 Wire environment values in `_ImageCore.renderToBuffer`
+- [x] 4.19.6 Build and test verification
 
 ### P4.20: Split framework into multiple Swift package modules
 - **Affected:** Entire package structure
@@ -222,11 +231,11 @@ tracking progress.
 | P1       | 5           | 5         | 0         |
 | P2       | 5           | 5         | 0         |
 | P3       | 5           | 4         | 1         |
-| P4       | 5           | 1         | 4         |
+| P4       | 5           | 2         | 3         |
 | Additional | 9         | 4         | 5         |
-| **Total**  | **29**    | **19**    | **10**    |
+| **Total**  | **29**    | **20**    | **9**     |
 
 ---
 
 *Generated from `papers/project_analysis.md` (2026-02-14)*
-*Last updated: 2026-02-14T22:15:00Z*
+*Last updated: 2026-02-14T23:00:00Z*
