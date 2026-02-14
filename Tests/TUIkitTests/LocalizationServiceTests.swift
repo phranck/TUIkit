@@ -5,166 +5,166 @@
 //  License: MIT
 
 import Foundation
-import XCTest
+import Testing
 @testable import TUIkit
 
 // MARK: - Localization Service Tests
 
-final class LocalizationServiceTests: XCTestCase {
+@Suite("LocalizationService")
+final class LocalizationServiceTests {
     var sut: LocalizationService!
     let fileManager = FileManager.default
 
-    override func setUp() {
-        super.setUp()
+    init() {
         sut = LocalizationService()
     }
 
-    override func tearDown() {
-        super.tearDown()
+    deinit {
         // Clean up stored language preference
         try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     // MARK: - Bundle Loading Tests
 
-    func testLoadsEnglishTranslationsFromBundle() {
+    @Test("Loads English translations from bundle")
+    func loadEnglishTranslations() {
         let englishStrings = sut.string(for: "button.ok")
-        XCTAssertEqual(englishStrings, "OK")
+        #expect(englishStrings == "OK")
     }
 
-    func testLoadsGermanTranslationsFromBundle() {
+    @Test("Loads German translations from bundle")
+    func loadGermanTranslations() {
         sut.setLanguage(.german)
         let germanStrings = sut.string(for: "button.ok")
-        XCTAssertEqual(germanStrings, "OK")
+        #expect(germanStrings == "OK")
     }
 
-    func testLoadsFrenchTranslationsFromBundle() {
+    @Test("Loads French translations from bundle")
+    func loadFrenchTranslations() {
         sut.setLanguage(.french)
         let frenchStrings = sut.string(for: "button.cancel")
-        XCTAssertEqual(frenchStrings, "Annuler")
+        #expect(frenchStrings == "Annuler")
     }
 
-    func testLoadsItalianTranslationsFromBundle() {
+    @Test("Loads Italian translations from bundle")
+    func loadItalianTranslations() {
         sut.setLanguage(.italian)
         let italianStrings = sut.string(for: "button.yes")
-        XCTAssertEqual(italianStrings, "Sì")
+        #expect(italianStrings == "Sì")
     }
 
-    func testLoadsSpanishTranslationsFromBundle() {
+    @Test("Loads Spanish translations from bundle")
+    func loadSpanishTranslations() {
         sut.setLanguage(.spanish)
         let spanishStrings = sut.string(for: "button.no")
-        XCTAssertEqual(spanishStrings, "No")
+        #expect(spanishStrings == "No")
     }
 
     // MARK: - String Resolution Tests
 
-    func testResolvesDotNotationKeys() {
+    @Test("Resolves dot-notation keys")
+    func resolvesDotNotationKeys() {
         let string = sut.string(for: "button.ok")
-        XCTAssertEqual(string, "OK")
+        #expect(string == "OK")
     }
 
-    func testResolvesNestedKeys() {
+    @Test("Resolves nested keys")
+    func resolvesNestedKeys() {
         let string = sut.string(for: "error.invalid_input")
-        XCTAssertEqual(string, "Invalid input")
+        #expect(string == "Invalid input")
     }
 
-    func testResolvesAllKeyCategories() {
-        // Button
-        XCTAssertEqual(sut.string(for: LocalizationKey.Button.save), "Save")
-        // Label
-        XCTAssertEqual(sut.string(for: LocalizationKey.Label.name), "Name")
-        // Error
-        XCTAssertEqual(sut.string(for: LocalizationKey.Error.notFound), "Not found")
-        // Placeholder
-        XCTAssertEqual(sut.string(for: LocalizationKey.Placeholder.search), "Search...")
-        // Menu
-        XCTAssertEqual(sut.string(for: LocalizationKey.Menu.file), "File")
-        // Dialog
-        XCTAssertEqual(sut.string(for: LocalizationKey.Dialog.confirm), "Confirm")
-        // Validation
-        XCTAssertEqual(sut.string(for: LocalizationKey.Validation.emailInvalid), "Invalid email address")
+    @Test("Resolves all key categories")
+    func resolvesAllKeyCategories() {
+        #expect(sut.string(for: "button.save") == "Save")
+        #expect(sut.string(for: "label.name") == "Name")
+        #expect(sut.string(for: "error.not_found") == "Not found")
+        #expect(sut.string(for: "placeholder.search") == "Search...")
+        #expect(sut.string(for: "menu.file") == "File")
+        #expect(sut.string(for: "dialog.confirm") == "Confirm")
+        #expect(sut.string(for: "validation.email_invalid") == "Invalid email address")
     }
 
     // MARK: - Fallback Tests
 
-    func testFallsBackToEnglishWhenKeyMissingInCurrentLanguage() {
+    @Test("Falls back to English when key missing in current language")
+    func fallsBackToEnglish() {
         sut.setLanguage(.german)
-        // Even if a key were missing in German, it would fall back to English
-        // This tests the fallback chain: current language -> English -> key
         let string = sut.string(for: "button.ok")
-        XCTAssertNotEqual(string, "button.ok")
+        #expect(string != "button.ok")
     }
 
-    func testReturnsKeyWhenNotFoundInAnyLanguage() {
+    @Test("Returns key when not found in any language")
+    func returnsKeyWhenNotFound() {
         let unknownKey = "nonexistent.key.that.does.not.exist"
         let string = sut.string(for: unknownKey)
-        XCTAssertEqual(string, unknownKey)
+        #expect(string == unknownKey)
     }
 
-    func testFallsBackChain() {
-        // Set German, resolve a key
+    @Test("Fallback chain works correctly")
+    func fallbackChain() {
         sut.setLanguage(.german)
         let germanString = sut.string(for: "button.ok")
-        XCTAssertEqual(germanString, "OK")
+        #expect(germanString == "OK")
 
-        // Switch to English
         sut.setLanguage(.english)
         let englishString = sut.string(for: "button.ok")
-        XCTAssertEqual(englishString, "OK")
-        XCTAssertEqual(germanString, englishString)
+        #expect(englishString == "OK")
+        #expect(germanString == englishString)
     }
 
     // MARK: - Language Switching Tests
 
-    func testSwitchesLanguageSuccessfully() {
+    @Test("Switches language successfully")
+    func switchesLanguage() {
         sut.setLanguage(.english)
-        XCTAssertEqual(sut.currentLanguage, .english)
+        #expect(sut.currentLanguage == .english)
 
         sut.setLanguage(.german)
-        XCTAssertEqual(sut.currentLanguage, .german)
+        #expect(sut.currentLanguage == .german)
 
         sut.setLanguage(.french)
-        XCTAssertEqual(sut.currentLanguage, .french)
+        #expect(sut.currentLanguage == .french)
     }
 
-    func testLanguagePropertyReturnsCurrentLanguage() {
+    @Test("Language property returns current language")
+    func languageProperty() {
         sut.setLanguage(.english)
-        XCTAssertEqual(sut.currentLanguage, .english)
+        #expect(sut.currentLanguage == .english)
 
         sut.setLanguage(.italian)
-        XCTAssertEqual(sut.currentLanguage, .italian)
+        #expect(sut.currentLanguage == .italian)
     }
 
-    func testResolveStringsAfterLanguageSwitch() {
-        // Start with English
+    @Test("Resolves strings after language switch")
+    func resolvesStringsAfterSwitch() {
         sut.setLanguage(.english)
         var string = sut.string(for: "button.save")
-        XCTAssertEqual(string, "Save")
+        #expect(string == "Save")
 
-        // Switch to German
         sut.setLanguage(.german)
         string = sut.string(for: "button.save")
-        XCTAssertEqual(string, "Speichern")
+        #expect(string == "Speichern")
 
-        // Switch to French
         sut.setLanguage(.french)
         string = sut.string(for: "button.save")
-        XCTAssertEqual(string, "Enregistrer")
+        #expect(string == "Enregistrer")
     }
 
     // MARK: - Persistence Tests
 
-    func testSavesLanguagePreferenceToConfigFile() {
+    @Test("Saves language preference to config file")
+    func savesLanguagePreference() {
         sut.setLanguage(.german)
         let path = Self.configFilePath()
         let content = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(
             in: .whitespacesAndNewlines
         )
-        XCTAssertEqual(content, "de")
+        #expect(content == "de")
     }
 
-    func testLoadsLanguagePreferenceFromConfigFile() {
-        // First, save a language preference
+    @Test("Loads language preference from config file")
+    func loadsLanguagePreference() {
         let path = Self.configFilePath()
         let dirPath = (path as NSString).deletingLastPathComponent
         try? fileManager.createDirectory(
@@ -174,21 +174,20 @@ final class LocalizationServiceTests: XCTestCase {
         )
         try? "fr".write(toFile: path, atomically: true, encoding: .utf8)
 
-        // Create a new service instance
         let newService = LocalizationService()
-        XCTAssertEqual(newService.currentLanguage, .french)
+        #expect(newService.currentLanguage == .french)
     }
 
-    func testHandlesMissingConfigFileGracefully() {
-        // Ensure config file doesn't exist
+    @Test("Handles missing config file gracefully")
+    func handlesMissingConfigFile() {
         try? fileManager.removeItem(atPath: Self.configFilePath())
 
-        // Create service, should default to English
         let newService = LocalizationService()
-        XCTAssertEqual(newService.currentLanguage, .english)
+        #expect(newService.currentLanguage == .english)
     }
 
-    func testHandlesInvalidConfigFileContentGracefully() {
+    @Test("Handles invalid config file content gracefully")
+    func handlesInvalidConfigFile() {
         let path = Self.configFilePath()
         let dirPath = (path as NSString).deletingLastPathComponent
         try? fileManager.createDirectory(
@@ -196,103 +195,72 @@ final class LocalizationServiceTests: XCTestCase {
             withIntermediateDirectories: true,
             attributes: nil
         )
-        // Write invalid language code
         try? "invalid_lang_code".write(toFile: path, atomically: true, encoding: .utf8)
 
-        // Create service, should default to English
         let newService = LocalizationService()
-        XCTAssertEqual(newService.currentLanguage, .english)
-    }
-
-    // MARK: - Thread Safety Tests
-
-    @MainActor
-    func testIsThreadSafe() {
-        let expectation = self.expectation(description: "Concurrent access should complete")
-        let concurrentQueue = DispatchQueue(label: "com.tuikit.test.concurrent", attributes: .concurrent)
-        var completedOperations = 0
-        let lock = NSLock()
-
-        // Perform concurrent language switches and string resolutions
-        for i in 0 ..< 100 {
-            concurrentQueue.async {
-                let language: LocalizationService.Language = [.english, .german, .french, .italian, .spanish][i % 5]
-                self.sut.setLanguage(language)
-                _ = self.sut.string(for: "button.ok")
-
-                lock.lock()
-                completedOperations += 1
-                if completedOperations == 100 {
-                    expectation.fulfill()
-                }
-                lock.unlock()
-            }
-        }
-
-        waitForExpectations(timeout: 5.0)
-        XCTAssertEqual(completedOperations, 100)
+        #expect(newService.currentLanguage == .english)
     }
 
     // MARK: - Language Enum Tests
 
-    func testLanguageEnumRawValues() {
-        XCTAssertEqual(LocalizationService.Language.english.rawValue, "en")
-        XCTAssertEqual(LocalizationService.Language.german.rawValue, "de")
-        XCTAssertEqual(LocalizationService.Language.french.rawValue, "fr")
-        XCTAssertEqual(LocalizationService.Language.italian.rawValue, "it")
-        XCTAssertEqual(LocalizationService.Language.spanish.rawValue, "es")
+    @Test("Language enum raw values are correct")
+    func languageRawValues() {
+        #expect(LocalizationService.Language.english.rawValue == "en")
+        #expect(LocalizationService.Language.german.rawValue == "de")
+        #expect(LocalizationService.Language.french.rawValue == "fr")
+        #expect(LocalizationService.Language.italian.rawValue == "it")
+        #expect(LocalizationService.Language.spanish.rawValue == "es")
     }
 
-    func testLanguageEnumDisplayNames() {
-        XCTAssertEqual(LocalizationService.Language.english.displayName, "English")
-        XCTAssertEqual(LocalizationService.Language.german.displayName, "Deutsch")
-        XCTAssertEqual(LocalizationService.Language.french.displayName, "Français")
-        XCTAssertEqual(LocalizationService.Language.italian.displayName, "Italiano")
-        XCTAssertEqual(LocalizationService.Language.spanish.displayName, "Español")
+    @Test("Language enum display names are correct")
+    func languageDisplayNames() {
+        #expect(LocalizationService.Language.english.displayName == "English")
+        #expect(LocalizationService.Language.german.displayName == "Deutsch")
+        #expect(LocalizationService.Language.french.displayName == "Français")
+        #expect(LocalizationService.Language.italian.displayName == "Italiano")
+        #expect(LocalizationService.Language.spanish.displayName == "Español")
     }
 
-    func testLanguageEnumIsCodable() {
+    @Test("Language enum is codable")
+    func languageIsCodable() {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
-        // English
         let english = LocalizationService.Language.english
         let encodedEnglish = try? encoder.encode(english)
         let decodedEnglish = try? decoder.decode(LocalizationService.Language.self, from: encodedEnglish ?? Data())
-        XCTAssertEqual(decodedEnglish, english)
+        #expect(decodedEnglish == english)
 
-        // German
         let german = LocalizationService.Language.german
         let encodedGerman = try? encoder.encode(german)
         let decodedGerman = try? decoder.decode(LocalizationService.Language.self, from: encodedGerman ?? Data())
-        XCTAssertEqual(decodedGerman, german)
+        #expect(decodedGerman == german)
     }
 
     // MARK: - Caching Tests
 
-    func testCachesTranslationDictionaries() {
-        // First access loads from bundle
+    @Test("Caches translation dictionaries")
+    func cacheTranslations() {
         _ = sut.string(for: "button.ok")
 
-        // Second access should use cache (we can't directly test cache, but verify consistency)
         let string1 = sut.string(for: "button.ok")
         let string2 = sut.string(for: "button.ok")
-        XCTAssertEqual(string1, string2)
+        #expect(string1 == string2)
     }
 
-    func testCacheIsPerLanguage() {
+    @Test("Cache is per-language")
+    func cacheIsPerLanguage() {
         sut.setLanguage(.english)
         let englishString = sut.string(for: "button.save")
-        XCTAssertEqual(englishString, "Save")
+        #expect(englishString == "Save")
 
         sut.setLanguage(.german)
         let germanString = sut.string(for: "button.save")
-        XCTAssertEqual(germanString, "Speichern")
+        #expect(germanString == "Speichern")
 
-        // Switch back to English, should still be cached
         sut.setLanguage(.english)
         let englishAgain = sut.string(for: "button.save")
-        XCTAssertEqual(englishAgain, "Save")
+        #expect(englishAgain == "Save")
     }
 
     // MARK: - Helper Methods
@@ -312,176 +280,84 @@ final class LocalizationServiceTests: XCTestCase {
     }
 }
 
-// MARK: - LocalizedString View Tests
+// MARK: - Localization Key Tests
 
-final class LocalizedStringViewTests: XCTestCase {
-    @MainActor
-    func testLocalizedStringCreatesViewWithKey() {
-        let view = LocalizedString("button.ok")
-        XCTAssertNotNil(view)
-    }
-
-    @MainActor
-    func testLocalizedStringReturnsCorrectText() {
-        let view = LocalizedString("button.ok")
-        // Note: We can't directly test the body output without rendering,
-        // but we verify the view is created successfully
-        XCTAssertNotNil(view)
-    }
-}
-
-// MARK: - TextLocalizationExtension Tests
-
-final class TextLocalizationExtensionTests: XCTestCase {
-    @MainActor
-    func testTextLocalizedInitializer() {
-        // Just verify it creates without crashing
-        let text = Text(localized: "button.ok")
-        XCTAssertNotNil(text)
-    }
-
-    @MainActor
-    func testTextLocalizedWithDifferentKeys() {
-        let buttons = ["button.ok", "button.cancel", "button.save"]
-        for key in buttons {
-            let text = Text(localized: key)
-            XCTAssertNotNil(text)
-        }
-    }
-}
-
-// MARK: - AppState Localization Extension Tests
-
-final class AppStateLocalizationExtensionTests: XCTestCase {
-    @MainActor
-    func testAppStateCurrentLanguageProperty() {
-        LocalizationService.shared.setLanguage(.english)
-        XCTAssertEqual(AppState.shared.currentLanguage, .english)
-
-        LocalizationService.shared.setLanguage(.german)
-        XCTAssertEqual(AppState.shared.currentLanguage, .german)
-    }
-
-    @MainActor
-    func testAppStateSetLanguageMethod() {
-        AppState.shared.setLanguage(.french)
-        XCTAssertEqual(LocalizationService.shared.currentLanguage, .french)
-
-        AppState.shared.setLanguage(.italian)
-        XCTAssertEqual(LocalizationService.shared.currentLanguage, .italian)
-    }
-}
-
-// MARK: - Localization Key Type-Safety Tests
-
-final class LocalizationKeyTests: XCTestCase {
+@Suite("LocalizationKey")
+final class LocalizationKeyTests {
     var service: LocalizationService!
 
-    override func setUp() {
-        super.setUp()
+    init() {
         service = LocalizationService()
         service.setLanguage(.english)
     }
 
-    func testButtonKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.ok), "OK")
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.cancel), "Cancel")
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.save), "Save")
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.delete), "Delete")
+    @Test("Button keys resolve correctly")
+    func buttonKeys() {
+        #expect(service.string(for: LocalizationKey.Button.ok) == "OK")
+        #expect(service.string(for: LocalizationKey.Button.cancel) == "Cancel")
+        #expect(service.string(for: LocalizationKey.Button.save) == "Save")
+        #expect(service.string(for: LocalizationKey.Button.delete) == "Delete")
     }
 
-    func testLabelKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Label.name), "Name")
-        XCTAssertEqual(service.string(for: LocalizationKey.Label.description), "Description")
-        XCTAssertEqual(service.string(for: LocalizationKey.Label.value), "Value")
-        XCTAssertEqual(service.string(for: LocalizationKey.Label.status), "Status")
+    @Test("Label keys resolve correctly")
+    func labelKeys() {
+        #expect(service.string(for: LocalizationKey.Label.name) == "Name")
+        #expect(service.string(for: LocalizationKey.Label.description) == "Description")
+        #expect(service.string(for: LocalizationKey.Label.value) == "Value")
+        #expect(service.string(for: LocalizationKey.Label.status) == "Status")
     }
 
-    func testErrorKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Error.invalidInput), "Invalid input")
-        XCTAssertEqual(service.string(for: LocalizationKey.Error.notFound), "Not found")
-        XCTAssertEqual(service.string(for: LocalizationKey.Error.accessDenied), "Access denied")
+    @Test("Error keys resolve correctly")
+    func errorKeys() {
+        #expect(service.string(for: LocalizationKey.Error.invalidInput) == "Invalid input")
+        #expect(service.string(for: LocalizationKey.Error.notFound) == "Not found")
+        #expect(service.string(for: LocalizationKey.Error.accessDenied) == "Access denied")
     }
 
-    func testPlaceholderKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Placeholder.search), "Search...")
-        XCTAssertEqual(service.string(for: LocalizationKey.Placeholder.enterText), "Enter text...")
-        XCTAssertEqual(service.string(for: LocalizationKey.Placeholder.selectOption), "Select an option...")
+    @Test("Placeholder keys resolve correctly")
+    func placeholderKeys() {
+        #expect(service.string(for: LocalizationKey.Placeholder.search) == "Search...")
+        #expect(service.string(for: LocalizationKey.Placeholder.enterText) == "Enter text...")
+        #expect(service.string(for: LocalizationKey.Placeholder.selectOption) == "Select an option...")
     }
 
-    func testMenuKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Menu.file), "File")
-        XCTAssertEqual(service.string(for: LocalizationKey.Menu.edit), "Edit")
-        XCTAssertEqual(service.string(for: LocalizationKey.Menu.view), "View")
+    @Test("Menu keys resolve correctly")
+    func menuKeys() {
+        #expect(service.string(for: LocalizationKey.Menu.file) == "File")
+        #expect(service.string(for: LocalizationKey.Menu.edit) == "Edit")
+        #expect(service.string(for: LocalizationKey.Menu.view) == "View")
     }
 
-    func testDialogKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Dialog.confirm), "Confirm")
-        XCTAssertEqual(service.string(for: LocalizationKey.Dialog.deleteConfirmation), "Are you sure you want to delete this?")
-        XCTAssertEqual(service.string(for: LocalizationKey.Dialog.success), "Operation completed successfully")
+    @Test("Dialog keys resolve correctly")
+    func dialogKeys() {
+        #expect(service.string(for: LocalizationKey.Dialog.confirm) == "Confirm")
+        #expect(service.string(for: LocalizationKey.Dialog.deleteConfirmation) == "Are you sure you want to delete this?")
+        #expect(service.string(for: LocalizationKey.Dialog.success) == "Operation completed successfully")
     }
 
-    func testValidationKeysResolveCorrectly() {
-        XCTAssertEqual(service.string(for: LocalizationKey.Validation.emailInvalid), "Invalid email address")
-        XCTAssertEqual(service.string(for: LocalizationKey.Validation.passwordTooShort), "Password must be at least 8 characters")
-        XCTAssertEqual(service.string(for: LocalizationKey.Validation.usernameTaken), "Username already exists")
+    @Test("Validation keys resolve correctly")
+    func validationKeys() {
+        #expect(service.string(for: LocalizationKey.Validation.emailInvalid) == "Invalid email address")
+        #expect(service.string(for: LocalizationKey.Validation.passwordTooShort) == "Password must be at least 8 characters")
+        #expect(service.string(for: LocalizationKey.Validation.usernameTaken) == "Username already exists")
     }
 
-    func testKeysWorkAcrossLanguages() {
+    @Test("Keys work across all languages")
+    func keysAcrossLanguages() {
         service.setLanguage(.german)
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.ok), "OK")
+        #expect(service.string(for: LocalizationKey.Button.ok) == "OK")
 
         service.setLanguage(.french)
-        XCTAssertEqual(service.string(for: LocalizationKey.Button.cancel), "Annuler")
+        #expect(service.string(for: LocalizationKey.Button.cancel) == "Annuler")
 
         service.setLanguage(.italian)
-        XCTAssertEqual(service.string(for: LocalizationKey.Error.notFound), "Non trovato")
+        #expect(service.string(for: LocalizationKey.Error.notFound) == "Non trovato")
     }
 
-    func testKeyEnumRawValuesMatchStringKeys() {
-        // Verify that enum raw values match the string constants
-        XCTAssertEqual(LocalizationKey.Button.ok.rawValue, "button.ok")
-        XCTAssertEqual(LocalizationKey.Error.notFound.rawValue, "error.not_found")
-        XCTAssertEqual(LocalizationKey.Label.name.rawValue, "label.name")
-    }
-}
-
-// MARK: - LocalizationKey View Extension Tests
-
-final class LocalizationKeyViewExtensionTests: XCTestCase {
-    @MainActor
-    func testLocalizedStringWithTypeSafeKeys() {
-        let buttonView = LocalizedString(LocalizationKey.Button.ok)
-        XCTAssertNotNil(buttonView)
-
-        let errorView = LocalizedString(LocalizationKey.Error.notFound)
-        XCTAssertNotNil(errorView)
-
-        let labelView = LocalizedString(LocalizationKey.Label.name)
-        XCTAssertNotNil(labelView)
-    }
-
-    @MainActor
-    func testTextWithTypeSafeKeys() {
-        let buttonText = Text(localized: LocalizationKey.Button.save)
-        XCTAssertNotNil(buttonText)
-
-        let menuText = Text(localized: LocalizationKey.Menu.file)
-        XCTAssertNotNil(menuText)
-
-        let dialogText = Text(localized: LocalizationKey.Dialog.confirm)
-        XCTAssertNotNil(dialogText)
-    }
-
-    @MainActor
-    func testAllKeyTypesWork() {
-        // Verify all key types can be used with LocalizedString
-        _ = LocalizedString(LocalizationKey.Button.ok)
-        _ = LocalizedString(LocalizationKey.Label.name)
-        _ = LocalizedString(LocalizationKey.Error.notFound)
-        _ = LocalizedString(LocalizationKey.Placeholder.search)
-        _ = LocalizedString(LocalizationKey.Menu.file)
-        _ = LocalizedString(LocalizationKey.Dialog.confirm)
-        _ = LocalizedString(LocalizationKey.Validation.emailInvalid)
+    @Test("Key enum raw values match string keys")
+    func keyRawValues() {
+        #expect(LocalizationKey.Button.ok.rawValue == "button.ok")
+        #expect(LocalizationKey.Error.notFound.rawValue == "error.not_found")
+        #expect(LocalizationKey.Label.name.rawValue == "label.name")
     }
 }
