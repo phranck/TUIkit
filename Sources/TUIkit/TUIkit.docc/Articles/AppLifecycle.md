@@ -35,7 +35,9 @@ The `@main` attribute tells Swift to call the static `main()` method provided by
 
 `AppRunner.init()` creates and wires the core subsystems: Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext (containing LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, and RenderCache), and two ThemeManagers (palette and appearance). `run()` then creates the remaining runtime components: InputHandler, RenderLoop, PulseTimer (100 ms), and CursorTimer (50 ms).
 
-@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance via Self(), then AppRunner.init() creates Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext with 5 children (LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, RenderCache), and two ThemeManagers. run() then creates InputHandler, RenderLoop, PulseTimer (100ms), and CursorTimer (50ms).")
+@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance via Self(), then AppRunner.init() creates Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext with 5 children (LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, RenderCache), and two ThemeManagers.")
+
+@Image(source: "lifecycle-run-creates.png", alt: "Diagram showing run() creating InputHandler, RenderLoop, PulseTimer (100ms), and CursorTimer (50ms).")
 
 The `AppRunner` is the sole owner of all subsystems. Dependencies flow through constructor injection and ``RenderContext``.
 
