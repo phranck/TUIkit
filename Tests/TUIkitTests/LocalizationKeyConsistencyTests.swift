@@ -16,9 +16,9 @@ import Testing
 /// 1. Every key in the enum exists in the English translation file
 /// 2. No extra keys are in the translation files that don't exist in the enum
 /// 3. All enum keys are actually used (no dead code)
-@Suite("LocalizationKeyConsistency", .disabled("Disabled: Debugging test suite issues"))
+@Suite("LocalizationKeyConsistency")
 struct LocalizationKeyConsistencyTests {
-    private let englishTranslations: [String: String]
+    private var englishTranslations: [String: String] = [:]
 
     init() {
         self.englishTranslations = Self.loadTranslations()
