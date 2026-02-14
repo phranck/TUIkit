@@ -19,10 +19,6 @@ final class LocalizationServiceTests {
         sut = LocalizationService()
     }
 
-    deinit {
-        try? fileManager.removeItem(atPath: Self.configFilePath())
-    }
-
     // MARK: - Bundle Loading Tests
 
     @Test("Loads English translations from bundle")
@@ -30,7 +26,6 @@ final class LocalizationServiceTests {
         let sut = LocalizationService()
         let englishStrings = sut.string(for: "button.ok")
         #expect(englishStrings == "OK")
-        try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     @Test("Loads German translations from bundle")
@@ -39,7 +34,6 @@ final class LocalizationServiceTests {
         sut.setLanguage(.german)
         let germanStrings = sut.string(for: "button.ok")
         #expect(germanStrings == "OK")
-        try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     @Test("Loads French translations from bundle")
@@ -48,7 +42,6 @@ final class LocalizationServiceTests {
         sut.setLanguage(.french)
         let frenchStrings = sut.string(for: "button.cancel")
         #expect(frenchStrings == "Annuler")
-        try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     @Test("Loads Italian translations from bundle")
@@ -57,7 +50,6 @@ final class LocalizationServiceTests {
         sut.setLanguage(.italian)
         let italianStrings = sut.string(for: "button.yes")
         #expect(italianStrings == "Sì")
-        try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     @Test("Loads Spanish translations from bundle")
@@ -66,7 +58,6 @@ final class LocalizationServiceTests {
         sut.setLanguage(.spanish)
         let spanishStrings = sut.string(for: "button.no")
         #expect(spanishStrings == "No")
-        try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
     // MARK: - String Resolution Tests
