@@ -115,7 +115,8 @@ extension NotificationService {
         lock.lock()
         entries.append(entry)
         lock.unlock()
-        RenderNotifier.current.setNeedsRender()
+        // Property wrapper setters lack render context, so fall back to global
+        RenderNotifier.current?.setNeedsRender()
     }
 
     /// Returns a snapshot of all currently active notifications.

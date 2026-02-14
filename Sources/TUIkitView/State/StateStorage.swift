@@ -158,7 +158,8 @@ public final class StateBox<Value>: @unchecked Sendable {
             } else {
                 RenderNotifier.renderCache?.clearAll()
             }
-            RenderNotifier.current.setNeedsRender()
+            // Property wrapper setters lack render context, so fall back to global
+            RenderNotifier.current?.setNeedsRender()
         }
     }
 

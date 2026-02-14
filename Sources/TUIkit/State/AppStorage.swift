@@ -281,7 +281,8 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
         }
         nonmutating set {
             storage.setValue(newValue, forKey: key)
-            RenderNotifier.current.setNeedsRender()
+            // Property wrapper setters lack render context, so fall back to global
+            RenderNotifier.current?.setNeedsRender()
         }
     }
 

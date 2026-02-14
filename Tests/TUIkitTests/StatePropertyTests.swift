@@ -30,7 +30,7 @@ struct StatePropertyWrapperTests {
 
     @Test("State mutation triggers render via RenderNotifier")
     func stateTriggerRender() {
-        // StateBox.didSet calls RenderNotifier.current.setNeedsRender().
+        // StateBox.didSet calls RenderNotifier.current?.setNeedsRender() (optional chaining).
         // We swap in a fresh AppState, mutate, and check immediately.
         // This is a single-expression sequence with no yield points,
         // so no parallel test can interfere between set and check.

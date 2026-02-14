@@ -54,7 +54,8 @@ extension NotificationHostModifier: Renderable {
         // Start the animation timer if not already running.
         startAnimationTask(
             entries: activeEntries,
-            lifecycle: context.environment.lifecycle!
+            lifecycle: context.environment.lifecycle!,
+            renderNotifier: context.environment.renderNotifier
         )
 
         let now = Date().timeIntervalSinceReferenceDate
@@ -149,7 +150,8 @@ private extension NotificationHostModifier {
     /// The task stops automatically when no notifications are active.
     func startAnimationTask(
         entries: [NotificationEntry],
-        lifecycle: LifecycleManager
+        lifecycle: LifecycleManager,
+        renderNotifier: AppState?
     ) {
         let token = "notification-host-animation"
 
@@ -171,12 +173,12 @@ private extension NotificationHostModifier {
                 }
                 try? await Task.sleep(nanoseconds: triggerNanos)
                 guard !Task.isCancelled else { break }
-                RenderNotifier.current.setNeedsRender()
+                renderNotifier?.setNeedsRender()
             }
 
             // Final render to clear expired notifications.
             lifecycle.resetAppearance(token: token)
-            RenderNotifier.current.setNeedsRender()
+            renderNotifier?.setNeedsRender()
         }
     }
 }

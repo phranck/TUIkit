@@ -3,9 +3,9 @@
 ## Status Snapshot
 
 - **Branch**: main
-- **Active Task**: None
-- **Status**: pending
-- **Last Updated**: 2026-02-14T19:15:00Z
+- **Active Task**: P4.16 (Replace RenderNotifier.current with dependency injection) — COMPLETE
+- **Status**: completed
+- **Last Updated**: 2026-02-14T21:00:00Z
 
 ## Current Checkpoint
 
@@ -19,11 +19,11 @@
 
 ## Next Steps (Immediate Actions)
 
-1. **P4.16**: Replace RenderNotifier.current global with dependency injection
-2. **P4.18**: Evaluate MainActor.assumeIsolated in Equatable safety
-3. **Test Coverage** (ASCIIConverter, RGBAImage, Notification, Extensions)
-4. **State Persistence** (@RestoredState property wrapper, crash recovery)
-5. **DisclosureGroup** (expandable/collapsible sections)
+1. **P4.16**: Replace RenderNotifier.current global with dependency injection (IN PROGRESS)
+2. **Test Coverage** (ASCIIConverter, RGBAImage, Notification, Extensions)
+3. **State Persistence** (@RestoredState property wrapper, crash recovery)
+4. **DisclosureGroup** (expandable/collapsible sections)
+5. **P4.15**: Performance optimization & caching strategies
 
 ## Open Plans (Next Priority Queue)
 
@@ -42,9 +42,9 @@
 ## Open (Backlog)
 
 ### Project Analysis Remaining (P4 + Additional)
-- [ ] **P4.16**: Replace RenderNotifier.current global with dependency injection
+- [x] **P4.16**: Replace RenderNotifier.current global with dependency injection (COMPLETE)
 - [x] **P4.17**: Generic ItemListHandler to preserve type safety
-- [ ] **P4.18**: Evaluate MainActor.assumeIsolated in Equatable safety
+- [x] **P4.18**: Evaluate MainActor.assumeIsolated in Equatable safety
 - [x] **P4.19**: Add image size limits and URL timeout configuration
 - [x] **P4.20**: Split framework into multiple Swift package modules (done: TUIkitCore, TUIkitStyling, TUIkitView, TUIkitImage, CSTBImage)
 - [x] **Additional**: Remove unnecessary `import Foundation` (9 files), split 500+ line files (Focus.swift, StatusBarItem.swift, ASCIIConverter.swift)
@@ -62,6 +62,8 @@
 
 ## Completed
 
+- **2026-02-14**: P4.16 Dependency injection migration: RenderNotifier.current now optional, EnvironmentValues.renderNotifier property added, render-time consumers (Spinner, NotificationHostModifier) read from environment, property wrapper fallback pattern implemented
+- **2026-02-14**: P4.18 Concurrency documentation: added RenderNotifier safety model documentation, Terminal memory operation comments
 - **2026-02-14**: P4.17 Generic ItemListHandler: replaced AnyHashable type erasure with generic SelectionValue parameter, removed configureSelectionBindings, type-safe bindings in _ListCore and _TableCore
 - **2026-02-14**: Git history cleanup: removed 33 Co-Authored-By trailers from entire history via git filter-repo + force-push
 - **2026-02-14**: Cleanup: removed unnecessary `import Foundation` (9 files), split 3 files over 500 lines into 9 files
@@ -80,4 +82,4 @@
 - Improvement plan: .claude/plans/open/2026-02-14-project-analysis-improvements.md
 - P3.11 and P3.14 resolved as "already adequate" after detailed review (no code changes needed)
 
-**Last Updated**: 2026-02-14T19:15:00Z
+**Last Updated**: 2026-02-14T21:00:00Z

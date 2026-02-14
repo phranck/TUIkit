@@ -283,11 +283,12 @@ private struct _SpinnerCore: View, Renderable {
             _ = lifecycle.recordAppear(token: token) {}
 
             let triggerNanos: UInt64 = 28_000_000  // 28ms — matches run loop poll rate (~35 FPS)
+            let renderNotifier = context.environment.renderNotifier
             lifecycle.startTask(token: token, priority: .medium) {
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: triggerNanos)
                     guard !Task.isCancelled else { break }
-                    RenderNotifier.current.setNeedsRender()
+                    renderNotifier?.setNeedsRender()
                 }
             }
         } else {
