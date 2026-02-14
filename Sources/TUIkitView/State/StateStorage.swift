@@ -77,9 +77,11 @@ extension StateStorage {
     /// - Returns: The persistent `Storage` object for this property.
     public func storage<Value>(for key: StateKey, default defaultValue: Value) -> StateBox<Value> {
         if let existing = values[key] as? StateBox<Value> {
+            existing.identity = key.identity
             return existing
         }
         let fresh = StateBox(defaultValue)
+        fresh.identity = key.identity
         values[key] = fresh
         return fresh
     }
@@ -140,11 +142,23 @@ extension StateStorage {
 /// of the `@State` struct (which uses `nonmutating set`).
 ///
 /// On value change, signals a re-render through `RenderNotifier`.
+/// Cache invalidation is identity-aware: only the affected subtree is
+/// cleared instead of the entire cache.
 public final class StateBox<Value>: @unchecked Sendable {
+    /// The identity of the view that owns this state property.
+    ///
+    /// Set during hydration from ``StateStorage``. Used for targeted
+    /// cache invalidation via ``RenderCache/clearAffected(by:)``.
+    var identity: ViewIdentity?
+
     /// The current value.
     public var value: Value {
         didSet {
-            RenderNotifier.renderCache?.clearAll()
+            if let identity {
+                RenderNotifier.renderCache?.clearAffected(by: identity)
+            } else {
+                RenderNotifier.renderCache?.clearAll()
+            }
             RenderNotifier.current.setNeedsRender()
         }
     }

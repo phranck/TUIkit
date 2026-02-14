@@ -119,12 +119,6 @@ internal final class RenderLoop<A: App> {
     /// callers to manually invalidate the cache.
     private var lastEnvironmentSnapshot: EnvironmentSnapshot?
 
-    /// The pulse phase from the previous frame.
-    ///
-    /// When the pulse phase changes, the render cache is cleared so that
-    /// focus indicators (pulsing `●`) update correctly.
-    private var lastPulsePhase: Double = 0
-
     /// Whether the first frame has been rendered.
     ///
     /// On the first frame, we perform a "measurement pass" to determine
@@ -192,7 +186,6 @@ extension RenderLoop {
         environment.pulsePhase = pulsePhase
         environment.cursorTimer = cursorTimer
         invalidateCacheIfEnvironmentChanged(environment: environment)
-        invalidateCacheIfPulsePhaseChanged(pulsePhase: pulsePhase)
 
         // Set up state hydration context BEFORE evaluating app.body so that
         // views constructed inside WindowGroup { ... } closures get persistent
@@ -380,19 +373,6 @@ private extension RenderLoop {
             tuiContext.renderCache.clearAll()
         }
         lastEnvironmentSnapshot = currentSnapshot
-    }
-
-    /// Clears the render cache when the pulse phase changes.
-    ///
-    /// This ensures focus indicators (pulsing `●`) animate correctly.
-    /// The pulse timer fires ~7 times per second, so the cache is cleared
-    /// frequently during pulse animation — but this is necessary for the
-    /// breathing effect to be visible.
-    func invalidateCacheIfPulsePhaseChanged(pulsePhase: Double) {
-        if pulsePhase != lastPulsePhase {
-            tuiContext.renderCache.clearAll()
-            lastPulsePhase = pulsePhase
-        }
     }
 
     /// Renders a scene by delegating to `SceneRenderable`.

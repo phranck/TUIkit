@@ -51,11 +51,17 @@ import TUIkitCore
 ///   so the view struct compares as equal even when state changed)
 /// - Views that change every frame (the cache overhead adds no value)
 /// - Views that depend on environment values that change frequently
+/// - **Views containing focused interactive elements** (Button, Toggle, Slider,
+///   etc.) whose focus indicator animates via pulse phase. The cached buffer
+///   would show a frozen pulse animation.
 ///
 /// ## Cache Invalidation
 ///
-/// The render cache is **fully cleared** on every `@State` change. Between
-/// state changes (animation ticks, pulse frames), the cache is fully active.
+/// The render cache is selectively cleared when `@State` values change:
+/// only cache entries in the ancestor/descendant path of the changed state
+/// are invalidated. Sibling subtrees retain their cached buffers.
+/// Pulse animation changes do **not** invalidate the cache, which is why
+/// subtrees containing focused interactive views should not be wrapped.
 ///
 /// - SeeAlso: ``View/equatable()``
 public struct EquatableView<Content: View & Equatable>: View {
