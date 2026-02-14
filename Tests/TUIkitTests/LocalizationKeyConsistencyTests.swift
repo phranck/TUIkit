@@ -29,11 +29,26 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
     // MARK: - Helper Method
 
     private func loadEnglishTranslations() {
-        guard let url = Bundle.module.url(
+        // Try to load from the main framework bundle first (for production)
+        var url = Bundle.module.url(
             forResource: "en",
             withExtension: "json",
             subdirectory: "Localization/translations"
-        ) else {
+        )
+
+        // If not found, try to load from the project directory (for tests)
+        if url == nil {
+            // Look in the source directory
+            let projectPath = FileManager.default.currentDirectoryPath
+            let sourcePath = (projectPath as NSString).appendingPathComponent(
+                "Sources/TUIkit/Localization/translations/en.json"
+            )
+            if FileManager.default.fileExists(atPath: sourcePath) {
+                url = URL(fileURLWithPath: sourcePath)
+            }
+        }
+
+        guard let url = url else {
             XCTFail("Could not find en.json translation file")
             return
         }
