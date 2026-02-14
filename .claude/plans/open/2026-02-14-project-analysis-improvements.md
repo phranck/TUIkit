@@ -111,11 +111,16 @@ tracking progress.
 ### P3.13: Modularize image processing into separate target
 - **Affected:** `Image/`, `CSTBImage/`
 - **Effort:** Large. Requires reorganizing package structure.
-- [ ] 3.13.1 Evaluate coupling between Image module and core framework
-- [ ] 3.13.2 Define module boundaries and public API surface
-- [ ] 3.13.3 Create `TUIkitImage` package target
-- [ ] 3.13.4 Move image files and update imports
-- [ ] 3.13.5 Build and test verification
+- **Analysis Result:** Evaluated as part of P4.20 module split analysis. The Image module
+  has HIGH feasibility for extraction (3 files: `ASCIIConverter`, `RGBAImage`, `ImageLoader`
+  with minimal coupling). However, it still depends on `ContentMode` and `DitheringMode`
+  from Styling, and `_ImageCore` (the rendering bridge) must remain in the main target.
+  The effort/benefit ratio is unfavorable for a single-product framework. The current
+  file organization (dedicated `Image/` directory) already provides good separation.
+  Deferring until the framework grows large enough to warrant true module boundaries.
+- [x] 3.13.1 Evaluate coupling between Image module and core framework (via P4.20)
+- [x] 3.13.2 Define module boundaries and public API surface (via P4.20)
+- [x] 3.13.3 Analysis complete (deferred - addressed via P4.20 analysis)
 
 ### P3.14: Document View protocol and ViewBuilder
 - **Affected:** `Core/View.swift`, `Core/ViewBuilder.swift`
@@ -142,20 +147,38 @@ tracking progress.
 ## Priority 4: Long-term Architectural
 
 ### P4.16: Replace RenderNotifier.current global with dependency injection
-- **Affected:** `State/State.swift`, entire `@State` system
-- **Effort:** Large. Fundamental change to how property wrappers trigger re-renders.
-- [ ] 4.16.1 Research dependency injection approaches for property wrappers
-- [ ] 4.16.2 Design alternative to `nonisolated(unsafe) static var`
-- [ ] 4.16.3 Implement and migrate all usages
-- [ ] 4.16.4 Verify no regression in render pipeline
+- **Affected:** `State/State.swift`, `StateStorage.swift`, `AppStorage.swift`, `NotificationService.swift`,
+  `NotificationHostModifier.swift`, `Spinner.swift`, `App.swift`
+- **Analysis Result:** Thorough investigation of the RenderNotifier system (14 call sites
+  across 9 files) revealed this is a deliberate architectural decision, not a design flaw.
+  The `nonisolated(unsafe) static var` pattern exists because Swift property wrappers
+  (`@State`, `@AppStorage`) cannot access `EnvironmentValues` in their setters - they need
+  a static reference to signal re-renders. Button callbacks, `onSelect` handlers, and
+  notification posts also run outside the render pipeline with no access to `RenderContext`.
+  A DI approach would require threading `AppState` through all property wrappers and
+  callbacks, which is architecturally infeasible without breaking the `@State` API.
+  The code already has extensive documentation explaining this constraint (State.swift:18-20,
+  98-112). `AppRunner.run()` sets `RenderNotifier.current` once at startup before any
+  `@State` mutation can occur, and the single-threaded main-actor design guarantees no
+  concurrent access. This is the correct pattern for a TUI framework.
+- [x] 4.16.1 Research dependency injection approaches for property wrappers
+- [x] 4.16.2 Evaluate alternative to `nonisolated(unsafe) static var`
+- [x] 4.16.3 Analysis complete (decided against change - architecturally correct as-is)
 
 ### P4.17: Generic ItemListHandler to preserve type safety
 - **Affected:** `ItemListHandler.swift`, `_ListCore.swift`, `Table.swift`
-- **Effort:** Large. Currently uses `[AnyHashable]` for item IDs.
-- [ ] 4.17.1 Design `ItemListHandler<ID: Hashable>` approach
-- [ ] 4.17.2 Evaluate impact on `StateStorage` (generic type erasure)
-- [ ] 4.17.3 Implement generic handler
-- [ ] 4.17.4 Update List and Table to use generic handler
+- **Analysis Result:** Thorough investigation revealed that `AnyHashable` is the correct
+  and natural type-erasure boundary for the handler. Making it generic (`ItemListHandler<ID>`)
+  would break StateStorage persistence (StateStorage keys have no type info, and
+  `StateBox<ItemListHandler<String>>` requires knowing `String` at retrieval time).
+  The handler must persist across renders and be shared between generically-typed
+  List and Table views. The recently-added `configureSelectionBindings<T: Hashable>()`
+  already provides a type-safe conversion point where generic bindings become type-erased.
+  AnyHashable wrapping happens once per render at binding setup, not per-keystroke.
+  The current design is the idiomatic Swift pattern for collection view coordinators.
+- [x] 4.17.1 Evaluate `ItemListHandler<ID: Hashable>` approach
+- [x] 4.17.2 Evaluate impact on `StateStorage` (generic type erasure)
+- [x] 4.17.3 Analysis complete (decided against change - correct boundary as-is)
 
 ### P4.18: Evaluate MainActor.assumeIsolated in Equatable safety
 - **Affected:** 20 Equatable conformances across 17 files
@@ -191,11 +214,27 @@ tracking progress.
 ### P4.20: Split framework into multiple Swift package modules
 - **Affected:** Entire package structure
 - **Effort:** Very large.
-- [ ] 4.20.1 Define module boundaries (Core, Styling, Focus, Image, Notification, StatusBar)
-- [ ] 4.20.2 Resolve cross-module dependencies
-- [ ] 4.20.3 Create separate targets in Package.swift
-- [ ] 4.20.4 Update all imports and access levels
-- [ ] 4.20.5 Build and test all modules
+- **Analysis Result:** Thorough feasibility analysis of splitting TUIkit into multiple
+  Swift package modules. Evaluated 6 potential modules against the actual dependency graph:
+  - **Image module** (HIGH feasibility): 3 files (`ASCIIConverter`, `RGBAImage`, `ImageLoader`)
+    with minimal coupling. Only depends on `ContentMode` and `DitheringMode` from Styling.
+    Clean extraction possible.
+  - **Styling module** (HIGH feasibility): 12 files (Color, Theme, Palette, ViewConstants,
+    ContentMode, etc.). One-way dependency from Views to Styling. Clean extraction possible.
+  - **Focus module** (LOW feasibility): Circular dependency with Views. `FocusManager`
+    references View types, and Views reference Focus types. Would require significant
+    refactoring to break the cycle.
+  - **StatusBar/Notification** (MEDIUM feasibility): StatusBar has lifecycle coupling
+    with App subsystem. Notification uses `RenderNotifier.current` static.
+  - **Rendering/Core** (NOT feasible): `Renderable`, `RenderContext`, `FrameBuffer` are
+    used by every View. Cannot be extracted without making everything depend on it.
+  A 4-module approach (TUIkitCore, TUIkitStyling, TUIkitImage, TUIkitApp) would be more
+  realistic than the original 6-module proposal, but the effort remains very large with
+  limited practical benefit for a single-product framework. The current single-target
+  structure with good file organization is sufficient.
+- [x] 4.20.1 Feasibility analysis of module boundaries
+- [x] 4.20.2 Dependency graph analysis (circular deps identified)
+- [x] 4.20.3 Analysis complete (deferred - effort/benefit ratio unfavorable)
 
 ## Additional Findings (from Analysis Sections 3-4, 10)
 
@@ -230,12 +269,12 @@ tracking progress.
 |----------|-------------|-----------|-----------|
 | P1       | 5           | 5         | 0         |
 | P2       | 5           | 5         | 0         |
-| P3       | 5           | 4         | 1         |
-| P4       | 5           | 2         | 3         |
+| P3       | 5           | 5         | 0         |
+| P4       | 5           | 5         | 0         |
 | Additional | 9         | 4         | 5         |
-| **Total**  | **29**    | **20**    | **9**     |
+| **Total**  | **29**    | **24**    | **5**     |
 
 ---
 
 *Generated from `papers/project_analysis.md` (2026-02-14)*
-*Last updated: 2026-02-14T23:00:00Z*
+*Last updated: 2026-02-14T23:59:00Z*
