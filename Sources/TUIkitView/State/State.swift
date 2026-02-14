@@ -16,14 +16,16 @@ import TUIkitCore
 /// by an `NSLock`.
 ///
 /// The `AppRunner` subscribes to state changes and re-renders when notified.
-/// `AppRunner` creates the instance and registers it with `RenderNotifier`
-/// on startup. Property wrappers like ``State`` and ``AppStorage`` access it
-/// through `RenderNotifier.current`.
+/// Property wrappers like ``State`` and ``AppStorage`` access the shared instance
+/// via ``AppState.shared``.
 ///
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
 public final class AppState: Sendable {
+    /// The global shared instance.
+    public static let shared = AppState()
+
     /// Internal state protected by a lock.
     private struct StateData: Sendable {
         var needsRender = false
@@ -92,65 +94,6 @@ extension AppState {
     }
 }
 
-// MARK: - Render Notifier
-
-/// Framework-internal registry that connects property wrappers to the active `AppState`.
-///
-/// Property wrappers (`@State`, `@AppStorage`) use `RenderNotifier.current` to signal
-/// re-renders when values change. `AppRunner` sets `current` once at startup before
-/// entering the run loop.
-///
-/// Services like `StatusBarState` and `ThemeManager` receive `AppState` directly
-/// via constructor injection. `RenderNotifier` exists specifically for property wrappers
-/// which have no access to `RenderContext` or `TUIContext` at mutation time.
-///
-/// ```
-/// AppRunner (owns AppState)
-///     │
-///     ├─► RenderNotifier.current = appState   (set once at startup)
-///     │
-///     ├─► @State<Value>.Storage.didSet
-///     │       └─► RenderNotifier.current.setNeedsRender()
-///     │
-///     ├─► StatusBarState (injected via init)
-///     │       └─► appState.setNeedsRender()
-///     │
-///     └─► ThemeManager (injected via init)
-///             └─► appState.setNeedsRender()
-/// ```
-///
-/// - Important: This type is framework-internal. User code should never access it directly.
-public enum RenderNotifier {
-    /// The active `AppState` for the running application.
-    ///
-    /// This is a static accessor because `@State`, `@AppStorage`, and
-    /// `NotificationService` need to trigger re-renders from contexts
-    /// that have no access to `EnvironmentValues` — property wrapper
-    /// setters, button callbacks, and `onSelect` handlers all run outside
-    /// the render pipeline. A static reference is the only way to reach
-    /// the render notifier from those call sites.
-    ///
-    /// - Precondition: Must be set before any `@State` mutation occurs.
-    ///   This is guaranteed because `AppRunner.run()` sets it before
-    ///   the first render pass.
-    /// Thread-safe access points for render cycle.
-    ///
-    /// These static properties are set by `AppRunner.run()` before the first
-    /// render pass and accessed only during the single-threaded render cycle.
-    /// Use of `nonisolated(unsafe)` documents this main-thread-only guarantee.
-    /// No concurrent access is possible: they are initialized once and then
-    /// read/written only during rendering.
-    ///
-    /// Optional fallback for property wrapper setters that lack render context.
-    /// Render-time consumers should read from EnvironmentValues.renderNotifier instead.
-    public nonisolated(unsafe) static var current: AppState?
-
-    /// The active render cache for subtree memoization.
-    ///
-    /// Set by `AppRunner` alongside `current`. Cleared on every
-    /// `@State` mutation to invalidate memoized subtrees.
-    public nonisolated(unsafe) static var renderCache: RenderCache?
-}
 
 // MARK: - Hydration Context
 
@@ -298,7 +241,7 @@ public struct Binding<Value> {
 /// State is keyed by `ViewIdentity` and property index, ensuring values
 /// survive view reconstruction across render passes.
 ///
-/// Mutations signal re-renders through `RenderNotifier`.
+/// Mutations signal re-renders through `AppState.shared`.
 @propertyWrapper
 public struct State<Value> {
     /// The backing storage box for this state value.

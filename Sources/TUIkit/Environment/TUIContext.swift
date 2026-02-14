@@ -224,12 +224,14 @@ final class TUIContext: @unchecked Sendable {
     let renderCache: RenderCache
 
     /// Creates a new TUI context with fresh instances of all services.
+    ///
+    /// Uses the shared `RenderCache` singleton for all instances.
     init() {
         self.lifecycle = LifecycleManager()
         self.keyEventDispatcher = KeyEventDispatcher()
         self.preferences = PreferenceStorage()
         self.stateStorage = StateStorage()
-        self.renderCache = RenderCache()
+        self.renderCache = RenderCache.shared
     }
 
     /// Creates a new TUI context with the given services.
@@ -241,12 +243,13 @@ final class TUIContext: @unchecked Sendable {
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
     ///   - stateStorage: The state storage to use.
+    ///   - renderCache: The render cache to use (defaults to the shared singleton).
     init(
         lifecycle: LifecycleManager,
         keyEventDispatcher: KeyEventDispatcher,
         preferences: PreferenceStorage,
         stateStorage: StateStorage = StateStorage(),
-        renderCache: RenderCache = RenderCache()
+        renderCache: RenderCache = RenderCache.shared
     ) {
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher

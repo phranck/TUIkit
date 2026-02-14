@@ -28,19 +28,16 @@ struct StatePropertyWrapperTests {
         #expect(state.wrappedValue == 10)
     }
 
-    @Test("State mutation triggers render via RenderNotifier")
+    @Test("State mutation triggers render via AppState.shared")
     func stateTriggerRender() {
-        // StateBox.didSet calls RenderNotifier.current?.setNeedsRender() (optional chaining).
-        // We swap in a fresh AppState, mutate, and check immediately.
-        // This is a single-expression sequence with no yield points,
-        // so no parallel test can interfere between set and check.
-        let appState = AppState()
-        let previous = RenderNotifier.current
-        RenderNotifier.current = appState
+        // StateBox.didSet calls AppState.shared.setNeedsRender().
+        // We mutate and check that the shared instance is marked as needing render.
+        let initialNeedsRender = AppState.shared.needsRender
         let state = State(wrappedValue: "initial")
         state.wrappedValue = "changed"
-        let triggered = appState.needsRender
-        RenderNotifier.current = previous
+        let triggered = AppState.shared.needsRender
+        // Reset for other tests
+        AppState.shared.didRender()
         #expect(triggered == true)
     }
 

@@ -351,7 +351,6 @@ extension RenderLoop {
         environment.keyEventDispatcher = tuiContext.keyEventDispatcher
         environment.renderCache = tuiContext.renderCache
         environment.preferenceStorage = tuiContext.preferences
-        environment.renderNotifier = RenderNotifier.current
 
         return environment
     }
