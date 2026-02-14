@@ -13,52 +13,40 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .library(
-            name: "TUIkit",
-            targets: ["TUIkit"]
-        ),
-        .library(
-            name: "TUIkitStyling",
-            targets: ["TUIkitStyling"]
-        ),
-        .library(
-            name: "TUIkitImage",
-            targets: ["TUIkitImage"]
-        ),
-        .executable(
-            name: "TUIkitExample",
-            targets: ["TUIkitExample"]
-        ),
+        // ── Low-level (no deps) ─────────────────────────────────────────────────────────────────────────
+        .library(name: "TUIkitCore", targets: ["TUIkitCore"]),
+        .library(name: "TUIkitStyling", targets: ["TUIkitStyling"]),
+
+        // ── Mid-level ───────────────────────────────────────────────────────────────────────────────────
+        .library(name: "TUIkitImage", targets: ["TUIkitImage"]),
+
+        // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
+        .library(name: "TUIkit", targets: ["TUIkit"]),
+
+        // ── App ─────────────────────────────────────────────────────────────────────────────────────────
+        .executable(name: "TUIkitExample", targets: ["TUIkitExample"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
     ],
     targets: [
-        .target(
-            name: "CSTBImage",
-            publicHeadersPath: "include"
-        ),
-        .target(
-            name: "TUIkitStyling"
-        ),
-        .target(
-            name: "TUIkitImage",
-            dependencies: ["CSTBImage", "TUIkitStyling"]
-        ),
-        .target(
-            name: "TUIkit",
-            dependencies: ["TUIkitStyling", "TUIkitImage"]
-        ),
+        // ── Low-level (no deps) ─────────────────────────────────────────────────────────────────────────
+        .target(name: "CSTBImage", publicHeadersPath: "include"),
+        .target(name: "TUIkitCore"),
+        .target(name: "TUIkitStyling"),
+
+        // ── Mid-level ───────────────────────────────────────────────────────────────────────────────────
+        .target(name: "TUIkitImage", dependencies: ["CSTBImage", "TUIkitStyling"]),
+
+        // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
+        .target(name: "TUIkit", dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage"]),
+
+        // ── App & Tests ─────────────────────────────────────────────────────────────────────────────────
         .executableTarget(
             name: "TUIkitExample",
             dependencies: ["TUIkit"],
-            resources: [
-                .copy("Resources"),
-            ]
+            resources: [.copy("Resources")]
         ),
-        .testTarget(
-            name: "TUIkitTests",
-            dependencies: ["TUIkit"]
-        ),
+        .testTarget(name: "TUIkitTests", dependencies: ["TUIkit"]),
     ]
 )

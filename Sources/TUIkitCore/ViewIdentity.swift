@@ -33,32 +33,32 @@
 /// The identity is **stable across render passes** as long as the view tree
 /// structure does not change. If a `ConditionalView` switches branches, the
 /// old branch's state is invalidated.
-struct ViewIdentity: Hashable, CustomStringConvertible {
+public struct ViewIdentity: Hashable, CustomStringConvertible {
     /// The structural path from root to this view.
     ///
     /// Format: `"TypeA/TypeB.childIndex/TypeC"`
-    let path: String
+    public let path: String
 
     /// Creates a root identity for the given view type.
     ///
     /// - Parameter type: The type of the root view.
-    init<V>(rootType type: V.Type) {
+    public init<V>(rootType type: V.Type) {
         self.path = String(describing: type)
     }
 
     /// Creates an identity from a raw path string.
     ///
     /// - Parameter path: The full identity path.
-    init(path: String) {
+    public init(path: String) {
         self.path = path
     }
 
-    var description: String { path }
+    public var description: String { path }
 }
 
-// MARK: - Internal API
+// MARK: - Public API
 
-extension ViewIdentity {
+public extension ViewIdentity {
     /// Returns a child identity by appending a type name and child index.
     ///
     /// Used by container views (`TupleView`, `ViewArray`) to assign
