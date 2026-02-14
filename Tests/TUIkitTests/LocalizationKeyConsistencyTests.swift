@@ -17,16 +17,12 @@ import Testing
 /// 2. No extra keys are in the translation files that don't exist in the enum
 /// 3. All enum keys are actually used (no dead code)
 @Suite("LocalizationKeyConsistency")
-final class LocalizationKeyConsistencyTests {
-    var englishTranslations: [String: String] = [:]
-
-    init() {
-        loadEnglishTranslations()
-    }
+struct LocalizationKeyConsistencyTests {
+    private static let englishTranslations = loadTranslations()
 
     // MARK: - Helper Method
 
-    private func loadEnglishTranslations() {
+    private static func loadTranslations() -> [String: String] {
         // Try to load from the main framework bundle first (for production)
         var url = Bundle.module.url(
             forResource: "en",
@@ -46,8 +42,7 @@ final class LocalizationKeyConsistencyTests {
         }
 
         guard let url = url else {
-            Issue.record("Could not find en.json translation file")
-            return
+            return [:]
         }
 
         do {
@@ -56,9 +51,9 @@ final class LocalizationKeyConsistencyTests {
                 with: data,
                 options: .fragmentsAllowed
             ) as? [String: String]
-            englishTranslations = dict ?? [:]
+            return dict ?? [:]
         } catch {
-            Issue.record("Could not load en.json: \(error)")
+            return [:]
         }
     }
 
@@ -91,7 +86,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Button key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Button key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -120,7 +115,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Label key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Label key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -143,7 +138,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Error key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Error key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -161,7 +156,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Placeholder key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Placeholder key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -181,7 +176,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Menu key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Menu key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -200,7 +195,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Dialog key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Dialog key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -216,7 +211,7 @@ final class LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(englishTranslations[key.rawValue] != nil, "Validation key '\(key.rawValue)' not found in translations")
+            #expect(Self.englishTranslations[key.rawValue] != nil, "Validation key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -316,7 +311,7 @@ final class LocalizationKeyConsistencyTests {
         enumKeys.insert(LocalizationKey.Validation.fieldRequired.rawValue)
 
         // Check for extraneous keys
-        let translationKeys = Set(englishTranslations.keys)
+        let translationKeys = Set(Self.englishTranslations.keys)
         let extraneousKeys = translationKeys.subtracting(enumKeys)
 
         #expect(extraneousKeys.isEmpty, "Found keys in translations that don't exist in LocalizationKey enum: \(extraneousKeys.sorted())")
@@ -325,12 +320,12 @@ final class LocalizationKeyConsistencyTests {
     @Test("All enum keys are covered in translations")
     func allEnumKeysCovered() {
         let expectedKeyCount = 21 + 17 + 11 + 6 + 8 + 7 + 4
-        #expect(englishTranslations.count == expectedKeyCount, "Expected \(expectedKeyCount) keys in translations, but got \(englishTranslations.count)")
+        #expect(Self.englishTranslations.count == expectedKeyCount, "Expected \(expectedKeyCount) keys in translations, but got \(Self.englishTranslations.count)")
     }
 
     @Test("Translation file is valid JSON")
     func translationFileIsValid() {
-        #expect(!englishTranslations.isEmpty, "English translations could not be loaded")
-        #expect(!englishTranslations.isEmpty, "English translations are empty")
+        #expect(!Self.englishTranslations.isEmpty, "English translations could not be loaded")
+        #expect(!Self.englishTranslations.isEmpty, "English translations are empty")
     }
 }
