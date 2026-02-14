@@ -4,9 +4,9 @@ How keyboard input flows through TUIkit: from raw terminal bytes to your view ha
 
 ## Overview
 
-TUIkit uses a layered event dispatch system. When a key is pressed, it passes through up to three layers. The first layer that consumes the event wins: remaining layers are skipped.
+TUIkit uses a layered event dispatch system. When a key is pressed, it passes through up to five layers. The first layer that consumes the event wins: remaining layers are skipped. Layer 0 (text input) and Layer 3 (focus system) are mutually exclusive: when a text input element is focused, Layer 0 runs and Layer 3 is skipped.
 
-@Image(source: "keyboard-event-dispatch.png", alt: "Flowchart showing keyboard event dispatch: Terminal raw bytes are parsed by KeyEvent.parse(), then dispatched through three layers. Layer 1: Status Bar Items (shortcuts with actions). If not consumed, Layer 2: View Handlers (.onKeyPress modifiers, deepest view first). If not consumed, Layer 3: Default Bindings (quit, theme, appearance).")
+@Image(source: "keyboard-event-dispatch.png", alt: "Flowchart showing keyboard event dispatch through five layers: a hasTextInputFocus check gates Layer 0 (Text Input via focusManager.dispatchKeyEvent for TextField/SecureField). Layer 1: Status Bar Items (shortcut-triggered actions). Layer 2: View Handlers (.onKeyPress modifiers, deepest view first). A second hasTextInputFocus check skips Layer 3 if text input was focused. Layer 3: Focus System (focused element delegation, Tab/Shift+Tab, arrow key fallback). Layer 4: Default Bindings (quit, theme, appearance). Unmatched events are dropped.")
 
 Additionally, `Ctrl+C` (SIGINT) is handled at the OS signal level **before** any of these layers: it always terminates the application.
 
@@ -135,22 +135,24 @@ VStack {
 
 ## Focus Navigation
 
-The `FocusManager` handles two navigation keys:
+The `FocusManager` dispatches key events in three steps:
+
+1. **Focused element delegation**: the focused element's `handleKeyEvent(_:)` is called first. If it consumes the event, dispatch stops.
+2. **Tab / Shift+Tab**: cycles focus between elements (wraps around).
+3. **Arrow key fallback**: Up/Left move to the previous element in the section, Down/Right move to the next. This only triggers if the focused element did not consume the arrow key in step 1.
 
 | Key | Action |
 |-----|--------|
 | Tab | Move focus to the next focusable element (wraps around) |
 | Shift+Tab | Move focus to the previous focusable element (wraps around) |
-
-When an element is focused, all other key events are delegated to it first via `handleKeyEvent(_:)`. Only if the focused element doesn't consume the event does it propagate further.
-
-Arrow keys are **not** handled by `FocusManager` itself: individual views (like ``Menu`` and ``Button``) handle arrows in their own key event handlers.
+| Up / Left | Move to previous element in section (fallback) |
+| Down / Right | Move to next element in section (fallback) |
 
 For more details, see <doc:FocusSystem>.
 
 ## Default Bindings
 
-Layer 3 provides three built-in key bindings that work without any configuration:
+Layer 4 provides three built-in key bindings that work without any configuration:
 
 | Key | Action | Condition |
 |-----|--------|-----------|
