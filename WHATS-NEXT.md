@@ -3,14 +3,14 @@
 ## Status Snapshot
 
 - **Branch**: main
-- **Active Task**: P4.16 (Replace RenderNotifier.current with dependency injection) — COMPLETE
+- **Active Task**: i18n Phase 3 (Type-safe keys, tests, documentation) — COMPLETE
 - **Status**: completed
-- **Last Updated**: 2026-02-14T21:00:00Z
+- **Last Updated**: 2026-02-14T22:40:00Z
 
 ## Current Checkpoint
 
 - **File**: N/A
-- **What**: P4.17 Generic ItemListHandler complete. Git history cleaned (Co-Authored-By trailers removed).
+- **What**: i18n Phase 3 complete. LocalizationKey enum, 5 languages, comprehensive tests, full documentation.
 - **Phase**: N/A
 
 ## Blockers
@@ -62,6 +62,9 @@
 
 ## Completed
 
+- **2026-02-14**: i18n Phase 3 Complete: Type-safe LocalizationKey enum (74 keys across 7 categories), all 5 languages expanded with new strings, LocalizationServiceTests + LocalizationKeyConsistencyTests (10/10 passing), comprehensive user and developer documentation (i18n-guide.md, i18n-developer.md). README updated with i18n features and examples. 1100+ tests passing.
+- **2026-02-14**: i18n Phase 2 Complete: LocalizedString View component, Text(localized:) convenience initializer, AppState.setLanguage() extension, LocalizationExtensions for convenient access to localized strings.
+- **2026-02-14**: i18n Phase 1 Complete: LocalizationService with 5 languages (EN, DE, FR, IT, ES), XDG-compatible persistent storage, JSON-based translations with dot-notation keys, fallback chain (Current → English → Key).
 - **2026-02-14**: P4.16 Complete elimination of RenderNotifier: AppState.shared and RenderCache.shared singletons replace global registry. Pure singleton architecture. All property wrappers, render consumers, and services use direct singleton access. 1069 tests pass.
 - **2026-02-14**: P4.18 Concurrency documentation: added RenderNotifier safety model documentation, Terminal memory operation comments
 - **2026-02-14**: P4.17 Generic ItemListHandler: replaced AnyHashable type erasure with generic SelectionValue parameter, removed configureSelectionBindings, type-safe bindings in _ListCore and _TableCore
@@ -77,9 +80,10 @@
 
 ## Notes
 
-- Tests: 1069 / 148 suites, all green
+- Tests: 1100+ / 150+ suites, all green
+- i18n Documentation: Documentation/i18n-guide.md (user guide), Documentation/i18n-developer.md (developer guide)
 - Project analysis report: papers/project_analysis.md
 - Improvement plan: .claude/plans/open/2026-02-14-project-analysis-improvements.md
 - P3.11 and P3.14 resolved as "already adequate" after detailed review (no code changes needed)
 
-**Last Updated**: 2026-02-14T21:00:00Z
+**Last Updated**: 2026-02-14T22:40:00Z
