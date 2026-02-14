@@ -133,6 +133,14 @@ public enum RenderNotifier {
     /// - Precondition: Must be set before any `@State` mutation occurs.
     ///   This is guaranteed because `AppRunner.run()` sets it before
     ///   the first render pass.
+    /// Thread-safe access points for render cycle.
+    ///
+    /// These static properties are set by `AppRunner.run()` before the first
+    /// render pass and accessed only during the single-threaded render cycle.
+    /// Use of `nonisolated(unsafe)` documents this main-thread-only guarantee.
+    /// No concurrent access is possible: they are initialized once and then
+    /// read/written only during rendering.
+    ///
     public nonisolated(unsafe) static var current = AppState()
 
     /// The active render cache for subtree memoization.
