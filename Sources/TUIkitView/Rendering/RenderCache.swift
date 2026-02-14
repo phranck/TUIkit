@@ -145,6 +145,9 @@ public final class RenderCache: @unchecked Sendable {
     /// Stats snapshot taken at the start of each render pass (for per-frame deltas).
     private var statsAtFrameStart = Stats()
 
+    /// The global shared instance.
+    public static let shared = RenderCache()
+
     /// Whether debug logging is enabled via the `TUIKIT_DEBUG_RENDER` environment variable.
     public static let debugEnabled: Bool = {
         ProcessInfo.processInfo.environment["TUIKIT_DEBUG_RENDER"] == "1"

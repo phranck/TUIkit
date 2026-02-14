@@ -140,7 +140,7 @@ extension StateStorage {
 /// It is a reference type so that mutations are visible across all copies
 /// of the `@State` struct (which uses `nonmutating set`).
 ///
-/// On value change, signals a re-render through `RenderNotifier`.
+/// On value change, signals a re-render through `AppState.shared`.
 /// Cache invalidation is identity-aware: only the affected subtree is
 /// cleared instead of the entire cache.
 public final class StateBox<Value>: @unchecked Sendable {
@@ -154,12 +154,11 @@ public final class StateBox<Value>: @unchecked Sendable {
     public var value: Value {
         didSet {
             if let identity {
-                RenderNotifier.renderCache?.clearAffected(by: identity)
+                RenderCache.shared.clearAffected(by: identity)
             } else {
-                RenderNotifier.renderCache?.clearAll()
+                RenderCache.shared.clearAll()
             }
-            // Property wrapper setters lack render context, so fall back to global
-            RenderNotifier.current?.setNeedsRender()
+            AppState.shared.setNeedsRender()
         }
     }
 

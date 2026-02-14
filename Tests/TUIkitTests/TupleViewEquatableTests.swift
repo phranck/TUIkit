@@ -12,13 +12,21 @@ import Testing
 @Suite("TupleView Equatable Tests", .serialized)
 struct TupleViewEquatableTests {
 
-    /// Creates a test context with a fresh environment including render cache.
+    /// Creates a test context with a fresh environment including an isolated render cache.
     private func testContext(
         width: Int = 80,
         height: Int = 24,
         identity: ViewIdentity = ViewIdentity(path: "Root")
     ) -> RenderContext {
-        let tuiContext = TUIContext()
+        // Use an isolated render cache for testing to avoid cross-test pollution
+        let isolatedCache = RenderCache()
+        let tuiContext = TUIContext(
+            lifecycle: LifecycleManager(),
+            keyEventDispatcher: KeyEventDispatcher(),
+            preferences: PreferenceStorage(),
+            stateStorage: StateStorage(),
+            renderCache: isolatedCache
+        )
         var env = EnvironmentValues()
         env.stateStorage = tuiContext.stateStorage
         env.lifecycle = tuiContext.lifecycle
@@ -150,7 +158,15 @@ struct TupleViewEquatableTests {
 
     @Test("Nested equatable containers get independent cache hits")
     func nestedCacheHits() {
-        let tuiContext = TUIContext()
+        // Use an isolated render cache for testing to avoid cross-test pollution
+        let isolatedCache = RenderCache()
+        let tuiContext = TUIContext(
+            lifecycle: LifecycleManager(),
+            keyEventDispatcher: KeyEventDispatcher(),
+            preferences: PreferenceStorage(),
+            stateStorage: StateStorage(),
+            renderCache: isolatedCache
+        )
         let cache = tuiContext.renderCache
 
         var env = EnvironmentValues()

@@ -135,10 +135,6 @@ extension AppRunner {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Register AppState and RenderCache with framework-internal notifier for property wrappers
-        RenderNotifier.current = appState
-        RenderNotifier.renderCache = tuiContext.renderCache
-
         // Register for state changes
         appState.observe { [signals] in
             signals.requestRerender()

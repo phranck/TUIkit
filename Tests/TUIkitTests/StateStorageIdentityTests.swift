@@ -15,9 +15,9 @@ struct StateStorageIdentityTests {
 
     /// Creates a fresh StateStorage for test isolation.
     ///
-    /// Does NOT touch `RenderNotifier.current`. State mutations during
-    /// tests call `setNeedsRender()` on the default global AppState —
-    /// that's harmless and avoids race conditions with parallel suites.
+    /// State mutations during tests call `setNeedsRender()` on the shared
+    /// `AppState.shared` instance — that's harmless and avoids race
+    /// conditions with parallel suites.
     private func testStorage() -> StateStorage {
         StateStorage()
     }

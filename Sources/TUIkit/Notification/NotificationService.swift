@@ -82,8 +82,8 @@ public final class NotificationService: @unchecked Sendable {
     /// render context and therefore cannot read `EnvironmentValues`. A static
     /// reference is the only way to reach the service from those call sites.
     ///
-    /// The same pattern is used by `RenderNotifier.current` for the same
-    /// reason. For tests, create a fresh instance instead of using `current`.
+    /// The same pattern is used by `AppState.shared` for the same reason.
+    /// For tests, create a fresh instance instead of using `current`.
     ///
     /// ```swift
     /// NotificationService.current.post("Done!")
@@ -115,8 +115,7 @@ extension NotificationService {
         lock.lock()
         entries.append(entry)
         lock.unlock()
-        // Property wrapper setters lack render context, so fall back to global
-        RenderNotifier.current?.setNeedsRender()
+        AppState.shared.setNeedsRender()
     }
 
     /// Returns a snapshot of all currently active notifications.
