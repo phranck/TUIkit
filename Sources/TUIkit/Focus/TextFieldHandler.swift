@@ -201,6 +201,10 @@ extension TextFieldHandler {
 extension TextFieldHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         switch event.key {
+        case .space:
+            insertCharacter(" ")
+            return true
+
         case .character(let char):
             // Handle Ctrl+key shortcuts
             if event.ctrl {
@@ -227,7 +231,7 @@ extension TextFieldHandler {
 
             // Ignore control characters except printable ones
             if char.isLetter || char.isNumber || char.isPunctuation ||
-               char.isSymbol || char.isWhitespace || char == " " {
+               char.isSymbol || char.isWhitespace {
                 insertCharacter(char)
                 return true
             }

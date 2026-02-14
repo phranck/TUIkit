@@ -384,7 +384,7 @@ struct RadioButtonGroupHandlerTests {
         )
         handler.focusedIndex = 1
 
-        let event = KeyEvent(key: .character(" "))
+        let event = KeyEvent(key: .space)
         let handled = handler.handleKeyEvent(event)
 
         #expect(handled == true)

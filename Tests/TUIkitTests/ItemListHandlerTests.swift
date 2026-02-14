@@ -241,7 +241,7 @@ struct ItemListHandlerSelectionTests {
         )
         handler.focusedIndex = 2
 
-        let event = KeyEvent(key: .character(" "))
+        let event = KeyEvent(key: .space)
         let handled = handler.handleKeyEvent(event)
 
         #expect(handled == true)
