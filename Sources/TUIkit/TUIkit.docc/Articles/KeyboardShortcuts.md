@@ -6,27 +6,7 @@ How keyboard input flows through TUIkit: from raw terminal bytes to your view ha
 
 TUIkit uses a layered event dispatch system. When a key is pressed, it passes through up to three layers. The first layer that consumes the event wins: remaining layers are skipped.
 
-```
-Terminal raw bytes
-      │
-      ▼
-  KeyEvent.parse()
-      │
-      ▼
- ┌─────────────────────────────┐
- │  Layer 1: Status Bar Items  │  Shortcuts with actions (e.g. "q" quit)
- └────────────┬────────────────┘
-              │ not consumed
-              ▼
- ┌─────────────────────────────┐
- │  Layer 2: View Handlers     │  .onKeyPress() modifiers (deepest view first)
- └────────────┬────────────────┘
-              │ not consumed
-              ▼
- ┌─────────────────────────────┐
- │  Layer 3: Default Bindings  │  q=quit, t=theme, a=appearance
- └─────────────────────────────┘
-```
+@Image(source: "keyboard-event-dispatch.png", alt: "Flowchart showing keyboard event dispatch: Terminal raw bytes are parsed by KeyEvent.parse(), then dispatched through three layers. Layer 1: Status Bar Items (shortcuts with actions). If not consumed, Layer 2: View Handlers (.onKeyPress modifiers, deepest view first). If not consumed, Layer 3: Default Bindings (quit, theme, appearance).")
 
 Additionally, `Ctrl+C` (SIGINT) is handled at the OS signal level **before** any of these layers: it always terminates the application.
 
