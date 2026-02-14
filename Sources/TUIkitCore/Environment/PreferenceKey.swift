@@ -4,9 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
-
-
 // MARK: - Preference Key Protocol
 
 /// A key for defining preference values that propagate up the view hierarchy.
