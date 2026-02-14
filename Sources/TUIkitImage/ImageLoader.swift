@@ -7,6 +7,10 @@
 import CSTBImage
 import Foundation
 
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 // MARK: - ImageLoader Protocol
 
 /// Loads images from file paths or raw data and converts them to `RGBAImage`.
