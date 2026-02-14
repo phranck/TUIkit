@@ -141,7 +141,9 @@ public enum RenderNotifier {
     /// No concurrent access is possible: they are initialized once and then
     /// read/written only during rendering.
     ///
-    public nonisolated(unsafe) static var current = AppState()
+    /// Optional fallback for property wrapper setters that lack render context.
+    /// Render-time consumers should read from EnvironmentValues.renderNotifier instead.
+    public nonisolated(unsafe) static var current: AppState?
 
     /// The active render cache for subtree memoization.
     ///

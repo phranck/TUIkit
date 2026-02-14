@@ -4,6 +4,14 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+// MARK: - Render Notifier (AppState)
+
+/// EnvironmentKey for the AppState reference used to trigger re-renders.
+/// Render-time consumers (Spinner, NotificationHostModifier) read from here.
+private struct RenderNotifierKey: EnvironmentKey {
+    static let defaultValue: AppState? = nil
+}
+
 // MARK: - Lifecycle Manager
 
 /// EnvironmentKey for view lifecycle tracking (appear/disappear/task).
@@ -56,6 +64,13 @@ private struct ActiveFocusSectionKey: EnvironmentKey {
 // MARK: - EnvironmentValues Extensions
 
 extension EnvironmentValues {
+
+    /// The AppState reference for triggering re-renders.
+    /// Used by render-time consumers (Spinner, NotificationHostModifier) to signal render needs.
+    var renderNotifier: AppState? {
+        get { self[RenderNotifierKey.self] }
+        set { self[RenderNotifierKey.self] = newValue }
+    }
 
     /// View lifecycle tracking (appear, disappear, task management).
     var lifecycle: LifecycleManager? {
