@@ -1,8 +1,9 @@
 [![CI](https://github.com/phranck/TUIkit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIkit/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/Tests-1071_passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-1100%2B_passing-brightgreen)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
+![i18n](https://img.shields.io/badge/i18n-5%20Languages-orange)
 
 ![TUIkit Banner](.github/assets/github-banner.png)
 
@@ -92,6 +93,14 @@ struct ContentView: View {
 
 - **Toast-style notifications**: transient alerts via `.notificationHost()` modifier
 
+### Internationalization (i18n)
+
+- **5 languages built-in**: English, German, French, Italian, Spanish
+- **Type-safe string constants**: Compile-time verified `LocalizationKey` enum
+- **Persistent language selection**: Automatic storage with XDG paths
+- **Fallback chain**: Current language → English → key itself
+- **Thread-safe operations**: Safe language switching at runtime
+
 ### Advanced
 
 - **Lifecycle modifiers**: `.onAppear()`, `.onDisappear()`, `.task()`
@@ -168,6 +177,33 @@ Available palettes (all via `SystemPalette`):
 - `.blue`: VFD/LCD displays
 - `.white`: DEC VT100/VT220 (P4 phosphor)
 
+## Internationalization
+
+TUIkit includes comprehensive i18n support with 5 languages and type-safe string constants:
+
+```swift
+import TUIkit
+
+struct MyView: View {
+    var body: some View {
+        VStack {
+            // Type-safe localized strings
+            Text(localized: LocalizationKey.Button.ok)
+            LocalizedString(LocalizationKey.Error.notFound)
+
+            // Switch language at runtime
+            Button("Deutsch") {
+                AppState.shared.setLanguage(.german)
+            }
+        }
+    }
+}
+```
+
+**Supported languages**: English, Deutsch, Français, Italiano, Español
+
+For complete documentation, see [Documentation/i18n-guide.md](Documentation/i18n-guide.md) and [Documentation/i18n-developer.md](Documentation/i18n-developer.md).
+
 ## Architecture
 
 - **Modular package**: 5 Swift modules + 1 C target (see Project Structure below)
@@ -187,7 +223,9 @@ Sources/
 ├── TUIkitImage/          ASCII art converter, image loading (depends on CSTBImage)
 ├── TUIkit/               Main module: App, Views, Modifiers, Focus, StatusBar, Notification
 │   ├── App/              App, Scene, WindowGroup
+│   ├── Environment/      Environment keys, service configuration
 │   ├── Focus/            Focus system and keyboard navigation
+│   ├── Localization/     i18n service, type-safe keys, translation files (5 languages)
 │   ├── Modifiers/        Border, Frame, Padding, Overlay, Lifecycle, KeyPress
 │   ├── Notification/     Toast-style notification system
 │   ├── Rendering/        Terminal, ANSIRenderer, ViewRenderer
@@ -196,7 +234,7 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          1071 tests across 148 test suites
+└── TUIkitTests/          1100+ tests across 150+ test suites (including i18n consistency & localization tests)
 ```
 
 ## Requirements
