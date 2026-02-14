@@ -228,11 +228,3 @@ public final class LocalizationService: @unchecked Sendable {
     }
 }
 
-// MARK: - Convenience
-
-/// A localized string retrieved using a dot-notation key.
-///
-/// Example: `LocalizedString("button.ok")`
-public func LocalizedString(_ key: String) -> String {
-    LocalizationService.shared.string(for: key)
-}
