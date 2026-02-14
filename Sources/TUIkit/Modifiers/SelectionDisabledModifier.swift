@@ -47,7 +47,7 @@ extension SelectionDisabledModifier: @preconcurrency Equatable where Content: Eq
 // MARK: - Renderable
 
 extension SelectionDisabledModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Create modified environment with selection disabled state.
         let modifiedEnvironment = context.environment.setting(\.isSelectionDisabled, to: isDisabled)
         let modifiedContext = context.withEnvironment(modifiedEnvironment)

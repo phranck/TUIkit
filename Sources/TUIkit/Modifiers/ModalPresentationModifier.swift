@@ -44,7 +44,7 @@ extension ModalPresentationModifier: Renderable {
     /// A stable section ID for modal focus sections.
     private static var modalSectionID: String { "__modal__" }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // If not presented, just return base content
         guard isPresented.wrappedValue else {
             return TUIkit.renderToBuffer(content, context: context)

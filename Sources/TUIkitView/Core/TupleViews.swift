@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
 /// A view that contains multiple child views packed via a parameter pack.
 ///
 /// `TupleView` replaces the previous `TupleView2` through `TupleView10`
@@ -17,7 +19,7 @@
 ///   `@ViewBuilder`. Do not instantiate directly.
 public struct TupleView<each V: View>: View {
     /// The packed child views.
-    let children: (repeat each V)
+    public let children: (repeat each V)
 
     /// Creates a tuple view from a parameter pack of child views.
     ///
@@ -45,11 +47,11 @@ extension TupleView: @preconcurrency Equatable where repeat each V: Equatable {
 // MARK: - TupleView Rendering + ChildInfoProvider
 
 extension TupleView: Renderable, ChildInfoProvider {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
 
-    func childInfos(context: RenderContext) -> [ChildInfo] {
+    public func childInfos(context: RenderContext) -> [ChildInfo] {
         var infos: [ChildInfo] = []
         repeat infos.append(
             makeChildInfo(
@@ -64,7 +66,7 @@ extension TupleView: Renderable, ChildInfoProvider {
 // MARK: - TupleView Two-Pass Layout Support
 
 extension TupleView: ChildViewProvider {
-    func childViews(context: RenderContext) -> [ChildView] {
+    public func childViews(context: RenderContext) -> [ChildView] {
         var views: [ChildView] = []
         repeat views.append(
             ChildView(each children, childIndex: views.count)

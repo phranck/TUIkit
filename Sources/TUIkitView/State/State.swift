@@ -5,6 +5,7 @@
 //  License: MIT
 
 import Foundation
+import TUIkitCore
 
 // MARK: - App State
 
@@ -63,28 +64,28 @@ public extension AppState {
 
 extension AppState {
     /// Whether state has changed since last render.
-    var needsRender: Bool {
+    public var needsRender: Bool {
         lock.withLock { $0.needsRender }
     }
 
     /// Registers an observer to be notified of state changes.
     ///
     /// - Parameter callback: The callback to invoke on state change.
-    func observe(_ callback: @escaping @Sendable () -> Void) {
+    public func observe(_ callback: @escaping @Sendable () -> Void) {
         lock.withLock { state in
             state.observers.append(callback)
         }
     }
 
     /// Clears all observers.
-    func clearObservers() {
+    public func clearObservers() {
         lock.withLock { state in
             state.observers.removeAll()
         }
     }
 
     /// Resets the needs render flag.
-    func didRender() {
+    public func didRender() {
         lock.withLock { state in
             state.needsRender = false
         }
@@ -119,7 +120,7 @@ extension AppState {
 /// ```
 ///
 /// - Important: This type is framework-internal. User code should never access it directly.
-enum RenderNotifier {
+public enum RenderNotifier {
     /// The active `AppState` for the running application.
     ///
     /// This is a static accessor because `@State`, `@AppStorage`, and
@@ -132,13 +133,13 @@ enum RenderNotifier {
     /// - Precondition: Must be set before any `@State` mutation occurs.
     ///   This is guaranteed because `AppRunner.run()` sets it before
     ///   the first render pass.
-    nonisolated(unsafe) static var current = AppState()
+    public nonisolated(unsafe) static var current = AppState()
 
     /// The active render cache for subtree memoization.
     ///
     /// Set by `AppRunner` alongside `current`. Cleared on every
     /// `@State` mutation to invalidate memoized subtrees.
-    nonisolated(unsafe) static var renderCache: RenderCache?
+    public nonisolated(unsafe) static var renderCache: RenderCache?
 }
 
 // MARK: - Hydration Context
@@ -148,12 +149,18 @@ enum RenderNotifier {
 /// Set by `renderToBuffer(_:context:)` before evaluating a composite view's `body`,
 /// and cleared immediately after. Provides the view identity and state storage
 /// that `@State.init` needs to retrieve or create persistent state.
-struct HydrationContext {
+public struct HydrationContext {
     /// The current view's structural identity.
-    let identity: ViewIdentity
+    public let identity: ViewIdentity
 
     /// The persistent state storage.
-    let storage: StateStorage
+    public let storage: StateStorage
+
+    /// Creates a new hydration context.
+    public init(identity: ViewIdentity, storage: StateStorage) {
+        self.identity = identity
+        self.storage = storage
+    }
 }
 
 // MARK: - State Registration
@@ -169,15 +176,15 @@ struct HydrationContext {
 /// - **Nil:** Creates a local `StateBox` (pre-render or outside the render tree).
 ///
 /// This is safe because TUIKit runs on a single thread — no concurrent access.
-enum StateRegistration {
+public enum StateRegistration {
     /// The active hydration context, set during composite view body evaluation.
     ///
     /// - Important: Must be set before and cleared after each `body` call.
     ///   Nested composite views save/restore the previous context.
-    nonisolated(unsafe) static var activeContext: HydrationContext?
+    public nonisolated(unsafe) static var activeContext: HydrationContext?
 
     /// The current property index, incremented by each `@State` during hydration.
-    nonisolated(unsafe) static var counter: Int = 0
+    public nonisolated(unsafe) static var counter: Int = 0
 }
 
 // MARK: - Binding

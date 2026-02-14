@@ -193,7 +193,7 @@ extension TextStyle {
 // MARK: - Text Rendering
 
 extension Text: Renderable, Layoutable {
-    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+    public func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         // Text has a fixed size based on its content.
         // If a width is proposed, we may word-wrap.
         let maxWidth = proposal.width ?? context.availableWidth
@@ -206,7 +206,7 @@ extension Text: Renderable, Layoutable {
         return ViewSize.fixed(width, height)
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         var effectiveStyle = style
 
         // If no explicit foreground color is set on the Text itself,

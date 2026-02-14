@@ -87,10 +87,16 @@ public struct Divider: View, Equatable {
     }
 }
 
+// MARK: - Spacer Protocol Conformance
+
+extension Spacer: SpacerProtocol {
+    public var spacerMinLength: Int? { minLength }
+}
+
 // MARK: - Spacer Rendering
 
 extension Spacer: Renderable, Layoutable {
-    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+    public func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         // Spacer is fully flexible - it expands to fill available space.
         // The minLength is its minimum size requirement.
         let min = minLength ?? 0
@@ -102,7 +108,7 @@ extension Spacer: Renderable, Layoutable {
         )
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Standalone spacer (outside a stack): render as empty lines
         let count = minLength ?? 1
         return FrameBuffer(emptyWithHeight: count)
@@ -112,12 +118,12 @@ extension Spacer: Renderable, Layoutable {
 // MARK: - Divider Rendering
 
 extension Divider: Renderable, Layoutable {
-    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+    public func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         // Divider has height 1 and expands to fill width
         return ViewSize.flexibleWidth(minWidth: 1, height: 1)
     }
 
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let line = String(repeating: character, count: context.availableWidth)
         return FrameBuffer(text: line)
     }

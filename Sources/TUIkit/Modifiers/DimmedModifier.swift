@@ -59,7 +59,7 @@ private enum DimmedOrnaments {
 // MARK: - Renderable
 
 extension DimmedModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let contentBuffer = TUIkit.renderToBuffer(content, context: context)
 
         guard !contentBuffer.isEmpty else {

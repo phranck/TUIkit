@@ -4,6 +4,9 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
+
 /// The context for rendering a view.
 ///
 /// Contains layout constraints, environment values, and the view's
@@ -33,27 +36,27 @@ public struct RenderContext {
     /// Built incrementally as `renderToBuffer` traverses the view hierarchy.
     /// Container views append child indices, composite views append type names.
     /// Used by `StateStorage` to persist `@State` values across render passes.
-    var identity: ViewIdentity
+    public var identity: ViewIdentity
 
     /// Whether an explicit frame width constraint has been set.
     ///
     /// Set by `FlexibleFrameView` when a fixed width is specified.
     /// Container views use this to decide whether to expand to fill
     /// the available width or shrink to fit their content.
-    var hasExplicitWidth: Bool = false
+    public var hasExplicitWidth: Bool = false
 
     /// Whether an explicit frame height constraint has been set.
     ///
     /// Set by layout containers (e.g., NavigationSplitView) when a fixed height is specified.
     /// Container views use this to decide whether to expand to fill
     /// the available height or shrink to fit their content.
-    var hasExplicitHeight: Bool = false
+    public var hasExplicitHeight: Bool = false
 
     /// Whether this is a measurement pass (no side-effects should occur).
     ///
     /// Set to true during two-pass layout when measuring non-Layoutable views.
     /// Views should skip side-effects like focus registration when this is true.
-    var isMeasuring: Bool = false
+    public var isMeasuring: Bool = false
 
     /// Creates a new RenderContext.
     ///
@@ -62,7 +65,7 @@ public struct RenderContext {
     ///   - availableHeight: The available height in lines.
     ///   - environment: The environment values (defaults to empty).
     ///   - identity: The view identity path (defaults to root).
-    init(
+    public init(
         availableWidth: Int,
         availableHeight: Int,
         environment: EnvironmentValues = EnvironmentValues(),
@@ -74,41 +77,12 @@ public struct RenderContext {
         self.identity = identity
     }
 
-    /// Creates a new RenderContext with runtime services from a `TUIContext`.
-    ///
-    /// Injects all services from the `TUIContext` into `EnvironmentValues`,
-    /// making them accessible via `context.environment.stateStorage`, etc.
-    ///
-    /// - Parameters:
-    ///   - availableWidth: The available width in characters.
-    ///   - availableHeight: The available height in lines.
-    ///   - environment: The environment values (defaults to empty).
-    ///   - tuiContext: The TUI context whose services are injected into the environment.
-    ///   - identity: The view identity path (defaults to root).
-    init(
-        availableWidth: Int,
-        availableHeight: Int,
-        environment: EnvironmentValues = EnvironmentValues(),
-        tuiContext: TUIContext,
-        identity: ViewIdentity = ViewIdentity(path: "")
-    ) {
-        var env = environment
-        env.stateStorage = tuiContext.stateStorage
-        env.lifecycle = tuiContext.lifecycle
-        env.keyEventDispatcher = tuiContext.keyEventDispatcher
-        env.renderCache = tuiContext.renderCache
-        env.preferenceStorage = tuiContext.preferences
-        self.availableWidth = availableWidth
-        self.availableHeight = availableHeight
-        self.environment = env
-        self.identity = identity
-    }
 
     /// Creates a new context with the same size but different environment.
     ///
     /// - Parameter environment: The new environment values.
     /// - Returns: A new RenderContext with the updated environment.
-    func withEnvironment(_ environment: EnvironmentValues) -> Self {
+    public func withEnvironment(_ environment: EnvironmentValues) -> Self {
         var copy = self
         copy.environment = environment
         return copy
@@ -123,7 +97,7 @@ public struct RenderContext {
     ///   - type: The child view's type.
     ///   - index: The child's position within the container.
     /// - Returns: A new RenderContext with the extended identity path.
-    func withChildIdentity<V>(type: V.Type, index: Int) -> Self {
+    public func withChildIdentity<V>(type: V.Type, index: Int) -> Self {
         var copy = self
         copy.identity = identity.child(type: type, index: index)
         return copy
@@ -136,7 +110,7 @@ public struct RenderContext {
     ///
     /// - Parameter type: The child view's type.
     /// - Returns: A new RenderContext with the extended identity path.
-    func withChildIdentity<V>(type: V.Type) -> Self {
+    public func withChildIdentity<V>(type: V.Type) -> Self {
         var copy = self
         copy.identity = identity.child(type: type)
         return copy
@@ -148,25 +122,12 @@ public struct RenderContext {
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).
     /// - Returns: A new RenderContext with the branch identity.
-    func withBranchIdentity(_ label: String) -> Self {
+    public func withBranchIdentity(_ label: String) -> Self {
         var copy = self
         copy.identity = identity.branch(label)
         return copy
     }
 
-    /// Creates a context isolated from the real focus and key event systems.
-    ///
-    /// Used by modal presentation modifiers to render background content
-    /// visually without letting its buttons and key handlers interfere
-    /// with the modal's interactive elements. The returned context has a
-    /// throwaway `FocusManager` and `KeyEventDispatcher` while sharing
-    /// lifecycle, preferences, and state storage with the real context.
-    func isolatedForBackground() -> Self {
-        var copy = self
-        copy.environment.focusManager = FocusManager()
-        copy.environment.keyEventDispatcher = KeyEventDispatcher()
-        return copy
-    }
 
     /// Creates a new context with a different available width.
     ///
@@ -178,7 +139,7 @@ public struct RenderContext {
     ///
     /// - Parameter width: The new available width in characters.
     /// - Returns: A new RenderContext with the updated width.
-    func withAvailableWidth(_ width: Int) -> Self {
+    public func withAvailableWidth(_ width: Int) -> Self {
         var copy = self
         copy.availableWidth = width
         copy.hasExplicitWidth = true
@@ -195,7 +156,7 @@ public struct RenderContext {
     ///
     /// - Parameter height: The new available height in lines.
     /// - Returns: A new RenderContext with the updated height.
-    func withAvailableHeight(_ height: Int) -> Self {
+    public func withAvailableHeight(_ height: Int) -> Self {
         var copy = self
         copy.availableHeight = height
         copy.hasExplicitHeight = true
@@ -210,7 +171,7 @@ public struct RenderContext {
     ///   - width: The new available width in characters.
     ///   - height: The new available height in lines.
     /// - Returns: A new RenderContext with the updated dimensions.
-    func withAvailableSize(width: Int, height: Int) -> Self {
+    public func withAvailableSize(width: Int, height: Int) -> Self {
         var copy = self
         copy.availableWidth = width
         copy.availableHeight = height
@@ -228,7 +189,7 @@ public struct RenderContext {
     ///
     /// - Parameter hasBorder: Whether the container has a border (default: true).
     /// - Returns: A new context with adjusted width for inner content.
-    func forBorderedContent(hasBorder: Bool = true) -> Self {
+    public func forBorderedContent(hasBorder: Bool = true) -> Self {
         var copy = self
         if hasBorder {
             copy.availableWidth = max(0, availableWidth - 2)
@@ -247,7 +208,7 @@ public struct RenderContext {
     ///   - contentWidth: The natural width of the content.
     ///   - innerAvailableWidth: The available width inside the container (unused).
     /// - Returns: The content width.
-    func resolveContainerWidth(contentWidth: Int, innerAvailableWidth: Int) -> Int {
+    public func resolveContainerWidth(contentWidth: Int, innerAvailableWidth: Int) -> Int {
         return contentWidth
     }
 
@@ -260,7 +221,7 @@ public struct RenderContext {
     ///   - contentHeight: The natural height of the content.
     ///   - borderOverhead: Lines used by borders/title/footer (unused, kept for API compatibility).
     /// - Returns: The content height.
-    func resolveContainerHeight(contentHeight: Int, borderOverhead: Int = 0) -> Int {
+    public func resolveContainerHeight(contentHeight: Int, borderOverhead: Int = 0) -> Int {
         return contentHeight
     }
 }

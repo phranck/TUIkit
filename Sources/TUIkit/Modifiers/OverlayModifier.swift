@@ -37,7 +37,7 @@ extension OverlayModifier: @preconcurrency Equatable where Base: Equatable, Over
 // MARK: - Renderable
 
 extension OverlayModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Render both contents
         let baseBuffer = TUIkit.renderToBuffer(base, context: context)
         let overlayBuffer = TUIkit.renderToBuffer(overlay, context: context)

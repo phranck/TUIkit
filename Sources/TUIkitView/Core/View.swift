@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
 /// The base protocol for all TUIkit views.
 ///
 /// `View` is the central protocol in TUIkit and works similarly to `View` in SwiftUI.

@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "TUIkitStyling", targets: ["TUIkitStyling"]),
 
         // ── Mid-level ───────────────────────────────────────────────────────────────────────────────────
+        .library(name: "TUIkitView", targets: ["TUIkitView"]),
         .library(name: "TUIkitImage", targets: ["TUIkitImage"]),
 
         // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
@@ -36,10 +37,11 @@ let package = Package(
         .target(name: "TUIkitStyling"),
 
         // ── Mid-level ───────────────────────────────────────────────────────────────────────────────────
+        .target(name: "TUIkitView", dependencies: ["TUIkitCore"]),
         .target(name: "TUIkitImage", dependencies: ["CSTBImage", "TUIkitStyling"]),
 
         // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
-        .target(name: "TUIkit", dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage"]),
+        .target(name: "TUIkit", dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage", "TUIkitView"]),
 
         // ── App & Tests ─────────────────────────────────────────────────────────────────────────────────
         .executableTarget(

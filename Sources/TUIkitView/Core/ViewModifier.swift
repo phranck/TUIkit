@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
 /// A modifier that transforms a view's rendered output.
 ///
 /// `ViewModifier` works on the `FrameBuffer` level: it takes a rendered
@@ -71,6 +73,16 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
     /// The modifier to apply.
     public let modifier: Modifier
 
+    /// Creates a modified view.
+    ///
+    /// - Parameters:
+    ///   - content: The original view.
+    ///   - modifier: The modifier to apply.
+    public init(content: Content, modifier: Modifier) {
+        self.content = content
+        self.modifier = modifier
+    }
+
     /// Never called — rendering is handled by `Renderable` conformance.
     public var body: Never {
         fatalError("ModifiedView renders via Renderable")
@@ -80,9 +92,9 @@ public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
 // MARK: - ModifiedView Rendering
 
 extension ModifiedView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let adjustedContext = modifier.adjustContext(context)
-        let childBuffer = TUIkit.renderToBuffer(content, context: adjustedContext)
+        let childBuffer = TUIkitView.renderToBuffer(content, context: adjustedContext)
         return modifier.modify(buffer: childBuffer, context: context)
     }
 }

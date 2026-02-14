@@ -27,7 +27,7 @@ public struct KeyPressModifier<Content: View>: View {
 // MARK: - Renderable
 
 extension KeyPressModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register the key handler
         context.environment.keyEventDispatcher!.addHandler { [keys, handler] event in
             // Check if we should handle this key
