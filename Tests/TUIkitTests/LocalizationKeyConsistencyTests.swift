@@ -355,6 +355,6 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
     func testTranslationFileIsValidJSON() {
         // This test verifies that the English translation file is valid JSON
         XCTAssertFalse(englishTranslations.isEmpty, "English translations could not be loaded")
-        XCTAssert(englishTranslations.count > 0, "English translations are empty")
+        XCTAssertFalse(englishTranslations.isEmpty, "English translations are empty")
     }
 }
