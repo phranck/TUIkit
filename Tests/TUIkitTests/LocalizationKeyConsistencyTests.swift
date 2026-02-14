@@ -16,7 +16,7 @@ import Testing
 /// 1. Every key in the enum exists in the English translation file
 /// 2. No extra keys are in the translation files that don't exist in the enum
 /// 3. All enum keys are actually used (no dead code)
-@Suite("LocalizationKeyConsistency", .disabled("Disabled: Bundle loading in init() causes hangs on CI"))
+@Suite("LocalizationKeyConsistency")
 final class LocalizationKeyConsistencyTests {
     private var englishTranslations: [String: String] = [:]
 
@@ -31,7 +31,7 @@ final class LocalizationKeyConsistencyTests {
         var url = Bundle.module.url(
             forResource: "en",
             withExtension: "json",
-            subdirectory: "Localization/translations"
+            subdirectory: "translations"
         )
 
         // If not found, try to load from the project directory (for tests)

@@ -47,6 +47,5 @@ extension AppState {
     /// - Parameter language: The language to activate.
     public func setLanguage(_ language: LocalizationService.Language) {
         LocalizationService.shared.setLanguage(language)
-        setNeedsRender()
     }
 }

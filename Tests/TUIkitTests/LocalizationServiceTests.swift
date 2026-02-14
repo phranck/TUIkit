@@ -10,13 +10,13 @@ import Testing
 
 // MARK: - Localization Service Tests
 
-@Suite("LocalizationService", .disabled("Disabled: Complex test setup interactions - refactor required"))
+@Suite("LocalizationService")
 final class LocalizationServiceTests {
-    var sut: LocalizationService!
-    let fileManager = FileManager.default
+    var sut: LocalizationService
 
     init() {
         sut = LocalizationService()
+        sut.setLanguage(.english)
     }
 
     // MARK: - Bundle Loading Tests
@@ -153,52 +153,62 @@ final class LocalizationServiceTests {
 
     // MARK: - Persistence Tests
 
-    @Test("Saves language preference to config file", .disabled("Disabled: File I/O conflicts with parallel test execution"))
-    func savesLanguagePreference() {
-        sut.setLanguage(.german)
-        let path = Self.configFilePath()
-        let content = try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(
+    @Test("Saves language preference to config file")
+    func savesLanguagePreference() throws {
+        let tempDir = NSTemporaryDirectory() + "tuikit-test-\(UUID().uuidString)"
+        defer { try? FileManager.default.removeItem(atPath: tempDir) }
+
+        let service = LocalizationService(configDirectoryPath: tempDir)
+        service.setLanguage(.german)
+
+        let path = (tempDir as NSString).appendingPathComponent("language")
+        let content = try String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(
             in: .whitespacesAndNewlines
         )
         #expect(content == "de")
     }
 
-    @Test("Loads language preference from config file", .disabled("Disabled: File I/O conflicts with parallel test execution"))
-    func loadsLanguagePreference() {
-        let path = Self.configFilePath()
-        let dirPath = (path as NSString).deletingLastPathComponent
-        try? fileManager.createDirectory(
-            atPath: dirPath,
+    @Test("Loads language preference from config file")
+    func loadsLanguagePreference() throws {
+        let tempDir = NSTemporaryDirectory() + "tuikit-test-\(UUID().uuidString)"
+        defer { try? FileManager.default.removeItem(atPath: tempDir) }
+
+        try FileManager.default.createDirectory(
+            atPath: tempDir,
             withIntermediateDirectories: true,
             attributes: nil
         )
-        try? "fr".write(toFile: path, atomically: true, encoding: .utf8)
+        let path = (tempDir as NSString).appendingPathComponent("language")
+        try "fr".write(toFile: path, atomically: true, encoding: .utf8)
 
-        let newService = LocalizationService()
-        #expect(newService.currentLanguage == .french)
+        let service = LocalizationService(configDirectoryPath: tempDir)
+        #expect(service.currentLanguage == .french)
     }
 
-    @Test("Handles missing config file gracefully", .disabled("Disabled: File I/O conflicts with parallel test execution"))
+    @Test("Handles missing config file gracefully")
     func handlesMissingConfigFile() {
-        try? fileManager.removeItem(atPath: Self.configFilePath())
+        let tempDir = NSTemporaryDirectory() + "tuikit-test-\(UUID().uuidString)"
+        defer { try? FileManager.default.removeItem(atPath: tempDir) }
 
-        let newService = LocalizationService()
-        #expect(newService.currentLanguage == .english)
+        let service = LocalizationService(configDirectoryPath: tempDir)
+        #expect(service.currentLanguage == .english)
     }
 
-    @Test("Handles invalid config file content gracefully", .disabled("Disabled: File I/O conflicts with parallel test execution"))
-    func handlesInvalidConfigFile() {
-        let path = Self.configFilePath()
-        let dirPath = (path as NSString).deletingLastPathComponent
-        try? fileManager.createDirectory(
-            atPath: dirPath,
+    @Test("Handles invalid config file content gracefully")
+    func handlesInvalidConfigFile() throws {
+        let tempDir = NSTemporaryDirectory() + "tuikit-test-\(UUID().uuidString)"
+        defer { try? FileManager.default.removeItem(atPath: tempDir) }
+
+        try FileManager.default.createDirectory(
+            atPath: tempDir,
             withIntermediateDirectories: true,
             attributes: nil
         )
-        try? "invalid_lang_code".write(toFile: path, atomically: true, encoding: .utf8)
+        let path = (tempDir as NSString).appendingPathComponent("language")
+        try "invalid_lang_code".write(toFile: path, atomically: true, encoding: .utf8)
 
-        let newService = LocalizationService()
-        #expect(newService.currentLanguage == .english)
+        let service = LocalizationService(configDirectoryPath: tempDir)
+        #expect(service.currentLanguage == .english)
     }
 
     // MARK: - Language Enum Tests
@@ -263,28 +273,13 @@ final class LocalizationServiceTests {
         #expect(englishAgain == "Save")
     }
 
-    // MARK: - Helper Methods
-
-    private static func configFilePath() -> String {
-        #if os(macOS)
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first?.path ?? NSHomeDirectory()
-        return (appSupport as NSString).appendingPathComponent("tuikit/language")
-        #else
-        let configHome = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"]
-            ?? ((NSHomeDirectory() as NSString).appendingPathComponent(".config"))
-        return (configHome as NSString).appendingPathComponent("tuikit/language")
-        #endif
-    }
 }
 
 // MARK: - Localization Key Tests
 
 @Suite("LocalizationKey")
 final class LocalizationKeyTests {
-    var service: LocalizationService!
+    var service: LocalizationService
 
     init() {
         service = LocalizationService()
