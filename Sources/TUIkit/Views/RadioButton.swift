@@ -425,7 +425,7 @@ extension RadioButtonGroupHandler {
             }
             return true
 
-        case .enter, .character(" "):
+        case .enter, .space:
             // Select the currently focused item (make it the selection)
             selection.wrappedValue = itemValues[focusedIndex]
             return true

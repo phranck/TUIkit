@@ -190,7 +190,7 @@ extension ItemListHandler {
             moveFocus(by: viewportHeight, wrap: false)
             return true
 
-        case .enter, .character(" "):
+        case .enter, .space:
             toggleSelectionAtFocusedIndex()
             return true
 
