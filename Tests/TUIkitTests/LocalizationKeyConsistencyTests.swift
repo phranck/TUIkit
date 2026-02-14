@@ -18,7 +18,11 @@ import Testing
 /// 3. All enum keys are actually used (no dead code)
 @Suite("LocalizationKeyConsistency")
 struct LocalizationKeyConsistencyTests {
-    private static let englishTranslations = loadTranslations()
+    private let englishTranslations: [String: String]
+
+    init() {
+        self.englishTranslations = Self.loadTranslations()
+    }
 
     // MARK: - Helper Method
 
@@ -86,7 +90,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Button key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Button key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -115,7 +119,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Label key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Label key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -138,7 +142,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Error key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Error key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -156,7 +160,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Placeholder key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Placeholder key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -176,7 +180,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Menu key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Menu key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -195,7 +199,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Dialog key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Dialog key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -211,7 +215,7 @@ struct LocalizationKeyConsistencyTests {
         ]
 
         for key in keys {
-            #expect(Self.englishTranslations[key.rawValue] != nil, "Validation key '\(key.rawValue)' not found in translations")
+            #expect(englishTranslations[key.rawValue] != nil, "Validation key '\(key.rawValue)' not found in translations")
         }
     }
 
@@ -311,7 +315,7 @@ struct LocalizationKeyConsistencyTests {
         enumKeys.insert(LocalizationKey.Validation.fieldRequired.rawValue)
 
         // Check for extraneous keys
-        let translationKeys = Set(Self.englishTranslations.keys)
+        let translationKeys = Set(englishTranslations.keys)
         let extraneousKeys = translationKeys.subtracting(enumKeys)
 
         #expect(extraneousKeys.isEmpty, "Found keys in translations that don't exist in LocalizationKey enum: \(extraneousKeys.sorted())")
@@ -320,12 +324,12 @@ struct LocalizationKeyConsistencyTests {
     @Test("All enum keys are covered in translations")
     func allEnumKeysCovered() {
         let expectedKeyCount = 21 + 17 + 11 + 6 + 8 + 7 + 4
-        #expect(Self.englishTranslations.count == expectedKeyCount, "Expected \(expectedKeyCount) keys in translations, but got \(Self.englishTranslations.count)")
+        #expect(englishTranslations.count == expectedKeyCount, "Expected \(expectedKeyCount) keys in translations, but got \(englishTranslations.count)")
     }
 
     @Test("Translation file is valid JSON")
     func translationFileIsValid() {
-        #expect(!Self.englishTranslations.isEmpty, "English translations could not be loaded")
-        #expect(!Self.englishTranslations.isEmpty, "English translations are empty")
+        #expect(!englishTranslations.isEmpty, "English translations could not be loaded")
+        #expect(!englishTranslations.isEmpty, "English translations are empty")
     }
 }
