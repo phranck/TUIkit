@@ -18,14 +18,14 @@ import os
 ///
 /// This type is `@unchecked Sendable` because the underlying lock implementations
 /// are thread-safe by design.
-final class Lock<State: Sendable>: @unchecked Sendable {
+public final class Lock<State: Sendable>: @unchecked Sendable {
     #if canImport(os)
     private let _lock: OSAllocatedUnfairLock<State>
 
     /// Creates a lock with the given initial state.
     ///
     /// - Parameter initialState: The initial protected state.
-    init(initialState: State) {
+    public init(initialState: State) {
         _lock = OSAllocatedUnfairLock(initialState: initialState)
     }
 
@@ -33,7 +33,7 @@ final class Lock<State: Sendable>: @unchecked Sendable {
     ///
     /// - Parameter body: The closure to execute with exclusive access to the state.
     /// - Returns: The value returned by the closure.
-    func withLock<R: Sendable>(_ body: @Sendable (inout State) throws -> R) rethrows -> R {
+    public func withLock<R: Sendable>(_ body: @Sendable (inout State) throws -> R) rethrows -> R {
         try _lock.withLock(body)
     }
     #else
@@ -43,7 +43,7 @@ final class Lock<State: Sendable>: @unchecked Sendable {
     /// Creates a lock with the given initial state.
     ///
     /// - Parameter initialState: The initial protected state.
-    init(initialState: State) {
+    public init(initialState: State) {
         _state = initialState
     }
 
@@ -51,7 +51,7 @@ final class Lock<State: Sendable>: @unchecked Sendable {
     ///
     /// - Parameter body: The closure to execute with exclusive access to the state.
     /// - Returns: The value returned by the closure.
-    func withLock<R>(_ body: (inout State) throws -> R) rethrows -> R {
+    public func withLock<R>(_ body: (inout State) throws -> R) rethrows -> R {
         _lock.lock()
         defer { _lock.unlock() }
         return try body(&_state)

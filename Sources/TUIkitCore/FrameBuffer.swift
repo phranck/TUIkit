@@ -55,10 +55,10 @@ public struct FrameBuffer: Sendable, Equatable {
         self.width = Self.computeWidth(lines)
     }
 
-    /// Internal initializer that accepts pre-computed width.
+    /// Initializer that accepts pre-computed width.
     ///
     /// Use this when the width is already known to avoid redundant computation.
-    init(lines: [String], width: Int) {
+    public init(lines: [String], width: Int) {
         self.lines = lines
         self.width = width
     }
@@ -244,6 +244,9 @@ public extension FrameBuffer {
 // MARK: - Private Helpers
 
 private extension FrameBuffer {
+
+    /// ANSI SGR reset sequence. Inlined to avoid depending on ANSIRenderer.
+    static let ansiReset = "\u{1B}[0m"
     /// Recomputes the cached ``width`` from the current ``lines``.
     ///
     /// Called automatically by the `didSet` observer on ``lines``.
@@ -300,9 +303,9 @@ private extension FrameBuffer {
 
         // Build: [prefix] + [reset] + [overlay] + [reset + base style restore] + [suffix]
         var result = prefix
-        result += ANSIRenderer.reset
+        result += Self.ansiReset
         result += overlay
-        result += ANSIRenderer.reset
+        result += Self.ansiReset
         result += baseStyle
         result += suffix
 
