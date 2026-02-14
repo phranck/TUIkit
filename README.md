@@ -245,7 +245,7 @@ Tests/
 ## Developer Notes
 
 - Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
-- All 1071 tests run in parallel
+- All 1113 tests run in parallel
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## Contribution
