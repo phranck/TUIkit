@@ -105,3 +105,4 @@ renderOnce {
 - Learn about the framework's <doc:Architecture>
 - Explore <doc:StateManagement> for reactive UIs
 - Customize your app's look with <doc:ThemingGuide>
+- Build multilingual apps with <doc:Localization>
