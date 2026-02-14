@@ -41,7 +41,11 @@ let package = Package(
         .target(name: "TUIkitImage", dependencies: ["CSTBImage", "TUIkitStyling"]),
 
         // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
-        .target(name: "TUIkit", dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage", "TUIkitView"]),
+        .target(
+            name: "TUIkit",
+            dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage", "TUIkitView"],
+            resources: [.copy("Localization/translations")]
+        ),
 
         // ── App & Tests ─────────────────────────────────────────────────────────────────────────────────
         .executableTarget(
