@@ -75,7 +75,7 @@ public enum TextContentType: Sendable, Equatable {
 
 // MARK: - Character Filtering
 
-extension TextContentType {
+public extension TextContentType {
     /// The set of Unicode scalars allowed for this content type.
     ///
     /// `.password` returns `nil` to indicate no filtering.
@@ -160,50 +160,4 @@ private extension TextContentType {
 
     /// Decimal characters (digits, minus sign, and decimal point).
     static let decimalCharacters = CharacterSet(charactersIn: "0123456789-.")
-}
-
-// MARK: - Environment Key
-
-/// Environment key for the text content type.
-private struct TextContentTypeKey: EnvironmentKey {
-    static let defaultValue: TextContentType? = nil
-}
-
-extension EnvironmentValues {
-    /// The text content type for text fields.
-    ///
-    /// When set, text fields filter both typed characters and pasted text
-    /// against the allowed character set of the content type.
-    ///
-    /// Set this value using the `.textContentType(_:)` modifier:
-    ///
-    /// ```swift
-    /// TextField("URL", text: $url)
-    ///     .textContentType(.url)
-    /// ```
-    public var textContentType: TextContentType? {
-        get { self[TextContentTypeKey.self] }
-        set { self[TextContentTypeKey.self] = newValue }
-    }
-}
-
-// MARK: - View Extension
-
-extension View {
-    /// Sets the text content type for text fields within this view.
-    ///
-    /// When a content type is set, both typed characters and pasted text
-    /// are filtered against the allowed character set. Invalid characters
-    /// are silently dropped.
-    ///
-    /// ```swift
-    /// TextField("URL", text: $url)
-    ///     .textContentType(.url)
-    /// ```
-    ///
-    /// - Parameter type: The content type, or `nil` to disable filtering.
-    /// - Returns: A view with the content type applied.
-    public func textContentType(_ type: TextContentType?) -> some View {
-        environment(\.textContentType, type)
-    }
 }

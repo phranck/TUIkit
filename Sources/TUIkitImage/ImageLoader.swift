@@ -13,7 +13,7 @@ import Foundation
 ///
 /// Uses stb_image (bundled C library) on all platforms for consistent behavior.
 /// Supported formats: PNG, JPEG, GIF, BMP, TGA, HDR, PSD, PNM.
-protocol ImageLoader: Sendable {
+public protocol ImageLoader: Sendable {
     /// Loads an image from a file path.
     ///
     /// - Parameter path: The absolute file path to the image.
@@ -32,7 +32,7 @@ protocol ImageLoader: Sendable {
 // MARK: - ImageLoadError
 
 /// Errors that can occur during image loading.
-enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
+public enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
     /// The file was not found at the given path.
     case fileNotFound(String)
 
@@ -48,7 +48,7 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
     /// The image exceeds the maximum allowed pixel count.
     case imageTooLarge(pixelCount: Int, limit: Int)
 
-    var description: String {
+    public var description: String {
         switch self {
         case .fileNotFound(let path):
             return "Image file not found: \(path)"
@@ -63,7 +63,7 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
         }
     }
 
-    var errorDescription: String? { description }
+    public var errorDescription: String? { description }
 }
 
 // MARK: - Platform Image Loader
@@ -73,13 +73,15 @@ enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
 /// Supports PNG, JPEG, GIF, BMP, TGA, HDR, PSD, and PNM formats
 /// on both macOS and Linux. stb_image is a public-domain single-header
 /// C library bundled as a local `CSTBImage` target.
-struct PlatformImageLoader: ImageLoader {
+public struct PlatformImageLoader: ImageLoader {
 
-    func loadImage(from path: String) throws -> RGBAImage {
+    public init() {}
+
+    public func loadImage(from path: String) throws -> RGBAImage {
         try loadImage(from: path, maxPixelCount: nil)
     }
 
-    func loadImage(from data: Data) throws -> RGBAImage {
+    public func loadImage(from data: Data) throws -> RGBAImage {
         try loadImage(from: data, maxPixelCount: nil)
     }
 
@@ -90,7 +92,7 @@ struct PlatformImageLoader: ImageLoader {
     ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
     /// - Returns: The decoded image as `RGBAImage`.
     /// - Throws: `ImageLoadError` if the file cannot be read, decoded, or exceeds the limit.
-    func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage {
+    public func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage {
         guard FileManager.default.fileExists(atPath: path) else {
             throw ImageLoadError.fileNotFound(path)
         }
@@ -120,7 +122,7 @@ struct PlatformImageLoader: ImageLoader {
     ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
     /// - Returns: The decoded image as `RGBAImage`.
     /// - Throws: `ImageLoadError` if the data cannot be decoded or exceeds the limit.
-    func loadImage(from data: Data, maxPixelCount: Int?) throws -> RGBAImage {
+    public func loadImage(from data: Data, maxPixelCount: Int?) throws -> RGBAImage {
         var width: Int32 = 0
         var height: Int32 = 0
         var channels: Int32 = 0
@@ -185,9 +187,9 @@ extension PlatformImageLoader {
 ///
 /// Cached entries persist for the lifetime of the application.
 /// Thread-safe via an internal lock.
-final class URLImageCache: @unchecked Sendable {
+public final class URLImageCache: @unchecked Sendable {
     /// Shared session cache.
-    static let shared = URLImageCache()
+    public static let shared = URLImageCache()
 
     private var cache: [String: RGBAImage] = [:]
     private let lock = NSLock()
@@ -195,14 +197,14 @@ final class URLImageCache: @unchecked Sendable {
     private init() {}
 
     /// Returns a cached image for the given URL string, or nil.
-    func get(_ urlString: String) -> RGBAImage? {
+    public func get(_ urlString: String) -> RGBAImage? {
         lock.lock()
         defer { lock.unlock() }
         return cache[urlString]
     }
 
     /// Stores an image in the cache for the given URL string.
-    func set(_ urlString: String, image: RGBAImage) {
+    public func set(_ urlString: String, image: RGBAImage) {
         lock.lock()
         defer { lock.unlock() }
         cache[urlString] = image
@@ -225,7 +227,7 @@ extension PlatformImageLoader {
     ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
     /// - Returns: The decoded image.
     /// - Throws: `ImageLoadError` on network or decoding failure, or if image exceeds size limit.
-    func loadImage(
+    public func loadImage(
         from urlString: String,
         cache: URLImageCache = .shared,
         timeout: TimeInterval = 30,

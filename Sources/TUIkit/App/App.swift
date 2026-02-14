@@ -87,8 +87,8 @@ internal final class AppRunner<A: App> {
         self.appHeader = AppHeaderState()
         self.focusManager = FocusManager()
         self.tuiContext = TUIContext()
-        self.paletteManager = ThemeManager(items: PaletteRegistry.all, appState: appState)
-        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, appState: appState)
+        self.paletteManager = ThemeManager(items: PaletteRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
+        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
 
         // Configure status bar style
         self.statusBar.style = .bordered

@@ -10,14 +10,14 @@
 ///
 /// Used as the intermediate representation for image data before
 /// ASCII art conversion. Each channel is stored as a `UInt8` (0-255).
-struct RGBA: Sendable, Equatable {
-    var r: UInt8
-    var g: UInt8
-    var b: UInt8
-    var a: UInt8
+public struct RGBA: Sendable, Equatable {
+    public var r: UInt8
+    public var g: UInt8
+    public var b: UInt8
+    public var a: UInt8
 
     /// Creates an opaque pixel with the given RGB values.
-    init(r: UInt8, g: UInt8, b: UInt8, a: UInt8 = 255) {
+    public init(r: UInt8, g: UInt8, b: UInt8, a: UInt8 = 255) {
         self.r = r
         self.g = g
         self.b = b
@@ -32,7 +32,7 @@ extension RGBA {
     /// The perceived luminance using ITU-R BT.601 coefficients.
     ///
     /// Returns a value in the range 0.0 (black) to 255.0 (white).
-    var luminance: Double {
+    public var luminance: Double {
         Double(r) * 0.299 + Double(g) * 0.587 + Double(b) * 0.114
     }
 }
@@ -43,15 +43,15 @@ extension RGBA {
 ///
 /// This is the platform-independent representation produced by
 /// `ImageLoader` implementations and consumed by `ASCIIConverter`.
-struct RGBAImage: Sendable {
+public struct RGBAImage: Sendable {
     /// Image width in pixels.
-    let width: Int
+    public let width: Int
 
     /// Image height in pixels.
-    let height: Int
+    public let height: Int
 
     /// Row-major pixel data (`width * height` elements).
-    private(set) var pixels: [RGBA]
+    public private(set) var pixels: [RGBA]
 
     /// Creates an image from dimensions and pixel data.
     ///
@@ -59,7 +59,7 @@ struct RGBAImage: Sendable {
     ///   - width: Image width in pixels.
     ///   - height: Image height in pixels.
     ///   - pixels: Pixel data in row-major order. Must contain `width * height` elements.
-    init(width: Int, height: Int, pixels: [RGBA]) {
+    public init(width: Int, height: Int, pixels: [RGBA]) {
         precondition(pixels.count == width * height, "Pixel count must match width * height")
         self.width = width
         self.height = height
@@ -77,7 +77,7 @@ extension RGBAImage {
     ///   - x: Column (0-based, left to right).
     ///   - y: Row (0-based, top to bottom).
     /// - Returns: The RGBA pixel value.
-    func pixel(at x: Int, _ y: Int) -> RGBA {
+    public func pixel(at x: Int, _ y: Int) -> RGBA {
         pixels[y * width + x]
     }
 
@@ -87,7 +87,7 @@ extension RGBAImage {
     ///   - x: Column (0-based).
     ///   - y: Row (0-based).
     ///   - value: The new pixel value.
-    mutating func setPixel(at x: Int, _ y: Int, value: RGBA) {
+    public mutating func setPixel(at x: Int, _ y: Int, value: RGBA) {
         pixels[y * width + x] = value
     }
 
@@ -101,7 +101,7 @@ extension RGBAImage {
     ///   - rError: Red channel error.
     ///   - gError: Green channel error.
     ///   - bError: Blue channel error.
-    mutating func addError(at x: Int, _ y: Int, rError: Double, gError: Double, bError: Double) {
+    public mutating func addError(at x: Int, _ y: Int, rError: Double, gError: Double, bError: Double) {
         let index = y * width + x
         let pixel = pixels[index]
         pixels[index] = RGBA(
@@ -122,7 +122,7 @@ extension RGBAImage {
     ///   - targetWidth: The desired width.
     ///   - targetHeight: The desired height.
     /// - Returns: A new image with the specified dimensions.
-    func scaled(to targetWidth: Int, _ targetHeight: Int) -> RGBAImage {
+    public func scaled(to targetWidth: Int, _ targetHeight: Int) -> RGBAImage {
         guard targetWidth > 0, targetHeight > 0 else {
             return RGBAImage(width: 0, height: 0, pixels: [])
         }
@@ -146,7 +146,7 @@ extension RGBAImage {
     ///   - targetWidth: The desired width.
     ///   - targetHeight: The desired height.
     /// - Returns: A new image with the specified dimensions.
-    func scaledBilinear(to targetWidth: Int, _ targetHeight: Int) -> RGBAImage {
+    public func scaledBilinear(to targetWidth: Int, _ targetHeight: Int) -> RGBAImage {
         guard targetWidth > 0, targetHeight > 0 else {
             return RGBAImage(width: 0, height: 0, pixels: [])
         }

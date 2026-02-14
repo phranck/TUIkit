@@ -151,11 +151,11 @@ extension Appearance {
 // MARK: - Appearance Registry
 
 /// Registry of available appearances for cycling.
-struct AppearanceRegistry {
+public struct AppearanceRegistry {
     /// All available appearances in cycling order.
     ///
     /// Order: rounded (default) → line → doubleLine → heavy
-    static let all: [Appearance] = [
+    public static let all: [Appearance] = [
         .rounded,
         .line,
         .doubleLine,
@@ -166,59 +166,7 @@ struct AppearanceRegistry {
     ///
     /// - Parameter id: The appearance ID to find.
     /// - Returns: The appearance, or nil if not found.
-    static func appearance(withId id: Appearance.ID) -> Appearance? {
+    public static func appearance(withId id: Appearance.ID) -> Appearance? {
         all.first { $0.rawId == id }
-    }
-}
-
-// MARK: - Appearance Environment Key
-
-/// Environment key for the current appearance.
-private struct AppearanceKey: EnvironmentKey {
-    static let defaultValue: Appearance = .default
-}
-
-extension EnvironmentValues {
-    /// The current appearance.
-    ///
-    /// Set an appearance at the app level and it propagates to all child views:
-    ///
-    /// ```swift
-    /// WindowGroup {
-    ///     ContentView()
-    /// }
-    /// .appearance(.rounded)
-    /// ```
-    ///
-    /// Access the appearance in `renderToBuffer(context:)`:
-    ///
-    /// ```swift
-    /// let appearance = context.environment.appearance
-    /// let borderStyle = appearance.borderStyle
-    /// ```
-    public var appearance: Appearance {
-        get { self[AppearanceKey.self] }
-        set { self[AppearanceKey.self] = newValue }
-    }
-}
-
-// MARK: - AppearanceManager Environment Key
-
-/// Environment key for the appearance manager.
-private struct AppearanceManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(items: AppearanceRegistry.all)
-}
-
-extension EnvironmentValues {
-    /// The appearance manager for cycling and setting appearances.
-    ///
-    /// ```swift
-    /// let appearanceManager = context.environment.appearanceManager
-    /// appearanceManager.cycleNext()
-    /// appearanceManager.setCurrent(Appearance.rounded)
-    /// ```
-    public var appearanceManager: ThemeManager {
-        get { self[AppearanceManagerKey.self] }
-        set { self[AppearanceManagerKey.self] = newValue }
     }
 }

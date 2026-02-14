@@ -109,74 +109,22 @@ extension Palette {
     public var cursorColor: Color { accent }
 }
 
-// MARK: - Palette Environment Key
-
-/// Environment key for the current palette.
-private struct PaletteKey: EnvironmentKey {
-    static let defaultValue: any Palette = SystemPalette(.green)
-}
-
-extension EnvironmentValues {
-    /// The current palette.
-    ///
-    /// Set a palette at the app level and it propagates to all child views:
-    ///
-    /// ```swift
-    /// WindowGroup {
-    ///     ContentView()
-    /// }
-     /// .environment(\.palette, SystemPalette(.green))
-    /// ```
-    ///
-    /// Access the palette in `renderToBuffer(context:)`:
-    ///
-    /// ```swift
-    /// let palette = context.environment.palette
-    /// let fg = palette.foreground
-    /// ```
-    public var palette: any Palette {
-        get { self[PaletteKey.self] }
-        set { self[PaletteKey.self] = newValue }
-    }
-}
-
 // MARK: - Palette Registry
 
 /// Registry of available palettes.
-struct PaletteRegistry {
+public struct PaletteRegistry {
     /// All available palettes in cycling order, built from ``SystemPalette/Preset``.
     ///
     /// Order: Green → Amber → Red → Violet → Blue → White
-    static let all: [any Palette] = SystemPalette.Preset.allCases.map { SystemPalette($0) }
+    public static let all: [any Palette] = SystemPalette.Preset.allCases.map { SystemPalette($0) }
 
     /// Finds a palette by ID.
-    static func palette(withId id: String) -> (any Palette)? {
+    public static func palette(withId id: String) -> (any Palette)? {
         all.first { $0.id == id }
     }
 
     /// Finds a palette by name.
-    static func palette(withName name: String) -> (any Palette)? {
+    public static func palette(withName name: String) -> (any Palette)? {
         all.first { $0.name == name }
-    }
-}
-
-// MARK: - PaletteManager Environment Key
-
-/// Environment key for the palette manager.
-private struct PaletteManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(items: PaletteRegistry.all)
-}
-
-extension EnvironmentValues {
-    /// The palette manager for cycling and setting palettes.
-    ///
-    /// ```swift
-    /// let paletteManager = context.environment.paletteManager
-    /// paletteManager.cycleNext()
-    /// paletteManager.setCurrent(SystemPalette(.amber))
-    /// ```
-    public var paletteManager: ThemeManager {
-        get { self[PaletteManagerKey.self] }
-        set { self[PaletteManagerKey.self] = newValue }
     }
 }
