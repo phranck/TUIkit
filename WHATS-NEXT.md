@@ -62,7 +62,7 @@
 
 ## Completed
 
-- **2026-02-14**: P4.16 Dependency injection migration: RenderNotifier.current now optional, EnvironmentValues.renderNotifier property added, render-time consumers (Spinner, NotificationHostModifier) read from environment, property wrapper fallback pattern implemented
+- **2026-02-14**: P4.16 Complete elimination of RenderNotifier: AppState.shared and RenderCache.shared singletons replace global registry. Pure singleton architecture. All property wrappers, render consumers, and services use direct singleton access. 1069 tests pass.
 - **2026-02-14**: P4.18 Concurrency documentation: added RenderNotifier safety model documentation, Terminal memory operation comments
 - **2026-02-14**: P4.17 Generic ItemListHandler: replaced AnyHashable type erasure with generic SelectionValue parameter, removed configureSelectionBindings, type-safe bindings in _ListCore and _TableCore
 - **2026-02-14**: Git history cleanup: removed 33 Co-Authored-By trailers from entire history via git filter-repo + force-push
