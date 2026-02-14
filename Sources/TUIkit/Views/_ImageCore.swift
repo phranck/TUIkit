@@ -36,9 +36,9 @@ struct _ImageCore: View, Renderable, Layoutable {
     // MARK: - Layoutable
 
     func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
-        let w = proposal.width ?? context.availableWidth
-        let h = proposal.height ?? context.availableHeight
-        return .fixed(w, h)
+        let proposedWidth = proposal.width ?? context.availableWidth
+        let proposedHeight = proposal.height ?? context.availableHeight
+        return .fixed(proposedWidth, proposedHeight)
     }
 
     // MARK: - Renderable

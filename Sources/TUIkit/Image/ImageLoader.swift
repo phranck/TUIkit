@@ -128,9 +128,9 @@ extension PlatformImageLoader {
         let count = width * height
         var pixels = [RGBA](repeating: RGBA(r: 0, g: 0, b: 0), count: count)
 
-        for i in 0..<count {
-            let offset = i * 4
-            pixels[i] = RGBA(
+        for pixelIndex in 0..<count {
+            let offset = pixelIndex * 4
+            pixels[pixelIndex] = RGBA(
                 r: rawPixels[offset],
                 g: rawPixels[offset + 1],
                 b: rawPixels[offset + 2],

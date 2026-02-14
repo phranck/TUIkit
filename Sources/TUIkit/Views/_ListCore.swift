@@ -89,22 +89,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
             handler.selectableIndices = selectableIndices
 
             // Set up selection bindings
-            if let binding = singleSelection {
-                handler.singleSelection = Binding<AnyHashable?>(
-                    get: { binding.wrappedValue.map { AnyHashable($0) } },
-                    set: { newValue in
-                        binding.wrappedValue = newValue?.base as? SelectionValue
-                    }
-                )
-            }
-            if let binding = multiSelection {
-                handler.multiSelection = Binding<Set<AnyHashable>>(
-                    get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
-                    set: { newValue in
-                        binding.wrappedValue = Set(newValue.compactMap { $0.base as? SelectionValue })
-                    }
-                )
-            }
+            handler.configureSelectionBindings(single: singleSelection, multi: multiSelection)
 
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
@@ -382,14 +367,14 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
 
         case .content:
             if isFocused && isSelected {
-                let dimAccent = palette.accent.opacity(0.35)
-                return Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+                let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
+                return Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.pulsePhase)
             } else if isFocused {
                 return palette.focusBackground
             } else if isSelected {
-                return palette.accent.opacity(0.25)
+                return palette.accent.opacity(ViewConstants.selectedBackground)
             } else if style.alternatingRowColors && sectionContentIndex.isMultiple(of: 2) {
-                return palette.accent.opacity(0.15)
+                return palette.accent.opacity(ViewConstants.alternatingRowBackground)
             } else {
                 return nil
             }

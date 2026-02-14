@@ -1,4 +1,4 @@
-//  TUIKit - Terminal UI Kit for Swift
+//  🖥️ TUIKit — Terminal UI Kit for Swift
 //  TerminalSymbols.swift
 //
 //  Created by LAYERED.work

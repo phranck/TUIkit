@@ -42,7 +42,7 @@ struct TextFieldContentRenderer {
         contentWidth: Int
     ) -> String {
         let isEmpty = text.isEmpty
-        let backgroundColor = palette.accent.opacity(0.2)
+        let backgroundColor = palette.accent.opacity(ViewConstants.focusBorderDim)
 
         if isEmpty && !isFocused && prompt != nil {
             return buildPromptContent(palette: palette, background: backgroundColor, width: contentWidth)
@@ -164,7 +164,7 @@ struct TextFieldContentRenderer {
                     result += ANSIRenderer.colorize(
                         String(char),
                         foreground: palette.background,
-                        background: palette.accent.opacity(0.6)
+                        background: palette.accent.opacity(ViewConstants.selectionIndicator)
                     )
                 } else {
                     result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
@@ -200,7 +200,7 @@ struct TextFieldContentRenderer {
             return (visible, baseColor)
         case .pulse:
             let phase = cursorTimer?.pulsePhase(for: speed) ?? 1.0
-            let dimColor = baseColor.opacity(0.35)
+            let dimColor = baseColor.opacity(ViewConstants.focusPulseMin)
             let color = Color.lerp(dimColor, baseColor, phase: phase)
             return (true, color)
         }

@@ -312,7 +312,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
         )
 
         // Wrap with half-block caps
-        let capColor = palette.accent.opacity(0.2)
+        let capColor = palette.accent.opacity(ViewConstants.focusBorderDim)
         let openCap = ANSIRenderer.colorize(String(TerminalSymbols.openCap), foreground: capColor)
         let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: capColor)
         return FrameBuffer(text: openCap + fieldContent + closeCap)

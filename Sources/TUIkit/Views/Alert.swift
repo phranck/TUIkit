@@ -127,45 +127,12 @@ struct _AlertCore<Actions: View>: View, Renderable {
         )
     }
 
-    /// Extracts Button instances from a view hierarchy.
+    /// Extracts Button instances from a view hierarchy using the `ButtonProvider` protocol.
     private func extractButtons<V: View>(from view: V) -> [Button] {
-        var buttons: [Button] = []
-        collectButtons(from: view, into: &buttons)
-        return buttons
-    }
-
-    private func collectButtons<V: View>(from view: V, into buttons: inout [Button]) {
-        if let button = view as? Button {
-            buttons.append(button)
-            return
+        if let provider = view as? ButtonProvider {
+            return provider.extractButtons()
         }
-
-        if view is EmptyView {
-            return
-        }
-
-        let mirror = Mirror(reflecting: view)
-        let typeName = String(describing: type(of: view))
-
-        // TupleView wraps children in .children property
-        if typeName.hasPrefix("TupleView") {
-            for child in mirror.children where child.label == "children" {
-                let tupleMirror = Mirror(reflecting: child.value)
-                for tupleChild in tupleMirror.children {
-                    if let button = tupleChild.value as? Button {
-                        buttons.append(button)
-                    }
-                }
-            }
-            return
-        }
-
-        // Generic children inspection
-        for child in mirror.children {
-            if let button = child.value as? Button {
-                buttons.append(button)
-            }
-        }
+        return []
     }
 }
 
@@ -380,5 +347,45 @@ extension Alert where Actions == EmptyView {
     /// Creates a success-style alert without actions.
     public static func success(title: String = "Success", message: String) -> Alert<EmptyView> {
         Alert<EmptyView>(title: title, message: message, titleColor: .palette.success)
+    }
+}
+
+// MARK: - Button Provider Protocol
+
+/// A protocol for views that can provide `Button` instances.
+///
+/// This replaces the fragile `Mirror`-based button extraction with a
+/// compile-time safe, protocol-based approach. Each view type that may
+/// contain buttons in an Alert's actions closure conforms to this protocol.
+@MainActor
+protocol ButtonProvider {
+    /// Extracts all `Button` instances contained in this view.
+    func extractButtons() -> [Button]
+}
+
+// MARK: - ButtonProvider Conformances
+
+extension Button: ButtonProvider {
+    func extractButtons() -> [Button] {
+        [self]
+    }
+}
+
+extension EmptyView: ButtonProvider {
+    func extractButtons() -> [Button] {
+        []
+    }
+}
+
+extension TupleView: ButtonProvider {
+    func extractButtons() -> [Button] {
+        var buttons: [Button] = []
+        func collect<T: View>(_ view: T) {
+            if let provider = view as? ButtonProvider {
+                buttons.append(contentsOf: provider.extractButtons())
+            }
+        }
+        repeat collect(each children)
+        return buttons
     }
 }

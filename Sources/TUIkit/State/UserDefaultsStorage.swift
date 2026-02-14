@@ -181,7 +181,7 @@ import Foundation
 
     private extension UserDefaultsStorage {
         static func createStorage(suiteName: String?) -> JSONFileStorage {
-            let appName = ProcessInfo.processInfo.processName
+            let appName = sanitizedProcessName(ProcessInfo.processInfo.processName)
 
             // Use XDG Base Directory: ~/.local/share/[appName]/
             let dataHome: URL

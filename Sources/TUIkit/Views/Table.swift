@@ -245,22 +245,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             handler.itemIDs = data.map { AnyHashable($0.id) }
 
             // Set up selection bindings
-            if let binding = singleSelection {
-                handler.singleSelection = Binding<AnyHashable?>(
-                    get: { binding.wrappedValue.map { AnyHashable($0) } },
-                    set: { newValue in
-                        binding.wrappedValue = newValue?.base as? Value.ID
-                    }
-                )
-            }
-            if let binding = multiSelection {
-                handler.multiSelection = Binding<Set<AnyHashable>>(
-                    get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
-                    set: { newValue in
-                        binding.wrappedValue = Set(newValue.compactMap { $0.base as? Value.ID })
-                    }
-                )
-            }
+            handler.configureSelectionBindings(single: singleSelection, multi: multiSelection)
 
             // Ensure focused item is visible
             handler.ensureFocusedItemVisible()
@@ -425,13 +410,13 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         palette: any Palette
     ) -> (indicator: String, indicatorColor: Color, backgroundColor: Color?) {
         if isFocused && isSelected {
-            let dimAccent = palette.accent.opacity(0.35)
-            let bg = Color.lerp(dimAccent, palette.accent.opacity(0.5), phase: context.pulsePhase)
+            let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
+            let bg = Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.pulsePhase)
             return ("●", palette.accent, bg)
         } else if isFocused {
             return (" ", palette.foregroundTertiary, palette.focusBackground)
         } else if isSelected {
-            return ("●", palette.accent.opacity(0.6), nil)
+            return ("●", palette.accent.opacity(ViewConstants.selectionIndicator), nil)
         } else {
             return (" ", palette.foregroundTertiary, nil)
         }
