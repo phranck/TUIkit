@@ -292,8 +292,8 @@ struct RenderCacheTests {
 
     @Test("Stats delta computes per-frame difference")
     func statsDelta() {
-        let earlier = RenderCache.Stats(hits: 10, misses: 5, stores: 8, clears: 2)
-        let current = RenderCache.Stats(hits: 13, misses: 7, stores: 9, clears: 3)
+        let earlier = RenderCache.Stats(hits: 10, misses: 5, stores: 8, clears: 2, subtreeClears: 1)
+        let current = RenderCache.Stats(hits: 13, misses: 7, stores: 9, clears: 3, subtreeClears: 4)
 
         let delta = current.delta(since: earlier)
 
@@ -301,6 +301,81 @@ struct RenderCacheTests {
         #expect(delta.misses == 2)
         #expect(delta.stores == 1)
         #expect(delta.clears == 1)
+        #expect(delta.subtreeClears == 3)
         #expect(delta.lookups == 5)
+    }
+
+    // MARK: - clearAffected(by:)
+
+    @Test("clearAffected clears ancestor cache entries")
+    func clearAffectedClearsAncestor() {
+        let cache = RenderCache()
+        let parent = ViewIdentity(path: "Root/VStack")
+        let child = ViewIdentity(path: "Root/VStack/Button")
+
+        cache.store(identity: parent, view: "parent", buffer: FrameBuffer(text: "p"), contextWidth: 80, contextHeight: 24)
+
+        cache.clearAffected(by: child)
+
+        let result = cache.lookup(identity: parent, view: "parent", contextWidth: 80, contextHeight: 24)
+        #expect(result == nil)
+        #expect(cache.stats.subtreeClears == 1)
+    }
+
+    @Test("clearAffected clears descendant cache entries")
+    func clearAffectedClearsDescendant() {
+        let cache = RenderCache()
+        let parent = ViewIdentity(path: "Root/VStack")
+        let child = ViewIdentity(path: "Root/VStack/Text")
+
+        cache.store(identity: child, view: "child", buffer: FrameBuffer(text: "c"), contextWidth: 80, contextHeight: 24)
+
+        cache.clearAffected(by: parent)
+
+        let result = cache.lookup(identity: child, view: "child", contextWidth: 80, contextHeight: 24)
+        #expect(result == nil)
+    }
+
+    @Test("clearAffected preserves sibling cache entries")
+    func clearAffectedPreservesSibling() {
+        let cache = RenderCache()
+        let sidebarID = ViewIdentity(path: "Root/Sidebar")
+        let contentID = ViewIdentity(path: "Root/Content")
+        let toggleID = ViewIdentity(path: "Root/Sidebar/Toggle")
+
+        cache.store(identity: sidebarID, view: "sidebar", buffer: FrameBuffer(text: "s"), contextWidth: 80, contextHeight: 24)
+        cache.store(identity: contentID, view: "content", buffer: FrameBuffer(text: "c"), contextWidth: 80, contextHeight: 24)
+
+        // State change in Sidebar/Toggle should NOT affect Content
+        cache.clearAffected(by: toggleID)
+
+        let sidebarResult = cache.lookup(identity: sidebarID, view: "sidebar", contextWidth: 80, contextHeight: 24)
+        let contentResult = cache.lookup(identity: contentID, view: "content", contextWidth: 80, contextHeight: 24)
+
+        #expect(sidebarResult == nil, "Sidebar is ancestor of Toggle, should be cleared")
+        #expect(contentResult != nil, "Content is sibling, should survive")
+    }
+
+    @Test("clearAffected clears exact identity match")
+    func clearAffectedClearsExactMatch() {
+        let cache = RenderCache()
+        let identity = ViewIdentity(path: "Root/MyView")
+
+        cache.store(identity: identity, view: 42, buffer: FrameBuffer(text: "x"), contextWidth: 80, contextHeight: 24)
+
+        cache.clearAffected(by: identity)
+
+        let result = cache.lookup(identity: identity, view: 42, contextWidth: 80, contextHeight: 24)
+        #expect(result == nil)
+    }
+
+    @Test("clearAffected on empty cache is a no-op")
+    func clearAffectedOnEmptyCacheIsNoop() {
+        let cache = RenderCache()
+
+        cache.clearAffected(by: ViewIdentity(path: "Root/Anything"))
+
+        #expect(cache.isEmpty)
+        #expect(cache.stats.subtreeClears == 1)
     }
 }

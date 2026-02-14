@@ -70,12 +70,22 @@ public final class RenderCache: @unchecked Sendable {
         /// Number of times ``clearAll()`` was called.
         public var clears: Int = 0
 
+        /// Number of times ``clearAffected(by:)`` was called.
+        public var subtreeClears: Int = 0
+
         /// Creates a new Stats instance with default values.
-        public init(hits: Int = 0, misses: Int = 0, stores: Int = 0, clears: Int = 0) {
+        public init(
+            hits: Int = 0,
+            misses: Int = 0,
+            stores: Int = 0,
+            clears: Int = 0,
+            subtreeClears: Int = 0
+        ) {
             self.hits = hits
             self.misses = misses
             self.stores = stores
             self.clears = clears
+            self.subtreeClears = subtreeClears
         }
 
         /// The total number of lookups (hits + misses).
@@ -92,7 +102,8 @@ public final class RenderCache: @unchecked Sendable {
                 hits: hits - earlier.hits,
                 misses: misses - earlier.misses,
                 stores: stores - earlier.stores,
-                clears: clears - earlier.clears
+                clears: clears - earlier.clears,
+                subtreeClears: subtreeClears - earlier.subtreeClears
             )
         }
     }
@@ -253,14 +264,34 @@ extension RenderCache {
 
     /// Clears all cached entries.
     ///
-    /// Called when any `@State` value changes, because state changes
-    /// can propagate to any subtree through bindings or environment.
-    /// Also called by `RenderLoop` when environment values change
-    /// (theme, appearance).
+    /// Called by `RenderLoop` when global environment values change
+    /// (theme, appearance) that affect all views simultaneously.
+    /// For state changes that only affect a subtree, prefer
+    /// ``clearAffected(by:)``.
     public func clearAll() {
         stats.clears += 1
         logDebug("CLEAR ALL (\(entries.count) entries)")
         entries.removeAll(keepingCapacity: true)
+    }
+
+    /// Clears cached entries affected by a state change at the given identity.
+    ///
+    /// Instead of clearing the entire cache, this removes only entries whose
+    /// identity is an ancestor of, a descendant of, or equal to the changed
+    /// identity. Sibling subtrees retain their cached buffers.
+    ///
+    /// - Parameter identity: The identity of the view whose state changed.
+    public func clearAffected(by identity: ViewIdentity) {
+        stats.subtreeClears += 1
+        let staleKeys = entries.keys.filter { cached in
+            cached == identity
+                || cached.isAncestor(of: identity)
+                || identity.isAncestor(of: cached)
+        }
+        for key in staleKeys {
+            entries.removeValue(forKey: key)
+        }
+        logDebug("CLEAR AFFECTED by \(identity.path): \(staleKeys.count) of \(entries.count + staleKeys.count) entries")
     }
 
     /// Removes all cached entries, resets GC state, and clears statistics.
@@ -290,6 +321,7 @@ extension RenderCache {
         logDebug(
             "FRAME — hits: \(frame.hits), misses: \(frame.misses), "
                 + "stores: \(frame.stores), clears: \(frame.clears), "
+                + "subtreeClears: \(frame.subtreeClears), "
                 + "entries: \(entries.count), hit rate: \(rate)"
         )
     }
