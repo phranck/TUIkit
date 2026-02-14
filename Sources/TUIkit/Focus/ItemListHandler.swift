@@ -54,7 +54,7 @@ public enum SelectionMode: Sendable {
 /// | PageUp | Move up by viewport height |
 /// | PageDown | Move down by viewport height |
 /// | Enter/Space | Toggle selection at focused index |
-final class ItemListHandler: Focusable {
+final class ItemListHandler<SelectionValue: Hashable>: Focusable {
     /// The unique identifier for this focusable element.
     let focusID: String
 
@@ -77,13 +77,15 @@ final class ItemListHandler: Focusable {
     var scrollOffset: Int = 0
 
     /// Binding for single selection mode (optional ID).
-    var singleSelection: Binding<AnyHashable?>?
+    var singleSelection: Binding<SelectionValue?>?
 
     /// Binding for multi-selection mode (Set of IDs).
-    var multiSelection: Binding<Set<AnyHashable>>?
+    var multiSelection: Binding<Set<SelectionValue>>?
 
     /// Maps item indices to their IDs for selection management.
-    var itemIDs: [AnyHashable] = []
+    ///
+    /// Entries are `nil` for non-selectable rows (e.g. section headers/footers in List).
+    var itemIDs: [SelectionValue?] = []
 
     /// The set of indices that can be selected and focused.
     ///
@@ -282,40 +284,9 @@ extension ItemListHandler {
 
 extension ItemListHandler {
     /// Toggles the selection state at the focused index.
-
-    /// Configures selection bindings by converting typed bindings to type-erased `AnyHashable` bindings.
-    ///
-    /// This helper eliminates duplicated binding conversion code in `_ListCore` and `_TableCore`.
-    ///
-    /// - Parameters:
-    ///   - single: An optional single-selection binding.
-    ///   - multi: An optional multi-selection binding.
-    func configureSelectionBindings<T: Hashable>(
-        single: Binding<T?>?,
-        multi: Binding<Set<T>>?
-    ) {
-        if let binding = single {
-            singleSelection = Binding<AnyHashable?>(
-                get: { binding.wrappedValue.map { AnyHashable($0) } },
-                set: { newValue in
-                    binding.wrappedValue = newValue?.base as? T
-                }
-            )
-        }
-        if let binding = multi {
-            multiSelection = Binding<Set<AnyHashable>>(
-                get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
-                set: { newValue in
-                    binding.wrappedValue = Set(newValue.compactMap { $0.base as? T })
-                }
-            )
-        }
-    }
-
     func toggleSelectionAtFocusedIndex() {
-        guard focusedIndex >= 0 && focusedIndex < itemIDs.count else { return }
-
-        let itemID = itemIDs[focusedIndex]
+        guard focusedIndex >= 0 && focusedIndex < itemIDs.count,
+              let itemID = itemIDs[focusedIndex] else { return }
 
         switch selectionMode {
         case .single:
@@ -344,9 +315,8 @@ extension ItemListHandler {
     /// - Parameter index: The item index.
     /// - Returns: True if the item is selected.
     func isSelected(at index: Int) -> Bool {
-        guard index >= 0 && index < itemIDs.count else { return false }
-
-        let itemID = itemIDs[index]
+        guard index >= 0 && index < itemIDs.count,
+              let itemID = itemIDs[index] else { return false }
 
         switch selectionMode {
         case .single:
