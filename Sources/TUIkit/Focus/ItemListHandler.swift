@@ -283,6 +283,36 @@ extension ItemListHandler {
 
 extension ItemListHandler {
     /// Toggles the selection state at the focused index.
+
+    /// Configures selection bindings by converting typed bindings to type-erased `AnyHashable` bindings.
+    ///
+    /// This helper eliminates duplicated binding conversion code in `_ListCore` and `_TableCore`.
+    ///
+    /// - Parameters:
+    ///   - single: An optional single-selection binding.
+    ///   - multi: An optional multi-selection binding.
+    func configureSelectionBindings<T: Hashable>(
+        single: Binding<T?>?,
+        multi: Binding<Set<T>>?
+    ) {
+        if let binding = single {
+            singleSelection = Binding<AnyHashable?>(
+                get: { binding.wrappedValue.map { AnyHashable($0) } },
+                set: { newValue in
+                    binding.wrappedValue = newValue?.base as? T
+                }
+            )
+        }
+        if let binding = multi {
+            multiSelection = Binding<Set<AnyHashable>>(
+                get: { Set(binding.wrappedValue.map { AnyHashable($0) }) },
+                set: { newValue in
+                    binding.wrappedValue = Set(newValue.compactMap { $0.base as? T })
+                }
+            )
+        }
+    }
+
     func toggleSelectionAtFocusedIndex() {
         guard focusedIndex >= 0 && focusedIndex < itemIDs.count else { return }
 

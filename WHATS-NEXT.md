@@ -3,14 +3,14 @@
 ## Status Snapshot
 
 - **Branch**: main
-- **Active Task**: None (Codebase Quality refactoring complete)
+- **Active Task**: Project analysis running (background agent)
 - **Status**: pending
-- **Last Updated**: 2026-02-13T21:45:00Z
+- **Last Updated**: 2026-02-14T12:30:00Z
 
 ## Current Checkpoint
 
 - **File**: N/A
-- **What**: Codebase Quality & SwiftUI API Parity refactoring complete (Phases 1-6, Phase 5 deferred)
+- **What**: Image View feature merged (PR #90). Project analysis agent running in background.
 - **Phase**: N/A
 
 ## Blockers
@@ -19,61 +19,67 @@
 
 ## Next Steps (Immediate Actions)
 
-1. **Bundle Resource Loading** (SPM integration, TUIResource type-safe accessors)
-2. **Image View with ASCII Art** (24-bit color rendering, 6 phases)
-3. **State Persistence** (@RestoredState property wrapper, crash recovery)
+1. **Review project analysis report** (papers/project_analysis.md, once background agent completes)
+2. **State Persistence** (@RestoredState property wrapper, crash recovery)
+3. **DisclosureGroup** (expandable/collapsible sections)
 4. **Phase 5 Revisited** (File splitting for maintainability, when resources allow)
 
 ## Open Plans (Next Priority Queue)
 
 | # | Plan | Effort | Impact | Status |
 |---|------|--------|--------|--------|
-| 1 | Bundle Resource Loading Support | Medium | Medium | Not Started |
-| 2 | Image View with ASCII Art Rendering | High | High | Not Started |
-| 3 | State Persistence (Session Continuity) | Medium | Medium | Not Started |
+| 1 | State Persistence (Session Continuity) | Medium | Medium | Not Started |
+| 2 | DisclosureGroup | Medium | Medium | Not Started |
+| 3 | Phase 5 Revisited (File Splitting) | Low | Low | Deferred |
 
 ---
 
 ## In Progress
 
-(None - all refactoring complete)
+- [ ] **Project Analysis**: Background agent examining architecture, redundancies, dead code, documentation gaps
 
 ## Open (Backlog)
-
-### Infrastructure
-- [ ] **Bundle Resource Loading**: SPM integration, type-safe TUIResource accessors (plan complete)
-- [ ] **Image View**: ASCII art rendering with 24-bit true color (plan complete, 6 phases)
-- [ ] **State Persistence**: @RestoredState wrapper, crash recovery (plan complete)
 
 ### Components
 - [ ] **DisclosureGroup**: Expandable/collapsible sections
 - [ ] **Phase 5 Revisited**: List.swift file splitting (deferred, low priority)
 
+### Infrastructure
+- [ ] **State Persistence**: @RestoredState wrapper, crash recovery
+
 ### Performance & Docs
 - [ ] **`View._printChanges()` Equivalent**: Debug mechanism
 - [ ] **Example App Redesign**: Feature catalog improvements
-- [ ] **Mobile/Tablet Docs**: Test DocC on mobile devices
 
 ## Completed
 
+- **2026-02-14**: Image View feature merged (PR #90)
+  - Image view with ASCII art rendering (blocks, ASCII, braille character sets)
+  - trueColor, ANSI-256, grayscale, mono color modes + Floyd-Steinberg dithering
+  - Async image loading from files and URLs with caching
+  - ContentMode enum + aspectRatio(_:contentMode:) modifier
+  - Bracketed paste mode for bulk text insertion
+  - TextContentType modifier for input character filtering (8 types)
+  - Text-input priority in key dispatch architecture
+  - Image demo pages in example app, DocC documentation updated
+  - 1064 tests passing, 148 suites
 - **2026-02-13**: Codebase Quality & SwiftUI API Parity complete (Phases 1-6)
   - Phase 1+2: FocusID collision bugs fixed (6 Views), auto-generated from context.identity.path
   - Phase 3: Disabled-state already consistent across 9 Views
-  - Phase 4: List API modifiers already implemented (.focusID, .listEmptyPlaceholder, .listFooterSeparator)
+  - Phase 4: List API modifiers already implemented
   - Phase 6: SecureField made generic with ViewBuilder-Label initializer
-  - Phase 5: File splitting deferred (List.swift dependencies too complex)
-  - 1037/1037 tests passing, 2 commits pushed to main
-- **2026-02-13**: Two-Pass Layout system complete (Phases 1-4, Phase 5 deferred). 1034+ tests passing.
-- **2026-02-13**: Consolidated plans/ to .claude/plans/, standardized AI tool instruction files, added SessionStart hook
+  - Phase 5: File splitting deferred
+- **2026-02-13**: Two-Pass Layout system complete (Phases 1-4)
+- **2026-02-13**: Consolidated plans/, standardized AI tool instructions, added SessionStart hook
 - **2026-02-13**: Code audit cleanup: withPersistentBackground, List/Table renderRow decomposition
 
 ## Notes
 
-- Codebase Quality findings: Most infrastructure already in place, minimal changes needed
-- Focus registration consolidated in FocusRegistration.swift (reusable helper)
-- Disabled-state pattern unified: canBeFocused flag + 0.5 opacity tertiary color
-- SwiftUI API parity achieved: Modifiers already implemented, ViewBuilder support added
-- Tests: 1037 / 143 suites, all green
-- Architecture: Clean, maintainable, follows Swift 6.0 conventions
+- Image feature includes CSTBImage C target (stb_image) for cross-platform image decoding
+- Bracketed paste: Terminal wraps pasted text in ESC[200~...ESC[201~ markers
+- TextContentType filters both typed and pasted input per content type
+- Key dispatch: Text-input elements get priority before status bar and other layers
+- Tests: 1064 / 148 suites, all green
+- Background analysis agent running: will produce papers/project_analysis.md
 
-**Last Updated**: 2026-02-13T21:45:00Z
+**Last Updated**: 2026-02-14T12:30:00Z

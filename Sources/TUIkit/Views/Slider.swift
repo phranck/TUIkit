@@ -349,14 +349,14 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Lay
         // Arrow colors: pulsing accent when focused, dimmed when unfocused
         let arrowColor: Color
         if isDisabled {
-            arrowColor = palette.foregroundTertiary.opacity(0.5)
+            arrowColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         } else if isFocused {
             // Pulse between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
+            let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
             arrowColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
         } else {
             // Dimmed arrows when unfocused
-            arrowColor = palette.foregroundTertiary.opacity(0.5)
+            arrowColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         }
 
         // Build track

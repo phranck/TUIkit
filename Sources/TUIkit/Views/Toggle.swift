@@ -269,12 +269,12 @@ private struct _ToggleCore<Label: View>: View, Renderable {
         // Bracket color: pulsing accent when focused, dimmed otherwise
         let bracketColor: Color
         if isDisabled {
-            bracketColor = palette.foregroundTertiary.opacity(0.5)
+            bracketColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         } else if isFocused {
-            let dimAccent = palette.accent.opacity(0.35)
+            let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
             bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
         } else {
-            bracketColor = palette.foregroundTertiary.opacity(0.5)
+            bracketColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         }
 
         let openBracket = ANSIRenderer.colorize("[", foreground: bracketColor)
@@ -283,11 +283,11 @@ private struct _ToggleCore<Label: View>: View, Renderable {
         // Content: [ ] (OFF) or [x] (ON)
         let contentColor: Color
         if isDisabled {
-            contentColor = palette.foregroundTertiary.opacity(0.5)
+            contentColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         } else if isOnValue {
             contentColor = palette.accent
         } else {
-            contentColor = palette.foregroundTertiary.opacity(0.5)
+            contentColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         }
 
         let content = isOnValue ? "x" : " "

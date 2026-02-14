@@ -360,16 +360,16 @@ private struct _StepperCore<Label: View>: View, Renderable {
         let arrowColor: Color
         let valueColor: Color
         if isDisabled {
-            arrowColor = palette.foregroundTertiary.opacity(0.5)
+            arrowColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
             valueColor = palette.foregroundTertiary
         } else if isFocused {
             // Pulse between 35% and 100% accent
-            let dimAccent = palette.accent.opacity(0.35)
+            let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
             arrowColor = Color.lerp(dimAccent, palette.accent, phase: pulsePhase)
             valueColor = palette.foreground
         } else {
             // Dimmed arrows when unfocused
-            arrowColor = palette.foregroundTertiary.opacity(0.5)
+            arrowColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
             valueColor = palette.foregroundSecondary
         }
 

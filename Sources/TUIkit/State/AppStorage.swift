@@ -23,6 +23,28 @@ public protocol StorageBackend: Sendable {
     func synchronize()
 }
 
+// MARK: - Process Name Sanitization
+
+/// Sanitizes a process name for safe use as a file system path component.
+///
+/// Removes characters that could cause path traversal or file system issues:
+/// - Forward slashes (`/`)
+/// - Null bytes (`\0`)
+/// - Replaces `..` sequences (path traversal)
+///
+/// Falls back to `"app"` if the result is empty after sanitization.
+///
+/// - Parameter name: The raw process name.
+/// - Returns: A sanitized string safe for use as a directory name.
+func sanitizedProcessName(_ name: String) -> String {
+    var sanitized = name
+        .replacingOccurrences(of: "/", with: "")
+        .replacingOccurrences(of: "\0", with: "")
+        .replacingOccurrences(of: "..", with: "")
+    sanitized = sanitized.trimmingCharacters(in: .whitespacesAndNewlines)
+    return sanitized.isEmpty ? "app" : sanitized
+}
+
 // MARK: - Config Directory
 
 /// Returns the app-specific configuration directory.
@@ -34,7 +56,7 @@ public protocol StorageBackend: Sendable {
 /// This ensures correct behavior on Linux where `$XDG_CONFIG_HOME`
 /// may differ from `~/.config`.
 private func appConfigDirectory() -> URL {
-    let appName = ProcessInfo.processInfo.processName
+    let appName = sanitizedProcessName(ProcessInfo.processInfo.processName)
 
     if let xdgConfig = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"], !xdgConfig.isEmpty {
         return URL(fileURLWithPath: xdgConfig)

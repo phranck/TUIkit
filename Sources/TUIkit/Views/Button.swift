@@ -301,7 +301,7 @@ private struct _ButtonCore: View, Renderable {
         let foregroundColor: Color
         if isDisabled {
             // Use tertiary at 50% opacity for clearly disabled appearance
-            foregroundColor = palette.foregroundTertiary.opacity(0.5)
+            foregroundColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         } else {
             foregroundColor = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
         }
@@ -324,12 +324,12 @@ private struct _ButtonCore: View, Renderable {
             return FrameBuffer(lines: [fullLine])
         } else {
             // Standard: half-block caps with accent-tinted background
-            let buttonBg = palette.accent.opacity(0.2)
+            let buttonBg = palette.accent.opacity(ViewConstants.focusBorderDim)
 
             // Label foreground: primary = accent/highlight, others = dimmed foreground
             let labelFg: Color
             if isDisabled {
-                labelFg = palette.foregroundTertiary.opacity(0.5)
+                labelFg = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
             } else if currentStyle.isBold {
                 labelFg = currentStyle.foregroundColor?.resolve(with: palette) ?? palette.accent
             } else {
@@ -341,7 +341,7 @@ private struct _ButtonCore: View, Renderable {
             if isDisabled {
                 resolvedCapColor = buttonBg
             } else if isFocused {
-                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(0.45), phase: context.pulsePhase)
+                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(ViewConstants.buttonCapPulseBright), phase: context.pulsePhase)
             } else {
                 resolvedCapColor = buttonBg
             }

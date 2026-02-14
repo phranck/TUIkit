@@ -129,7 +129,7 @@ extension List {
         self.multiSelection = nil
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = true
     }
 
@@ -151,7 +151,7 @@ extension List {
         self.multiSelection = nil
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = true
     }
 }
@@ -177,7 +177,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = nil
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = false
     }
 
@@ -197,7 +197,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = nil
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = false
     }
 }
@@ -225,7 +225,7 @@ extension List {
         self.multiSelection = selection
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = true
     }
 
@@ -247,7 +247,7 @@ extension List {
         self.multiSelection = selection
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = true
     }
 }
@@ -273,7 +273,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = selection
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = false
     }
 
@@ -293,7 +293,7 @@ extension List where Footer == EmptyView {
         self.multiSelection = selection
         self.focusID = nil
         self.isDisabled = false
-        self.emptyPlaceholder = "No items"
+        self.emptyPlaceholder = ViewConstants.emptyListPlaceholder
         self.showFooterSeparator = false
     }
 }

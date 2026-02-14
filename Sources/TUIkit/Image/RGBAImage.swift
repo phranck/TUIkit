@@ -103,11 +103,11 @@ extension RGBAImage {
     ///   - bError: Blue channel error.
     mutating func addError(at x: Int, _ y: Int, rError: Double, gError: Double, bError: Double) {
         let index = y * width + x
-        let p = pixels[index]
+        let pixel = pixels[index]
         pixels[index] = RGBA(
-            r: UInt8(clamping: Int(Double(p.r) + rError)),
-            g: UInt8(clamping: Int(Double(p.g) + gError)),
-            b: UInt8(clamping: Int(Double(p.b) + bError))
+            r: UInt8(clamping: Int(Double(pixel.r) + rError)),
+            g: UInt8(clamping: Int(Double(pixel.g) + gError)),
+            b: UInt8(clamping: Int(Double(pixel.b) + bError))
         )
     }
 }
