@@ -4,6 +4,13 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+// MARK: - Localization Service
+
+/// EnvironmentKey for the localization service.
+private struct LocalizationServiceKey: EnvironmentKey {
+    static let defaultValue: LocalizationService = LocalizationService.shared
+}
+
 // MARK: - Lifecycle Manager
 
 /// EnvironmentKey for view lifecycle tracking (appear/disappear/task).
@@ -56,6 +63,17 @@ private struct ActiveFocusSectionKey: EnvironmentKey {
 // MARK: - EnvironmentValues Extensions
 
 extension EnvironmentValues {
+
+    /// The localization service for retrieving translated strings.
+    var localizationService: LocalizationService {
+        get { self[LocalizationServiceKey.self] }
+        set { self[LocalizationServiceKey.self] = newValue }
+    }
+
+    /// The currently active language.
+    var currentLanguage: LocalizationService.Language {
+        localizationService.currentLanguage
+    }
 
     /// View lifecycle tracking (appear, disappear, task management).
     var lifecycle: LifecycleManager? {
