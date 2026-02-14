@@ -10,9 +10,14 @@ import Testing
 
 // MARK: - Localization Service Tests
 
-@Suite("LocalizationService", .disabled("Disabled: Debugging test suite issues"))
+@Suite("LocalizationService")
 struct LocalizationServiceTests {
     let fileManager = FileManager.default
+
+    init() {
+        // Clean up any previous test state on init
+        try? fileManager.removeItem(atPath: Self.configFilePath())
+    }
 
     // MARK: - Bundle Loading Tests
 
