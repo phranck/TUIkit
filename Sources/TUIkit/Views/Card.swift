@@ -133,15 +133,13 @@ public struct Card<Content: View, Footer: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension Card: Equatable where Content: Equatable, Footer: Equatable {
-    nonisolated public static func == (lhs: Card<Content, Footer>, rhs: Card<Content, Footer>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.title == rhs.title &&
-            lhs.content == rhs.content &&
-            lhs.footer == rhs.footer &&
-            lhs.config == rhs.config &&
-            lhs.backgroundColor == rhs.backgroundColor
-        }
+extension Card: @preconcurrency Equatable where Content: Equatable, Footer: Equatable {
+    public static func == (lhs: Card<Content, Footer>, rhs: Card<Content, Footer>) -> Bool {
+        lhs.title == rhs.title &&
+        lhs.content == rhs.content &&
+        lhs.footer == rhs.footer &&
+        lhs.config == rhs.config &&
+        lhs.backgroundColor == rhs.backgroundColor
     }
 }
 

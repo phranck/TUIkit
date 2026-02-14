@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
 
 /// Reusable building blocks for border rendering.
 ///

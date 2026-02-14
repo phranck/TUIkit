@@ -38,9 +38,9 @@ public struct SelectionDisabledModifier<Content: View>: View {
 
 // MARK: - Equatable
 
-extension SelectionDisabledModifier: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: SelectionDisabledModifier<Content>, rhs: SelectionDisabledModifier<Content>) -> Bool {
-        MainActor.assumeIsolated { lhs.content == rhs.content && lhs.isDisabled == rhs.isDisabled }
+extension SelectionDisabledModifier: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: SelectionDisabledModifier<Content>, rhs: SelectionDisabledModifier<Content>) -> Bool {
+        lhs.content == rhs.content && lhs.isDisabled == rhs.isDisabled
     }
 }
 

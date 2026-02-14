@@ -24,9 +24,9 @@ public struct DimmedModifier<Content: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension DimmedModifier: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: DimmedModifier<Content>, rhs: DimmedModifier<Content>) -> Bool {
-        MainActor.assumeIsolated { lhs.content == rhs.content }
+extension DimmedModifier: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: DimmedModifier<Content>, rhs: DimmedModifier<Content>) -> Bool {
+        lhs.content == rhs.content
     }
 }
 

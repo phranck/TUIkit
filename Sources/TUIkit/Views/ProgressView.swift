@@ -185,6 +185,7 @@ extension ProgressView {
     ///
     /// - Parameter style: The progress bar style.
     /// - Returns: A progress view with the specified style.
+    /// - Note: Scheduled for removal in the next major version.
     @available(*, deprecated, renamed: "trackStyle(_:)")
     public func progressBarStyle(_ style: TrackStyle) -> ProgressView {
         trackStyle(style)
@@ -193,14 +194,12 @@ extension ProgressView {
 
 // MARK: - Equatable Conformance
 
-extension ProgressView: Equatable where Label: Equatable, CurrentValueLabel: Equatable {
-    nonisolated public static func == (lhs: ProgressView<Label, CurrentValueLabel>, rhs: ProgressView<Label, CurrentValueLabel>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.fractionCompleted == rhs.fractionCompleted &&
-            lhs.style == rhs.style &&
-            lhs.label == rhs.label &&
-            lhs.currentValueLabel == rhs.currentValueLabel
-        }
+extension ProgressView: @preconcurrency Equatable where Label: Equatable, CurrentValueLabel: Equatable {
+    public static func == (lhs: ProgressView<Label, CurrentValueLabel>, rhs: ProgressView<Label, CurrentValueLabel>) -> Bool {
+        lhs.fractionCompleted == rhs.fractionCompleted &&
+        lhs.style == rhs.style &&
+        lhs.label == rhs.label &&
+        lhs.currentValueLabel == rhs.currentValueLabel
     }
 }
 

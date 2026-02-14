@@ -6,7 +6,6 @@
 //  with a single, reusable implementation.
 //
 
-import Foundation
 
 // MARK: - Cyclable Protocol
 

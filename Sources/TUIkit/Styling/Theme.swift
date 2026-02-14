@@ -5,7 +5,6 @@
 //  License: MIT  and palette registry.
 //
 
-import Foundation
 
 // MARK: - Palette Protocol
 

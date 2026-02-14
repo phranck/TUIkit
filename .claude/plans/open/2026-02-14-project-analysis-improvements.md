@@ -158,12 +158,20 @@ tracking progress.
 - [ ] 4.17.4 Update List and Table to use generic handler
 
 ### P4.18: Evaluate MainActor.assumeIsolated in Equatable safety
-- **Affected:** 20+ types with `nonisolated public static func ==`
-- **Effort:** Research task.
-- [ ] 4.18.1 Evaluate Swift 6 concurrency evolution proposals
-- [ ] 4.18.2 Test behavior when called from non-main contexts
-- [ ] 4.18.3 Document findings and decide on approach
-- [ ] 4.18.4 If unsafe: implement alternative Equatable strategy
+- **Affected:** 20 Equatable conformances across 17 files
+- **Approach:** Replaced `nonisolated static func == ... MainActor.assumeIsolated { }` with
+  `@preconcurrency Equatable` (SE-0423). This eliminates runtime `fatalError` risk when
+  called from non-main contexts, removes boilerplate, and provides a clean migration path
+  to `@MainActor Equatable` (SE-0470) in Swift 6.2.
+- **Files changed:** VStack, HStack, ZStack, Box, Image, Card, Panel, Dialog,
+  NavigationSplitView, ProgressView, LazyStacks (×2), ContainerView (×2),
+  DimmedModifier, SelectionDisabledModifier, BadgeModifier, OverlayModifier,
+  FlexibleFrameView, ListRowSeparatorModifier
+- [x] 4.18.1 Evaluate Swift 6 concurrency evolution proposals
+- [x] 4.18.2 Test behavior when called from non-main contexts
+- [x] 4.18.3 Document findings and decide on approach
+- [x] 4.18.4 Migrate all 20 conformances to `@preconcurrency Equatable`
+- [x] 4.18.5 Build and test verification
 
 ### P4.19: Add image size limits and URL timeout configuration
 - **Affected:** `ImageLoader.swift`
@@ -184,14 +192,20 @@ tracking progress.
 
 ### Code Style and Cleanup
 
-- [ ] Remove unnecessary `import Foundation` from files that don't use Foundation types
-- [ ] Consider splitting remaining 500+ line files:
-  - `Focus/TextFieldHandler.swift` (633 lines)
-  - `Styling/Color.swift` (600 lines)
-  - `Focus/Focus.swift` (598 lines)
-  - `Rendering/Renderable.swift` (553 lines)
-- [ ] Review `UserDefaultsStorage` Linux convenience methods for potential removal
-- [ ] Add deprecation timeline for `progressBarStyle(_:)` in `ProgressView.swift`
+- [x] Remove unnecessary `import Foundation` from files that don't use Foundation types
+  - Removed from 29 files. 3 initially flagged files (Spinner, Focus, View+Events) were
+    restored after build failure (they use TimeInterval, Date, UUID from Foundation).
+- [x] Split remaining 500+ line files:
+  - `TextFieldHandler.swift` 633 -> 447 (clipboard ops -> `TextFieldHandler+Clipboard.swift` 193)
+  - `Color.swift` 600 -> 533 (`ANSIColor` enum -> `ANSIColor.swift` 70)
+  - `Renderable.swift` 553 -> 279 (`RenderContext` -> `RenderContext.swift` 279)
+  - `Focus.swift` 598 unchanged (FocusState too small for standalone file)
+- [x] Review `UserDefaultsStorage` Linux convenience methods for potential removal
+  - Reviewed: Methods provide UserDefaults API compatibility for Linux users. Not used
+    internally but useful for migration from Apple platforms. Keeping as-is.
+- [x] Add deprecation timeline for `progressBarStyle(_:)` in `ProgressView.swift`
+  - Added "Scheduled for removal in the next major version" note
+  - Migrated all tests from `progressBarStyle` to `trackStyle`
 - [ ] Organize `project-template/` or move to separate repository
 
 ### Test Coverage Improvements
@@ -207,12 +221,12 @@ tracking progress.
 |----------|-------------|-----------|-----------|
 | P1       | 5           | 5         | 0         |
 | P2       | 5           | 5         | 0         |
-| P3       | 5           | 5         | 0         |
-| P4       | 5           | 0         | 5         |
-| Additional | 9         | 0         | 9         |
-| **Total**  | **29**    | **15**    | **14**    |
+| P3       | 5           | 4         | 1         |
+| P4       | 5           | 1         | 4         |
+| Additional | 9         | 4         | 5         |
+| **Total**  | **29**    | **19**    | **10**    |
 
 ---
 
 *Generated from `papers/project_analysis.md` (2026-02-14)*
-*Last updated: 2026-02-14*
+*Last updated: 2026-02-14T22:15:00Z*

@@ -278,22 +278,18 @@ private struct _LazyHStackCore<Content: View>: View, Renderable {
 
 // MARK: - Equatable Conformances
 
-extension LazyVStack: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: LazyVStack<Content>, rhs: LazyVStack<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.alignment == rhs.alignment &&
-            lhs.spacing == rhs.spacing &&
-            lhs.content == rhs.content
-        }
+extension LazyVStack: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: LazyVStack<Content>, rhs: LazyVStack<Content>) -> Bool {
+        lhs.alignment == rhs.alignment &&
+        lhs.spacing == rhs.spacing &&
+        lhs.content == rhs.content
     }
 }
 
-extension LazyHStack: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: LazyHStack<Content>, rhs: LazyHStack<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.alignment == rhs.alignment &&
-            lhs.spacing == rhs.spacing &&
-            lhs.content == rhs.content
-        }
+extension LazyHStack: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: LazyHStack<Content>, rhs: LazyHStack<Content>) -> Bool {
+        lhs.alignment == rhs.alignment &&
+        lhs.spacing == rhs.spacing &&
+        lhs.content == rhs.content
     }
 }

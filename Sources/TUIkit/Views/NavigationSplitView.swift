@@ -455,13 +455,11 @@ private extension _NavigationSplitViewCore {
 
 // MARK: - Equatable Conformance
 
-extension NavigationSplitView: Equatable where Sidebar: Equatable, Content: Equatable, Detail: Equatable {
-    nonisolated public static func == (lhs: Self, rhs: Self) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.sidebar == rhs.sidebar &&
-            lhs.content == rhs.content &&
-            lhs.detail == rhs.detail &&
-            lhs.isThreeColumn == rhs.isThreeColumn
-        }
+extension NavigationSplitView: @preconcurrency Equatable where Sidebar: Equatable, Content: Equatable, Detail: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.sidebar == rhs.sidebar &&
+        lhs.content == rhs.content &&
+        lhs.detail == rhs.detail &&
+        lhs.isThreeColumn == rhs.isThreeColumn
     }
 }

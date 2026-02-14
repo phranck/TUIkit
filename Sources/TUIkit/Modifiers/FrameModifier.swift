@@ -56,18 +56,16 @@ public struct FlexibleFrameView<Content: View>: View {
 
 // MARK: - Equatable Conformance
 
-extension FlexibleFrameView: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: FlexibleFrameView<Content>, rhs: FlexibleFrameView<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.content == rhs.content &&
-            lhs.minWidth == rhs.minWidth &&
-            lhs.idealWidth == rhs.idealWidth &&
-            lhs.maxWidth == rhs.maxWidth &&
-            lhs.minHeight == rhs.minHeight &&
-            lhs.idealHeight == rhs.idealHeight &&
-            lhs.maxHeight == rhs.maxHeight &&
-            lhs.alignment == rhs.alignment
-        }
+extension FlexibleFrameView: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: FlexibleFrameView<Content>, rhs: FlexibleFrameView<Content>) -> Bool {
+        lhs.content == rhs.content &&
+        lhs.minWidth == rhs.minWidth &&
+        lhs.idealWidth == rhs.idealWidth &&
+        lhs.maxWidth == rhs.maxWidth &&
+        lhs.minHeight == rhs.minHeight &&
+        lhs.idealHeight == rhs.idealHeight &&
+        lhs.maxHeight == rhs.maxHeight &&
+        lhs.alignment == rhs.alignment
     }
 }
 

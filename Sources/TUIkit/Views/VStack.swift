@@ -197,12 +197,10 @@ private struct _VStackCore<Content: View>: View, Renderable, Layoutable {
 
 // MARK: - Equatable
 
-extension VStack: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: VStack<Content>, rhs: VStack<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.alignment == rhs.alignment &&
-            lhs.spacing == rhs.spacing &&
-            lhs.content == rhs.content
-        }
+extension VStack: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: VStack<Content>, rhs: VStack<Content>) -> Bool {
+        lhs.alignment == rhs.alignment &&
+        lhs.spacing == rhs.spacing &&
+        lhs.content == rhs.content
     }
 }
