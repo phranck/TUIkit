@@ -33,9 +33,9 @@ The `@main` attribute tells Swift to call the static `main()` method provided by
 
 ## Subsystem Initialization
 
-The `AppRunner` creates and wires all subsystems in its initializer. Order matters because later subsystems reference earlier ones:
+`AppRunner.init()` creates and wires the core subsystems: Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext (containing LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, and RenderCache), and two ThemeManagers (palette and appearance). `run()` then creates the remaining runtime components: InputHandler, RenderLoop, PulseTimer (100 ms), and CursorTimer (50 ms).
 
-@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance, then AppRunner wires Terminal, StatusBarState, FocusManager, TUIContext (with LifecycleManager, KeyEventDispatcher, PreferenceStorage), two ThemeManagers, InputHandler, and RenderLoop.")
+@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance via Self(), then AppRunner.init() creates Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext with 5 children (LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, RenderCache), and two ThemeManagers. run() then creates InputHandler, RenderLoop, PulseTimer (100ms), and CursorTimer (50ms).")
 
 The `AppRunner` is the sole owner of all subsystems. Dependencies flow through constructor injection and ``RenderContext``.
 
@@ -49,8 +49,10 @@ Before the main loop starts, `run()` prepares the terminal:
 | 2 | Enter alternate screen | Preserve the user's existing terminal content |
 | 3 | Hide cursor | Avoid cursor flicker during rendering |
 | 4 | Enable raw mode | Disable line buffering, echo, and signal processing |
-| 5 | Register state observer | `AppState` changes trigger re-renders (registered via `RenderNotifier`) |
-| 6 | Render first frame | Show the initial UI immediately |
+| 5 | Register state observer | `AppState` changes trigger re-renders via `signals.requestRerender()` |
+| 6 | Register focus observer | Focus changes reset the pulse timer and trigger re-renders |
+| 7 | Start timers | PulseTimer (100 ms) and CursorTimer (50 ms) for animations |
+| 8 | Render first frame | Show the initial UI immediately |
 
 ### Raw Mode
 
@@ -67,17 +69,20 @@ The original terminal settings are saved and restored during cleanup.
 
 The main loop is synchronous and runs until shutdown:
 
-@Image(source: "lifecycle-main-loop.png", alt: "Flowchart of the main loop: run() performs terminal setup, renders first frame, then loops checking SIGINT for shutdown, SIGWINCH or AppState for re-render, reads key events, and dispatches through 3 layers. On SIGINT, cleanup() restores the terminal and exits.")
+@Image(source: "lifecycle-main-loop.png", alt: "Flowchart of the main loop: run() performs terminal setup, registers observers, starts timers, renders first frame, then loops checking shouldShutdown, consumeResizeFlag to invalidate diff cache, rerenderFlag or needsRender to conditionally render, reads key events non-blocking up to 128 per frame, dispatches through 5 layers, and sleeps 28ms. On shouldShutdown, cleanup restores the terminal and exits.")
 
 ### Re-render Triggers
 
-Three things cause a new frame to be rendered:
+Several sources cause a new frame to be rendered, all converging on two boolean checks in the main loop:
 
-- **SIGWINCH**: the terminal was resized
-- **`AppState`**: a `@State` property was mutated
-- **`SignalManager`**: `requestRerender()` was called (used by the state observer)
+| Trigger | Path | Main loop check |
+|---------|------|-----------------|
+| SIGWINCH | Sets `signalNeedsRerender` + `signalTerminalResized` | `consumeRerenderFlag()` |
+| @State mutation | `AppState` observer calls `signals.requestRerender()` | `consumeRerenderFlag()` |
+| PulseTimer / CursorTimer | Calls `appState.setNeedsRender()` | `appState.needsRender` |
+| Focus change | Calls `appState.setNeedsRender()` | `appState.needsRender` |
 
-All triggers set boolean flags that the main loop checks. The actual rendering always happens on the main thread.
+All triggers set boolean flags. The actual rendering always happens on the main thread: signal handlers never render directly.
 
 ## Signal Handling
 
@@ -92,7 +97,11 @@ Signal handlers only set `nonisolated(unsafe)` boolean flags: no allocations, no
 
 ## Key Event Dispatch
 
-When the terminal delivers a key event, the `InputHandler` dispatches it through three layers:
+When the terminal delivers a key event, the `InputHandler` dispatches it through five layers. Layer 0 and Layer 3 are mutually exclusive based on `focusManager.hasTextInputFocus`:
+
+### Layer 0: Text Input (conditional)
+
+When a text input element (TextField/SecureField) is focused, `focusManager.dispatchKeyEvent()` runs first. This ensures printable characters, backspace, delete, arrows, home, end, and enter reach the text field before any other layer. Only keys the text field does not consume (Escape, Tab, unhandled Ctrl+shortcuts) fall through.
 
 ### Layer 1: Status Bar Items
 
@@ -102,7 +111,11 @@ When the terminal delivers a key event, the `InputHandler` dispatches it through
 
 The `KeyEventDispatcher` iterates handlers registered via `onKeyPress()` modifiers: in reverse order (newest first). If a handler returns `true`, dispatch stops.
 
-### Layer 3: Default Bindings
+### Layer 3: Focus System (conditional)
+
+Skipped when text input has focus (Layer 0 already ran). Otherwise, `focusManager.dispatchKeyEvent()` first delegates to the focused element's `handleKeyEvent()`, then handles Tab/Shift+Tab for focus cycling, then arrow keys as section navigation fallback.
+
+### Layer 4: Default Bindings
 
 Built-in key bindings that apply when no handler consumed the event:
 
@@ -118,15 +131,15 @@ Each frame follows 12 steps inside `RenderLoop.render()`:
 
 | Step | What |
 |------|------|
-| 1 | Clear per-frame state (key handlers, preferences, focus) |
-| 2 | Begin lifecycle and state tracking |
+| 1 | Clear per-frame state (key handlers, preferences, focus, status bar, app header) |
+| 2 | Begin lifecycle, state, and cache tracking |
 | 3 | Build ``EnvironmentValues`` from subsystem state |
 | 4 | Create ``RenderContext`` with layout constraints |
 | 5 | Evaluate `app.body` → ``WindowGroup`` |
 | 6 | Render view tree → ``FrameBuffer`` |
 | 7 | Build terminal-ready output lines |
 | 8 | Begin buffered frame (`Terminal.beginFrame()`) |
-| 9 | Diff against previous frame, write only changed lines |
+| 9 | Render app header, diff and write only changed content lines |
 | 10 | Render status bar into same buffer |
 | 11 | Flush entire frame in one `write()` syscall (`Terminal.endFrame()`) |
 | 12 | End lifecycle tracking (fires `onDisappear` for removed views) |
@@ -156,10 +169,10 @@ The `Terminal` class also has a `deinit` safety net that disables raw mode if it
 
 AppRunner creates and owns every subsystem. TUIContext acts as a secondary container for lifecycle, key dispatch, and preference storage.
 
-@Image(source: "dep-graph-ownership.png", alt: "Ownership diagram showing AppRunner owning all subsystems: SignalManager, Terminal, StatusBarState, FocusManager, both ThemeManagers, InputHandler, RenderLoop, and TUIContext. TUIContext contains LifecycleManager, KeyEventDispatcher, and PreferenceStorage. SignalManager sends SIGINT and SIGWINCH flags back to AppRunner.")
+@Image(source: "dep-graph-ownership.png", alt: "Ownership diagram showing AppRunner owning all subsystems: SignalManager, Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, both ThemeManagers, TUIContext, InputHandler, RenderLoop, PulseTimer, and CursorTimer. TUIContext contains LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, and RenderCache. SignalManager sends SIGINT and SIGWINCH flags back to AppRunner.")
 
 ### Runtime References
 
 During each frame, RenderLoop and InputHandler reference shared subsystems to build the environment and dispatch key events.
 
-@Image(source: "dep-graph-references.png", alt: "Runtime reference diagram showing RenderLoop writing output to Terminal, injecting environment values from StatusBarState, FocusManager, and both ThemeManagers, calling begin/end pass on LifecycleManager, begin pass on PreferenceStorage, and clearing handlers on KeyEventDispatcher. InputHandler dispatches through Layer 1 StatusBarState, Layer 2 KeyEventDispatcher, and Layer 3 both ThemeManagers.")
+@Image(source: "dep-graph-references.png", alt: "Runtime reference diagram showing RenderLoop writing output to Terminal, injecting environment values from StatusBarState, AppHeaderState, FocusManager, and both ThemeManagers, calling begin/end pass on LifecycleManager, StateStorage, and RenderCache, begin pass on PreferenceStorage, and clearing handlers on KeyEventDispatcher. InputHandler dispatches through Layer 0+3 FocusManager, Layer 1 StatusBarState, Layer 2 KeyEventDispatcher, and Layer 4 both ThemeManagers.")

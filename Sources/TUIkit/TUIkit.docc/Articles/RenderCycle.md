@@ -8,13 +8,14 @@ Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame s
 
 ## What Triggers a Frame
 
-Three things cause `RenderLoop` to produce a new frame:
+Several sources cause `RenderLoop` to produce a new frame. They converge on two boolean checks in the main loop (`consumeRerenderFlag()` and `appState.needsRender`):
 
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
-| Terminal resize | `SIGWINCH` signal | `SignalManager` sets a boolean flag |
-| State mutation | `@State` property change | `AppState` notifies its observer via `RenderNotifier`, which sets the rerender flag |
-| Programmatic | `appState.setNeedsRender()` | Same observer path as above (services receive `AppState` via constructor injection) |
+| Terminal resize | `SIGWINCH` signal | `SignalManager` sets `signalNeedsRerender` and `signalTerminalResized` |
+| State mutation | `@State` property change | `AppState` observer calls `signals.requestRerender()` |
+| Animation timers | PulseTimer (100 ms) / CursorTimer (50 ms) | Calls `appState.setNeedsRender()` |
+| Focus change | `FocusManager.onFocusChange` | Resets pulse timer and calls `appState.setNeedsRender()` |
 
 All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread: signal handlers never render directly.
 
@@ -22,21 +23,25 @@ All triggers converge on boolean flags that the main loop checks each iteration.
 
 Each call to `RenderLoop.render()` executes these steps in order:
 
-@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 12-step render pipeline: clear per-frame state, begin lifecycle tracking, build environment, create render context, evaluate scene, render view tree, build output lines, begin buffered frame, diff and write changed lines, render status bar into same buffer, flush frame, end lifecycle tracking.")
+@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 12-step render pipeline: Step 1 clear per-frame state (key handlers, preferences, focus, status bar, app header), Step 2 begin lifecycle/state/cache tracking, Step 3 build environment with all subsystem values and services, Step 4 create render context, Step 5 evaluate scene, Step 6 render view tree, Step 7 build output lines, Step 8 begin buffered frame, Step 9 render app header and diff content, Step 10 render status bar, Step 11 flush frame, Step 12 end tracking (lifecycle onDisappear, state GC, cache cleanup).")
 
 ### Step 1: Clear Per-Frame State
 
-Three subsystems are reset at the start of every frame:
+Five subsystems are reset at the start of every frame:
 
 - **`KeyEventDispatcher`**: All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
 - **`PreferenceStorage`**: All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
 - **`FocusManager`**: All focus registrations are cleared. Focusable views re-register during rendering.
+- **`StatusBarState`**: Section items are cleared. Views re-register them via `.statusBarItems()` modifiers.
+- **`AppHeaderState`**: Header content is cleared. The `.appHeader()` modifier repopulates it during rendering.
+
+Additionally, the `StatusBarState` receives a reference to the current `FocusManager` for section resolution.
 
 This ensures that views which disappeared between frames don't leave stale handlers or registrations behind.
 
 ### Step 2: Begin Lifecycle and State Tracking
 
-The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. The `StateStorage` clears its active identity set. As views render, they add their tokens/identities to these sets. After rendering, the managers compare current and previous frames to detect which views appeared, disappeared, or had their state removed.
+The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. The `StateStorage` clears its active identity set. The `RenderCache` begins a new render pass for cache hit/miss tracking. As views render, they add their tokens/identities to these sets. After rendering, the managers compare current and previous frames to detect which views appeared, disappeared, or had their state removed.
 
 ### Step 3: Build Environment
 
@@ -45,15 +50,23 @@ A fresh ``EnvironmentValues`` instance is assembled from the current subsystem s
 ```swift
 // Simplified from RenderLoop.buildEnvironment()
 var env = EnvironmentValues()
-env.statusBar       = statusBar
-env.focusManager    = focusManager
-env.paletteManager  = paletteManager
-env.palette         = paletteManager.current    // e.g. SystemPalette(.green)
-env.appearanceManager = appearanceManager
-env.appearance      = appearanceManager.current // e.g. BorderStyle.rounded
+env.statusBar           = statusBar
+env.appHeader           = appHeader
+env.focusManager        = focusManager
+env.paletteManager      = paletteManager
+env.palette             = paletteManager.currentPalette
+env.appearanceManager   = appearanceManager
+env.appearance          = appearanceManager.currentAppearance
+env.notificationService = NotificationService.current
+env.stateStorage        = tuiContext.stateStorage
+env.lifecycle           = tuiContext.lifecycle
+env.keyEventDispatcher  = tuiContext.keyEventDispatcher
+env.renderCache         = tuiContext.renderCache
+env.preferenceStorage   = tuiContext.preferences
+env.localizationService = LocalizationService.shared
 ```
 
-This environment is immutable for the duration of the frame.
+This environment is immutable for the duration of the frame. Runtime services (state storage, lifecycle, key dispatch, render cache, preferences) are injected here so that views and modifiers can access them through the environment rather than through `TUIContext` directly.
 
 ### Step 4: Create Render Context
 
@@ -96,13 +109,13 @@ The ``FrameBuffer`` is converted into terminal-ready output lines by `FrameDiffW
 
 `Terminal.beginFrame()` activates output buffering. From this point, all `Terminal.write()` calls append to an internal `[UInt8]` buffer instead of issuing syscalls.
 
-### Step 9: Diff and Write Changed Lines
+### Step 9: Render App Header and Diff Content
 
-`FrameDiffWriter.writeContentDiff()` compares the new output lines with the previous frame and writes **only changed lines** to the terminal buffer. For mostly-static UIs, this reduces writes by ~94%.
+If the app header has content (set by the `.appHeader()` modifier), it is rendered at the top of the terminal. Then `FrameDiffWriter.writeContentDiff()` compares the main content output lines with the previous frame and writes **only changed lines** to the terminal buffer. For mostly-static UIs, this reduces writes by ~94%.
 
 ### Step 10: Render Status Bar
 
-The status bar renders in a separate pass (see below) but writes into the **same frame buffer**, so content and status bar are flushed together.
+The status bar renders in a separate pass but writes into the **same frame buffer**, so app header, content, and status bar are flushed together.
 
 ### Step 11: Flush Frame
 
@@ -110,12 +123,11 @@ The status bar renders in a separate pass (see below) but writes into the **same
 
 ### Step 12: End Lifecycle and State Tracking
 
-The `LifecycleManager` compares the current frame's tokens with the previous frame's:
+Three managers finalize the frame:
 
-- **Disappeared views**: tokens present last frame but absent now. Their `onDisappear` callbacks fire, and their tokens are removed from the appeared set (allowing future `onAppear` if they return).
-- **Visible views**: the current token set becomes the baseline for the next frame.
-
-The `StateStorage` performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
+- The **`LifecycleManager`** compares the current frame's tokens with the previous frame's. Disappeared views (tokens present last frame but absent now) fire their `onDisappear` callbacks; their tokens are removed from the appeared set, allowing future `onAppear` if they return.
+- The **`StateStorage`** performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
+- The **`RenderCache`** removes inactive entries (subtrees no longer in the view tree) and optionally logs per-frame cache statistics.
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
 
