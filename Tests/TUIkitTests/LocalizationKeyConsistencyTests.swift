@@ -5,7 +5,7 @@
 //  License: MIT
 
 import Foundation
-import XCTest
+import Testing
 @testable import TUIkit
 
 // MARK: - Localization Key Consistency Tests
@@ -16,13 +16,11 @@ import XCTest
 /// 1. Every key in the enum exists in the English translation file
 /// 2. No extra keys are in the translation files that don't exist in the enum
 /// 3. All enum keys are actually used (no dead code)
-final class LocalizationKeyConsistencyTests: XCTestCase {
+@Suite("LocalizationKeyConsistency")
+final class LocalizationKeyConsistencyTests {
     var englishTranslations: [String: String] = [:]
-    let service = LocalizationService()
 
-    override func setUp() {
-        super.setUp()
-        service.setLanguage(.english)
+    init() {
         loadEnglishTranslations()
     }
 
@@ -38,7 +36,6 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
 
         // If not found, try to load from the project directory (for tests)
         if url == nil {
-            // Look in the source directory
             let projectPath = FileManager.default.currentDirectoryPath
             let sourcePath = (projectPath as NSString).appendingPathComponent(
                 "Sources/TUIkit/Localization/translations/en.json"
@@ -49,7 +46,7 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         }
 
         guard let url = url else {
-            XCTFail("Could not find en.json translation file")
+            Issue.record("Could not find en.json translation file")
             return
         }
 
@@ -61,13 +58,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
             ) as? [String: String]
             englishTranslations = dict ?? [:]
         } catch {
-            XCTFail("Could not load en.json: \(error)")
+            Issue.record("Could not load en.json: \(error)")
         }
     }
 
     // MARK: - Button Key Tests
 
-    func testAllButtonKeysExistInTranslations() {
+    @Test("All button keys exist in translations")
+    func allButtonKeysExist() {
         let keys = [
             LocalizationKey.Button.ok,
             LocalizationKey.Button.cancel,
@@ -93,16 +91,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Button key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Button key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Label Key Tests
 
-    func testAllLabelKeysExistInTranslations() {
+    @Test("All label keys exist in translations")
+    func allLabelKeysExist() {
         let keys = [
             LocalizationKey.Label.search,
             LocalizationKey.Label.name,
@@ -124,16 +120,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Label key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Label key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Error Key Tests
 
-    func testAllErrorKeysExistInTranslations() {
+    @Test("All error keys exist in translations")
+    func allErrorKeysExist() {
         let keys = [
             LocalizationKey.Error.invalidInput,
             LocalizationKey.Error.requiredField,
@@ -149,16 +143,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Error key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Error key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Placeholder Key Tests
 
-    func testAllPlaceholderKeysExistInTranslations() {
+    @Test("All placeholder keys exist in translations")
+    func allPlaceholderKeysExist() {
         let keys = [
             LocalizationKey.Placeholder.search,
             LocalizationKey.Placeholder.enterText,
@@ -169,16 +161,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Placeholder key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Placeholder key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Menu Key Tests
 
-    func testAllMenuKeysExistInTranslations() {
+    @Test("All menu keys exist in translations")
+    func allMenuKeysExist() {
         let keys = [
             LocalizationKey.Menu.file,
             LocalizationKey.Menu.edit,
@@ -191,16 +181,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Menu key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Menu key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Dialog Key Tests
 
-    func testAllDialogKeysExistInTranslations() {
+    @Test("All dialog keys exist in translations")
+    func allDialogKeysExist() {
         let keys = [
             LocalizationKey.Dialog.confirm,
             LocalizationKey.Dialog.deleteConfirmation,
@@ -212,16 +200,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Dialog key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Dialog key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Validation Key Tests
 
-    func testAllValidationKeysExistInTranslations() {
+    @Test("All validation keys exist in translations")
+    func allValidationKeysExist() {
         let keys = [
             LocalizationKey.Validation.emailInvalid,
             LocalizationKey.Validation.passwordTooShort,
@@ -230,16 +216,14 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         ]
 
         for key in keys {
-            XCTAssertNotNil(
-                englishTranslations[key.rawValue],
-                "Validation key '\(key.rawValue)' not found in translations"
-            )
+            #expect(englishTranslations[key.rawValue] != nil, "Validation key '\(key.rawValue)' not found in translations")
         }
     }
 
     // MARK: - Coverage Tests
 
-    func testNoExtraneousKeysInTranslations() {
+    @Test("No extraneous keys in translations")
+    func noExtraneousKeys() {
         // Collect all known enum keys
         var enumKeys = Set<String>()
 
@@ -335,26 +319,18 @@ final class LocalizationKeyConsistencyTests: XCTestCase {
         let translationKeys = Set(englishTranslations.keys)
         let extraneousKeys = translationKeys.subtracting(enumKeys)
 
-        XCTAssertTrue(
-            extraneousKeys.isEmpty,
-            "Found keys in translations that don't exist in LocalizationKey enum: \(extraneousKeys.sorted())"
-        )
+        #expect(extraneousKeys.isEmpty, "Found keys in translations that don't exist in LocalizationKey enum: \(extraneousKeys.sorted())")
     }
 
-    func testAllEnumKeysAreCovered() {
-        // Verify expected count (update if adding new keys)
-        // Buttons: 21, Labels: 17, Errors: 11, Placeholders: 6, Menus: 8, Dialogs: 7, Validation: 4
+    @Test("All enum keys are covered in translations")
+    func allEnumKeysCovered() {
         let expectedKeyCount = 21 + 17 + 11 + 6 + 8 + 7 + 4
-        XCTAssertEqual(
-            englishTranslations.count,
-            expectedKeyCount,
-            "Expected \(expectedKeyCount) keys in translations, but got \(englishTranslations.count)"
-        )
+        #expect(englishTranslations.count == expectedKeyCount, "Expected \(expectedKeyCount) keys in translations, but got \(englishTranslations.count)")
     }
 
-    func testTranslationFileIsValidJSON() {
-        // This test verifies that the English translation file is valid JSON
-        XCTAssertFalse(englishTranslations.isEmpty, "English translations could not be loaded")
-        XCTAssertFalse(englishTranslations.isEmpty, "English translations are empty")
+    @Test("Translation file is valid JSON")
+    func translationFileIsValid() {
+        #expect(!englishTranslations.isEmpty, "English translations could not be loaded")
+        #expect(!englishTranslations.isEmpty, "English translations are empty")
     }
 }
