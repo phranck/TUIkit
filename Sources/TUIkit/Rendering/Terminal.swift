@@ -129,6 +129,7 @@ extension Terminal {
         raw.c_oflag &= ~TermFlag(OPOST)
         raw.c_cflag |= TermFlag(CS8)
 
+        // Safe: termios.c_cc is a fixed-size array; rebinding to cc_t is valid.
         withUnsafeMutablePointer(to: &raw.c_cc) { pointer in
             pointer.withMemoryRebound(to: cc_t.self, capacity: Int(NCCS)) { buffer in
                 buffer[Int(VMIN)] = 0
@@ -368,6 +369,7 @@ private extension Terminal {
 
     /// Writes a string directly to `STDOUT_FILENO` without buffering.
     func writeImmediate(_ string: String) {
+        // Safe: UTF8 string is valid UInt8 sequence; rebinding preserves memory layout.
         string.utf8CString.withUnsafeBufferPointer { buffer in
             let count = buffer.count - 1
             guard count >= 1, let baseAddress = buffer.baseAddress else { return }
