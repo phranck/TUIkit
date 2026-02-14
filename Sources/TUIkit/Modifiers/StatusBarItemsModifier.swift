@@ -65,7 +65,7 @@ extension StatusBarItemsModifier: Renderable {
             // Register items with the focus section's composition strategy.
             // If inside a focus section, items are associated with that section.
             // Otherwise, they become global items.
-            if let sectionID = renderContext.activeFocusSectionID {
+            if let sectionID = renderContext.environment.activeFocusSectionID {
                 statusBar.registerSectionItems(
                     sectionID: sectionID,
                     items: items,

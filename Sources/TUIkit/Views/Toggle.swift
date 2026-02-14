@@ -271,7 +271,7 @@ private struct _ToggleCore<Label: View>: View, Renderable {
             bracketColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         } else if isFocused {
             let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
-            bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            bracketColor = Color.lerp(dimAccent, palette.accent, phase: context.environment.pulsePhase)
         } else {
             bracketColor = palette.foregroundTertiary.opacity(ViewConstants.disabledForeground)
         }

@@ -207,10 +207,16 @@ struct StateStorageIdentityTests {
     @Test("State survives reconstruction through renderToBuffer")
     func stateSurvivesRenderToBuffer() {
         let tuiContext = TUIContext()
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            tuiContext: tuiContext,
+            environment: env,
             identity: ViewIdentity(path: "")
         )
 
@@ -226,10 +232,16 @@ struct StateStorageIdentityTests {
     @Test("Nested views get independent state identities")
     func nestedViewsIndependentState() {
         let tuiContext = TUIContext()
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            tuiContext: tuiContext,
+            environment: env,
             identity: ViewIdentity(path: "")
         )
 

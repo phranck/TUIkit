@@ -89,7 +89,7 @@ struct FocusRegistration {
         defaultPrefix: String,
         propertyIndex: Int
     ) -> String {
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
         let defaultID = explicitFocusID ?? "\(defaultPrefix)-\(context.identity.path)"
         let key = StateStorage.StateKey(identity: context.identity, propertyIndex: propertyIndex)
         let box: StateBox<String> = stateStorage.storage(for: key, default: defaultID)
@@ -105,8 +105,8 @@ struct FocusRegistration {
     ///   - handler: The focusable handler to register.
     static func register(context: RenderContext, handler: Focusable) {
         guard !context.isMeasuring else { return }
-        context.environment.focusManager.register(handler, inSection: context.activeFocusSectionID)
-        context.tuiContext.stateStorage.markActive(context.identity)
+        context.environment.focusManager.register(handler, inSection: context.environment.activeFocusSectionID)
+        context.environment.stateStorage!.markActive(context.identity)
     }
 
     /// Determines whether the given focusID currently has focus.

@@ -304,7 +304,7 @@ private struct _StepperCore<Label: View>: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
         let palette = context.environment.palette
 
         let persistedFocusID = FocusRegistration.persistFocusID(
@@ -343,7 +343,7 @@ private struct _StepperCore<Label: View>: View, Renderable {
         let content = buildContent(
             isFocused: isFocused,
             palette: palette,
-            pulsePhase: context.pulsePhase
+            pulsePhase: context.environment.pulsePhase
         )
 
         return FrameBuffer(text: content)

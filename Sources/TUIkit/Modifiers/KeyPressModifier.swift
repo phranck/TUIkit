@@ -29,7 +29,7 @@ public struct KeyPressModifier<Content: View>: View {
 extension KeyPressModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register the key handler
-        context.tuiContext.keyEventDispatcher.addHandler { [keys, handler] event in
+        context.environment.keyEventDispatcher!.addHandler { [keys, handler] event in
             // Check if we should handle this key
             if let allowedKeys = keys {
                 guard allowedKeys.contains(event.key) else {

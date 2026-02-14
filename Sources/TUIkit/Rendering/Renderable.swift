@@ -183,7 +183,7 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         // Activate hydration: @State.init will use this to look up persistent storage.
         StateRegistration.activeContext = HydrationContext(
             identity: context.identity,
-            storage: context.tuiContext.stateStorage
+            storage: context.environment.stateStorage!
         )
         StateRegistration.counter = 0
 
@@ -192,7 +192,7 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         // Restore previous hydration state and mark this identity as active for GC.
         StateRegistration.activeContext = previousContext
         StateRegistration.counter = previousCounter
-        context.tuiContext.stateStorage.markActive(context.identity)
+        context.environment.stateStorage!.markActive(context.identity)
 
         return renderToBuffer(body, context: childContext)
     }

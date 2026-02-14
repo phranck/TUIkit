@@ -28,7 +28,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
         let style = context.environment.listStyle
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
 
         // Extract rows from content
         let rows = extractRows(from: content, context: context)
@@ -367,7 +367,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
         case .content:
             if isFocused && isSelected {
                 let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
-                return Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.pulsePhase)
+                return Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.environment.pulsePhase)
             } else if isFocused {
                 return palette.focusBackground
             } else if isSelected {

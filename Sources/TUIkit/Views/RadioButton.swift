@@ -207,7 +207,7 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
 
         // Create type-erased selection binding and item values
         let erasedSelection = Binding<AnyHashable>(
@@ -323,7 +323,7 @@ private struct _RadioButtonGroupCore<Value: Hashable>: View, Renderable {
         } else if isFocused {
             // Focused: pulsing accent (whether selected or not)
             let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
-            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.pulsePhase)
+            indicatorColor = Color.lerp(dimAccent, palette.accent, phase: context.environment.pulsePhase)
         } else if isSelected {
             // Selected but not focused: solid accent
             indicatorColor = palette.accent

@@ -188,7 +188,9 @@ extension RenderLoop {
         let terminalHeight = terminalSize.height
 
         // Create render context with environment
-        let environment = buildEnvironment()
+        var environment = buildEnvironment()
+        environment.pulsePhase = pulsePhase
+        environment.cursorTimer = cursorTimer
         invalidateCacheIfEnvironmentChanged(environment: environment)
         invalidateCacheIfPulsePhaseChanged(pulsePhase: pulsePhase)
 
@@ -216,8 +218,7 @@ extension RenderLoop {
             let measureContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: terminalHeight - statusBarHeight,
-                environment: environment,
-                tuiContext: tuiContext
+                environment: environment
             )
             _ = renderScene(scene, context: measureContext.withChildIdentity(type: type(of: scene)))
             appHeaderHeight = appHeader.height
@@ -233,13 +234,10 @@ extension RenderLoop {
         var context = RenderContext(
             availableWidth: terminalWidth,
             availableHeight: contentHeight,
-            environment: environment,
-            tuiContext: tuiContext
+            environment: environment
         )
         context.hasExplicitWidth = true  // Terminal has a fixed width
         context.hasExplicitHeight = true  // Terminal has a fixed height
-        context.pulsePhase = pulsePhase
-        context.cursorTimer = cursorTimer
 
         // Render main content into a FrameBuffer.
         // app.body is evaluated fresh each frame. @State values survive
@@ -261,13 +259,10 @@ extension RenderLoop {
             var correctedContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: actualContentHeight,
-                environment: environment,
-                tuiContext: tuiContext
+                environment: environment
             )
             correctedContext.hasExplicitWidth = true
             correctedContext.hasExplicitHeight = true
-            correctedContext.pulsePhase = pulsePhase
-            correctedContext.cursorTimer = cursorTimer
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
 
@@ -356,6 +351,14 @@ extension RenderLoop {
             environment.appearance = appearance
         }
         environment.notificationService = NotificationService.current
+
+        // Runtime services (previously accessed via context.tuiContext)
+        environment.stateStorage = tuiContext.stateStorage
+        environment.lifecycle = tuiContext.lifecycle
+        environment.keyEventDispatcher = tuiContext.keyEventDispatcher
+        environment.renderCache = tuiContext.renderCache
+        environment.preferenceStorage = tuiContext.preferences
+
         return environment
     }
 }
@@ -410,8 +413,7 @@ private extension RenderLoop {
         let context = RenderContext(
             availableWidth: terminalWidth,
             availableHeight: appHeader.height,
-            environment: environment,
-            tuiContext: tuiContext
+            environment: environment
         )
 
         let buffer = renderToBuffer(headerView, context: context)
@@ -449,8 +451,7 @@ private extension RenderLoop {
         let context = RenderContext(
             availableWidth: terminalWidth,
             availableHeight: statusBarView.height,
-            environment: environment,
-            tuiContext: tuiContext
+            environment: environment
         )
 
         let buffer = renderToBuffer(statusBarView, context: context)

@@ -16,7 +16,6 @@ private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {
     RenderContext(
         availableWidth: width,
         availableHeight: height,
-        environment: EnvironmentValues(),
         tuiContext: TUIContext()
     )
 }

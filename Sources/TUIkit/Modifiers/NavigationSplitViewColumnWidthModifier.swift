@@ -75,7 +75,7 @@ struct NavigationSplitViewColumnWidthView<Content: View>: View {
 extension NavigationSplitViewColumnWidthView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Set the preference for NavigationSplitView to read
-        context.tuiContext.preferences.setValue(columnWidth, forKey: NavigationSplitViewColumnWidthKey.self)
+        context.environment.preferenceStorage!.setValue(columnWidth, forKey: NavigationSplitViewColumnWidthKey.self)
 
         // Render content
         return TUIkit.renderToBuffer(content, context: context)

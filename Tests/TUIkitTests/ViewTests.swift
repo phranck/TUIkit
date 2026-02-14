@@ -16,7 +16,7 @@ struct AnyViewTests {
     func anyViewWrapping() {
         let text = Text("Hello")
         let anyView = AnyView(text)
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(anyView, context: context)
         #expect(buffer.lines[0].stripped == "Hello")
     }
@@ -24,7 +24,7 @@ struct AnyViewTests {
     @Test("asAnyView extension works")
     func asAnyViewExtension() {
         let anyView = Text("Test").bold().asAnyView()
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(anyView, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "Test")

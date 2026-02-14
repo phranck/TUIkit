@@ -76,7 +76,7 @@ public struct EquatableView<Content: View & Equatable>: View {
 
 extension EquatableView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let cache = context.tuiContext.renderCache
+        let cache = context.environment.renderCache!
         let identity = context.identity
 
         cache.markActive(identity)
@@ -119,7 +119,7 @@ private extension EquatableView {
     /// Their state identities must still be marked active to prevent
     /// StateStorage from garbage-collecting them.
     func markSubtreeActive(context: RenderContext) {
-        context.tuiContext.stateStorage.markActive(context.identity)
+        context.environment.stateStorage!.markActive(context.identity)
     }
 }
 

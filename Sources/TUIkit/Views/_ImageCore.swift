@@ -43,8 +43,8 @@ struct _ImageCore: View, Renderable, Layoutable {
     // MARK: - Renderable
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let stateStorage = context.tuiContext.stateStorage
-        let lifecycle = context.tuiContext.lifecycle
+        let stateStorage = context.environment.stateStorage!
+        let lifecycle = context.environment.lifecycle!
         let identity = context.identity
 
         let width = context.availableWidth

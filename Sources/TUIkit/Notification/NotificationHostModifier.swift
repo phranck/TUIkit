@@ -54,7 +54,7 @@ extension NotificationHostModifier: Renderable {
         // Start the animation timer if not already running.
         startAnimationTask(
             entries: activeEntries,
-            lifecycle: context.tuiContext.lifecycle
+            lifecycle: context.environment.lifecycle!
         )
 
         let now = Date().timeIntervalSinceReferenceDate

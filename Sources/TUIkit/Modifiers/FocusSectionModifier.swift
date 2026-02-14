@@ -51,7 +51,7 @@ extension FocusSectionModifier: Renderable {
         // Create a child context with the active section ID set,
         // so that focusable children (buttons, menus) register in this section.
         var sectionContext = context
-        sectionContext.activeFocusSectionID = sectionID
+        sectionContext.environment.activeFocusSectionID = sectionID
 
         // If this section is active, compute the breathing indicator color.
         // The first border view in the subtree will consume this and render ●.
@@ -59,9 +59,9 @@ extension FocusSectionModifier: Renderable {
         if !context.isMeasuring && focusManager.isActiveSection(sectionID) {
             let accentColor = context.environment.palette.accent
             let dimColor = accentColor.opacity(ViewConstants.focusBorderDim)
-            sectionContext.focusIndicatorColor = Color.lerp(dimColor, accentColor, phase: context.pulsePhase)
+            sectionContext.environment.focusIndicatorColor = Color.lerp(dimColor, accentColor, phase: context.environment.pulsePhase)
         } else {
-            sectionContext.focusIndicatorColor = nil
+            sectionContext.environment.focusIndicatorColor = nil
         }
 
         return TUIkit.renderToBuffer(content, context: sectionContext)

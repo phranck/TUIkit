@@ -190,12 +190,12 @@ extension LifecycleManager {
 ///
 /// ## Usage
 ///
-/// View modifiers access the context through `RenderContext`:
+/// View modifiers access services through `RenderContext.environment`:
 ///
 /// ```swift
 /// extension MyModifier: Renderable {
 ///     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-///         context.tuiContext.keyEventDispatcher.addHandler { event in
+///         context.environment.keyEventDispatcher!.addHandler { event in
 ///             // handle key
 ///         }
 ///         return TUIkit.renderToBuffer(content, context: context)
