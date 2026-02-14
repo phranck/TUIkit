@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
 
 // MARK: - Image Source
 
@@ -80,8 +79,8 @@ public struct Image: View {
 
 // MARK: - Equatable
 
-extension Image: Equatable {
-    nonisolated public static func == (lhs: Image, rhs: Image) -> Bool {
+extension Image: @preconcurrency Equatable {
+    public static func == (lhs: Image, rhs: Image) -> Bool {
         lhs.source == rhs.source
     }
 }

@@ -164,12 +164,10 @@ private struct _HStackCore<Content: View>: View, Renderable, Layoutable {
 
 // MARK: - Equatable
 
-extension HStack: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: HStack<Content>, rhs: HStack<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.alignment == rhs.alignment &&
-            lhs.spacing == rhs.spacing &&
-            lhs.content == rhs.content
-        }
+extension HStack: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: HStack<Content>, rhs: HStack<Content>) -> Bool {
+        lhs.alignment == rhs.alignment &&
+        lhs.spacing == rhs.spacing &&
+        lhs.content == rhs.content
     }
 }

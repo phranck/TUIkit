@@ -7,7 +7,6 @@
 //  while Theme defines the colors. Together they create a complete look.
 //
 
-import Foundation
 
 // MARK: - Appearance
 

@@ -5,7 +5,6 @@
 //  License: MIT  Always rendered at the bottom of the terminal, never dimmed by overlays.
 //
 
-import Foundation
 
 // MARK: - StatusBar View
 

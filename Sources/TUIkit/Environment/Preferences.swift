@@ -5,7 +5,6 @@
 //  License: MIT  Similar to SwiftUI's PreferenceKey system.
 //
 
-import Foundation
 
 // MARK: - Preference Key Protocol
 

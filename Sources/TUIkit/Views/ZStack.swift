@@ -69,11 +69,9 @@ private struct _ZStackCore<Content: View>: View, Renderable {
 
 // MARK: - Equatable
 
-extension ZStack: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: ZStack<Content>, rhs: ZStack<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.alignment == rhs.alignment &&
-            lhs.content == rhs.content
-        }
+extension ZStack: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: ZStack<Content>, rhs: ZStack<Content>) -> Bool {
+        lhs.alignment == rhs.alignment &&
+        lhs.content == rhs.content
     }
 }

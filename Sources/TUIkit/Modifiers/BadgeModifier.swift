@@ -59,9 +59,9 @@ public enum BadgeValue: Sendable {
 
 // MARK: - Equatable
 
-extension BadgeModifier: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: BadgeModifier<Content>, rhs: BadgeModifier<Content>) -> Bool {
-        MainActor.assumeIsolated { lhs.content == rhs.content && lhs.value == rhs.value }
+extension BadgeModifier: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: BadgeModifier<Content>, rhs: BadgeModifier<Content>) -> Bool {
+        lhs.content == rhs.content && lhs.value == rhs.value
     }
 }
 

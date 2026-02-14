@@ -166,12 +166,10 @@ struct BufferView: View, Renderable {
 
 // MARK: - Equatable Conformance
 
-extension Box: Equatable where Content: Equatable {
-    nonisolated static func == (lhs: Box<Content>, rhs: Box<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.content == rhs.content &&
-            lhs.borderStyle == rhs.borderStyle &&
-            lhs.borderColor == rhs.borderColor
-        }
+extension Box: @preconcurrency Equatable where Content: Equatable {
+    static func == (lhs: Box<Content>, rhs: Box<Content>) -> Bool {
+        lhs.content == rhs.content &&
+        lhs.borderStyle == rhs.borderStyle &&
+        lhs.borderColor == rhs.borderColor
     }
 }

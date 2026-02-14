@@ -75,13 +75,11 @@ public enum VerticalEdge: Sendable {
 
 // MARK: - Equatable
 
-extension ListRowSeparatorModifier: Equatable where Content: Equatable {
-    nonisolated public static func == (lhs: ListRowSeparatorModifier<Content>, rhs: ListRowSeparatorModifier<Content>) -> Bool {
-        MainActor.assumeIsolated {
-            lhs.content == rhs.content &&
-            lhs.visibility == rhs.visibility &&
-            lhs.edges == rhs.edges
-        }
+extension ListRowSeparatorModifier: @preconcurrency Equatable where Content: Equatable {
+    public static func == (lhs: ListRowSeparatorModifier<Content>, rhs: ListRowSeparatorModifier<Content>) -> Bool {
+        lhs.content == rhs.content &&
+        lhs.visibility == rhs.visibility &&
+        lhs.edges == rhs.edges
     }
 }
 
