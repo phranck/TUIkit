@@ -50,22 +50,50 @@ public final class LocalizationService: @unchecked Sendable {
     /// Lock for thread-safe access
     private let lock = NSLock()
 
+    /// Optional config directory override for testing.
+    private let configDirectoryOverride: String?
+
     /// Creates and initializes the localization service.
     ///
     /// Loads the stored language preference, falling back to system locale
     /// or English if unavailable.
     public init() {
-        self.currentLanguage = .english
+        self.configDirectoryOverride = nil
 
-        // Try to load stored preference
+        // Compute initial language before assignment to avoid didSet side effects.
+        let initial: Language
         if let stored = Self.loadLanguagePreference() {
-            self.currentLanguage = stored
+            initial = stored
         } else if let systemLocale = Self.systemPreferredLanguage() {
-            self.currentLanguage = systemLocale
+            initial = systemLocale
+        } else {
+            initial = .english
         }
+        self.currentLanguage = initial
 
         // Preload current language translations
-        _ = translations(for: currentLanguage)
+        lock.lock()
+        _ = _translations(for: currentLanguage)
+        lock.unlock()
+    }
+
+    /// Creates a localization service with a custom config directory.
+    ///
+    /// Used for testing to isolate file system access.
+    init(configDirectoryPath: String) {
+        self.configDirectoryOverride = configDirectoryPath
+
+        let initial: Language
+        if let stored = Self.loadLanguagePreference(from: configDirectoryPath) {
+            initial = stored
+        } else {
+            initial = .english
+        }
+        self.currentLanguage = initial
+
+        lock.lock()
+        _ = _translations(for: currentLanguage)
+        lock.unlock()
     }
 
     /// Changes the active language and persists the preference.
@@ -89,13 +117,13 @@ public final class LocalizationService: @unchecked Sendable {
         defer { lock.unlock() }
 
         // Try current language
-        if let value = translationValue(key, in: currentLanguage) {
+        if let value = _translationValue(key, in: currentLanguage) {
             return value
         }
 
         // Fall back to English
         if currentLanguage != .english,
-           let value = translationValue(key, in: .english) {
+           let value = _translationValue(key, in: .english) {
             return value
         }
 
@@ -103,13 +131,12 @@ public final class LocalizationService: @unchecked Sendable {
         return key
     }
 
-    // MARK: - Private Helpers
+    // MARK: - Private Helpers (caller MUST hold lock)
 
     /// Gets translations dictionary for a language, loading from JSON if needed.
-    private func translations(for language: Language) -> [String: String] {
-        lock.lock()
-        defer { lock.unlock() }
-
+    ///
+    /// - Important: Caller must hold `lock`.
+    private func _translations(for language: Language) -> [String: String] {
         let code = language.rawValue
 
         // Return cached if available
@@ -128,9 +155,10 @@ public final class LocalizationService: @unchecked Sendable {
     }
 
     /// Retrieves a value from translations using dot-notation path.
-    private func translationValue(_ key: String, in language: Language) -> String? {
-        let trans = translations(for: language)
-        return trans[key]
+    ///
+    /// - Important: Caller must hold `lock`.
+    private func _translationValue(_ key: String, in language: Language) -> String? {
+        _translations(for: language)[key]
     }
 
     /// Loads translations from bundled JSON file.
@@ -138,7 +166,7 @@ public final class LocalizationService: @unchecked Sendable {
         guard let url = Bundle.module.url(
             forResource: language,
             withExtension: "json",
-            subdirectory: "Localization/translations"
+            subdirectory: "translations"
         ) else {
             return nil
         }
@@ -167,9 +195,14 @@ public final class LocalizationService: @unchecked Sendable {
         return nil
     }
 
-    /// Loads stored language preference from config file.
+    /// Loads stored language preference from the default config file.
     private static func loadLanguagePreference() -> Language? {
-        let path = configFilePath()
+        loadLanguagePreference(from: defaultConfigDirectoryPath())
+    }
+
+    /// Loads stored language preference from a specific config directory.
+    private static func loadLanguagePreference(from configDirectory: String) -> Language? {
+        let path = (configDirectory as NSString).appendingPathComponent("language")
         guard FileManager.default.fileExists(atPath: path) else {
             return nil
         }
@@ -186,7 +219,7 @@ public final class LocalizationService: @unchecked Sendable {
 
     /// Saves language preference to config file.
     private func saveLanguagePreference(_ language: Language) {
-        let path = Self.configFilePath()
+        let path = configFilePath()
         let dirPath = (path as NSString).deletingLastPathComponent
 
         // Create directory if needed
@@ -212,18 +245,24 @@ public final class LocalizationService: @unchecked Sendable {
         }
     }
 
-    /// Returns the XDG-compatible config file path for language preference.
-    private static func configFilePath() -> String {
+    /// Returns the config file path, using override if set.
+    private func configFilePath() -> String {
+        let dir = configDirectoryOverride ?? Self.defaultConfigDirectoryPath()
+        return (dir as NSString).appendingPathComponent("language")
+    }
+
+    /// Returns the XDG-compatible default config directory path.
+    static func defaultConfigDirectoryPath() -> String {
         #if os(macOS)
         let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory,
             in: .userDomainMask
         ).first?.path ?? NSHomeDirectory()
-        return (appSupport as NSString).appendingPathComponent("tuikit/language")
+        return (appSupport as NSString).appendingPathComponent("tuikit")
         #else
         let configHome = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"]
             ?? ((NSHomeDirectory() as NSString).appendingPathComponent(".config"))
-        return (configHome as NSString).appendingPathComponent("tuikit/language")
+        return (configHome as NSString).appendingPathComponent("tuikit")
         #endif
     }
 }
