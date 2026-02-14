@@ -325,8 +325,8 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         var innerContext = context.forBorderedContent()
 
         // Consume focus indicator so nested containers don't also show it.
-        let indicatorColor = context.focusIndicatorColor
-        innerContext.focusIndicatorColor = nil
+        let indicatorColor = context.environment.focusIndicatorColor
+        innerContext.environment.focusIndicatorColor = nil
 
         // Render body content first to determine its natural width.
         let paddedContent = content.padding(padding)

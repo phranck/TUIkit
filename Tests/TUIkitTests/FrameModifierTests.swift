@@ -12,7 +12,7 @@ import Testing
 
 /// Creates a default render context for testing.
 private func testContext(width: Int = 40, height: Int = 24) -> RenderContext {
-    RenderContext(availableWidth: width, availableHeight: height)
+    RenderContext(availableWidth: width, availableHeight: height, tuiContext: TUIContext())
 }
 
 // MARK: - FrameModifier Tests

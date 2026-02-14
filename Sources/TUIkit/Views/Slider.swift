@@ -285,7 +285,7 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Lay
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
         let palette = context.environment.palette
 
         // Slider expands to fill available width (with minimum)
@@ -330,7 +330,7 @@ private struct _SliderCore<Label: View, ValueLabel: View>: View, Renderable, Lay
             fraction: fraction,
             isFocused: isFocused,
             palette: palette,
-            pulsePhase: context.pulsePhase,
+            pulsePhase: context.environment.pulsePhase,
             trackWidth: trackWidth
         )
 

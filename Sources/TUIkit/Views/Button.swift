@@ -315,7 +315,7 @@ private struct _ButtonCore: View, Renderable {
             // Plain: pulsing dot prefix + label, no brackets
             let focusPrefix = BorderRenderer.focusIndicatorPrefix(
                 isFocused: isFocused && !isDisabled,
-                pulsePhase: context.pulsePhase,
+                pulsePhase: context.environment.pulsePhase,
                 palette: palette
             )
             let styledLabel = ANSIRenderer.render(paddedLabel, with: textStyle)
@@ -340,7 +340,7 @@ private struct _ButtonCore: View, Renderable {
             if isDisabled {
                 resolvedCapColor = buttonBg
             } else if isFocused {
-                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(ViewConstants.buttonCapPulseBright), phase: context.pulsePhase)
+                resolvedCapColor = Color.lerp(buttonBg, palette.accent.opacity(ViewConstants.buttonCapPulseBright), phase: context.environment.pulsePhase)
             } else {
                 resolvedCapColor = buttonBg
             }

@@ -130,7 +130,7 @@ extension EmptyView: Renderable {
 
 extension ConditionalView: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
         switch self {
         case .trueContent(let content):
             stateStorage.invalidateDescendants(of: context.identity.branch("false"))

@@ -26,7 +26,7 @@ struct OnAppearModifier<Content: View>: View {
 extension OnAppearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Record appearance and execute action if first time
-        _ = context.tuiContext.lifecycle.recordAppear(token: token, action: action)
+        _ = context.environment.lifecycle!.recordAppear(token: token, action: action)
 
         // Render content
         return TUIkit.renderToBuffer(content, context: context)
@@ -54,10 +54,10 @@ struct OnDisappearModifier<Content: View>: View {
 extension OnDisappearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Register the disappear callback
-        context.tuiContext.lifecycle.registerDisappear(token: token, action: action)
+        context.environment.lifecycle!.registerDisappear(token: token, action: action)
 
         // Mark as visible in current render
-        _ = context.tuiContext.lifecycle.recordAppear(token: token, action: {})
+        _ = context.environment.lifecycle!.recordAppear(token: token, action: {})
 
         // Render content
         return TUIkit.renderToBuffer(content, context: context)
@@ -89,7 +89,7 @@ struct TaskModifier<Content: View>: View {
 
 extension TaskModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let lifecycle = context.tuiContext.lifecycle
+        let lifecycle = context.environment.lifecycle!
 
         // Start task on first appearance
         let isFirstAppear = !lifecycle.hasAppeared(token: token)

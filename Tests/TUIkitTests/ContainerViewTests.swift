@@ -15,7 +15,7 @@ struct AlertTests {
     @Test("Alert renders with border")
     func alertRendering() {
         let alert = Alert(title: "Warning", message: "Something happened")
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(alert, context: context)
         #expect(buffer.height > 2)
         // Should have border characters
@@ -34,7 +34,7 @@ struct DialogTests {
         let dialog = Dialog(title: "Test Dialog") {
             Text("Content here")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(dialog, context: context)
         #expect(buffer.height > 1)
         // Should contain title and content
@@ -87,7 +87,7 @@ struct MenuTests {
                 MenuItem(label: "Second"),
             ]
         )
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(menu, context: context)
         #expect(buffer.height >= 3) // border + items + border
         let allContent = buffer.lines.joined()

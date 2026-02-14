@@ -21,16 +21,23 @@ private struct LabelView: View, Equatable {
 @Suite("EquatableView Tests", .serialized)
 struct EquatableViewTests {
 
-    /// Creates a test context with a fresh TUIContext.
+    /// Creates a test context with a fresh environment including render cache.
     private func testContext(
         width: Int = 80,
         height: Int = 24,
         identity: ViewIdentity = ViewIdentity(path: "Root")
     ) -> RenderContext {
-        RenderContext(
+        let tuiContext = TUIContext()
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
+        return RenderContext(
             availableWidth: width,
             availableHeight: height,
-            tuiContext: TUIContext(),
+            environment: env,
             identity: identity
         )
     }
@@ -45,7 +52,7 @@ struct EquatableViewTests {
         let buffer = renderToBuffer(view, context: context)
 
         #expect(buffer.lines[0].stripped == "Hello")
-        #expect(context.tuiContext.renderCache.count == 1)
+        #expect(context.environment.renderCache!.count == 1)
     }
 
     // MARK: - Cache Hit
@@ -63,7 +70,7 @@ struct EquatableViewTests {
         let buffer2 = renderToBuffer(view2, context: context)
 
         #expect(buffer1.lines == buffer2.lines)
-        #expect(context.tuiContext.renderCache.count == 1)
+        #expect(context.environment.renderCache!.count == 1)
     }
 
     // MARK: - Cache Miss on Changed Content
@@ -91,21 +98,28 @@ struct EquatableViewTests {
         let tuiContext = TUIContext()
         let identity = ViewIdentity(path: "Root")
 
-        // First render at 80×24
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
+
+        // First render at 80x24
         let context1 = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            tuiContext: tuiContext,
+            environment: env,
             identity: identity
         )
         let view = EquatableView(content: LabelView(text: "Size"))
         _ = renderToBuffer(view, context: context1)
 
-        // Second render at 120×40 — should miss
+        // Second render at 120x40 -- should miss
         let context2 = RenderContext(
             availableWidth: 120,
             availableHeight: 40,
-            tuiContext: tuiContext,
+            environment: env,
             identity: identity
         )
         let buffer2 = renderToBuffer(view, context: context2)

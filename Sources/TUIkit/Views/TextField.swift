@@ -253,7 +253,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
         let palette = context.environment.palette
         let cursorStyle = context.environment.textCursorStyle
 
@@ -306,7 +306,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
             isFocused: isFocused,
             palette: palette,
             cursorStyle: cursorStyle,
-            cursorTimer: context.cursorTimer,
+            cursorTimer: context.environment.cursorTimer,
             contentWidth: contentWidth
         )
 

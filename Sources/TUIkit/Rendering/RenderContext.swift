@@ -6,9 +6,10 @@
 
 /// The context for rendering a view.
 ///
-/// Contains layout constraints, environment values, and the central
-/// `TUIContext` that views need to determine their size, content, and
-/// access framework services.
+/// Contains layout constraints, environment values, and the view's
+/// structural identity. Runtime services (state storage, lifecycle,
+/// key dispatch, etc.) are accessed through ``environment`` using
+/// `EnvironmentKey`-based properties.
 ///
 /// `RenderContext` is a pure data container — it does not hold a reference
 /// to `Terminal`. All terminal I/O happens in `RenderLoop` after the
@@ -27,48 +28,12 @@ public struct RenderContext {
     /// The environment values for this render pass.
     public var environment: EnvironmentValues
 
-    /// The central dependency container for framework services.
-    ///
-    /// Provides access to lifecycle tracking, key event dispatch,
-    /// and preference storage via constructor injection.
-    /// Mutable to allow modal presentation to substitute an isolated
-    /// context for background content rendering.
-    var tuiContext: TUIContext
-
     /// The current view's structural identity in the render tree.
     ///
     /// Built incrementally as `renderToBuffer` traverses the view hierarchy.
     /// Container views append child indices, composite views append type names.
     /// Used by `StateStorage` to persist `@State` values across render passes.
     var identity: ViewIdentity
-
-    /// The ID of the focus section that child views should register in.
-    ///
-    /// Set by `FocusSectionModifier` during rendering. Focusable children
-    /// (buttons, menus) read this to register in the correct section.
-    /// When nil, elements register in the active or default section.
-    var activeFocusSectionID: String?
-
-    /// The current breathing animation phase (0–1) for the focus indicator.
-    ///
-    /// Set by `RenderLoop` from the `PulseTimer` at the start of each frame.
-    /// Read by `BorderRenderer` to interpolate the ● indicator color.
-    /// A value of 0 means dimmest, 1 means brightest.
-    var pulsePhase: Double = 0
-
-    /// The cursor timer for TextField/SecureField animations.
-    ///
-    /// Set by `RenderLoop` at the start of each frame.
-    /// Read by text fields to compute blink and pulse phases.
-    var cursorTimer: CursorTimer?
-
-    /// The focus indicator color for the first border encountered in this subtree.
-    ///
-    /// Set by `FocusSectionModifier` when the section is active.
-    /// The first view that renders a border (Panel, Box, `.border()`) reads
-    /// this color, renders the ● indicator, and sets it to nil so that
-    /// nested borders don't also show the indicator.
-    var focusIndicatorColor: Color?
 
     /// Whether an explicit frame width constraint has been set.
     ///
@@ -96,19 +61,46 @@ public struct RenderContext {
     ///   - availableWidth: The available width in characters.
     ///   - availableHeight: The available height in lines.
     ///   - environment: The environment values (defaults to empty).
-    ///   - tuiContext: The TUI context (defaults to a fresh instance).
     ///   - identity: The view identity path (defaults to root).
     init(
         availableWidth: Int,
         availableHeight: Int,
         environment: EnvironmentValues = EnvironmentValues(),
-        tuiContext: TUIContext = TUIContext(),
         identity: ViewIdentity = ViewIdentity(path: "")
     ) {
         self.availableWidth = availableWidth
         self.availableHeight = availableHeight
         self.environment = environment
-        self.tuiContext = tuiContext
+        self.identity = identity
+    }
+
+    /// Creates a new RenderContext with runtime services from a `TUIContext`.
+    ///
+    /// Injects all services from the `TUIContext` into `EnvironmentValues`,
+    /// making them accessible via `context.environment.stateStorage`, etc.
+    ///
+    /// - Parameters:
+    ///   - availableWidth: The available width in characters.
+    ///   - availableHeight: The available height in lines.
+    ///   - environment: The environment values (defaults to empty).
+    ///   - tuiContext: The TUI context whose services are injected into the environment.
+    ///   - identity: The view identity path (defaults to root).
+    init(
+        availableWidth: Int,
+        availableHeight: Int,
+        environment: EnvironmentValues = EnvironmentValues(),
+        tuiContext: TUIContext,
+        identity: ViewIdentity = ViewIdentity(path: "")
+    ) {
+        var env = environment
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
+        self.availableWidth = availableWidth
+        self.availableHeight = availableHeight
+        self.environment = env
         self.identity = identity
     }
 
@@ -172,12 +164,7 @@ public struct RenderContext {
     func isolatedForBackground() -> Self {
         var copy = self
         copy.environment.focusManager = FocusManager()
-        copy.tuiContext = TUIContext(
-            lifecycle: tuiContext.lifecycle,
-            keyEventDispatcher: KeyEventDispatcher(),
-            preferences: tuiContext.preferences,
-            stateStorage: tuiContext.stateStorage
-        )
+        copy.environment.keyEventDispatcher = KeyEventDispatcher()
         return copy
     }
 

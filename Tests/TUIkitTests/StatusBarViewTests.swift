@@ -23,7 +23,7 @@ struct StatusBarViewTests {
             style: .compact
         )
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         #expect(buffer.height == 1)
@@ -42,7 +42,7 @@ struct StatusBarViewTests {
         )
 
         // Use default appearance (rounded)
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         #expect(buffer.height == 3)
@@ -58,7 +58,7 @@ struct StatusBarViewTests {
     func emptyStatusBar() {
         let statusBar = StatusBar(items: [])
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         #expect(buffer.isEmpty)
@@ -71,7 +71,7 @@ struct StatusBarViewTests {
             StatusBarItem(shortcut: "b", label: "beta"),
         ])
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         let content = buffer.lines.joined()
@@ -91,7 +91,7 @@ struct StatusBarViewTests {
 
         #expect(statusBar.alignment == .leading)
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Content should start near the beginning (after padding)
@@ -112,7 +112,7 @@ struct StatusBarViewTests {
 
         #expect(statusBar.alignment == .trailing)
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Content should be at the end
@@ -133,7 +133,7 @@ struct StatusBarViewTests {
 
         #expect(statusBar.alignment == .center)
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Content should be centered
@@ -155,7 +155,7 @@ struct StatusBarViewTests {
 
         #expect(statusBar.alignment == .justified)
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         // All items should be present
@@ -179,7 +179,7 @@ struct StatusBarViewTests {
         #expect(statusBar.style == .bordered)
         #expect(statusBar.alignment == .center)
 
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         #expect(buffer.height == 3)
@@ -199,7 +199,7 @@ struct StatusBarAlignmentTests {
             alignment: .justified
         )
 
-        let context = RenderContext(availableWidth: 40, availableHeight: 24)
+        let context = RenderContext(availableWidth: 40, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(statusBar, context: context)
 
         // Single item should be centered in justified mode
@@ -233,7 +233,8 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment
+            environment: environment,
+            tuiContext: TUIContext()
         )
 
         _ = renderToBuffer(view, context: context)
@@ -266,7 +267,8 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment
+            environment: environment,
+            tuiContext: TUIContext()
         )
 
         _ = renderToBuffer(view, context: context)
@@ -297,7 +299,8 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment
+            environment: environment,
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -330,7 +333,8 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment
+            environment: environment,
+            tuiContext: TUIContext()
         )
 
         _ = renderToBuffer(outerView, context: context)

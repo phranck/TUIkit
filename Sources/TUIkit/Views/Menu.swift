@@ -294,7 +294,7 @@ private struct _MenuCore: View, Renderable {
         let menuItems = items
         let selectCallback = onSelect
 
-        context.tuiContext.keyEventDispatcher.addHandler { event in
+        context.environment.keyEventDispatcher!.addHandler { event in
             switch event.key {
             case .up:
                 // Move selection up

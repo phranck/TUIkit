@@ -15,7 +15,7 @@ struct RenderingTests {
     @Test("Text renders to single line buffer")
     func textBuffer() {
         let text = Text("Hello")
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(text, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "Hello")
@@ -24,7 +24,7 @@ struct RenderingTests {
     @Test("EmptyView renders to empty buffer")
     func emptyViewBuffer() {
         let empty = EmptyView()
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(empty, context: context)
         #expect(buffer.isEmpty)
     }
@@ -35,7 +35,7 @@ struct RenderingTests {
             Text("Line 1")
             Text("Line 2")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 2)
         #expect(buffer.lines[0].stripped.contains("Line 1"))
@@ -48,7 +48,7 @@ struct RenderingTests {
             Text("A")
             Text("B")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 3)
         #expect(buffer.lines[0].stripped.contains("A"))
@@ -62,7 +62,7 @@ struct RenderingTests {
             Text("Left")
             Text("Right")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "Left Right")
@@ -74,7 +74,7 @@ struct RenderingTests {
             Text("A")
             Text("B")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "A   B")
@@ -86,7 +86,7 @@ struct RenderingTests {
             Text("Label:")
             Text("Value")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(layout, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "Label:  Value")
@@ -104,7 +104,7 @@ struct RenderingTests {
         }
 
         let view = MyView()
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
         #expect(buffer.height == 2)
         #expect(buffer.lines[0].stripped.contains("Hello"))
@@ -114,7 +114,7 @@ struct RenderingTests {
     @Test("Divider renders to full width")
     func dividerBuffer() {
         let divider = Divider()
-        let context = RenderContext(availableWidth: 20, availableHeight: 24)
+        let context = RenderContext(availableWidth: 20, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(divider, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0] == String(repeating: "─", count: 20))
@@ -123,7 +123,7 @@ struct RenderingTests {
     @Test("Spacer renders empty lines")
     func spacerBuffer() {
         let spacer = Spacer(minLength: 3)
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(spacer, context: context)
         #expect(buffer.height == 3)
     }
@@ -135,7 +135,7 @@ struct RenderingTests {
             Text("Visible")
             EmptyView()
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "Visible")
@@ -147,7 +147,7 @@ struct RenderingTests {
             Text("AB")
             Text("CD")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(stack, context: context)
         #expect(buffer.height == 1)
         #expect(buffer.lines[0].stripped == "ABCD")
@@ -165,7 +165,7 @@ struct RenderingTests {
             }
             Text("D")
         }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(layout, context: context)
         #expect(buffer.height == 3)
         // Last line contains "D", possibly with trailing spaces from VStack alignment
@@ -179,7 +179,7 @@ struct RenderingTests {
             Spacer()
             Text("Bottom")
         }
-        let context = RenderContext(availableWidth: 40, availableHeight: 10)
+        let context = RenderContext(availableWidth: 40, availableHeight: 10, tuiContext: TUIContext())
 
         // Debug: Check child infos
         let infos = resolveChildInfos(from: stack.content, context: context)
@@ -216,7 +216,7 @@ struct RenderingTests {
             Spacer()
             Text("R")
         }
-        var context = RenderContext(availableWidth: 20, availableHeight: 10)
+        var context = RenderContext(availableWidth: 20, availableHeight: 10, tuiContext: TUIContext())
         context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(stack, context: context)
 
@@ -229,7 +229,7 @@ struct RenderingTests {
     @Test("Text wraps at availableWidth")
     func textWrapsAtWidth() {
         let text = Text("This is a long text that should wrap")
-        let context = RenderContext(availableWidth: 15, availableHeight: 10)
+        let context = RenderContext(availableWidth: 15, availableHeight: 10, tuiContext: TUIContext())
         let buffer = renderToBuffer(text, context: context)
 
         // Text should wrap into multiple lines
@@ -244,7 +244,7 @@ struct RenderingTests {
     func frameConstrainsWidth() {
         let view = Text("This is a long text that should be wrapped because of the frame modifier")
             .frame(width: 20)
-        let context = RenderContext(availableWidth: 100, availableHeight: 10)
+        let context = RenderContext(availableWidth: 100, availableHeight: 10, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
 
         // Text should wrap at frame width (20), not available width (100)
@@ -260,7 +260,7 @@ struct RenderingTests {
             Text("X")
             Spacer()
         }
-        var context = RenderContext(availableWidth: 11, availableHeight: 1)
+        var context = RenderContext(availableWidth: 11, availableHeight: 1, tuiContext: TUIContext())
         context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(view, context: context)
 
@@ -288,7 +288,7 @@ struct RenderingTests {
             }
             Spacer()
         }
-        var context = RenderContext(availableWidth: 20, availableHeight: 5)
+        var context = RenderContext(availableWidth: 20, availableHeight: 5, tuiContext: TUIContext())
         context.hasExplicitWidth = true  // Simulate terminal/frame constraint
         let buffer = renderToBuffer(view, context: context)
 
@@ -317,7 +317,7 @@ struct RenderingTests {
             Text("Hi")
             Spacer()
         }
-        let context = RenderContext(availableWidth: 20, availableHeight: 10)
+        let context = RenderContext(availableWidth: 20, availableHeight: 10, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
 
         // VStack height should fill available height due to spacers
@@ -338,7 +338,7 @@ struct RenderingTests {
             Text("Short")
             Text("Longer text here")
         }
-        let context = RenderContext(availableWidth: 40, availableHeight: 10)
+        let context = RenderContext(availableWidth: 40, availableHeight: 10, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
 
         // With default .center alignment (like SwiftUI), shorter text should be centered
@@ -356,7 +356,7 @@ struct RenderingTests {
             Text("Hi")
             Text("Hello World")
         }
-        let context = RenderContext(availableWidth: 40, availableHeight: 10)
+        let context = RenderContext(availableWidth: 40, availableHeight: 10, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
 
         // "Hello World" is 11 chars, "Hi" is 2 chars
@@ -392,7 +392,7 @@ struct RenderingTests {
 
         // Test through WindowGroup like the real app
         let windowGroup = WindowGroup { contentView }
-        let context = RenderContext(availableWidth: 80, availableHeight: 30)
+        let context = RenderContext(availableWidth: 80, availableHeight: 30, tuiContext: TUIContext())
         let buffer = windowGroup.renderScene(context: context)
 
         print("Buffer height: \(buffer.height)")
@@ -429,7 +429,7 @@ struct RenderingTests {
             Text("End")
         }.border()
 
-        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        var context = RenderContext(availableWidth: 80, availableHeight: 10, tuiContext: TUIContext())
         context.hasExplicitWidth = true
         let buffer = renderToBuffer(view, context: context)
 
@@ -461,7 +461,7 @@ struct RenderingTests {
             }
         }
 
-        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        var context = RenderContext(availableWidth: 80, availableHeight: 10, tuiContext: TUIContext())
         context.hasExplicitWidth = true
         context.hasExplicitHeight = true
         let buffer = renderToBuffer(view, context: context)
@@ -496,7 +496,7 @@ struct RenderingTests {
             Text("End")
         }.border()
 
-        var context = RenderContext(availableWidth: 80, availableHeight: 10)
+        var context = RenderContext(availableWidth: 80, availableHeight: 10, tuiContext: TUIContext())
         context.hasExplicitWidth = true
         let buffer = renderToBuffer(view, context: context)
 

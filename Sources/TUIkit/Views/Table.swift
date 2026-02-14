@@ -191,7 +191,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
-        let stateStorage = context.tuiContext.stateStorage
+        let stateStorage = context.environment.stateStorage!
 
         // Calculate available width inside container (subtract border + padding)
         let innerWidth = max(0, context.availableWidth - 4)
@@ -410,7 +410,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
     ) -> (indicator: String, indicatorColor: Color, backgroundColor: Color?) {
         if isFocused && isSelected {
             let dimAccent = palette.accent.opacity(ViewConstants.focusPulseMin)
-            let bg = Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.pulsePhase)
+            let bg = Color.lerp(dimAccent, palette.accent.opacity(ViewConstants.focusPulseMax), phase: context.environment.pulsePhase)
             return ("●", palette.accent, bg)
         } else if isFocused {
             return (" ", palette.foregroundTertiary, palette.focusBackground)

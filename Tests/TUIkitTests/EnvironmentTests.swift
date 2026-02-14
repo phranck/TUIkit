@@ -92,7 +92,8 @@ struct EnvironmentModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -114,7 +115,8 @@ struct EnvironmentModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -134,7 +136,8 @@ struct EnvironmentModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -200,7 +203,8 @@ struct ForegroundStylePropagationTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -223,7 +227,8 @@ struct ForegroundStylePropagationTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -243,7 +248,8 @@ struct ForegroundStylePropagationTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -261,7 +267,8 @@ struct ForegroundStylePropagationTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: EnvironmentValues()
+            environment: EnvironmentValues(),
+            tuiContext: TUIContext()
         )
 
         let buffer = renderToBuffer(view, context: context)

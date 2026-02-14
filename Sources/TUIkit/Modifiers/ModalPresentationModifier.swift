@@ -73,7 +73,7 @@ extension ModalPresentationModifier: Renderable {
         // Set the modal section in the context so child focusables
         // (buttons in the modal) register in the modal section.
         var modalContext = context
-        modalContext.activeFocusSectionID = sectionID
+        modalContext.environment.activeFocusSectionID = sectionID
 
         let modalBuffer = TUIkit.renderToBuffer(modal, context: modalContext)
 

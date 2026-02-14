@@ -24,7 +24,7 @@ struct RenderPerformanceTests {
     // MARK: - Test Helpers
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {
-        RenderContext(availableWidth: width, availableHeight: height)
+        RenderContext(availableWidth: width, availableHeight: height, tuiContext: TUIContext())
     }
 
     /// Measures the time to render a view multiple times.
@@ -282,7 +282,7 @@ struct RenderPerformanceTests {
 struct RenderPerformanceStatistics {
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {
-        RenderContext(availableWidth: width, availableHeight: height)
+        RenderContext(availableWidth: width, availableHeight: height, tuiContext: TUIContext())
     }
 
     @Test("Print render performance statistics")

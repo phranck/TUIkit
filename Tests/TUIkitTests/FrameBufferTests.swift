@@ -91,7 +91,7 @@ struct OverlayTests {
             .overlay(alignment: .center) {
                 Text("Top")
             }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
         // The overlay "Top" should be centered on "Base Content"
         #expect(buffer.height >= 1)
@@ -102,7 +102,7 @@ struct OverlayTests {
     @Test("Dimmed modifier strips styling and applies uniform palette colors")
     func dimmedRendering() {
         let view = Text("Dimmed text").dimmed()
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
         #expect(buffer.height == 1)
         // Should not use ANSI dim — uses palette-based flat coloring now
@@ -117,7 +117,7 @@ struct OverlayTests {
             .modal {
                 Text("Modal")
             }
-        let context = RenderContext(availableWidth: 80, availableHeight: 24)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
         let buffer = renderToBuffer(view, context: context)
         // The result should contain both the dimmed background and the modal overlay
         #expect(buffer.height == 1)

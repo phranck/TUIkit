@@ -12,16 +12,23 @@ import Testing
 @Suite("TupleView Equatable Tests", .serialized)
 struct TupleViewEquatableTests {
 
-    /// Creates a test context with a fresh TUIContext.
+    /// Creates a test context with a fresh environment including render cache.
     private func testContext(
         width: Int = 80,
         height: Int = 24,
         identity: ViewIdentity = ViewIdentity(path: "Root")
     ) -> RenderContext {
-        RenderContext(
+        let tuiContext = TUIContext()
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
+        return RenderContext(
             availableWidth: width,
             availableHeight: height,
-            tuiContext: TUIContext(),
+            environment: env,
             identity: identity
         )
     }
@@ -93,7 +100,7 @@ struct TupleViewEquatableTests {
     @Test("VStack with equatable content gets cache hit on second render")
     func cacheHitForEqualVStack() {
         let context = testContext()
-        let cache = context.tuiContext.renderCache
+        let cache = context.environment.renderCache!
 
         let stack1 = VStack {
             Text("Static A")
@@ -119,7 +126,7 @@ struct TupleViewEquatableTests {
     @Test("VStack with changed content causes cache miss")
     func cacheMissForChangedVStack() {
         let context = testContext()
-        let cache = context.tuiContext.renderCache
+        let cache = context.environment.renderCache!
 
         let stack1 = VStack {
             Text("Before")
@@ -146,13 +153,20 @@ struct TupleViewEquatableTests {
         let tuiContext = TUIContext()
         let cache = tuiContext.renderCache
 
+        var env = EnvironmentValues()
+        env.stateStorage = tuiContext.stateStorage
+        env.lifecycle = tuiContext.lifecycle
+        env.keyEventDispatcher = tuiContext.keyEventDispatcher
+        env.renderCache = tuiContext.renderCache
+        env.preferenceStorage = tuiContext.preferences
+
         let innerIdentity = ViewIdentity(path: "Root/Inner")
         let outerIdentity = ViewIdentity(path: "Root/Outer")
 
         // Render inner
         let innerContext = RenderContext(
             availableWidth: 80, availableHeight: 24,
-            tuiContext: tuiContext, identity: innerIdentity
+            environment: env, identity: innerIdentity
         )
         let inner = EquatableView(content: HStack {
             Text("Left")
@@ -163,7 +177,7 @@ struct TupleViewEquatableTests {
         // Render outer
         let outerContext = RenderContext(
             availableWidth: 80, availableHeight: 24,
-            tuiContext: tuiContext, identity: outerIdentity
+            environment: env, identity: outerIdentity
         )
         let outer = EquatableView(content: VStack {
             Text("Top")

@@ -25,7 +25,7 @@ struct PreferenceModifier<Content: View, K: PreferenceKey>: View {
 extension PreferenceModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Set the preference value
-        context.tuiContext.preferences.setValue(value, forKey: K.self)
+        context.environment.preferenceStorage!.setValue(value, forKey: K.self)
 
         // Render content
         return TUIkit.renderToBuffer(content, context: context)
@@ -50,7 +50,7 @@ where K.Value: Equatable {
 
 extension OnPreferenceChangeModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let prefs = context.tuiContext.preferences
+        let prefs = context.environment.preferenceStorage!
 
         // Register callback for preference changes
         prefs.onPreferenceChange(K.self, callback: action)
