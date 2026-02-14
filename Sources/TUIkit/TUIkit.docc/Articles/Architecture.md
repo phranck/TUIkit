@@ -70,9 +70,15 @@ The rendering pipeline converts the view tree into terminal output:
 
 ## Event Loop
 
-TUIkit runs a synchronous event loop. Each iteration checks for resize or state changes, renders the view tree, reads a key event, and dispatches it through three handler layers.
+`AppRunner` initializes all subsystems (Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, ThemeManager x2, TUIContext), creates InputHandler and RenderLoop, installs POSIX signal handlers, sets up the terminal (alternate screen, raw mode), starts PulseTimer (100 ms) and CursorTimer (50 ms), registers state and focus observers, and performs an initial render before entering the main loop.
 
-@Image(source: "architecture-event-loop.png", alt: "Event loop diagram showing the cycle: Check Resize/State, Render View Tree, Read Key Event, Dispatch to Handlers. Dispatch fans out into Layer 1 (status bar items), Layer 2 (onKeyPress handlers), and Layer 3 (default handlers for quit, theme, and appearance cycling).")
+Each loop iteration checks `shouldShutdown` (set by SIGINT), consumes the resize flag to invalidate the diff cache if SIGWINCH fired, then renders when `consumeRerenderFlag()` or `appState.needsRender` is true. After rendering, it reads up to 128 non-blocking key events per frame and dispatches each through five handler layers. A `usleep(28_000)` throttles the loop to approximately 35 FPS. Asynchronous render triggers (timers, @State changes, SIGWINCH, focus changes) feed back into the render decision via `appState.needsRender` or `signals.requestRerender()`.
+
+@Image(source: "architecture-event-loop.png", alt: "Flowchart of the TUIkit event loop: @main entry initializes subsystems, sets up terminal, starts timers and observers, performs an initial render, then enters the main loop. The loop checks shouldShutdown, consumes the resize flag to invalidate the diff cache, checks rerenderFlag or needsRender to conditionally render, reads key events non-blocking up to 128 per frame, dispatches through 5 input layers, and sleeps 28ms. SIGINT exits to cleanup. Async render triggers from timers, state changes, SIGWINCH, and focus changes feed back into the needsRender check.")
+
+Input dispatch uses a first-consumer-wins model. Layer 0 and Layer 3 are mutually exclusive: when a text input element (TextField/SecureField) is focused, Layer 0 runs and Layer 3 is skipped; otherwise Layer 0 is skipped and Layer 3 runs. Both use `focusManager.dispatchKeyEvent()`, which first delegates to the focused element, then handles Tab/Shift+Tab navigation, then arrow key fallback.
+
+@Image(source: "architecture-input-dispatch.png", alt: "Flowchart of the 5-layer input dispatch: A hasTextInputFocus check gates Layer 0 (Text Input via focusManager.dispatchKeyEvent for TextField/SecureField). Layer 1 Status Bar Items (statusBar.handleKeyEvent). Layer 2 View Handlers (keyEventDispatcher.dispatch, deepest view first). A second hasTextInputFocus check skips Layer 3 if text input was focused. Layer 3 Focus System (focusManager.dispatchKeyEvent: focused element delegation, Tab/Shift+Tab, arrow key fallback). Layer 4 Default Bindings (q quit, t theme, a appearance). Unmatched events are dropped.")
 
 ## Focus System
 
