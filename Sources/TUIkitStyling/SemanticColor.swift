@@ -16,7 +16,7 @@
 /// ```swift
 /// Text("Hello").foregroundStyle(.palette.accent)
 /// ```
-enum SemanticColor: String, Sendable, Equatable {
+public enum SemanticColor: String, Sendable, Equatable {
     // Background
     case background
     case statusBarBackground

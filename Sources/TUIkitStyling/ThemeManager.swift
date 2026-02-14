@@ -57,7 +57,7 @@ public protocol Cyclable: Sendable {
 /// # Render Integration
 ///
 /// On every change the manager triggers a re-render through the
-/// injected ``AppState`` instance. The `RenderLoop` picks up the
+/// injected render trigger closure. The `RenderLoop` picks up the
 /// current item via ``currentPalette`` / ``currentAppearance`` when
 /// building the environment for the next frame.
 public final class ThemeManager: @unchecked Sendable {
@@ -65,27 +65,27 @@ public final class ThemeManager: @unchecked Sendable {
     private var currentIndex: Int = 0
 
     /// All available items in cycling order.
-    let items: [any Cyclable]
+    public let items: [any Cyclable]
 
-    /// The app state used to trigger re-renders on theme changes.
-    private let appState: AppState
+    /// Closure that triggers a re-render when the theme changes.
+    private let renderTrigger: @Sendable () -> Void
 
     /// Creates a theme manager with the given items.
     ///
     /// - Parameters:
     ///   - items: The items to cycle through. Must not be empty.
-    ///   - appState: The app state instance for triggering re-renders.
-    init(items: [any Cyclable], appState: AppState) {
+    ///   - renderTrigger: A closure that triggers a re-render when the selection changes.
+    public init(items: [any Cyclable], renderTrigger: @escaping @Sendable () -> Void) {
         precondition(!items.isEmpty, "ThemeManager requires at least one item")
         self.items = items
-        self.appState = appState
+        self.renderTrigger = renderTrigger
     }
 
-    /// Creates a theme manager with a default `AppState` instance.
+    /// Creates a theme manager with a no-op render trigger.
     ///
     /// Used for environment key defaults only.
-    convenience init(items: [any Cyclable]) {
-        self.init(items: items, appState: AppState())
+    public convenience init(items: [any Cyclable]) {
+        self.init(items: items, renderTrigger: {})
     }
 
     // MARK: - Current Item
@@ -142,7 +142,7 @@ public extension ThemeManager {
 private extension ThemeManager {
     /// Triggers a re-render so the `RenderLoop` picks up the new current item.
     func applyCurrentItem() {
-        appState.setNeedsRender()
+        renderTrigger()
     }
 }
 

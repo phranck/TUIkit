@@ -24,10 +24,10 @@
 /// ```
 public struct Color: Sendable, Equatable {
     /// The internal color value.
-    let value: ColorValue
+    public let value: ColorValue
 
     /// Internal enum for different color types.
-    enum ColorValue: Sendable, Equatable {
+    public enum ColorValue: Sendable, Equatable {
         case standard(ANSIColor)
         case bright(ANSIColor)
         case palette256(UInt8)
@@ -372,7 +372,7 @@ public extension Color {
 
 // MARK: - Internal API
 
-extension Color {
+public extension Color {
     /// Converts RGB components to HSL (hue 0–360, saturation 0–100, lightness 0–100).
     ///
     /// - Parameters:
@@ -481,53 +481,5 @@ private extension Color {
         }
 
         return .hsl(hue, saturation, min(100, max(0, newLightness)))
-    }
-}
-
-// MARK: - Foreground Style Environment
-
-/// Environment key for the foreground style.
-///
-/// When set via `.foregroundStyle(_:)` on any View, this value propagates
-/// down through the view hierarchy. Child views can read it from the
-/// render context to apply the color.
-private struct ForegroundStyleKey: EnvironmentKey {
-    static let defaultValue: Color? = nil
-}
-
-extension EnvironmentValues {
-    /// The foreground style (color) for text and other content.
-    ///
-    /// Set via `.foregroundStyle(_:)` modifier on any View.
-    /// Returns `nil` if not explicitly set (use palette default).
-    public var foregroundStyle: Color? {
-        get { self[ForegroundStyleKey.self] }
-        set { self[ForegroundStyleKey.self] = newValue }
-    }
-}
-
-// MARK: - View Extension for foregroundStyle
-
-extension View {
-    /// Sets the foreground style for this view and its children.
-    ///
-    /// The style propagates through the view hierarchy via the environment.
-    /// Child views that render text or other colored content should read
-    /// `context.environment.foregroundStyle` and apply it.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// VStack {
-    ///     Text("Red text")
-    ///     Text("Also red")
-    /// }
-    /// .foregroundStyle(.red)
-    /// ```
-    ///
-    /// - Parameter style: The color to apply as foreground style.
-    /// - Returns: A view with the foreground style set.
-    public func foregroundStyle(_ style: Color?) -> some View {
-        environment(\.foregroundStyle, style)
     }
 }

@@ -4,6 +4,18 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import TUIkitStyling
+
+/// Standard ANSI escape sequences for ASCII art colorization.
+private enum ANSIEscape {
+    /// The escape character.
+    static let escape = "\u{1B}"
+    /// The Control Sequence Introducer.
+    static let csi = "\(escape)["
+    /// Reset all formatting.
+    static let reset = "\(csi)0m"
+}
+
 // MARK: - Character Set
 
 /// The set of characters used for ASCII art rendering.
@@ -58,7 +70,7 @@ public enum DitheringMode: Sendable, Equatable {
 /// 3. Optionally apply dithering
 /// 4. Map each pixel to a character based on luminance
 /// 5. Colorize each character using the selected color mode
-struct ASCIIConverter: Sendable {
+public struct ASCIIConverter: Sendable {
 
     /// The character set to use for brightness mapping.
     let characterSet: ASCIICharacterSet
@@ -70,7 +82,7 @@ struct ASCIIConverter: Sendable {
     let dithering: DitheringMode
 
     /// Creates a converter with the specified options.
-    init(
+    public init(
         characterSet: ASCIICharacterSet = .blocks,
         colorMode: ASCIIColorMode = .trueColor,
         dithering: DitheringMode = .none
@@ -92,7 +104,7 @@ extension ASCIIConverter {
     ///   - width: Target width in characters.
     ///   - height: Target height in characters.
     /// - Returns: An array of ANSI-formatted strings representing the ASCII art.
-    func convert(_ image: RGBAImage, width: Int, height: Int) -> [String] {
+    public func convert(_ image: RGBAImage, width: Int, height: Int) -> [String] {
         guard image.width > 0, image.height > 0, width > 0, height > 0 else {
             return []
         }
@@ -153,7 +165,7 @@ extension ASCIIConverter {
                 let colorCode = foregroundColorCode(for: pixel)
                 if colorCode != lastColor {
                     if !lastColor.isEmpty {
-                        line += ANSIRenderer.reset
+                        line += ANSIEscape.reset
                     }
                     line += colorCode
                     lastColor = colorCode
@@ -162,7 +174,7 @@ extension ASCIIConverter {
             }
 
             if !lastColor.isEmpty {
-                line += ANSIRenderer.reset
+                line += ANSIEscape.reset
             }
             lines.append(line)
         }
@@ -259,7 +271,7 @@ extension ASCIIConverter {
                 let colorCode = foregroundColorCode(for: avgPixel)
                 if colorCode != lastColor {
                     if !lastColor.isEmpty {
-                        line += ANSIRenderer.reset
+                        line += ANSIEscape.reset
                     }
                     line += colorCode
                     lastColor = colorCode
@@ -268,7 +280,7 @@ extension ASCIIConverter {
             }
 
             if !lastColor.isEmpty {
-                line += ANSIRenderer.reset
+                line += ANSIEscape.reset
             }
             lines.append(line)
         }
@@ -285,16 +297,16 @@ extension ASCIIConverter {
     private func foregroundColorCode(for pixel: RGBA) -> String {
         switch colorMode {
         case .trueColor:
-            return "\(ANSIRenderer.csi)38;2;\(pixel.r);\(pixel.g);\(pixel.b)m"
+            return "\(ANSIEscape.csi)38;2;\(pixel.r);\(pixel.g);\(pixel.b)m"
 
         case .ansi256:
             let index = quantizeToANSI256(pixel)
-            return "\(ANSIRenderer.csi)38;5;\(index)m"
+            return "\(ANSIEscape.csi)38;5;\(index)m"
 
         case .grayscale:
             let gray = Int(pixel.luminance / 255.0 * 23.0)
             let index = 232 + min(max(gray, 0), 23)
-            return "\(ANSIRenderer.csi)38;5;\(index)m"
+            return "\(ANSIEscape.csi)38;5;\(index)m"
 
         case .mono:
             return ""
@@ -446,7 +458,7 @@ extension ASCIIConverter {
     ///   - overrideAspectRatio: An explicit width/height ratio. When `nil`,
     ///     the source image's natural ratio is used.
     /// - Returns: The target width and height in characters.
-    static func targetSize(
+    public static func targetSize(
         imageWidth: Int,
         imageHeight: Int,
         maxWidth: Int,

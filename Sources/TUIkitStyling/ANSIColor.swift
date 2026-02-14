@@ -5,7 +5,7 @@
 //  License: MIT
 
 /// The 8 standard ANSI colors.
-enum ANSIColor: UInt8, Sendable {
+public enum ANSIColor: UInt8, Sendable {
     case black = 0
     case red = 1
     case green = 2
@@ -17,29 +17,29 @@ enum ANSIColor: UInt8, Sendable {
     case `default` = 9
 
     /// The ANSI code for foreground color (30-37, 39 for default).
-    var foregroundCode: UInt8 {
+    public var foregroundCode: UInt8 {
         30 + rawValue
     }
 
     /// The ANSI code for background color (40-47, 49 for default).
-    var backgroundCode: UInt8 {
+    public var backgroundCode: UInt8 {
         40 + rawValue
     }
 
     /// The ANSI code for bright foreground color (90-97).
-    var brightForegroundCode: UInt8 {
+    public var brightForegroundCode: UInt8 {
         90 + rawValue
     }
 
     /// The ANSI code for bright background color (100-107).
-    var brightBackgroundCode: UInt8 {
+    public var brightBackgroundCode: UInt8 {
         100 + rawValue
     }
 
     // MARK: - xterm Standard RGB Values
 
     /// The standard RGB values for this ANSI color (xterm defaults).
-    var rgbValues: (red: UInt8, green: UInt8, blue: UInt8) {
+    public var rgbValues: (red: UInt8, green: UInt8, blue: UInt8) {
         switch self {
         case .black:   return (0, 0, 0)
         case .red:     return (205, 0, 0)
@@ -54,7 +54,7 @@ enum ANSIColor: UInt8, Sendable {
     }
 
     /// The bright RGB values for this ANSI color (xterm defaults).
-    var brightRGBValues: (red: UInt8, green: UInt8, blue: UInt8) {
+    public var brightRGBValues: (red: UInt8, green: UInt8, blue: UInt8) {
         switch self {
         case .black:   return (127, 127, 127)
         case .red:     return (255, 0, 0)

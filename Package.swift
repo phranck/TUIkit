@@ -17,6 +17,14 @@ let package = Package(
             name: "TUIkit",
             targets: ["TUIkit"]
         ),
+        .library(
+            name: "TUIkitStyling",
+            targets: ["TUIkitStyling"]
+        ),
+        .library(
+            name: "TUIkitImage",
+            targets: ["TUIkitImage"]
+        ),
         .executable(
             name: "TUIkitExample",
             targets: ["TUIkitExample"]
@@ -31,8 +39,15 @@ let package = Package(
             publicHeadersPath: "include"
         ),
         .target(
+            name: "TUIkitStyling"
+        ),
+        .target(
+            name: "TUIkitImage",
+            dependencies: ["CSTBImage", "TUIkitStyling"]
+        ),
+        .target(
             name: "TUIkit",
-            dependencies: ["CSTBImage"]
+            dependencies: ["TUIkitStyling", "TUIkitImage"]
         ),
         .executableTarget(
             name: "TUIkitExample",
