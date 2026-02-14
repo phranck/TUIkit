@@ -202,7 +202,7 @@ struct MyView: View {
 
 **Supported languages**: English, Deutsch, Français, Italiano, Español
 
-For complete documentation, see [Documentation/i18n-guide.md](Documentation/i18n-guide.md) and [Documentation/i18n-developer.md](Documentation/i18n-developer.md).
+For complete documentation, see [Localization Guide](https://github.com/phranck/TUIkit/blob/main/Sources/TUIkit/TUIkit.docc/Articles/Localization.md) in the DocC documentation.
 
 ## Architecture
 
