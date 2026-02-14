@@ -32,6 +32,12 @@
   "label.loading": "Loading",
   "label.empty": "Empty",
   "label.none": "None",
+  "label.page": "Page",
+  "label.item": "Item",
+  "label.items": "Items",
+  "label.total": "Total",
+  "label.from": "From",
+  "label.to": "To",
 
   "error.invalid_input": "Invalid input",
   "error.required_field": "This field is required",
@@ -41,20 +47,36 @@
   "error.unknown": "Unknown error",
   "error.invalid_format": "Invalid format",
   "error.operation_failed": "Operation failed",
+  "error.timeout": "Operation timed out",
+  "error.file_not_found": "File not found",
+  "error.permission_denied": "Permission denied",
 
   "placeholder.search": "Search...",
   "placeholder.enter_text": "Enter text...",
   "placeholder.enter_value": "Enter value...",
   "placeholder.select_option": "Select an option...",
   "placeholder.enter_name": "Enter name...",
+  "placeholder.choose_file": "Choose a file...",
 
   "menu.file": "File",
   "menu.edit": "Edit",
   "menu.view": "View",
   "menu.help": "Help",
+  "menu.new": "New",
+  "menu.open": "Open",
+  "menu.save": "Save",
+  "menu.exit": "Exit",
 
   "dialog.confirm": "Confirm",
   "dialog.delete_confirmation": "Are you sure you want to delete this?",
   "dialog.unsaved_changes": "You have unsaved changes. Do you want to save them?",
-  "dialog.overwrite_confirmation": "This file already exists. Do you want to overwrite it?"
+  "dialog.overwrite_confirmation": "This file already exists. Do you want to overwrite it?",
+  "dialog.exit_confirmation": "Do you want to exit?",
+  "dialog.success": "Operation completed successfully",
+  "dialog.error": "An error occurred",
+
+  "validation.email_invalid": "Invalid email address",
+  "validation.password_too_short": "Password must be at least 8 characters",
+  "validation.username_taken": "Username already exists",
+  "validation.field_required": "This field cannot be empty"
 }

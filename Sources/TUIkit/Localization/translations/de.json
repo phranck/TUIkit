@@ -32,6 +32,12 @@
   "label.loading": "Lädt",
   "label.empty": "Leer",
   "label.none": "Keine",
+  "label.page": "Seite",
+  "label.item": "Element",
+  "label.items": "Elemente",
+  "label.total": "Gesamt",
+  "label.from": "Von",
+  "label.to": "Bis",
 
   "error.invalid_input": "Ungültige Eingabe",
   "error.required_field": "Dieses Feld ist erforderlich",
@@ -41,20 +47,36 @@
   "error.unknown": "Unbekannter Fehler",
   "error.invalid_format": "Ungültiges Format",
   "error.operation_failed": "Operation fehlgeschlagen",
+  "error.timeout": "Operation hat das Zeitlimit überschritten",
+  "error.file_not_found": "Datei nicht gefunden",
+  "error.permission_denied": "Berechtigung verweigert",
 
   "placeholder.search": "Suchen...",
   "placeholder.enter_text": "Text eingeben...",
   "placeholder.enter_value": "Wert eingeben...",
   "placeholder.select_option": "Option auswählen...",
   "placeholder.enter_name": "Name eingeben...",
+  "placeholder.choose_file": "Datei wählen...",
 
   "menu.file": "Datei",
   "menu.edit": "Bearbeiten",
   "menu.view": "Ansicht",
   "menu.help": "Hilfe",
+  "menu.new": "Neu",
+  "menu.open": "Öffnen",
+  "menu.save": "Speichern",
+  "menu.exit": "Beenden",
 
   "dialog.confirm": "Bestätigung",
   "dialog.delete_confirmation": "Sind Sie sicher, dass Sie das löschen möchten?",
   "dialog.unsaved_changes": "Sie haben ungespeicherte Änderungen. Möchten Sie diese speichern?",
-  "dialog.overwrite_confirmation": "Diese Datei existiert bereits. Möchten Sie sie überschreiben?"
+  "dialog.overwrite_confirmation": "Diese Datei existiert bereits. Möchten Sie sie überschreiben?",
+  "dialog.exit_confirmation": "Möchten Sie das Programm beenden?",
+  "dialog.success": "Operation erfolgreich abgeschlossen",
+  "dialog.error": "Ein Fehler ist aufgetreten",
+
+  "validation.email_invalid": "Ungültige E-Mail-Adresse",
+  "validation.password_too_short": "Passwort muss mindestens 8 Zeichen lang sein",
+  "validation.username_taken": "Benutzername existiert bereits",
+  "validation.field_required": "Dieses Feld darf nicht leer sein"
 }
