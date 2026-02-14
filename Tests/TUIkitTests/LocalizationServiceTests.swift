@@ -11,11 +11,15 @@ import Testing
 // MARK: - Localization Service Tests
 
 @Suite("LocalizationService")
-struct LocalizationServiceTests {
+final class LocalizationServiceTests {
+    var sut: LocalizationService!
     let fileManager = FileManager.default
 
     init() {
-        // Clean up any previous test state on init
+        sut = LocalizationService()
+    }
+
+    deinit {
         try? fileManager.removeItem(atPath: Self.configFilePath())
     }
 
