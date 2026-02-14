@@ -17,7 +17,7 @@ import Testing
 /// 2. No extra keys are in the translation files that don't exist in the enum
 /// 3. All enum keys are actually used (no dead code)
 @Suite("LocalizationKeyConsistency")
-struct LocalizationKeyConsistencyTests {
+final class LocalizationKeyConsistencyTests {
     private var englishTranslations: [String: String] = [:]
 
     init() {
