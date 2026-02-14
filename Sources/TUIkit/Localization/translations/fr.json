@@ -32,6 +32,12 @@
   "label.loading": "Chargement",
   "label.empty": "Vide",
   "label.none": "Aucun",
+  "label.page": "Page",
+  "label.item": "Élément",
+  "label.items": "Éléments",
+  "label.total": "Total",
+  "label.from": "De",
+  "label.to": "À",
 
   "error.invalid_input": "Entrée invalide",
   "error.required_field": "Ce champ est obligatoire",
@@ -41,20 +47,36 @@
   "error.unknown": "Erreur inconnue",
   "error.invalid_format": "Format invalide",
   "error.operation_failed": "Opération échouée",
+  "error.timeout": "L'opération a dépassé le délai imparti",
+  "error.file_not_found": "Fichier non trouvé",
+  "error.permission_denied": "Permission refusée",
 
   "placeholder.search": "Rechercher...",
   "placeholder.enter_text": "Entrez le texte...",
   "placeholder.enter_value": "Entrez la valeur...",
   "placeholder.select_option": "Sélectionnez une option...",
   "placeholder.enter_name": "Entrez le nom...",
+  "placeholder.choose_file": "Choisir un fichier...",
 
   "menu.file": "Fichier",
   "menu.edit": "Modifier",
   "menu.view": "Affichage",
   "menu.help": "Aide",
+  "menu.new": "Nouveau",
+  "menu.open": "Ouvrir",
+  "menu.save": "Enregistrer",
+  "menu.exit": "Quitter",
 
   "dialog.confirm": "Confirmer",
   "dialog.delete_confirmation": "Êtes-vous sûr de vouloir supprimer ceci?",
   "dialog.unsaved_changes": "Vous avez des modifications non enregistrées. Voulez-vous les enregistrer?",
-  "dialog.overwrite_confirmation": "Ce fichier existe déjà. Voulez-vous le remplacer?"
+  "dialog.overwrite_confirmation": "Ce fichier existe déjà. Voulez-vous le remplacer?",
+  "dialog.exit_confirmation": "Voulez-vous quitter?",
+  "dialog.success": "Opération complétée avec succès",
+  "dialog.error": "Une erreur s'est produite",
+
+  "validation.email_invalid": "Adresse e-mail invalide",
+  "validation.password_too_short": "Le mot de passe doit contenir au moins 8 caractères",
+  "validation.username_taken": "Ce nom d'utilisateur existe déjà",
+  "validation.field_required": "Ce champ ne peut pas être vide"
 }

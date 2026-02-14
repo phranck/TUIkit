@@ -32,6 +32,12 @@
   "label.loading": "Cargando",
   "label.empty": "Vacío",
   "label.none": "Ninguno",
+  "label.page": "Página",
+  "label.item": "Elemento",
+  "label.items": "Elementos",
+  "label.total": "Total",
+  "label.from": "De",
+  "label.to": "A",
 
   "error.invalid_input": "Entrada no válida",
   "error.required_field": "Este campo es obligatorio",
@@ -41,20 +47,36 @@
   "error.unknown": "Error desconocido",
   "error.invalid_format": "Formato no válido",
   "error.operation_failed": "Operación fallida",
+  "error.timeout": "La operación ha excedido el tiempo de espera",
+  "error.file_not_found": "Archivo no encontrado",
+  "error.permission_denied": "Permiso denegado",
 
   "placeholder.search": "Buscar...",
   "placeholder.enter_text": "Ingrese texto...",
   "placeholder.enter_value": "Ingrese valor...",
   "placeholder.select_option": "Seleccione una opción...",
   "placeholder.enter_name": "Ingrese nombre...",
+  "placeholder.choose_file": "Elija un archivo...",
 
   "menu.file": "Archivo",
   "menu.edit": "Editar",
   "menu.view": "Ver",
   "menu.help": "Ayuda",
+  "menu.new": "Nuevo",
+  "menu.open": "Abrir",
+  "menu.save": "Guardar",
+  "menu.exit": "Salir",
 
   "dialog.confirm": "Confirmar",
   "dialog.delete_confirmation": "¿Está seguro de que desea eliminar esto?",
   "dialog.unsaved_changes": "Tiene cambios sin guardar. ¿Desea guardarlos?",
-  "dialog.overwrite_confirmation": "Este archivo ya existe. ¿Desea sobrescribirlo?"
+  "dialog.overwrite_confirmation": "Este archivo ya existe. ¿Desea sobrescribirlo?",
+  "dialog.exit_confirmation": "¿Desea salir?",
+  "dialog.success": "Operación completada correctamente",
+  "dialog.error": "Ocurrió un error",
+
+  "validation.email_invalid": "Dirección de correo electrónico no válida",
+  "validation.password_too_short": "La contraseña debe tener al menos 8 caracteres",
+  "validation.username_taken": "Este nombre de usuario ya existe",
+  "validation.field_required": "Este campo no puede estar vacío"
 }
