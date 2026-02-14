@@ -98,7 +98,7 @@ public func extractBadgeValue<V: View>(from view: V) -> BadgeValue? {
 // MARK: - Renderable
 
 extension BadgeModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Create modified environment with badge value.
         let modifiedEnvironment = context.environment.setting(\EnvironmentValues.badgeValue, to: value)
         let modifiedContext = context.withEnvironment(modifiedEnvironment)

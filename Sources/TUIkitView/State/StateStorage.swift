@@ -5,6 +5,7 @@
 //  License: MIT
 
 import Foundation
+import TUIkitCore
 
 // MARK: - State Storage
 
@@ -27,17 +28,23 @@ import Foundation
 ///
 /// `StateStorage` is accessed only from the main thread (TUIKit's single-threaded
 /// event loop). No locking is required.
-final class StateStorage: @unchecked Sendable {
+public final class StateStorage: @unchecked Sendable {
 
     // MARK: - State Key
 
     /// A unique key for a single `@State` property on a specific view.
-    struct StateKey: Hashable {
+    public struct StateKey: Hashable {
         /// The view's structural identity in the render tree.
-        let identity: ViewIdentity
+        public let identity: ViewIdentity
 
         /// The property's declaration index within the view (0, 1, 2, ...).
-        let propertyIndex: Int
+        public let propertyIndex: Int
+
+        /// Creates a new state key.
+        public init(identity: ViewIdentity, propertyIndex: Int) {
+            self.identity = identity
+            self.propertyIndex = propertyIndex
+        }
     }
 
     // MARK: - Storage
@@ -49,10 +56,10 @@ final class StateStorage: @unchecked Sendable {
     private var activeIdentities: Set<ViewIdentity> = []
 
     /// Creates an empty state storage.
-    init() {}
+    public init() {}
 
     /// The number of stored state entries (for testing/debugging).
-    var count: Int { values.count }
+    public var count: Int { values.count }
 }
 
 // MARK: - Internal API
@@ -68,7 +75,7 @@ extension StateStorage {
     ///   - key: The state key (identity + property index).
     ///   - defaultValue: The initial value for newly created storage.
     /// - Returns: The persistent `Storage` object for this property.
-    func storage<Value>(for key: StateKey, default defaultValue: Value) -> StateBox<Value> {
+    public func storage<Value>(for key: StateKey, default defaultValue: Value) -> StateBox<Value> {
         if let existing = values[key] as? StateBox<Value> {
             return existing
         }
@@ -83,12 +90,12 @@ extension StateStorage {
     /// active by the end of the render pass are candidates for garbage collection.
     ///
     /// - Parameter identity: The view identity to mark as active.
-    func markActive(_ identity: ViewIdentity) {
+    public func markActive(_ identity: ViewIdentity) {
         activeIdentities.insert(identity)
     }
 
     /// Begins a new render pass by clearing the active identity set.
-    func beginRenderPass() {
+    public func beginRenderPass() {
         activeIdentities.removeAll(keepingCapacity: true)
     }
 
@@ -97,7 +104,7 @@ extension StateStorage {
     /// Any state whose identity was not marked active during this render pass
     /// is removed. This prevents memory leaks from views that have been
     /// permanently removed (e.g., by navigation or conditional branches).
-    func endRenderPass() {
+    public func endRenderPass() {
         let staleKeys = values.keys.filter { !activeIdentities.contains($0.identity) }
         for key in staleKeys {
             values.removeValue(forKey: key)
@@ -110,7 +117,7 @@ extension StateStorage {
     /// state from the now-inactive branch.
     ///
     /// - Parameter ancestor: The branch identity whose descendants should be removed.
-    func invalidateDescendants(of ancestor: ViewIdentity) {
+    public func invalidateDescendants(of ancestor: ViewIdentity) {
         let staleKeys = values.keys.filter { ancestor.isAncestor(of: $0.identity) }
         for key in staleKeys {
             values.removeValue(forKey: key)
@@ -118,7 +125,7 @@ extension StateStorage {
     }
 
     /// Removes all stored state. Used during app cleanup.
-    func reset() {
+    public func reset() {
         values.removeAll()
         activeIdentities.removeAll()
     }
@@ -133,9 +140,9 @@ extension StateStorage {
 /// of the `@State` struct (which uses `nonmutating set`).
 ///
 /// On value change, signals a re-render through `RenderNotifier`.
-final class StateBox<Value>: @unchecked Sendable {
+public final class StateBox<Value>: @unchecked Sendable {
     /// The current value.
-    var value: Value {
+    public var value: Value {
         didSet {
             RenderNotifier.renderCache?.clearAll()
             RenderNotifier.current.setNeedsRender()
@@ -145,7 +152,7 @@ final class StateBox<Value>: @unchecked Sendable {
     /// Creates a state box with an initial value.
     ///
     /// - Parameter value: The initial value.
-    init(_ value: Value) {
+    public init(_ value: Value) {
         self.value = value
     }
 }

@@ -6,6 +6,8 @@
 
 import Foundation
 
+import TUIkitCore
+
 // MARK: - Render Cache
 
 /// Caches rendered ``FrameBuffer`` results for views that opt into subtree memoization.
@@ -48,36 +50,44 @@ import Foundation
 ///
 /// `RenderCache` is accessed only from the main thread (TUIKit's single-threaded
 /// event loop). No locking is required.
-final class RenderCache: @unchecked Sendable {
+public final class RenderCache: @unchecked Sendable {
 
     /// Aggregated cache performance statistics.
     ///
     /// Tracks hit/miss/store/clear counts. Use ``stats`` for cumulative
     /// totals, or ``frameStats`` (after ``logFrameStats()``) for the
     /// delta since the last ``beginRenderPass()``.
-    struct Stats: Equatable {
+    public struct Stats: Equatable {
         /// Number of successful cache lookups (view and size matched).
-        var hits: Int = 0
+        public var hits: Int = 0
 
         /// Number of failed cache lookups (identity missing, view changed, or size changed).
-        var misses: Int = 0
+        public var misses: Int = 0
 
         /// Number of entries stored (including overwrites).
-        var stores: Int = 0
+        public var stores: Int = 0
 
         /// Number of times ``clearAll()`` was called.
-        var clears: Int = 0
+        public var clears: Int = 0
+
+        /// Creates a new Stats instance with default values.
+        public init(hits: Int = 0, misses: Int = 0, stores: Int = 0, clears: Int = 0) {
+            self.hits = hits
+            self.misses = misses
+            self.stores = stores
+            self.clears = clears
+        }
 
         /// The total number of lookups (hits + misses).
-        var lookups: Int { hits + misses }
+        public var lookups: Int { hits + misses }
 
         /// The cache hit rate as a value between 0 and 1, or 0 if no lookups occurred.
-        var hitRate: Double {
+        public var hitRate: Double {
             lookups > 0 ? Double(hits) / Double(lookups) : 0
         }
 
         /// Returns the per-element difference between this snapshot and an earlier one.
-        func delta(since earlier: Self) -> Self {
+        public func delta(since earlier: Self) -> Self {
             Self(
                 hits: hits - earlier.hits,
                 misses: misses - earlier.misses,
@@ -88,20 +98,28 @@ final class RenderCache: @unchecked Sendable {
     }
 
     /// A cached rendering result for a single view identity.
-    struct CacheEntry {
+    public struct CacheEntry {
         /// The type-erased view value at the time of caching.
         ///
         /// Cast back to the concrete `Equatable` type for comparison.
-        let viewSnapshot: Any
+        public let viewSnapshot: Any
 
         /// The rendered output buffer.
-        let buffer: FrameBuffer
+        public let buffer: FrameBuffer
 
         /// The available width when this entry was cached.
-        let contextWidth: Int
+        public let contextWidth: Int
 
         /// The available height when this entry was cached.
-        let contextHeight: Int
+        public let contextHeight: Int
+
+        /// Creates a new cache entry.
+        public init(viewSnapshot: Any, buffer: FrameBuffer, contextWidth: Int, contextHeight: Int) {
+            self.viewSnapshot = viewSnapshot
+            self.buffer = buffer
+            self.contextWidth = contextWidth
+            self.contextHeight = contextHeight
+        }
     }
 
     /// Cached entries keyed by view identity.
@@ -111,24 +129,24 @@ final class RenderCache: @unchecked Sendable {
     private var activeIdentities: Set<ViewIdentity> = []
 
     /// Cumulative cache performance statistics.
-    private(set) var stats = Stats()
+    public private(set) var stats = Stats()
 
     /// Stats snapshot taken at the start of each render pass (for per-frame deltas).
     private var statsAtFrameStart = Stats()
 
     /// Whether debug logging is enabled via the `TUIKIT_DEBUG_RENDER` environment variable.
-    static let debugEnabled: Bool = {
+    public static let debugEnabled: Bool = {
         ProcessInfo.processInfo.environment["TUIKIT_DEBUG_RENDER"] == "1"
     }()
 
     /// Creates an empty render cache.
-    init() {}
+    public init() {}
 
     /// The number of cached entries (for testing/debugging).
-    var count: Int { entries.count }
+    public var count: Int { entries.count }
 
     /// Whether the cache is empty.
-    var isEmpty: Bool { entries.isEmpty }
+    public var isEmpty: Bool { entries.isEmpty }
 }
 
 // MARK: - Internal API
@@ -146,7 +164,7 @@ extension RenderCache {
     ///   - contextWidth: The current available width.
     ///   - contextHeight: The current available height.
     /// - Returns: The cached ``FrameBuffer`` if valid, or `nil` on miss.
-    func lookup<V: Equatable>(
+    public func lookup<V: Equatable>(
         identity: ViewIdentity,
         view: V,
         contextWidth: Int,
@@ -188,7 +206,7 @@ extension RenderCache {
     ///   - buffer: The rendered output to cache.
     ///   - contextWidth: The available width during rendering.
     ///   - contextHeight: The available height during rendering.
-    func store<V: Equatable>(
+    public func store<V: Equatable>(
         identity: ViewIdentity,
         view: V,
         buffer: FrameBuffer,
@@ -211,13 +229,13 @@ extension RenderCache {
     /// are candidates for garbage collection.
     ///
     /// - Parameter identity: The view identity to mark as active.
-    func markActive(_ identity: ViewIdentity) {
+    public func markActive(_ identity: ViewIdentity) {
         activeIdentities.insert(identity)
     }
 
     /// Begins a new render pass by clearing the active identity set
     /// and snapshotting the current stats for per-frame delta calculation.
-    func beginRenderPass() {
+    public func beginRenderPass() {
         activeIdentities.removeAll(keepingCapacity: true)
         statsAtFrameStart = stats
     }
@@ -226,7 +244,7 @@ extension RenderCache {
     ///
     /// Any entry whose identity was not marked active during this render pass
     /// is removed. Prevents memory leaks from permanently removed views.
-    func removeInactive() {
+    public func removeInactive() {
         let staleKeys = entries.keys.filter { !activeIdentities.contains($0) }
         for key in staleKeys {
             entries.removeValue(forKey: key)
@@ -239,14 +257,14 @@ extension RenderCache {
     /// can propagate to any subtree through bindings or environment.
     /// Also called by `RenderLoop` when environment values change
     /// (theme, appearance).
-    func clearAll() {
+    public func clearAll() {
         stats.clears += 1
         logDebug("CLEAR ALL (\(entries.count) entries)")
         entries.removeAll(keepingCapacity: true)
     }
 
     /// Removes all cached entries, resets GC state, and clears statistics.
-    func reset() {
+    public func reset() {
         entries.removeAll()
         activeIdentities.removeAll()
         stats = Stats()
@@ -254,7 +272,7 @@ extension RenderCache {
     }
 
     /// Resets the cumulative statistics counters to zero.
-    func resetStats() {
+    public func resetStats() {
         stats = Stats()
     }
 
@@ -263,7 +281,7 @@ extension RenderCache {
     /// Call this at the end of each render pass (after ``removeInactive()``)
     /// to emit a one-line summary showing **this frame's** cache activity
     /// (delta since ``beginRenderPass()``) plus the current entry count.
-    func logFrameStats() {
+    public func logFrameStats() {
         guard Self.debugEnabled else { return }
         let frame = stats.delta(since: statsAtFrameStart)
         let rate = frame.lookups > 0

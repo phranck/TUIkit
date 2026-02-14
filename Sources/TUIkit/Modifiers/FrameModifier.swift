@@ -72,7 +72,7 @@ extension FlexibleFrameView: @preconcurrency Equatable where Content: Equatable 
 // MARK: - Renderable
 
 extension FlexibleFrameView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Calculate the target width based on constraints
         let targetWidth: Int
         if let maximumWidth = maxWidth {

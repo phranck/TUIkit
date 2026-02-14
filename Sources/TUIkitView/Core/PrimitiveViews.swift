@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
 // MARK: - EmptyView
 
 /// A view that displays no content.
@@ -68,7 +70,7 @@ public struct ViewArray<Element: View>: View {
     /// Creates a ViewArray from an array of views.
     ///
     /// - Parameter elements: The views this container holds.
-    init(_ elements: [Element]) {
+    public init(_ elements: [Element]) {
         self.elements = elements
     }
 
@@ -101,7 +103,7 @@ public struct AnyView: View {
     /// - Parameter view: The view to type-erase.
     public init<V: View>(_ view: V) {
         self._render = { context in
-            TUIkit.renderToBuffer(view, context: context)
+            TUIkitView.renderToBuffer(view, context: context)
         }
     }
 
@@ -113,7 +115,7 @@ public struct AnyView: View {
 // MARK: - AnyView Rendering
 
 extension AnyView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         _render(context)
     }
 }
@@ -121,7 +123,7 @@ extension AnyView: Renderable {
 // MARK: - EmptyView Rendering
 
 extension EmptyView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer()
     }
 }
@@ -129,15 +131,15 @@ extension EmptyView: Renderable {
 // MARK: - ConditionalView Rendering
 
 extension ConditionalView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let stateStorage = context.environment.stateStorage!
         switch self {
         case .trueContent(let content):
             stateStorage.invalidateDescendants(of: context.identity.branch("false"))
-            return TUIkit.renderToBuffer(content, context: context.withBranchIdentity("true"))
+            return TUIkitView.renderToBuffer(content, context: context.withBranchIdentity("true"))
         case .falseContent(let content):
             stateStorage.invalidateDescendants(of: context.identity.branch("true"))
-            return TUIkit.renderToBuffer(content, context: context.withBranchIdentity("false"))
+            return TUIkitView.renderToBuffer(content, context: context.withBranchIdentity("false"))
         }
     }
 }
@@ -145,11 +147,11 @@ extension ConditionalView: Renderable {
 // MARK: - ViewArray Rendering
 
 extension ViewArray: Renderable, ChildInfoProvider {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
 
-    func childInfos(context: RenderContext) -> [ChildInfo] {
+    public func childInfos(context: RenderContext) -> [ChildInfo] {
         elements.enumerated().map { index, element in
             makeChildInfo(
                 for: element,

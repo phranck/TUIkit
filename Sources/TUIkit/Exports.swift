@@ -8,3 +8,4 @@
 @_exported import TUIkitCore
 @_exported import TUIkitStyling
 @_exported import TUIkitImage
+@_exported import TUIkitView

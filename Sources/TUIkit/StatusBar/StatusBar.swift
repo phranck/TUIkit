@@ -153,7 +153,7 @@ public struct StatusBar: View {
 // MARK: - StatusBar Rendering
 
 extension StatusBar: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Get shortcuts used by user items (for deduplication)
         let userShortcuts = Set(userItems.map { $0.shortcut })
 

@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
 // MARK: - EquatableView
 
 /// A wrapper that enables subtree memoization for views conforming to `Equatable`.
@@ -75,7 +77,7 @@ public struct EquatableView<Content: View & Equatable>: View {
 // MARK: - Rendering
 
 extension EquatableView: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let cache = context.environment.renderCache!
         let identity = context.identity
 
@@ -96,7 +98,7 @@ extension EquatableView: Renderable {
         }
 
         // Cache miss: render normally and store result
-        let buffer = TUIkit.renderToBuffer(content, context: context)
+        let buffer = TUIkitView.renderToBuffer(content, context: context)
 
         cache.store(
             identity: identity,

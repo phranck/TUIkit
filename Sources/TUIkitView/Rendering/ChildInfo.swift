@@ -4,6 +4,9 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+
+import TUIkitCore
+
 // MARK: - Child Info
 
 /// A type-erased wrapper for a child view that enables two-pass layout.
@@ -11,20 +14,20 @@
 /// This wrapper stores the view and allows measuring without rendering,
 /// then rendering with a specific size allocation.
 @MainActor
-struct ChildView {
+public struct ChildView {
     private let _measure: (ProposedSize, RenderContext) -> ViewSize
     private let _render: (Int, Int, RenderContext) -> FrameBuffer
 
     /// Whether this child is a Spacer.
-    let isSpacer: Bool
+    public let isSpacer: Bool
 
     /// The minimum length of this spacer (only relevant if isSpacer is true).
-    let spacerMinLength: Int?
+    public let spacerMinLength: Int?
 
-    init<V: View>(_ view: V) {
-        if let spacer = view as? Spacer {
+    public init<V: View>(_ view: V) {
+        if let spacer = view as? SpacerProtocol {
             self.isSpacer = true
-            self.spacerMinLength = spacer.minLength
+            self.spacerMinLength = spacer.spacerMinLength
         } else {
             self.isSpacer = false
             self.spacerMinLength = nil
@@ -47,10 +50,10 @@ struct ChildView {
     /// - Parameters:
     ///   - view: The child view to wrap.
     ///   - childIndex: The positional index used for identity disambiguation.
-    init<V: View>(_ view: V, childIndex: Int) {
-        if let spacer = view as? Spacer {
+    public init<V: View>(_ view: V, childIndex: Int) {
+        if let spacer = view as? SpacerProtocol {
             self.isSpacer = true
-            self.spacerMinLength = spacer.minLength
+            self.spacerMinLength = spacer.spacerMinLength
         } else {
             self.isSpacer = false
             self.spacerMinLength = nil
@@ -67,30 +70,38 @@ struct ChildView {
     }
 
     /// Measures this child view without rendering.
-    func measure(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+    public func measure(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         _measure(proposal, context)
     }
 
     /// Renders this child view with the given size allocation.
-    func render(width: Int, height: Int, context: RenderContext) -> FrameBuffer {
+    public func render(width: Int, height: Int, context: RenderContext) -> FrameBuffer {
         _render(width, height, context)
     }
 }
 
 /// Describes a child view within a stack for layout purposes.
-struct ChildInfo {
+public struct ChildInfo {
     /// The rendered buffer of this child (nil for spacers, computed later).
-    let buffer: FrameBuffer?
+    public let buffer: FrameBuffer?
 
     /// Whether this child is a Spacer.
-    let isSpacer: Bool
+    public let isSpacer: Bool
 
     /// The minimum length of this spacer (only relevant if isSpacer is true).
-    let spacerMinLength: Int?
+    public let spacerMinLength: Int?
 
     /// The size this child needs (from sizeThatFits).
     /// Only available when using two-pass layout.
-    let size: ViewSize?
+    public let size: ViewSize?
+
+    /// Creates a new child info.
+    public init(buffer: FrameBuffer?, isSpacer: Bool, spacerMinLength: Int?, size: ViewSize?) {
+        self.buffer = buffer
+        self.isSpacer = isSpacer
+        self.spacerMinLength = spacerMinLength
+        self.size = size
+    }
 }
 
 // MARK: - Child Info Provider
@@ -98,7 +109,7 @@ struct ChildInfo {
 /// Internal protocol that allows stack containers to extract individual
 /// child info from their content (which is typically a TupleView).
 @MainActor
-protocol ChildInfoProvider {
+public protocol ChildInfoProvider {
     /// Returns an array of ``ChildInfo``, one per child view.
     ///
     /// - Parameter context: The rendering context for child rendering.
@@ -112,7 +123,7 @@ protocol ChildInfoProvider {
 ///
 /// This enables measuring children before rendering them with final sizes.
 @MainActor
-protocol ChildViewProvider {
+public protocol ChildViewProvider {
     /// Returns an array of type-erased child views for two-pass layout.
     ///
     /// - Parameter context: The rendering context (for child identity).
@@ -122,7 +133,7 @@ protocol ChildViewProvider {
 
 /// Creates a ChildInfo for a single view.
 ///
-/// If the view is a ``Spacer``, the returned info marks it as such
+/// If the view conforms to ``SpacerProtocol``, the returned info marks it as such
 /// with its minimum length. Otherwise the view is rendered into a
 /// ``FrameBuffer`` via ``renderToBuffer(_:context:)``.
 ///
@@ -131,9 +142,9 @@ protocol ChildViewProvider {
 ///   - context: The rendering context.
 /// - Returns: A ``ChildInfo`` describing the view.
 @MainActor
-func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
-    if let spacer = view as? Spacer {
-        return ChildInfo(buffer: nil, isSpacer: true, spacerMinLength: spacer.minLength, size: nil)
+public func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
+    if let spacer = view as? SpacerProtocol {
+        return ChildInfo(buffer: nil, isSpacer: true, spacerMinLength: spacer.spacerMinLength, size: nil)
     }
     return ChildInfo(
         buffer: renderToBuffer(view, context: context),
@@ -156,10 +167,10 @@ func makeChildInfo<V: View>(for view: V, context: RenderContext) -> ChildInfo {
 ///   - context: The rendering context.
 /// - Returns: The size this view needs.
 @MainActor
-func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderContext) -> ViewSize {
+public func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderContext) -> ViewSize {
     // Spacer is always flexible
-    if let spacer = view as? Spacer {
-        let min = spacer.minLength ?? 0
+    if let spacer = view as? SpacerProtocol {
+        let min = spacer.spacerMinLength ?? 0
         return ViewSize(width: min, height: min, isWidthFlexible: true, isHeightFlexible: true)
     }
 
@@ -209,7 +220,7 @@ func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: RenderCon
 ///   - context: The rendering context.
 /// - Returns: The rendered buffer.
 @MainActor
-func renderChild<V: View>(_ view: V, width: Int, height: Int, context: RenderContext) -> FrameBuffer {
+public func renderChild<V: View>(_ view: V, width: Int, height: Int, context: RenderContext) -> FrameBuffer {
     var renderContext = context
     renderContext.availableWidth = width
     renderContext.availableHeight = height
@@ -229,7 +240,7 @@ func renderChild<V: View>(_ view: V, width: Int, height: Int, context: RenderCon
 ///   - context: The rendering context.
 /// - Returns: An array of ``ChildInfo``.
 @MainActor
-func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [ChildInfo] {
+public func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [ChildInfo] {
     if let provider = content as? ChildInfoProvider {
         return provider.childInfos(context: context)
     }
@@ -249,7 +260,7 @@ func resolveChildInfos<V: View>(from content: V, context: RenderContext) -> [Chi
 ///   - context: The rendering context.
 /// - Returns: An array of ``ChildView``.
 @MainActor
-func resolveChildViews<V: View>(from content: V, context: RenderContext) -> [ChildView] {
+public func resolveChildViews<V: View>(from content: V, context: RenderContext) -> [ChildView] {
     if let provider = content as? ChildViewProvider {
         return provider.childViews(context: context)
     }

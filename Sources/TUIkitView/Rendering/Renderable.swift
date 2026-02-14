@@ -49,7 +49,7 @@ import TUIkitCore
 /// - **Warning**: A view with `body: Never` that does *not* conform to
 ///   `Renderable` will silently render as empty. There is no runtime error.
 @MainActor
-protocol Renderable {
+public protocol Renderable {
     /// Renders this view into a ``FrameBuffer``.
     ///
     /// Called by the free function ``renderToBuffer(_:context:)`` when
@@ -86,7 +86,7 @@ protocol Renderable {
 /// that renders the view and measures the resulting buffer. This is less
 /// efficient but ensures backward compatibility.
 @MainActor
-protocol Layoutable: Renderable {
+public protocol Layoutable: Renderable {
     /// Returns the size this view needs given a proposed size.
     ///
     /// Called during the measure pass of two-pass layout. The view should
@@ -107,7 +107,7 @@ extension Layoutable {
     /// This fallback ensures backward compatibility but is less efficient
     /// than a proper `sizeThatFits` implementation that calculates size
     /// without rendering.
-    func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
+    public func sizeThatFits(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         // Create a context with proposed dimensions if available
         var measureContext = context
         if let width = proposal.width {
@@ -158,7 +158,7 @@ extension Layoutable {
 ///   - context: The rendering context with layout constraints.
 /// - Returns: A ``FrameBuffer`` containing the rendered terminal output.
 @MainActor
-func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
+public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
     // Priority 1: Direct rendering via Renderable protocol
     if let renderable = view as? Renderable {
         return renderable.renderToBuffer(context: context)

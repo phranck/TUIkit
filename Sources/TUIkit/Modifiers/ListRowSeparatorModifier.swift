@@ -88,7 +88,7 @@ extension Visibility: Equatable {}
 // MARK: - Renderable
 
 extension ListRowSeparatorModifier: Renderable {
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // This is a stub modifier for SwiftUI API compatibility.
         // List row separators are not supported in terminal UIs.
         // We silently return content unchanged (no warning to avoid noise).

@@ -284,7 +284,7 @@ extension Section: SectionRowExtractor {
 // MARK: - Section as ChildInfoProvider
 
 extension Section: ChildInfoProvider {
-    func childInfos(context: RenderContext) -> [ChildInfo] {
+    public func childInfos(context: RenderContext) -> [ChildInfo] {
         // For stack layouts, render Section as a single unit
         let buffer = TUIkit.renderToBuffer(self, context: context)
         return [ChildInfo(buffer: buffer, isSpacer: false, spacerMinLength: nil, size: nil)]

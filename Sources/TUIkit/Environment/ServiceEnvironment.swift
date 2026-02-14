@@ -4,13 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-// MARK: - State Storage
-
-/// EnvironmentKey for the persistent `@State` value storage.
-private struct StateStorageKey: EnvironmentKey {
-    static let defaultValue: StateStorage? = nil
-}
-
 // MARK: - Lifecycle Manager
 
 /// EnvironmentKey for view lifecycle tracking (appear/disappear/task).
@@ -23,13 +16,6 @@ private struct LifecycleKey: EnvironmentKey {
 /// EnvironmentKey for key event handler registration and dispatch.
 private struct KeyEventDispatcherKey: EnvironmentKey {
     static let defaultValue: KeyEventDispatcher? = nil
-}
-
-// MARK: - Render Cache
-
-/// EnvironmentKey for memoized subtree rendering results.
-private struct RenderCacheKey: EnvironmentKey {
-    static let defaultValue: RenderCache? = nil
 }
 
 // MARK: - Preference Storage
@@ -71,12 +57,6 @@ private struct ActiveFocusSectionKey: EnvironmentKey {
 
 extension EnvironmentValues {
 
-    /// The persistent `@State` value storage indexed by `ViewIdentity`.
-    var stateStorage: StateStorage? {
-        get { self[StateStorageKey.self] }
-        set { self[StateStorageKey.self] = newValue }
-    }
-
     /// View lifecycle tracking (appear, disappear, task management).
     var lifecycle: LifecycleManager? {
         get { self[LifecycleKey.self] }
@@ -87,12 +67,6 @@ extension EnvironmentValues {
     var keyEventDispatcher: KeyEventDispatcher? {
         get { self[KeyEventDispatcherKey.self] }
         set { self[KeyEventDispatcherKey.self] = newValue }
-    }
-
-    /// Cache for memoized subtree rendering results.
-    var renderCache: RenderCache? {
-        get { self[RenderCacheKey.self] }
-        set { self[RenderCacheKey.self] = newValue }
     }
 
     /// Preference value collection during rendering.
