@@ -51,6 +51,20 @@ public final class StateStorage: @unchecked Sendable {
     /// All persisted state values, keyed by view identity + property index.
     private var values: [StateKey: AnyObject] = [:]
 
+    /// Tracked values for `onChange(of:)`, keyed by view identity + property index.
+    ///
+    /// Unlike `values` (which stores `StateBox` objects that trigger re-renders),
+    /// tracked values are plain values used only for change detection. Writing to
+    /// them does not trigger a re-render.
+    private var trackedValues: [StateKey: Any] = [:]
+
+    /// Per-identity counters for `onChange(of:)` index assignment.
+    ///
+    /// Reset at the start of each render pass. Each `OnChangeModifier` claims the
+    /// next index for its identity, ensuring chained `.onChange(of:)` modifiers at
+    /// the same identity get unique keys.
+    private var onChangeCounters: [ViewIdentity: Int] = [:]
+
     /// Identities seen during the current render pass (for garbage collection).
     private var activeIdentities: Set<ViewIdentity> = []
 
@@ -95,9 +109,44 @@ extension StateStorage {
         activeIdentities.insert(identity)
     }
 
+    // MARK: - onChange Tracking
+
+    /// Claims the next `onChange` property index for the given identity.
+    ///
+    /// Each `OnChangeModifier` at a given identity calls this to get a unique
+    /// index, ensuring chained `.onChange(of:)` modifiers don't collide.
+    ///
+    /// - Parameter identity: The view identity requesting an index.
+    /// - Returns: The next available index (starting at 0).
+    public func nextOnChangeIndex(for identity: ViewIdentity) -> Int {
+        let index = onChangeCounters[identity, default: 0]
+        onChangeCounters[identity] = index + 1
+        return index
+    }
+
+    /// Returns the previously tracked value for the given key, if any.
+    ///
+    /// - Parameter key: The state key (identity + property index).
+    /// - Returns: The tracked value, or `nil` if no value was stored yet.
+    public func trackedValue<V>(for key: StateKey) -> V? {
+        trackedValues[key] as? V
+    }
+
+    /// Stores a tracked value for change detection across render passes.
+    ///
+    /// - Parameters:
+    ///   - value: The value to store.
+    ///   - key: The state key (identity + property index).
+    public func setTrackedValue<V>(_ value: V, for key: StateKey) {
+        trackedValues[key] = value
+    }
+
+    // MARK: - Render Pass Lifecycle
+
     /// Begins a new render pass by clearing the active identity set.
     public func beginRenderPass() {
         activeIdentities.removeAll(keepingCapacity: true)
+        onChangeCounters.removeAll(keepingCapacity: true)
     }
 
     /// Ends a render pass by removing state for views no longer in the tree.
@@ -109,6 +158,10 @@ extension StateStorage {
         let staleKeys = values.keys.filter { !activeIdentities.contains($0.identity) }
         for key in staleKeys {
             values.removeValue(forKey: key)
+        }
+        let staleTrackedKeys = trackedValues.keys.filter { !activeIdentities.contains($0.identity) }
+        for key in staleTrackedKeys {
+            trackedValues.removeValue(forKey: key)
         }
     }
 
@@ -123,11 +176,17 @@ extension StateStorage {
         for key in staleKeys {
             values.removeValue(forKey: key)
         }
+        let staleTrackedKeys = trackedValues.keys.filter { ancestor.isAncestor(of: $0.identity) }
+        for key in staleTrackedKeys {
+            trackedValues.removeValue(forKey: key)
+        }
     }
 
     /// Removes all stored state. Used during app cleanup.
     public func reset() {
         values.removeAll()
+        trackedValues.removeAll()
+        onChangeCounters.removeAll()
         activeIdentities.removeAll()
     }
 }
