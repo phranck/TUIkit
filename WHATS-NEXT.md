@@ -3,14 +3,14 @@
 ## Status Snapshot
 
 - **Branch**: main
-- **Active Task**: i18n Phase 3 (Type-safe keys, tests, documentation) — COMPLETE
-- **Status**: completed
-- **Last Updated**: 2026-02-14T22:40:00Z
+- **Active Task**: None
+- **Status**: pending
+- **Last Updated**: 2026-02-15T01:55:00Z
 
 ## Current Checkpoint
 
-- **File**: N/A
-- **What**: i18n Phase 3 complete. LocalizationKey enum, 5 languages, comprehensive tests, full documentation.
+- **File**: Sources/TUIkit/TUIkit.docc/theme-settings.json
+- **What**: Completed DocC theme with TUIkit green palette colors, colorful syntax highlighting, Nunito font
 - **Phase**: N/A
 
 ## Blockers
@@ -19,19 +19,10 @@
 
 ## Next Steps (Immediate Actions)
 
-1. **P4.16**: Replace RenderNotifier.current global with dependency injection (IN PROGRESS)
-2. **Test Coverage** (ASCIIConverter, RGBAImage, Notification, Extensions)
-3. **State Persistence** (@RestoredState property wrapper, crash recovery)
-4. **DisclosureGroup** (expandable/collapsible sections)
-5. **P4.15**: Performance optimization & caching strategies
-
-## Open Plans (Next Priority Queue)
-
-| # | Plan | Effort | Impact | Status |
-|---|------|--------|--------|--------|
-| 1 | Project Analysis P4 (Long-term Architecture) | Large | High | In Progress |
-| 2 | State Persistence (Session Continuity) | Medium | Medium | Not Started |
-| 3 | DisclosureGroup | Medium | Medium | Not Started |
+1. Localization Tests Fix (plan exists in .claude/plans/)
+2. Test Coverage (ASCIIConverter, RGBAImage, Notification, Extensions)
+3. State Persistence (@RestoredState property wrapper, crash recovery)
+4. DisclosureGroup component
 
 ---
 
@@ -41,14 +32,14 @@
 
 ## Open (Backlog)
 
-### Project Analysis Remaining (P4 + Additional)
-- [x] **P4.16**: Replace RenderNotifier.current global with dependency injection (COMPLETE)
-- [x] **P4.17**: Generic ItemListHandler to preserve type safety
-- [x] **P4.18**: Evaluate MainActor.assumeIsolated in Equatable safety
-- [x] **P4.19**: Add image size limits and URL timeout configuration
-- [x] **P4.20**: Split framework into multiple Swift package modules (done: TUIkitCore, TUIkitStyling, TUIkitView, TUIkitImage, CSTBImage)
-- [x] **Additional**: Remove unnecessary `import Foundation` (9 files), split 500+ line files (Focus.swift, StatusBarItem.swift, ASCIIConverter.swift)
-- [ ] **Additional**: Test coverage for ASCIIConverter, RGBAImage, Notification, Extensions
+### Bugs / Fixes
+- [ ] **Localization Tests Fix**: Deadlock in LocalizationService.string(for:), init() side effects (plan ready)
+
+### Test Coverage
+- [ ] **ASCIIConverter Tests**: Complete test coverage
+- [ ] **RGBAImage Tests**: Complete test coverage
+- [ ] **Notification Tests**: Complete test coverage
+- [ ] **Extensions Tests**: Complete test coverage
 
 ### Components
 - [ ] **DisclosureGroup**: Expandable/collapsible sections
@@ -62,28 +53,20 @@
 
 ## Completed
 
-- **2026-02-14**: i18n Phase 3 Complete: Type-safe LocalizationKey enum (74 keys across 7 categories), all 5 languages expanded with new strings, LocalizationServiceTests + LocalizationKeyConsistencyTests (10/10 passing), comprehensive user and developer documentation integrated into DocC (Localization.md). README updated with i18n features and examples. 1100+ tests passing.
-- **2026-02-14**: i18n Phase 2 Complete: LocalizedString View component, Text(localized:) convenience initializer, AppState.setLanguage() extension, LocalizationExtensions for convenient access to localized strings.
-- **2026-02-14**: i18n Phase 1 Complete: LocalizationService with 5 languages (EN, DE, FR, IT, ES), XDG-compatible persistent storage, JSON-based translations with dot-notation keys, fallback chain (Current → English → Key).
-- **2026-02-14**: P4.16 Complete elimination of RenderNotifier: AppState.shared and RenderCache.shared singletons replace global registry. Pure singleton architecture. All property wrappers, render consumers, and services use direct singleton access. 1069 tests pass.
-- **2026-02-14**: P4.18 Concurrency documentation: added RenderNotifier safety model documentation, Terminal memory operation comments
-- **2026-02-14**: P4.17 Generic ItemListHandler: replaced AnyHashable type erasure with generic SelectionValue parameter, removed configureSelectionBindings, type-safe bindings in _ListCore and _TableCore
-- **2026-02-14**: Git history cleanup: removed 33 Co-Authored-By trailers from entire history via git filter-repo + force-push
-- **2026-02-14**: Cleanup: removed unnecessary `import Foundation` (9 files), split 3 files over 500 lines into 9 files
-- **2026-02-14**: README.md updated (multi-module structure, new components, macOS 14+ requirement, module imports)
-- **2026-02-14**: Project analysis improvements P1-P3 complete (15/29 topics)
-- **2026-02-14**: Image View feature merged (PR #90)
-- **2026-02-13**: Codebase Quality & SwiftUI API Parity complete (Phases 1-6)
-- **2026-02-13**: Two-Pass Layout system complete (Phases 1-4)
-- **2026-02-13**: Consolidated plans/, standardized AI tool instructions, added SessionStart hook
-- **2026-02-13**: Code audit cleanup: withPersistentBackground, List/Table renderRow decomposition
+- **2026-02-15**: DocC theme-settings.json with full TUIkit green palette (130+ color variables, light/dark), Nunito font, colorful Xcode-inspired syntax highlighting
+- **2026-02-15**: Rebuilt all 10 DocC diagrams with Typst (fletcher), replacing Mermaid/D2 for better quality. Transparent backgrounds, Style D arrows, top-down layouts.
+- **2026-02-14**: Audited all DocC diagrams against code: fixed 7 diagrams, corrected text in 3 articles
+- **2026-02-14**: Created Architecture.md event loop + input dispatch diagrams from code analysis
+- **2026-02-14**: Converted KeyboardShortcuts.md ASCII diagram to rendered PNG (light/dark)
+- **2026-02-14**: Fixed LocalizationService: NSLock deadlock, wrong Bundle path, init() side effects. Re-enabled all 42 localization tests. 1111 tests / 151 suites passing.
 
 ## Notes
 
-- Tests: 1100+ / 150+ suites, all green
-- i18n Documentation: Localization.md in DocC catalog (Sources/TUIkit/TUIkit.docc/Articles/Localization.md)
-- Project analysis report: papers/project_analysis.md
-- Improvement plan: .claude/plans/open/2026-02-14-project-analysis-improvements.md
-- P3.11 and P3.14 resolved as "already adequate" after detailed review (no code changes needed)
+- Tests: 1111 / 151 suites, all green
+- DocC diagrams: All now Typst-rendered (fletcher package) with transparent backgrounds, light/dark variants
+- Typst workflow: .typ → typst compile --ppi 288 → PNG (light + ~dark) → @Image in DocC
+- DocC theme: Full green palette theming, Nunito font, Xcode-inspired syntax colors
+- Localization Tests fix plan: `.claude/plans/twinkly-kindling-dongarra.md`
+- **Next Focus**: Localization deadlock fix or test coverage expansion
 
-**Last Updated**: 2026-02-14T22:40:00Z
+**Last Updated**: 2026-02-15T01:55:00Z
