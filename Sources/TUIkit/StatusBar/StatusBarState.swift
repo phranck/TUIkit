@@ -90,14 +90,26 @@ public final class StatusBarState: @unchecked Sendable {
     /// Default is `false`.
     public var showThemeItem: Bool = false
 
-    /// Controls when the quit shortcut (`q`) is active.
+    /// Controls when the quit shortcut is active.
     ///
     /// - `.always`: Quit works from any screen (default).
     /// - `.rootOnly`: Quit only works when no context is pushed (main screen).
     ///
-    /// When set to `.rootOnly`, pressing `q` on a subpage does nothing,
+    /// When set to `.rootOnly`, pressing the quit key on a subpage does nothing,
     /// allowing the app to handle navigation (e.g., go back) instead.
     public var quitBehavior: QuitBehavior = .always
+
+    /// The keyboard shortcut used to quit the application.
+    ///
+    /// Defaults to `.q` (pressing `q` quits). Change this to use a different key:
+    ///
+    /// ```swift
+    /// statusBar.quitShortcut = .escape   // ⎋ quit
+    /// statusBar.quitShortcut = .ctrlQ    // ⌃q quit
+    /// ```
+    ///
+    /// The status bar display updates automatically.
+    public var quitShortcut: QuitShortcut = .q
 
     // MARK: - Appearance
 
@@ -145,7 +157,13 @@ public final class StatusBarState: @unchecked Sendable {
         guard showSystemItems else { return [] }
 
         var items: [StatusBarItem] = []
-        if isQuitAllowed { items.append(SystemStatusBarItem.quit) }
+        if isQuitAllowed {
+            items.append(StatusBarItem(
+                shortcut: quitShortcut.shortcutSymbol,
+                label: quitShortcut.label,
+                order: .quit
+            ))
+        }
         if showAppearanceItem { items.append(SystemStatusBarItem.appearance) }
         if showThemeItem { items.append(SystemStatusBarItem.theme) }
         return items

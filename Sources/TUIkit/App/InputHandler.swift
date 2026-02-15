@@ -74,12 +74,14 @@ extension InputHandler {
         }
 
         // Layer 4: Default key bindings
-        switch event.key {
-        case .character(let character) where character == "q" || character == "Q":
+        if statusBar.quitShortcut.matches(event) {
             if statusBar.isQuitAllowed {
                 onQuit()
             }
+            return
+        }
 
+        switch event.key {
         case .character(let character) where character == "t" || character == "T":
             if statusBar.showThemeItem {
                 paletteManager.cycleNext()
