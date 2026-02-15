@@ -137,6 +137,12 @@ public enum StateRegistration {
 
     /// The current property index, incremented by each `@State` during hydration.
     nonisolated(unsafe) public static var counter: Int = 0
+
+    /// The active environment values, set during composite view body evaluation.
+    ///
+    /// Used by `@Environment` to read environment values during `body` evaluation.
+    /// Set alongside ``activeContext`` in `renderToBuffer(_:context:)`.
+    nonisolated(unsafe) public static var activeEnvironment: EnvironmentValues?
 }
 
 // MARK: - Binding
