@@ -4,6 +4,7 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
 import TUIkitCore
 
 // MARK: - Renderable Protocol
@@ -190,7 +191,13 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
         StateRegistration.counter = 0
         StateRegistration.activeEnvironment = context.environment
 
-        let body = view.body
+        // Wrap body evaluation in observation tracking so that any @Observable
+        // property accessed during body triggers a re-render when mutated.
+        let body = withObservationTracking {
+            view.body
+        } onChange: {
+            AppState.shared.setNeedsRenderWithCacheClear()
+        }
 
         // Restore previous hydration state and mark this identity as active for GC.
         StateRegistration.activeContext = previousContext

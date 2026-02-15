@@ -40,11 +40,7 @@ struct TextStylesPage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Text Styles Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Text Styles Demo")
         }
     }
 }

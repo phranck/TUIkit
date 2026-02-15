@@ -102,16 +102,10 @@ struct MainMenuPage: View {
             Spacer()
         }
         .appHeader {
-            VStack {
-                HStack {
-                    Text("TUIkit Example App").bold().foregroundStyle(.palette.accent)
-                    Spacer()
-                    Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-                }
-                Text("A SwiftUI-like framework for Terminal User Interfaces")
-                    .foregroundStyle(.palette.foregroundSecondary)
-                    .italic()
-            }
+            DemoAppHeader(
+                "TUIkit Example App",
+                subtitle: "A SwiftUI-like framework for Terminal User Interfaces"
+            )
         }
     }
 }

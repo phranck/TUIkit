@@ -67,43 +67,25 @@ struct StepperPage: View {
 
             DemoSection("Current Values") {
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 1) {
-                        Text("Quantity:").foregroundStyle(.palette.foregroundSecondary)
-                        Text("\(quantity)").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Rating:").foregroundStyle(.palette.foregroundSecondary)
-                        Text("\(rating)").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Volume:").foregroundStyle(.palette.foregroundSecondary)
-                        Text("\(volume)").foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Color:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(colors[colorIndex]).foregroundStyle(.palette.accent)
-                    }
+                    ValueDisplayRow("Quantity:", "\(quantity)")
+                    ValueDisplayRow("Rating:", "\(rating)")
+                    ValueDisplayRow("Volume:", "\(volume)")
+                    ValueDisplayRow("Color:", colors[colorIndex])
                 }
             }
 
-            DemoSection("Keyboard Controls") {
-                VStack(alignment: .leading) {
-                    Text("[<-] [->] Decrease/Increase by step").dim()
-                    Text("[-] [+] Decrease/Increase by step").dim()
-                    Text("[Home] Jump to minimum (if range defined)").dim()
-                    Text("[End] Jump to maximum (if range defined)").dim()
-                    Text("[Tab] Move to next stepper").dim()
-                }
-            }
+            KeyboardHelpSection(shortcuts: [
+                "[<-] [->] Decrease/Increase by step",
+                "[-] [+] Decrease/Increase by step",
+                "[Home] Jump to minimum (if range defined)",
+                "[End] Jump to maximum (if range defined)",
+                "[Tab] Move to next stepper",
+            ])
 
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Stepper Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Stepper Demo")
         }
     }
 }

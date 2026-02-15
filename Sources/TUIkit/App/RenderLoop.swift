@@ -162,6 +162,12 @@ extension RenderLoop {
     func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
         beginRenderPass()
 
+        // If an @Published property changed, clear the entire render cache
+        // so EquatableView-cached subtrees re-render with new model data.
+        if AppState.shared.consumeNeedsCacheClear() {
+            tuiContext.renderCache.clearAll()
+        }
+
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
         let statusBarHeight = statusBar.height

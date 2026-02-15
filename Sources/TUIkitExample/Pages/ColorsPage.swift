@@ -62,11 +62,7 @@ struct ColorsPage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Colors Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Colors Demo")
         }
     }
 }

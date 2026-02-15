@@ -65,11 +65,7 @@ struct LayoutPage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Layout System Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Layout System Demo")
         }
     }
 }

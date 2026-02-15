@@ -185,11 +185,7 @@ struct OverlaysPage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Overlays, Modals & Notifications Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Overlays, Modals & Notifications Demo")
         }
     }
 

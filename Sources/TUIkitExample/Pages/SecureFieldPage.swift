@@ -85,27 +85,21 @@ struct SecureFieldPage: View {
                 }
             }
 
-            DemoSection("Keyboard Controls") {
-                VStack(alignment: .leading) {
-                    Text("Type any character to insert at cursor").dim()
-                    Text("[Left] [Right] Move cursor left/right").dim()
-                    Text("[Home] [End] Jump to start/end").dim()
-                    Text("[Backspace] Delete before cursor").dim()
-                    Text("[Delete] Delete at cursor").dim()
-                    Text("[Enter] Submit (triggers onSubmit)").dim()
-                    Text("[Tab] Move to next field").dim()
-                }
-            }
+            KeyboardHelpSection(shortcuts: [
+                "Type any character to insert at cursor",
+                "[Left] [Right] Move cursor left/right",
+                "[Home] [End] Jump to start/end",
+                "[Backspace] Delete before cursor",
+                "[Delete] Delete at cursor",
+                "[Enter] Submit (triggers onSubmit)",
+                "[Tab] Move to next field",
+            ])
 
             Spacer()
         }
         .padding(.horizontal, 1)
         .appHeader {
-            HStack {
-                Text("SecureField Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("SecureField Demo")
         }
     }
 }

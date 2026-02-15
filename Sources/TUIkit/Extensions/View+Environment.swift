@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
+
 // MARK: - Environment
 
 extension View {
@@ -18,6 +20,35 @@ extension View {
         _ value: V
     ) -> some View {
         EnvironmentModifier(content: self, keyPath: keyPath, value: value)
+    }
+}
+
+// MARK: - Observable Objects
+
+extension View {
+    /// Injects an observable object into the environment for this view
+    /// and its descendants.
+    ///
+    /// The object is stored by its type. Descendants can read it via
+    /// `@Environment(MyModel.self)`.
+    ///
+    /// # Example
+    ///
+    /// ```swift
+    /// @Observable
+    /// class AppModel {
+    ///     var count = 0
+    /// }
+    ///
+    /// let model = AppModel()
+    /// ContentView()
+    ///     .environment(model)
+    /// ```
+    ///
+    /// - Parameter object: The observable object to inject.
+    /// - Returns: A view with the object available in the environment.
+    public func environment<T: Observable>(_ object: T) -> some View {
+        ObjectEnvironmentModifier(content: self, object: object)
     }
 }
 

@@ -56,40 +56,22 @@ struct RadioButtonPage: View {
 
             DemoSection("Current Selections") {
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 1) {
-                        Text("Color:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(colorChoice).bold().foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Size:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(sizeChoice).bold().foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Layout:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(layoutChoice).bold().foregroundStyle(.palette.accent)
-                    }
+                    ValueDisplayRow("Color:", colorChoice)
+                    ValueDisplayRow("Size:", sizeChoice)
+                    ValueDisplayRow("Layout:", layoutChoice)
                 }
             }
 
-            DemoSection("Focus Navigation") {
-                VStack {
-                    Text("Use [↑/↓] to navigate vertically")
-                        .dim()
-                    Text("Use [←/→] to navigate horizontally")
-                        .dim()
-                    Text("Use [Enter] or [Space] to select")
-                        .dim()
-                }
-            }
+            KeyboardHelpSection("Focus Navigation", shortcuts: [
+                "Use [↑/↓] to navigate vertically",
+                "Use [←/→] to navigate horizontally",
+                "Use [Enter] or [Space] to select",
+            ])
 
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Radio Buttons Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Radio Buttons Demo")
         }
     }
 }

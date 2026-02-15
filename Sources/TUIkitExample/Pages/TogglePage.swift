@@ -35,11 +35,7 @@ struct TogglePage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Toggle Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Toggle Demo")
         }
     }
 }
