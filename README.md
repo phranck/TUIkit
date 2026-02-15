@@ -1,5 +1,6 @@
 [![CI](https://github.com/phranck/TUIkit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/phranck/TUIkit/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/Tests-1157%2B_passing-brightgreen)
+[![Release](https://img.shields.io/github/v/release/phranck/TUIkit?label=Release)](https://github.com/phranck/TUIkit/releases/latest)
 ![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
 ![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
