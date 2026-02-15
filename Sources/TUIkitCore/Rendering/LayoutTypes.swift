@@ -21,7 +21,7 @@ public struct ProposedSize: Equatable, Sendable {
     public var height: Int?
 
     /// No constraints - view should use its ideal size.
-    public static let unspecified = ProposedSize(width: nil, height: nil)
+    public static let unspecified = Self(width: nil, height: nil)
 
     /// Creates a proposed size with specific dimensions.
     public init(width: Int?, height: Int?) {
@@ -30,8 +30,8 @@ public struct ProposedSize: Equatable, Sendable {
     }
 
     /// Creates a proposed size with fixed dimensions.
-    public static func fixed(_ width: Int, _ height: Int) -> ProposedSize {
-        ProposedSize(width: width, height: height)
+    public static func fixed(_ width: Int, _ height: Int) -> Self {
+        Self(width: width, height: height)
     }
 }
 
@@ -62,22 +62,22 @@ public struct ViewSize: Equatable, Sendable {
     }
 
     /// Creates a fixed-size view that doesn't expand.
-    public static func fixed(_ width: Int, _ height: Int) -> ViewSize {
-        ViewSize(width: width, height: height, isWidthFlexible: false, isHeightFlexible: false)
+    public static func fixed(_ width: Int, _ height: Int) -> Self {
+        Self(width: width, height: height, isWidthFlexible: false, isHeightFlexible: false)
     }
 
     /// Creates a flexible view that expands to fill available space.
-    public static func flexible(minWidth: Int = 0, minHeight: Int = 0) -> ViewSize {
-        ViewSize(width: minWidth, height: minHeight, isWidthFlexible: true, isHeightFlexible: true)
+    public static func flexible(minWidth: Int = 0, minHeight: Int = 0) -> Self {
+        Self(width: minWidth, height: minHeight, isWidthFlexible: true, isHeightFlexible: true)
     }
 
     /// Creates a view that is flexible only horizontally.
-    public static func flexibleWidth(minWidth: Int = 0, height: Int) -> ViewSize {
-        ViewSize(width: minWidth, height: height, isWidthFlexible: true, isHeightFlexible: false)
+    public static func flexibleWidth(minWidth: Int = 0, height: Int) -> Self {
+        Self(width: minWidth, height: height, isWidthFlexible: true, isHeightFlexible: false)
     }
 
     /// Creates a view that is flexible only vertically.
-    public static func flexibleHeight(width: Int, minHeight: Int = 0) -> ViewSize {
-        ViewSize(width: width, height: minHeight, isWidthFlexible: false, isHeightFlexible: true)
+    public static func flexibleHeight(width: Int, minHeight: Int = 0) -> Self {
+        Self(width: width, height: minHeight, isWidthFlexible: false, isHeightFlexible: true)
     }
 }

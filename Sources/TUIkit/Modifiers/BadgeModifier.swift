@@ -68,10 +68,10 @@ extension BadgeModifier: @preconcurrency Equatable where Content: Equatable {
 extension BadgeValue: Equatable {
     public static func == (lhs: BadgeValue, rhs: BadgeValue) -> Bool {
         switch (lhs, rhs) {
-        case (.int(let a), .int(let b)):
-            return a == b
-        case (.string(let a), .string(let b)):
-            return a == b
+        case (.int(let lhsValue), .int(let rhsValue)):
+            return lhsValue == rhsValue
+        case (.string(let lhsString), .string(let rhsString)):
+            return lhsString == rhsString
         default:
             return false
         }

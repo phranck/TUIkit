@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - List Row Type
 
 /// Defines the type of a row in a List, controlling selectability and focus behavior.

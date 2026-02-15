@@ -8,7 +8,7 @@
 
 /// EnvironmentKey for the localization service.
 private struct LocalizationServiceKey: EnvironmentKey {
-    static let defaultValue: LocalizationService = LocalizationService.shared
+    static let defaultValue = LocalizationService.shared
 }
 
 // MARK: - Lifecycle Manager

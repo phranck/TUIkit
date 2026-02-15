@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 import TUIkitCore
 
 /// The context for rendering a view.
@@ -77,7 +76,6 @@ public struct RenderContext {
         self.identity = identity
     }
 
-
     /// Creates a new context with the same size but different environment.
     ///
     /// - Parameter environment: The new environment values.
@@ -127,7 +125,6 @@ public struct RenderContext {
         copy.identity = identity.branch(label)
         return copy
     }
-
 
     /// Creates a new context with a different available width.
     ///

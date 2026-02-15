@@ -54,7 +54,7 @@ struct FocusRegistration {
         explicitFocusID: String?,
         defaultPrefix: String,
         focusIDPropertyIndex: Int
-    ) -> FocusRegistration {
+    ) -> Self {
         let persistedFocusID = persistFocusID(
             context: context,
             explicitFocusID: explicitFocusID,
@@ -66,7 +66,7 @@ struct FocusRegistration {
 
         let isFocused = context.isMeasuring ? false : context.environment.focusManager.isFocused(id: persistedFocusID)
 
-        return FocusRegistration(persistedFocusID: persistedFocusID, isFocused: isFocused)
+        return Self(persistedFocusID: persistedFocusID, isFocused: isFocused)
     }
 
     /// Persists the focusID in StateStorage and returns it, without registering a handler.

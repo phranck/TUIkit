@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Scroll Direction
 
 /// The direction of a scroll indicator arrow.

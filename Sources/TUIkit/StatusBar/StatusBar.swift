@@ -5,7 +5,6 @@
 //  License: MIT  Always rendered at the bottom of the terminal, never dimmed by overlays.
 //
 
-
 // MARK: - StatusBar View
 
 /// A status bar that displays at the bottom of the terminal.
@@ -145,15 +144,37 @@ public struct StatusBar: View {
         !userItems.isEmpty || !systemItems.isEmpty
     }
 
-    public var body: Never {
-        fatalError("StatusBar renders via Renderable")
+    public var body: some View {
+        _StatusBarCore(
+            userItems: userItems,
+            systemItems: systemItems,
+            style: style,
+            alignment: alignment,
+            highlightColor: highlightColor,
+            labelColor: labelColor
+        )
     }
 }
 
-// MARK: - StatusBar Rendering
+// MARK: - StatusBar Core (Private Renderable)
 
-extension StatusBar: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+/// Private rendering core for ``StatusBar``.
+///
+/// Handles all procedural ANSI rendering and buffer assembly.
+/// Public ``StatusBar`` delegates to this via its `body`.
+private struct _StatusBarCore: View, Renderable {
+    let userItems: [any StatusBarItemProtocol]
+    let systemItems: [any StatusBarItemProtocol]
+    let style: StatusBarStyle
+    let alignment: StatusBarAlignment
+    let highlightColor: Color
+    let labelColor: Color?
+
+    var body: Never {
+        fatalError("_StatusBarCore renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
         // Get shortcuts used by user items (for deduplication)
         let userShortcuts = Set(userItems.map { $0.shortcut })
 
@@ -207,11 +228,6 @@ extension StatusBar: Renderable {
     }
 
     /// Aligns content within the given width based on alignment setting.
-    ///
-    /// - Parameters:
-    ///   - itemStrings: The styled item strings to align.
-    ///   - width: The total available width.
-    /// - Returns: The aligned content string.
     private func alignContent(itemStrings: [String], width: Int) -> String {
         let separator = "  "  // Two spaces between items for non-justified
 
@@ -240,14 +256,6 @@ extension StatusBar: Renderable {
     }
 
     /// Distributes items evenly across the width (justified alignment).
-    ///
-    /// Items are distributed so that the space on the left edge, between items,
-    /// and on the right edge are all equal.
-    ///
-    /// - Parameters:
-    ///   - itemStrings: The styled item strings to distribute.
-    ///   - width: The total available width.
-    /// - Returns: The justified content string.
     private func justifyContent(itemStrings: [String], width: Int) -> String {
         guard !itemStrings.isEmpty else {
             return String(repeating: " ", count: width)
@@ -309,9 +317,6 @@ extension StatusBar: Renderable {
     }
 
     /// Renders the bordered style using the current appearance's border style.
-    ///
-    /// Content is inset by 1 character on each side so items don't touch the
-    /// border characters.
     private func renderBordered(itemStrings: [String], width: Int, context: RenderContext) -> FrameBuffer {
         let contentPadding = 2  // 1 char padding left + right
         let innerWidth = width - BorderRenderer.borderWidthOverhead

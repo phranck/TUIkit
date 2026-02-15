@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - ToggleStyle Protocol
 
 /// The appearance and behavior of a toggle.

@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - SecureField
 
 /// A control for secure text entry, where the display masks the user's input.
@@ -305,5 +304,4 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
         let closeCap = ANSIRenderer.colorize(String(TerminalSymbols.closeCap), foreground: capColor)
         return FrameBuffer(text: openCap + fieldContent + closeCap)
     }
-
 }

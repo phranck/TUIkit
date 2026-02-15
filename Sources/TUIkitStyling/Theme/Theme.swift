@@ -5,7 +5,6 @@
 //  License: MIT  and palette registry.
 //
 
-
 // MARK: - Palette Protocol
 
 /// A palette defines the color scheme for a TUIkit application.

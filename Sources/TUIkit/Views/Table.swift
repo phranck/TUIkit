@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Table
 
 /// A scrollable table with columns, keyboard navigation, and selection.
@@ -439,7 +438,6 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             return String(repeating: " ", count: padding) + text
         }
     }
-
 }
 
 // MARK: - Table Content View

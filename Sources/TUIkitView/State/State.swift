@@ -94,7 +94,6 @@ extension AppState {
     }
 }
 
-
 // MARK: - Hydration Context
 
 /// The active render context used by `@State` during self-hydration.
@@ -134,10 +133,10 @@ public enum StateRegistration {
     ///
     /// - Important: Must be set before and cleared after each `body` call.
     ///   Nested composite views save/restore the previous context.
-    public nonisolated(unsafe) static var activeContext: HydrationContext?
+    nonisolated(unsafe) public static var activeContext: HydrationContext?
 
     /// The current property index, incremented by each `@State` during hydration.
-    public nonisolated(unsafe) static var counter: Int = 0
+    nonisolated(unsafe) public static var counter: Int = 0
 }
 
 // MARK: - Binding

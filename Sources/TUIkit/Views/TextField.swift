@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - TextField
 
 /// A control that displays an editable text interface.

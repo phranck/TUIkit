@@ -6,7 +6,6 @@
 //  with a single, reusable implementation.
 //
 
-
 // MARK: - Cyclable Protocol
 
 /// A type that can be managed and cycled through by a `ThemeManager`.

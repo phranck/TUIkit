@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Stepper
 
 /// A control that performs increment and decrement actions.

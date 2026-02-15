@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - OnAppear Modifier
 
 /// A modifier that executes an action when a view first appears.

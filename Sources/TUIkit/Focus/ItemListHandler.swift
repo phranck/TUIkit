@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Selection Mode
 
 /// The selection mode for a list or table component.

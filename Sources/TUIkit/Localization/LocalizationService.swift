@@ -37,7 +37,7 @@ public final class LocalizationService: @unchecked Sendable {
     public static let shared = LocalizationService()
 
     /// Currently active language
-    private(set) public var currentLanguage: Language {
+    public private(set) var currentLanguage: Language {
         didSet {
             saveLanguagePreference(currentLanguage)
             AppState.shared.setNeedsRender()
@@ -266,4 +266,3 @@ public final class LocalizationService: @unchecked Sendable {
         #endif
     }
 }
-

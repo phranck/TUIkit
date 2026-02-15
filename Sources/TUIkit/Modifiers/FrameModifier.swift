@@ -110,7 +110,7 @@ extension FlexibleFrameView: Renderable {
         if let height = targetHeight {
             contentContext.availableHeight = height
         }
-        
+
         // Mark that an explicit width constraint was set
         if minWidth != nil || idealWidth != nil || maxWidth != nil {
             contentContext.hasExplicitWidth = true

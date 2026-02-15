@@ -272,7 +272,6 @@ final class LocalizationServiceTests {
         let englishAgain = sut.string(for: "button.save")
         #expect(englishAgain == "Save")
     }
-
 }
 
 // MARK: - Localization Key Tests

@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Column Width
 
 /// Defines the width behavior for a table column.

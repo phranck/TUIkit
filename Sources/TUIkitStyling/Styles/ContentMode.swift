@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - ContentMode
 
 /// Constants that define how a view's content fills the available space.

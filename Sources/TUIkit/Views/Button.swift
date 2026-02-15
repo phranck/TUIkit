@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Button Role
 
 /// A value that describes the purpose of a button.

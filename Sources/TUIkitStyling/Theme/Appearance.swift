@@ -7,7 +7,6 @@
 //  while Theme defines the colors. Together they create a complete look.
 //
 
-
 // MARK: - Appearance
 
 /// Defines the visual appearance of UI controls.

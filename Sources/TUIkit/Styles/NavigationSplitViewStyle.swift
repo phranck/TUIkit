@@ -34,10 +34,6 @@ public struct NavigationSplitViewVisibility: Equatable, Hashable, Sendable, Coda
     /// The raw value representing the visibility state.
     private let rawValue: Int
 
-    private init(rawValue: Int) {
-        self.rawValue = rawValue
-    }
-
     /// Use the default leading column visibility for the current context.
     ///
     /// In TUIkit, this resolves to ``all`` since terminal width is typically
@@ -95,10 +91,6 @@ public struct NavigationSplitViewVisibility: Equatable, Hashable, Sendable, Coda
 public struct NavigationSplitViewColumn: Equatable, Hashable, Sendable {
     /// The raw value identifying the column.
     private let rawValue: Int
-
-    private init(rawValue: Int) {
-        self.rawValue = rawValue
-    }
 
     /// The sidebar column (leftmost).
     ///
