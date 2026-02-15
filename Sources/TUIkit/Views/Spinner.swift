@@ -282,7 +282,7 @@ private struct _SpinnerCore: View, Renderable {
         if !lifecycle.hasAppeared(token: token) {
             _ = lifecycle.recordAppear(token: token) {}
 
-            let triggerNanos: UInt64 = 28_000_000  // 28ms — matches run loop poll rate (~35 FPS)
+            let triggerNanos: UInt64 = 23_800_000  // ~24ms — matches run loop poll rate (~42 FPS)
             lifecycle.startTask(token: token, priority: .medium) {
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: triggerNanos)

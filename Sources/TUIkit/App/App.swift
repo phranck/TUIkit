@@ -187,10 +187,10 @@ extension AppRunner {
                 eventsProcessed += 1
             }
 
-            // Sleep 28ms to yield CPU.
-            // This sets the maximum frame rate to ~35 FPS.
+            // Sleep ~24ms to yield CPU.
+            // This sets the maximum frame rate to ~42 FPS.
             //
-            usleep(28_000)
+            usleep(23_800)
         }
 
         // Stop pulse timer before cleanup

@@ -162,7 +162,7 @@ private extension NotificationHostModifier {
             .max() ?? 0
 
         lifecycle.startTask(token: token, priority: .medium) { [lifecycle] in
-            let triggerNanos: UInt64 = 28_000_000  // 28ms (~35 FPS)
+            let triggerNanos: UInt64 = 23_800_000  // ~24ms (~42 FPS)
 
             while !Task.isCancelled {
                 let now = Date().timeIntervalSinceReferenceDate
