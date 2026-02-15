@@ -347,5 +347,4 @@ struct TextFieldHandlerTests {
 
         #expect(handler.cursorPosition == 2)  // Clamped to "Hi".count
     }
-
 }

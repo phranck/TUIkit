@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 import TUIkitCore
 /// A modifier that transforms a view's rendered output.
 ///

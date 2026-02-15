@@ -25,7 +25,6 @@ public struct EnvironmentModifier<Content: View, V>: View {
     /// The value to inject.
     public let value: V
 
-
     /// Creates a new environment modifier.
     public init(content: Content, keyPath: WritableKeyPath<EnvironmentValues, V>, value: V) {
         self.content = content

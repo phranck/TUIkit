@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - StatusBarSystemItemsModifier
 
 /// A modifier that configures which system items are shown in the status bar.

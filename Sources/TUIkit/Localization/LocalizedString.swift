@@ -36,4 +36,3 @@ public struct LocalizedString: View {
         Text(LocalizationService.shared.string(for: key))
     }
 }
-

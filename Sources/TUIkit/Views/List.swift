@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - List (Single Selection)
 
 /// A scrollable list with keyboard navigation and single selection.
@@ -344,5 +343,3 @@ extension List {
         return copy
     }
 }
-
-

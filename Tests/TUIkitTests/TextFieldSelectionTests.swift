@@ -379,7 +379,7 @@ struct TextFieldSelectionTests {
 
         _ = handler.handleKeyEvent(KeyEvent(key: .backspace))
 
-        #expect(text == "")
+        #expect(text.isEmpty)
         #expect(handler.cursorPosition == 0)
     }
 
@@ -575,5 +575,4 @@ struct TextFieldSelectionTests {
         #expect(handled == true)
         #expect(text == "Hello")  // Unchanged
     }
-
 }

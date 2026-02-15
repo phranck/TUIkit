@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 /// Reusable building blocks for border rendering.
 ///
 /// Each method produces a single rendered line (`String`) that callers

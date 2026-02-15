@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - List Core (Internal Rendering)
 
 /// Internal core view that handles list rendering inside a ContainerView.

@@ -113,24 +113,22 @@ private extension TextFieldHandler {
         }
         #elseif os(Linux)
         // Try xclip first, then xsel
-        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] {
-            if FileManager.default.fileExists(atPath: command) {
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: command)
-                process.arguments = command.contains("xclip") ? ["-selection", "clipboard"] : ["--clipboard", "--input"]
+        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] where FileManager.default.fileExists(atPath: command) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: command)
+            process.arguments = command.contains("xclip") ? ["-selection", "clipboard"] : ["--clipboard", "--input"]
 
-                let pipe = Pipe()
-                process.standardInput = pipe
+            let pipe = Pipe()
+            process.standardInput = pipe
 
-                do {
-                    try process.run()
-                    pipe.fileHandleForWriting.write(Data(text.utf8))
-                    pipe.fileHandleForWriting.closeFile()
-                    process.waitUntilExit()
-                    return
-                } catch {
-                    continue
-                }
+            do {
+                try process.run()
+                pipe.fileHandleForWriting.write(Data(text.utf8))
+                pipe.fileHandleForWriting.closeFile()
+                process.waitUntilExit()
+                return
+            } catch {
+                continue
             }
         }
         #endif
@@ -161,28 +159,26 @@ private extension TextFieldHandler {
         }
         #elseif os(Linux)
         // Try xclip first, then xsel
-        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] {
-            if FileManager.default.fileExists(atPath: command) {
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: command)
-                process.arguments = command.contains("xclip") ? ["-selection", "clipboard", "-o"] : ["--clipboard", "--output"]
+        for command in ["/usr/bin/xclip", "/usr/bin/xsel"] where FileManager.default.fileExists(atPath: command) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: command)
+            process.arguments = command.contains("xclip") ? ["-selection", "clipboard", "-o"] : ["--clipboard", "--output"]
 
-                let pipe = Pipe()
-                process.standardOutput = pipe
+            let pipe = Pipe()
+            process.standardOutput = pipe
 
-                do {
-                    try process.run()
-                    process.waitUntilExit()
+            do {
+                try process.run()
+                process.waitUntilExit()
 
-                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                    var result = String(data: data, encoding: .utf8) ?? ""
-                    if result.hasSuffix("\n") {
-                        result.removeLast()
-                    }
-                    return result
-                } catch {
-                    continue
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                var result = String(data: data, encoding: .utf8) ?? ""
+                if result.hasSuffix("\n") {
+                    result.removeLast()
                 }
+                return result
+            } catch {
+                continue
             }
         }
         return nil

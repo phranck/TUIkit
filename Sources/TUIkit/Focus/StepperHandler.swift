@@ -85,7 +85,7 @@ final class StepperHandler<V: Strideable>: Focusable where V.Stride: SignedNumer
     ) where V: ExpressibleByIntegerLiteral, V.Stride: ExpressibleByIntegerLiteral {
         self.focusID = focusID
         // Create a dummy binding that does nothing
-        var dummy: V? = nil
+        var dummy: V?
         self.value = Binding(
             get: { dummy ?? 0 },
             set: { dummy = $0 }

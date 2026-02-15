@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Slider
 
 /// A control for selecting a value from a bounded linear range of values.

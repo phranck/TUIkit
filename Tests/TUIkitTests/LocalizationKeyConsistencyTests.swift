@@ -45,7 +45,7 @@ final class LocalizationKeyConsistencyTests {
             }
         }
 
-        guard let url = url else {
+        guard let url else {
             return [:]
         }
 

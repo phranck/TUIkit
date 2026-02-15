@@ -49,7 +49,7 @@ struct BadgeModifierTests {
 
     @Test("Badge with nil string hides")
     func testStringBadgeNilHides() {
-        let badge = BadgeValue.string(Optional<String>(nil))
+        let badge = BadgeValue.string(String?(nil))
         #expect(badge.isHidden)
     }
 

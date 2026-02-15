@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - StatusBarItemsModifier
 
 /// A modifier that declares status bar items for a view.

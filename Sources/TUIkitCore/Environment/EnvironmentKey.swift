@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-
 // MARK: - Environment Key Protocol
 
 /// A key for accessing values in the environment.
