@@ -160,20 +160,7 @@ extension RenderLoop {
     ///     Passed from `PulseTimer` via `AppRunner`.
     ///   - cursorTimer: The cursor timer for TextField/SecureField animations.
     func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
-        // Clear per-frame state before re-rendering
-        tuiContext.keyEventDispatcher.clearHandlers()
-        tuiContext.preferences.beginRenderPass()
-        focusManager.beginRenderPass()
-        statusBar.clearSectionItems()
-        appHeader.beginRenderPass()
-
-        // Provide the focus manager to the status bar for section resolution
-        statusBar.focusManager = focusManager
-
-        // Begin lifecycle, state, and cache tracking for this render pass
-        tuiContext.lifecycle.beginRenderPass()
-        tuiContext.stateStorage.beginRenderPass()
-        tuiContext.renderCache.beginRenderPass()
+        beginRenderPass()
 
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
@@ -187,27 +174,13 @@ extension RenderLoop {
         environment.cursorTimer = cursorTimer
         invalidateCacheIfEnvironmentChanged(environment: environment)
 
-        // Set up state hydration context BEFORE evaluating app.body so that
-        // views constructed inside WindowGroup { ... } closures get persistent
-        // state from the start.
-        let rootIdentity = ViewIdentity(rootType: A.self)
-        StateRegistration.activeContext = HydrationContext(
-            identity: rootIdentity,
-            storage: tuiContext.stateStorage
-        )
-        StateRegistration.counter = 0
-
-        let scene = app.body
-
-        StateRegistration.activeContext = nil
-        tuiContext.stateStorage.markActive(rootIdentity)
+        let scene = evaluateAppBody(environment: environment)
 
         // Determine header height. On the first frame, we perform a measurement
         // pass to discover the actual header height before outputting anything.
         // This prevents visible content jumping.
         let appHeaderHeight: Int
         if isFirstFrame {
-            // Measurement pass: render once to populate appHeader.contentBuffer
             let measureContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: terminalHeight - statusBarHeight,
@@ -217,8 +190,6 @@ extension RenderLoop {
             appHeaderHeight = appHeader.height
             isFirstFrame = false
         } else {
-            // Subsequent frames: use the estimate from the previous frame.
-            // If it differs after rendering, we re-render with the correct height.
             appHeaderHeight = appHeader.estimatedHeight
         }
 
@@ -229,26 +200,17 @@ extension RenderLoop {
             availableHeight: contentHeight,
             environment: environment
         )
-        context.hasExplicitWidth = true  // Terminal has a fixed width
-        context.hasExplicitHeight = true  // Terminal has a fixed height
+        context.hasExplicitWidth = true
+        context.hasExplicitHeight = true
 
-        // Render main content into a FrameBuffer.
-        // app.body is evaluated fresh each frame. @State values survive
-        // because State.init self-hydrates from StateStorage.
         var buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
 
-        // Now the AppHeaderModifier has run and populated the header buffer.
-        // Read the actual header height for correct positioning.
+        // If the header height changed after rendering, re-render with the
+        // correct height so centering is accurate.
         let actualHeaderHeight = appHeader.height
-        let actualContentHeight = terminalHeight - statusBarHeight - actualHeaderHeight
-
-        // If the header height changed (e.g. header appeared, disappeared, or
-        // changed line count), the content start row shifted. Re-render with
-        // the correct height so centering is accurate.
         if actualHeaderHeight != appHeaderHeight {
             diffWriter.invalidate()
-
-            // Re-render with correct content height for proper centering
+            let actualContentHeight = terminalHeight - statusBarHeight - actualHeaderHeight
             var correctedContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: actualContentHeight,
@@ -259,65 +221,18 @@ extension RenderLoop {
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
 
-        // Validate focus state: if previously active section or focused element
-        // is no longer in the tree, fall back to first available.
         focusManager.endRenderPass()
 
-        // Use actual header height for content positioning (may differ from estimate)
-        let finalHeaderHeight = appHeader.height
-        let finalContentHeight = terminalHeight - statusBarHeight - finalHeaderHeight
-
-        // Build terminal-ready output lines and write only changes.
-        // All terminal writes between beginFrame/endFrame are collected
-        // in an internal buffer and flushed as a single write() syscall.
-        let bgColor = environment.palette.background
-        let bgCode = ANSIRenderer.backgroundCode(for: bgColor)
-        let reset = ANSIRenderer.reset
-
-        let outputLines = diffWriter.buildOutputLines(
+        writeFrame(
             buffer: buffer,
+            environment: environment,
             terminalWidth: terminalWidth,
-            terminalHeight: finalContentHeight,
-            bgCode: bgCode,
-            reset: reset
+            terminalHeight: terminalHeight,
+            statusBarHeight: statusBarHeight,
+            headerHeight: appHeader.height
         )
 
-        terminal.beginFrame()
-
-        // Render app header at the top (if content was set by modifier)
-        if appHeader.hasContent {
-            renderAppHeader(
-                atRow: 1,
-                terminalWidth: terminalWidth,
-                bgCode: bgCode,
-                reset: reset
-            )
-        }
-
-        // Render main content below the app header
-        diffWriter.writeContentDiff(
-            newLines: outputLines,
-            terminal: terminal,
-            startRow: 1 + finalHeaderHeight
-        )
-
-        // Render status bar inside the same frame (flushed together)
-        if statusBar.hasItems {
-            renderStatusBar(
-                atRow: terminalHeight - statusBarHeight + 1,
-                terminalWidth: terminalWidth,
-                bgCode: bgCode,
-                reset: reset
-            )
-        }
-        terminal.endFrame()
-
-        // End lifecycle tracking - triggers onDisappear for removed views.
-        // End state/cache tracking - removes entries for views no longer in the tree.
-        tuiContext.lifecycle.endRenderPass()
-        tuiContext.stateStorage.endRenderPass()
-        tuiContext.renderCache.removeInactive()
-        tuiContext.renderCache.logFrameStats()
+        endRenderPass()
     }
 
     /// Invalidates the diff cache, forcing a full repaint on the next render.
@@ -360,6 +275,106 @@ extension RenderLoop {
 // MARK: - Private Helpers
 
 private extension RenderLoop {
+    /// Clears all per-frame state and begins lifecycle/state/cache tracking.
+    func beginRenderPass() {
+        tuiContext.keyEventDispatcher.clearHandlers()
+        tuiContext.preferences.beginRenderPass()
+        focusManager.beginRenderPass()
+        statusBar.clearSectionItems()
+        appHeader.beginRenderPass()
+        statusBar.focusManager = focusManager
+        tuiContext.lifecycle.beginRenderPass()
+        tuiContext.stateStorage.beginRenderPass()
+        tuiContext.renderCache.beginRenderPass()
+    }
+
+    /// Evaluates `App.body` with hydration and environment context active.
+    ///
+    /// Sets up ``StateRegistration`` so `@State` self-hydrates from `StateStorage`
+    /// and `@Environment` reads from the current environment. Clears both
+    /// contexts after body evaluation.
+    func evaluateAppBody(environment: EnvironmentValues) -> A.Body {
+        let rootIdentity = ViewIdentity(rootType: A.self)
+        StateRegistration.activeContext = HydrationContext(
+            identity: rootIdentity,
+            storage: tuiContext.stateStorage
+        )
+        StateRegistration.counter = 0
+        StateRegistration.activeEnvironment = environment
+
+        let scene = app.body
+
+        StateRegistration.activeContext = nil
+        StateRegistration.activeEnvironment = nil
+        tuiContext.stateStorage.markActive(rootIdentity)
+
+        return scene
+    }
+
+    /// Writes the assembled frame to the terminal using diff-based output.
+    ///
+    /// Builds terminal-ready output lines, then writes app header, content,
+    /// and status bar inside a single buffered frame (one `write()` syscall).
+    func writeFrame(
+        buffer: FrameBuffer,
+        environment: EnvironmentValues,
+        terminalWidth: Int,
+        terminalHeight: Int,
+        statusBarHeight: Int,
+        headerHeight: Int
+    ) {
+        let bgCode = ANSIRenderer.backgroundCode(for: environment.palette.background)
+        let reset = ANSIRenderer.reset
+        let contentHeight = terminalHeight - statusBarHeight - headerHeight
+
+        let outputLines = diffWriter.buildOutputLines(
+            buffer: buffer,
+            terminalWidth: terminalWidth,
+            terminalHeight: contentHeight,
+            bgCode: bgCode,
+            reset: reset
+        )
+
+        terminal.beginFrame()
+
+        if appHeader.hasContent {
+            renderAppHeader(
+                atRow: 1,
+                terminalWidth: terminalWidth,
+                bgCode: bgCode,
+                reset: reset
+            )
+        }
+
+        diffWriter.writeContentDiff(
+            newLines: outputLines,
+            terminal: terminal,
+            startRow: 1 + headerHeight
+        )
+
+        if statusBar.hasItems {
+            renderStatusBar(
+                atRow: terminalHeight - statusBarHeight + 1,
+                terminalWidth: terminalWidth,
+                bgCode: bgCode,
+                reset: reset
+            )
+        }
+
+        terminal.endFrame()
+    }
+
+    /// Ends lifecycle, state, and cache tracking for this render pass.
+    ///
+    /// Fires `onDisappear` for removed views and removes state/cache
+    /// entries for views no longer in the tree.
+    func endRenderPass() {
+        tuiContext.lifecycle.endRenderPass()
+        tuiContext.stateStorage.endRenderPass()
+        tuiContext.renderCache.removeInactive()
+        tuiContext.renderCache.logFrameStats()
+    }
+
     /// Clears the render cache when environment values affecting visual output changed.
     ///
     /// Compares the current palette and appearance identifiers with the previous
