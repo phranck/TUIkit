@@ -7,8 +7,20 @@
 //  SwiftUI-like syntax - without ncurses or other low-level libraries.
 //
 
+import Foundation
+
 /// The current version of TUIkit.
-public let tuiKitVersion = "0.1.0"
+///
+/// Read from `Sources/TUIkit/VERSION` (bundled as a resource).
+/// Update the `VERSION` file to change the version number.
+public let tuiKitVersion: String = {
+    guard let url = Bundle.module.url(forResource: "VERSION", withExtension: nil),
+          let content = try? String(contentsOf: url, encoding: .utf8)
+    else {
+        return "unknown"
+    }
+    return content.trimmingCharacters(in: .whitespacesAndNewlines)
+}()
 
 /// Executes a view closure and renders it once.
 ///
