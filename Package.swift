@@ -3,8 +3,6 @@
 
 import PackageDescription
 
-public let TUIkitVersion = "0.4.0"
-
 let package = Package(
     name: "TUIkit",
     // Minimum deployment targets for Apple platforms
@@ -44,7 +42,7 @@ let package = Package(
         .target(
             name: "TUIkit",
             dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage", "TUIkitView"],
-            resources: [.copy("Localization/translations")]
+            resources: [.copy("Localization/translations"), .copy("VERSION")]
         ),
 
         // ── App & Tests ─────────────────────────────────────────────────────────────────────────────────
