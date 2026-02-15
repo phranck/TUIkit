@@ -17,8 +17,8 @@ struct ImageFilePage: View {
     @State var ditheringOn: Bool = false
 
     var body: some View {
-        let charSet = Self.charSets[charSetIndex]
-        let colorMode = Self.colorModes[colorModeIndex]
+        let charSet = ImageDemoHelpers.charSets[charSetIndex]
+        let colorMode = ImageDemoHelpers.colorModes[colorModeIndex]
         let dithering: DitheringMode = ditheringOn ? .floydSteinberg : .none
 
         VStack(alignment: .leading) {
@@ -42,52 +42,23 @@ struct ImageFilePage: View {
         .imageDithering(dithering)
         .statusBarItems(statusBarItems)
         .appHeader {
-            HStack {
-                Text("Image (File)").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Image (File)")
         }
     }
 
     private var statusBarItems: [any StatusBarItemProtocol] {
         [
             StatusBarItem(shortcut: Shortcut.escape, label: "back"),
-            StatusBarItem(shortcut: "c", label: Self.charSetLabel(charSetIndex)) {
-                charSetIndex = (charSetIndex + 1) % Self.charSets.count
+            StatusBarItem(shortcut: "c", label: ImageDemoHelpers.charSetLabel(charSetIndex)) {
+                charSetIndex = (charSetIndex + 1) % ImageDemoHelpers.charSets.count
             },
-            StatusBarItem(shortcut: "m", label: Self.colorModeLabel(colorModeIndex)) {
-                colorModeIndex = (colorModeIndex + 1) % Self.colorModes.count
+            StatusBarItem(shortcut: "m", label: ImageDemoHelpers.colorModeLabel(colorModeIndex)) {
+                colorModeIndex = (colorModeIndex + 1) % ImageDemoHelpers.colorModes.count
             },
             StatusBarItem(shortcut: "d", label: ditheringOn ? "dither:on" : "dither:off") {
                 ditheringOn.toggle()
             },
             StatusBarItem(shortcut: Shortcut.arrowsUpDown, label: "scroll"),
         ]
-    }
-}
-
-// MARK: - Modifier Options
-
-extension ImageFilePage {
-
-    static let charSets: [ASCIICharacterSet] = [.blocks, .ascii, .braille]
-    static let colorModes: [ASCIIColorMode] = [.trueColor, .ansi256, .grayscale, .mono]
-
-    static func charSetLabel(_ index: Int) -> String {
-        switch charSets[index] {
-        case .ascii: return "chars:ascii"
-        case .blocks: return "chars:blocks"
-        case .braille: return "chars:braille"
-        }
-    }
-
-    static func colorModeLabel(_ index: Int) -> String {
-        switch colorModes[index] {
-        case .trueColor: return "color:true"
-        case .ansi256: return "color:256"
-        case .grayscale: return "color:gray"
-        case .mono: return "color:mono"
-        }
     }
 }

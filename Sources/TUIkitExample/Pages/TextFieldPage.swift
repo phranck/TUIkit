@@ -102,24 +102,20 @@ struct TextFieldPage: View {
             }
 
             HStack(alignment: .top, spacing: 3) {
-                DemoSection("Keyboard Controls") {
-                    VStack(alignment: .leading) {
-                        Text("[←] [→] Move cursor left/right").dim()
-                        Text("[Home] [End] Jump to start/end").dim()
-                        Text("[Backspace] Delete before cursor").dim()
-                        Text("[Delete] Delete at cursor").dim()
-                        Text("[Enter] Submit (triggers onSubmit)").dim()
-                        Text("[Tab] Move to next field").dim()
-                    }
-                }
+                KeyboardHelpSection(shortcuts: [
+                    "[←] [→] Move cursor left/right",
+                    "[Home] [End] Jump to start/end",
+                    "[Backspace] Delete before cursor",
+                    "[Delete] Delete at cursor",
+                    "[Enter] Submit (triggers onSubmit)",
+                    "[Tab] Move to next field",
+                ])
 
-                DemoSection("Cursor Settings") {
-                    VStack(alignment: .leading) {
-                        Text("[F1] Shape: Block, Bar, Underscore").dim()
-                        Text("[F2] Animation: Static, Blink, Pulse").dim()
-                        Text("[F3] Speed: Slow, Regular, Fast").dim()
-                    }
-                }
+                KeyboardHelpSection("Cursor Settings", shortcuts: [
+                    "[F1] Shape: Block, Bar, Underscore",
+                    "[F2] Animation: Static, Blink, Pulse",
+                    "[F3] Speed: Slow, Regular, Fast",
+                ])
             }
 
             Spacer()
@@ -128,11 +124,7 @@ struct TextFieldPage: View {
         .textCursor(currentShape, animation: currentAnimation, speed: currentSpeed)
         .statusBarItems(cursorStatusBarItems)
         .appHeader {
-            HStack {
-                Text("TextField Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("TextField Demo")
         }
     }
 

@@ -76,18 +76,8 @@ struct ListPage: View {
 
             DemoSection("Current Selections") {
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 1) {
-                        Text("Single:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(singleSelection ?? "(none)")
-                            .bold()
-                            .foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Multi:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(multiSelection.isEmpty ? "(none)" : multiSelection.sorted().joined(separator: ", "))
-                            .bold()
-                            .foregroundStyle(.palette.accent)
-                    }
+                    ValueDisplayRow("Single:", singleSelection ?? "(none)")
+                    ValueDisplayRow("Multi:", multiSelection.isEmpty ? "(none)" : multiSelection.sorted().joined(separator: ", "))
                 }
             }
 
@@ -95,24 +85,18 @@ struct ListPage: View {
                 EmptyView()
             }
 
-            DemoSection("Navigation") {
-                VStack {
-                    Text("Use [↑/↓] to navigate items").dim()
-                    Text("Use [Home/End] to jump to first/last").dim()
-                    Text("Use [PageUp/PageDown] for fast scrolling").dim()
-                    Text("Use [Enter/Space] to select/deselect").dim()
-                    Text("Use [Tab] to switch between lists").dim()
-                }
-            }
+            KeyboardHelpSection("Navigation", shortcuts: [
+                "Use [↑/↓] to navigate items",
+                "Use [Home/End] to jump to first/last",
+                "Use [PageUp/PageDown] for fast scrolling",
+                "Use [Enter/Space] to select/deselect",
+                "Use [Tab] to switch between lists",
+            ])
 
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("List Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("List Demo")
         }
     }
 }

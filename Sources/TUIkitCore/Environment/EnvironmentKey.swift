@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
+
 // MARK: - Environment Key Protocol
 
 /// A key for accessing values in the environment.
@@ -60,6 +62,19 @@ public struct EnvironmentValues: @unchecked Sendable {
         set {
             storage[ObjectIdentifier(key)] = newValue
         }
+    }
+
+    /// Accesses an observable object stored by its type.
+    ///
+    /// Objects stored via `.environment(model)` are keyed by
+    /// `ObjectIdentifier(type(of: object))`, enabling type-based lookup
+    /// via `@Environment(MyModel.self)`.
+    ///
+    /// - Parameter type: The observable object's type.
+    /// - Returns: The stored object, or `nil` if not set.
+    public subscript<T: Observable>(observable type: T.Type) -> T? {
+        get { storage[ObjectIdentifier(type)] as? T }
+        set { storage[ObjectIdentifier(type)] = newValue }
     }
 
     /// Creates a copy of this environment with a modified value.

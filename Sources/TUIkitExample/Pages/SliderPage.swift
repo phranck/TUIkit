@@ -71,43 +71,25 @@ struct SliderPage: View {
 
             DemoSection("Current Values") {
                 VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 1) {
-                        Text("Volume:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(String(format: "%.0f%%", volume * 100)).foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Brightness:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(String(format: "%.0f", brightness)).foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Rating:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(String(format: "%.0f", rating)).foregroundStyle(.palette.accent)
-                    }
-                    HStack(spacing: 1) {
-                        Text("Precision:").foregroundStyle(.palette.foregroundSecondary)
-                        Text(String(format: "%.2f", precision)).foregroundStyle(.palette.accent)
-                    }
+                    ValueDisplayRow("Volume:", String(format: "%.0f%%", volume * 100))
+                    ValueDisplayRow("Brightness:", String(format: "%.0f", brightness))
+                    ValueDisplayRow("Rating:", String(format: "%.0f", rating))
+                    ValueDisplayRow("Precision:", String(format: "%.2f", precision))
                 }
             }
 
-            DemoSection("Keyboard Controls") {
-                VStack(alignment: .leading) {
-                    Text("[<-] [->] Decrease/Increase by step").dim()
-                    Text("[-] [+] Decrease/Increase by step").dim()
-                    Text("[Home] Jump to minimum").dim()
-                    Text("[End] Jump to maximum").dim()
-                    Text("[Tab] Move to next slider").dim()
-                }
-            }
+            KeyboardHelpSection(shortcuts: [
+                "[<-] [->] Decrease/Increase by step",
+                "[-] [+] Decrease/Increase by step",
+                "[Home] Jump to minimum",
+                "[End] Jump to maximum",
+                "[Tab] Move to next slider",
+            ])
 
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Slider Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Slider Demo")
         }
     }
 }

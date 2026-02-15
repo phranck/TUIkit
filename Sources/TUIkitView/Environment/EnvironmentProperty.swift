@@ -4,6 +4,7 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
 import TUIkitCore
 
 // MARK: - Environment Property Wrapper
@@ -15,7 +16,7 @@ import TUIkitCore
 /// always reflects the current environment (including any modifications
 /// from parent views).
 ///
-/// # Example
+/// # KeyPath-Based Access
 ///
 /// ```swift
 /// struct MyView: View {
@@ -25,6 +26,24 @@ import TUIkitCore
 ///     var body: some View {
 ///         Text("Hello")
 ///             .foregroundColor(palette.accent)
+///     }
+/// }
+/// ```
+///
+/// # Type-Based Access (Observable Objects)
+///
+/// ```swift
+/// @Observable
+/// class AppModel {
+///     var count = 0
+///     init() {}
+/// }
+///
+/// struct ContentView: View {
+///     @Environment(AppModel.self) var model
+///
+///     var body: some View {
+///         Text("Count: \(model.count)")
 ///     }
 /// }
 /// ```
@@ -40,14 +59,36 @@ import TUIkitCore
 /// default values from `EnvironmentValues()` are returned.
 @propertyWrapper
 public struct Environment<Value> {
-    /// The key path to the environment value.
-    private let keyPath: KeyPath<EnvironmentValues, Value>
+    /// Strategy for resolving the environment value.
+    private enum LookupStrategy {
+        case keyPath(KeyPath<EnvironmentValues, Value>)
+        case observable((EnvironmentValues) -> Value?)
+    }
+
+    /// The lookup strategy used by this instance.
+    private let strategy: LookupStrategy
 
     /// Creates an environment property wrapper for the given key path.
     ///
     /// - Parameter keyPath: The key path to the environment value to read.
     public init(_ keyPath: KeyPath<EnvironmentValues, Value>) {
-        self.keyPath = keyPath
+        self.strategy = .keyPath(keyPath)
+    }
+
+    /// Creates an environment property wrapper that reads an observable
+    /// object by its type.
+    ///
+    /// The object must have been injected via `.environment(model)`.
+    ///
+    /// ```swift
+    /// @Environment(AppModel.self) var model
+    /// ```
+    ///
+    /// - Parameter type: The observable type to look up.
+    public init(_ type: Value.Type) where Value: Observable {
+        self.strategy = .observable { env in
+            env[observable: type]
+        }
     }
 
     /// The current environment value.
@@ -56,6 +97,18 @@ public struct Environment<Value> {
     /// otherwise returns the default value.
     public var wrappedValue: Value {
         let env = StateRegistration.activeEnvironment ?? EnvironmentValues()
-        return env[keyPath: keyPath]
+        switch strategy {
+        case .keyPath(let keyPath):
+            return env[keyPath: keyPath]
+        case .observable(let lookup):
+            guard let object = lookup(env) else {
+                fatalError(
+                    "@Environment(\(Value.self).self): "
+                    + "No object of type \(Value.self) found in the environment. "
+                    + "Did you forget to call .environment(model)?"
+                )
+            }
+            return object
+        }
     }
 }

@@ -178,11 +178,7 @@ struct ContainersPage: View {
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Container Views Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Container Views Demo")
         }
     }
 }

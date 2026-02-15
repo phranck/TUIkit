@@ -76,23 +76,15 @@ struct ButtonsPage: View {
                 }
             }
 
-            DemoSection("Focus Navigation") {
-                VStack {
-                    Text("Use [Tab] to move focus between buttons")
-                        .dim()
-                    Text("Use [Enter] or [Space] to press the focused button")
-                        .dim()
-                }
-            }
+            KeyboardHelpSection("Focus Navigation", shortcuts: [
+                "Use [Tab] to move focus between buttons",
+                "Use [Enter] or [Space] to press the focused button",
+            ])
 
             Spacer()
         }
         .appHeader {
-            HStack {
-                Text("Buttons & Focus Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("Buttons & Focus Demo")
         }
     }
 }

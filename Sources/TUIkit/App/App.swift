@@ -74,30 +74,28 @@ extension App {
 @MainActor
 internal final class AppRunner<A: App> {
     private let app: A
-    private let terminal: Terminal
-    private let appState: AppState
-    private let statusBar: StatusBarState
+    private let appearanceManager: ThemeManager
     private let appHeader: AppHeaderState
+    private let appState: AppState
     private let focusManager: FocusManager
     private let paletteManager: ThemeManager
-    private let appearanceManager: ThemeManager
+    private let statusBar: StatusBarState
+    private let terminal: Terminal
     private let tuiContext: TUIContext
-    private var signals = SignalManager()
     private var isRunning = false
+    private var signals = SignalManager()
 
     init(app: A) {
         self.app = app
-        self.terminal = Terminal()
         self.appState = AppState()
-        self.statusBar = StatusBarState(appState: appState)
+        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
         self.appHeader = AppHeaderState()
         self.focusManager = FocusManager()
-        self.tuiContext = TUIContext()
         self.paletteManager = ThemeManager(items: PaletteRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-
-        // Configure status bar style
+        self.statusBar = StatusBarState(appState: appState)
         self.statusBar.style = .bordered
+        self.terminal = Terminal()
+        self.tuiContext = TUIContext()
     }
 }
 

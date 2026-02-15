@@ -29,6 +29,7 @@ public final class AppState: Sendable {
     /// Internal state protected by a lock.
     private struct StateData: Sendable {
         var needsRender = false
+        var needsCacheClear = false
         var observers: [@Sendable () -> Void] = []
     }
 
@@ -56,6 +57,25 @@ public extension AppState {
             return state.observers
         }
         // Call observers outside the lock to avoid potential deadlocks
+        for observer in observers {
+            observer()
+        }
+    }
+
+    /// Marks state as changed and requests a full cache clear on next render.
+    ///
+    /// Called by `withObservationTracking` when an `@Observable` property
+    /// changes. Unlike ``setNeedsRender()``, this also sets a flag that tells
+    /// the render loop to clear the entire render cache, ensuring cached
+    /// `EquatableView` subtrees re-render with the new model data.
+    ///
+    /// Thread-safe: can be called from any thread.
+    func setNeedsRenderWithCacheClear() {
+        let observers = lock.withLock { state -> [@Sendable () -> Void] in
+            state.needsRender = true
+            state.needsCacheClear = true
+            return state.observers
+        }
         for observer in observers {
             observer()
         }
@@ -90,6 +110,19 @@ extension AppState {
     public func didRender() {
         lock.withLock { state in
             state.needsRender = false
+        }
+    }
+
+    /// Consumes and returns the cache-clear flag.
+    ///
+    /// Called by the render loop at the start of each frame. Returns `true`
+    /// if any `@Observable` property changed since the last render, signaling
+    /// that the render cache should be fully cleared.
+    public func consumeNeedsCacheClear() -> Bool {
+        lock.withLock { state in
+            let value = state.needsCacheClear
+            state.needsCacheClear = false
+            return value
         }
     }
 }

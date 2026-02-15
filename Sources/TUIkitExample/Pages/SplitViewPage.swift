@@ -111,11 +111,7 @@ struct SplitViewPage: View {
             .navigationSplitViewStyle(.balanced)
         }
         .appHeader {
-            HStack {
-                Text("NavigationSplitView Demo").bold().foregroundStyle(.palette.accent)
-                Spacer()
-                Text("TUIkit v\(tuiKitVersion)").foregroundStyle(.palette.foregroundTertiary)
-            }
+            DemoAppHeader("NavigationSplitView Demo")
         }
     }
 }

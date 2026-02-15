@@ -5,6 +5,13 @@
 - **Cross-platform**: must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
 - When in doubt, verify with the CI pipeline before merging.
 
+### Pre-Push Verification (non-negotiable)
+- **Before pushing to GitHub**: ALWAYS run `./scripts/test-linux.sh` to verify build + tests pass on both macOS and Linux.
+- The script runs `swift build` and `swift test` natively on macOS, then repeats both inside a `swift:6.0` Docker container (same image as CI).
+- **Never push code that has not been verified on both platforms.**
+- Usage: `./scripts/test-linux.sh` (both), `./scripts/test-linux.sh linux` (Linux only), `./scripts/test-linux.sh shell` (interactive Linux shell)
+- Requires Docker Desktop to be running.
+
 ### Architecture (non-negotiable)
 
 #### General Principles
