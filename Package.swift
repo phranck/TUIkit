@@ -3,7 +3,7 @@
 
 import PackageDescription
 
-public let TUIkitVersion = "0.3.0"
+public let TUIkitVersion = "0.4.0"
 
 let package = Package(
     name: "TUIkit",
