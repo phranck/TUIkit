@@ -4,9 +4,16 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
 import Testing
 
 @testable import TUIkit
+
+@Observable
+private class LayoutTestModel {
+    var value = 42
+    init() {}
+}
 
 // MARK: - ProposedSize Tests
 
@@ -196,5 +203,22 @@ struct LayoutableTests {
 
         #expect(size.isWidthFlexible == true, "TextField should report flexible width through body traversal")
         #expect(size.width == 20, "TextField default width should be 20, got \(size.width)")
+    }
+
+    @Test("measureChild sets up hydration context for @Environment(Observable.self)")
+    func measureChildSetsUpEnvironment() {
+        struct ChildView: View {
+            @Environment(LayoutTestModel.self) var model
+            var body: some View { Text("v\(model.value)") }
+        }
+
+        let model = LayoutTestModel()
+        let view = ChildView().environment(model)
+        let context = RenderContext(availableWidth: 80, availableHeight: 24, tuiContext: TUIContext())
+
+        // Before the fix, this would crash with:
+        // "@Environment(LayoutTestModel.self): No object of type LayoutTestModel found"
+        let size = measureChild(view, proposal: .unspecified, context: context)
+        #expect(size.width > 0)
     }
 }
