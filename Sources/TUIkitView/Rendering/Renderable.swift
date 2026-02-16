@@ -177,32 +177,16 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
 
-        // Save previous hydration state (supports nested composite views).
-        let previousContext = StateRegistration.activeContext
-        let previousCounter = StateRegistration.counter
-        let previousEnvironment = StateRegistration.activeEnvironment
-
-        // Activate hydration: @State.init will use this to look up persistent storage.
-        // Activate environment: @Environment reads from activeEnvironment during body.
-        StateRegistration.activeContext = HydrationContext(
-            identity: context.identity,
-            storage: context.environment.stateStorage!
-        )
-        StateRegistration.counter = 0
-        StateRegistration.activeEnvironment = context.environment
-
         // Wrap body evaluation in observation tracking so that any @Observable
         // property accessed during body triggers a re-render when mutated.
-        let body = withObservationTracking {
-            view.body
-        } onChange: {
-            AppState.shared.setNeedsRenderWithCacheClear()
+        let body = StateRegistration.withHydration(context: context) {
+            withObservationTracking {
+                view.body
+            } onChange: {
+                AppState.shared.setNeedsRenderWithCacheClear()
+            }
         }
 
-        // Restore previous hydration state and mark this identity as active for GC.
-        StateRegistration.activeContext = previousContext
-        StateRegistration.counter = previousCounter
-        StateRegistration.activeEnvironment = previousEnvironment
         context.environment.stateStorage!.markActive(context.identity)
 
         return renderToBuffer(body, context: childContext)

@@ -187,29 +187,10 @@ public func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: Re
     // Skip Renderable views: their rendering logic (including environment
     // injection) lives in renderToBuffer, not in body. They fall through
     // to the render-to-measure fallback below, which runs the full pipeline.
-    //
-    // Must set up hydration context before evaluating body, just like
-    // renderToBuffer does. Otherwise @Environment(T.self) lookups and
-    // @State self-hydration crash because activeEnvironment/activeContext
-    // are nil.
     if !(view is Renderable), V.Body.self != Never.self {
-        let previousContext = StateRegistration.activeContext
-        let previousCounter = StateRegistration.counter
-        let previousEnvironment = StateRegistration.activeEnvironment
-
-        StateRegistration.activeContext = HydrationContext(
-            identity: context.identity,
-            storage: context.environment.stateStorage!
-        )
-        StateRegistration.counter = 0
-        StateRegistration.activeEnvironment = context.environment
-
-        let body = view.body
-
-        StateRegistration.activeContext = previousContext
-        StateRegistration.counter = previousCounter
-        StateRegistration.activeEnvironment = previousEnvironment
-
+        let body = StateRegistration.withHydration(context: context) {
+            view.body
+        }
         return measureChild(body, proposal: proposal, context: context)
     }
 

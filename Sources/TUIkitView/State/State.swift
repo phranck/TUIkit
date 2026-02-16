@@ -176,6 +176,40 @@ public enum StateRegistration {
     /// Used by `@Environment` to read environment values during `body` evaluation.
     /// Set alongside ``activeContext`` in `renderToBuffer(_:context:)`.
     nonisolated(unsafe) public static var activeEnvironment: EnvironmentValues?
+    /// Evaluates a closure with a hydration context active.
+    ///
+    /// Sets up `activeContext`, `counter`, and `activeEnvironment` before
+    /// calling the closure, then restores the previous state. This pattern
+    /// is needed whenever `view.body` is evaluated outside the normal
+    /// `renderToBuffer` dispatch (e.g., in `measureChild`).
+    ///
+    /// - Parameters:
+    ///   - context: The render context providing identity and environment.
+    ///   - block: The closure to execute with hydration active.
+    /// - Returns: The result of the closure.
+    public static func withHydration<R>(
+        context: RenderContext,
+        _ block: () -> R
+    ) -> R {
+        let previousContext = activeContext
+        let previousCounter = counter
+        let previousEnvironment = activeEnvironment
+
+        activeContext = HydrationContext(
+            identity: context.identity,
+            storage: context.environment.stateStorage!
+        )
+        counter = 0
+        activeEnvironment = context.environment
+
+        let result = block()
+
+        activeContext = previousContext
+        counter = previousCounter
+        activeEnvironment = previousEnvironment
+
+        return result
+    }
 }
 
 // MARK: - Binding
