@@ -30,6 +30,28 @@ private struct EnvironmentSnapshot: Equatable {
     }
 }
 
+/// ANSI background codes for each render surface in a frame.
+///
+/// Keeping these grouped avoids accidentally rendering every surface
+/// with `palette.background` and ignoring palette-specific tokens like
+/// `statusBarBackground`.
+internal struct RenderBackgroundCodes: Equatable {
+    /// Main content area background code.
+    let content: String
+
+    /// App header background code.
+    let appHeader: String
+
+    /// Status bar background code.
+    let statusBar: String
+
+    init(palette: any Palette) {
+        self.content = ANSIRenderer.backgroundCode(for: palette.background)
+        self.appHeader = ANSIRenderer.backgroundCode(for: palette.appHeaderBackground)
+        self.statusBar = ANSIRenderer.backgroundCode(for: palette.statusBarBackground)
+    }
+}
+
 // MARK: - Render Loop
 
 /// Manages the full rendering pipeline for each frame.
@@ -178,9 +200,13 @@ extension RenderLoop {
         var environment = buildEnvironment()
         environment.pulsePhase = pulsePhase
         environment.cursorTimer = cursorTimer
-        invalidateCacheIfEnvironmentChanged(environment: environment)
 
         let scene = evaluateAppBody(environment: environment)
+        if let paletteOverrideScene = scene as? any RootPaletteOverrideProvidingScene,
+           let paletteOverride = paletteOverrideScene.rootPaletteOverride() {
+            environment.palette = paletteOverride
+        }
+        invalidateCacheIfEnvironmentChanged(environment: environment)
 
         // Determine header height. On the first frame, we perform a measurement
         // pass to discover the actual header height before outputting anything.
@@ -329,7 +355,7 @@ private extension RenderLoop {
         statusBarHeight: Int,
         headerHeight: Int
     ) {
-        let bgCode = ANSIRenderer.backgroundCode(for: environment.palette.background)
+        let backgroundCodes = RenderBackgroundCodes(palette: environment.palette)
         let reset = ANSIRenderer.reset
         let contentHeight = terminalHeight - statusBarHeight - headerHeight
 
@@ -337,7 +363,7 @@ private extension RenderLoop {
             buffer: buffer,
             terminalWidth: terminalWidth,
             terminalHeight: contentHeight,
-            bgCode: bgCode,
+            bgCode: backgroundCodes.content,
             reset: reset
         )
 
@@ -347,7 +373,8 @@ private extension RenderLoop {
             renderAppHeader(
                 atRow: 1,
                 terminalWidth: terminalWidth,
-                bgCode: bgCode,
+                environment: environment,
+                bgCode: backgroundCodes.appHeader,
                 reset: reset
             )
         }
@@ -362,7 +389,8 @@ private extension RenderLoop {
             renderStatusBar(
                 atRow: terminalHeight - statusBarHeight + 1,
                 terminalWidth: terminalWidth,
-                bgCode: bgCode,
+                environment: environment,
+                bgCode: backgroundCodes.statusBar,
                 reset: reset
             )
         }
@@ -406,10 +434,15 @@ private extension RenderLoop {
     }
 
     /// Renders the app header at the specified terminal row.
-    func renderAppHeader(atRow row: Int, terminalWidth: Int, bgCode: String, reset: String) {
+    func renderAppHeader(
+        atRow row: Int,
+        terminalWidth: Int,
+        environment: EnvironmentValues,
+        bgCode: String,
+        reset: String
+    ) {
         guard let contentBuffer = appHeader.contentBuffer else { return }
 
-        let environment = buildEnvironment()
         let headerView = AppHeader(contentBuffer: contentBuffer)
 
         let context = RenderContext(
@@ -431,8 +464,13 @@ private extension RenderLoop {
     }
 
     /// Renders the status bar at the specified terminal row.
-    func renderStatusBar(atRow row: Int, terminalWidth: Int, bgCode: String, reset: String) {
-        let environment = buildEnvironment()
+    func renderStatusBar(
+        atRow row: Int,
+        terminalWidth: Int,
+        environment: EnvironmentValues,
+        bgCode: String,
+        reset: String
+    ) {
         let palette = environment.palette
 
         let highlightColor =

@@ -6,20 +6,20 @@
 
 import Foundation
 
-#if canImport(os)
+#if canImport(os) && os(macOS)
 import os
 #endif
 
 /// A cross-platform lock wrapper that uses the best available implementation.
 ///
-/// On Apple platforms, uses `OSAllocatedUnfairLock` for optimal performance
-/// (unfair lock with no syscall in the uncontended case). On Linux, falls back
-/// to `NSLock`.
+/// On macOS, uses `OSAllocatedUnfairLock` for optimal performance
+/// (unfair lock with no syscall in the uncontended case). On Linux and other
+/// non-macOS platforms, falls back to `NSLock`.
 ///
 /// This type is `@unchecked Sendable` because the underlying lock implementations
 /// are thread-safe by design.
 public final class Lock<State: Sendable>: @unchecked Sendable {
-    #if canImport(os)
+    #if canImport(os) && os(macOS)
     private let _lock: OSAllocatedUnfairLock<State>
 
     /// Creates a lock with the given initial state.
