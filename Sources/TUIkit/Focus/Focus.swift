@@ -213,36 +213,46 @@ public extension FocusManager {
     }
 
     /// Moves focus to the next element within the active section.
+    ///
+    /// Arrow-key navigation: does **not** wrap at the boundary.
     func focusNextInSection() {
-        moveFocusInSection(direction: .forward)
+        moveFocusInSection(direction: .forward, wrap: false)
     }
 
     /// Moves focus to the previous element within the active section.
+    ///
+    /// Arrow-key navigation: does **not** wrap at the boundary.
     func focusPreviousInSection() {
-        moveFocusInSection(direction: .backward)
+        moveFocusInSection(direction: .backward, wrap: false)
     }
 
     /// Moves focus to the next focusable element.
     ///
-    /// When multiple sections exist, this cycles between sections.
-    /// When only one section exists, this cycles within it.
+    /// When multiple sections exist, Tab navigates within the current section
+    /// first. Only when the current element is the last in its section does
+    /// Tab switch to the next section.
+    /// When only one section exists, this cycles within it (wrapping).
     func focusNext() {
         if sections.count > 1 {
-            activateNextSection()
+            let moved = moveFocusInSection(direction: .forward, wrap: false)
+            if !moved { activateNextSection() }
         } else {
-            moveFocusInSection(direction: .forward)
+            moveFocusInSection(direction: .forward, wrap: true)
         }
     }
 
     /// Moves focus to the previous focusable element.
     ///
-    /// When multiple sections exist, this cycles between sections.
-    /// When only one section exists, this cycles within it.
+    /// When multiple sections exist, Shift+Tab navigates within the current
+    /// section first. Only when the current element is the first in its section
+    /// does Shift+Tab switch to the previous section.
+    /// When only one section exists, this cycles within it (wrapping).
     func focusPrevious() {
         if sections.count > 1 {
-            activatePreviousSection()
+            let moved = moveFocusInSection(direction: .backward, wrap: false)
+            if !moved { activatePreviousSection() }
         } else {
-            moveFocusInSection(direction: .backward)
+            moveFocusInSection(direction: .backward, wrap: true)
         }
     }
 
@@ -463,11 +473,20 @@ private extension FocusManager {
     }
 
     /// Moves focus within the active section.
-    func moveFocusInSection(direction: FocusDirection) {
-        guard let section = activeSection else { return }
+    ///
+    /// - Parameters:
+    ///   - direction: The direction in which to move focus.
+    ///   - wrap: When `true`, focus wraps around from the last element to the
+    ///     first (and vice versa). When `false`, focus stops at the boundary
+    ///     and the method returns `false`.
+    /// - Returns: `true` if focus moved to a new element, `false` if the
+    ///   boundary was reached (and `wrap` is `false`) or no element is available.
+    @discardableResult
+    func moveFocusInSection(direction: FocusDirection, wrap: Bool = true) -> Bool {
+        guard let section = activeSection else { return false }
 
         let available = section.focusables.filter { $0.canBeFocused }
-        guard !available.isEmpty else { return }
+        guard !available.isEmpty else { return false }
 
         if let currentID = focusedID,
             let currentIndex = available.firstIndex(where: { $0.focusID == currentID })
@@ -475,14 +494,26 @@ private extension FocusManager {
             let targetIndex: Int
             switch direction {
             case .forward:
-                targetIndex = (currentIndex + 1) % available.count
+                if currentIndex == available.count - 1 {
+                    guard wrap else { return false }
+                    targetIndex = 0
+                } else {
+                    targetIndex = currentIndex + 1
+                }
             case .backward:
-                targetIndex = currentIndex == 0 ? available.count - 1 : currentIndex - 1
+                if currentIndex == 0 {
+                    guard wrap else { return false }
+                    targetIndex = available.count - 1
+                } else {
+                    targetIndex = currentIndex - 1
+                }
             }
             focus(available[targetIndex])
+            return true
         } else {
             let fallbackIndex = direction == .forward ? 0 : available.count - 1
             focus(available[fallbackIndex])
+            return true
         }
     }
 
