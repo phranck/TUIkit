@@ -196,6 +196,75 @@ struct FocusSectionTests {
         #expect(manager.isFocused(pageBtn))
     }
 
+    @Test("Tab navigates within section before switching to next section")
+    func tabNavigatesWithinSectionFirst() {
+        let manager = FocusManager()
+
+        manager.registerSection(id: "sidebar")
+        manager.registerSection(id: "detail")
+
+        let sidebarBtn = MockFocusable(id: "sidebar-btn")
+        let detailBtn1 = MockFocusable(id: "detail-btn-1")
+        let detailBtn2 = MockFocusable(id: "detail-btn-2")
+
+        manager.register(sidebarBtn, inSection: "sidebar")
+        manager.register(detailBtn1, inSection: "detail")
+        manager.register(detailBtn2, inSection: "detail")
+
+        // Switch to detail section with two elements
+        manager.activateSection(id: "detail")
+        #expect(manager.isActiveSection("detail"))
+        #expect(manager.isFocused(detailBtn1))
+
+        let tabEvent = KeyEvent(key: .tab, ctrl: false, alt: false, shift: false)
+
+        // Tab → stays in detail, focuses second element
+        manager.dispatchKeyEvent(tabEvent)
+        #expect(manager.isActiveSection("detail"), "Tab should stay in detail when not at last element")
+        #expect(manager.isFocused(detailBtn2))
+
+        // Tab again → now at last element, switches to next section (sidebar)
+        manager.dispatchKeyEvent(tabEvent)
+        #expect(manager.isActiveSection("sidebar"), "Tab at last element should switch to next section")
+        #expect(manager.isFocused(sidebarBtn))
+    }
+
+    @Test("Arrow keys do not wrap at section boundary")
+    func arrowKeysDoNotWrapAtBoundary() {
+        let manager = FocusManager()
+
+        manager.registerSection(id: "panel")
+
+        let item1 = MockFocusable(id: "item-1")
+        let item2 = MockFocusable(id: "item-2")
+        let item3 = MockFocusable(id: "item-3")
+
+        manager.register(item1, inSection: "panel")
+        manager.register(item2, inSection: "panel")
+        manager.register(item3, inSection: "panel")
+
+        // Navigate to last element
+        #expect(manager.isFocused(item1))
+        let downEvent = KeyEvent(key: .down, ctrl: false, alt: false, shift: false)
+        manager.dispatchKeyEvent(downEvent)
+        manager.dispatchKeyEvent(downEvent)
+        #expect(manager.isFocused(item3))
+
+        // Down at last element: stays at item3 (no wrap)
+        manager.dispatchKeyEvent(downEvent)
+        #expect(manager.isFocused(item3), "Down arrow at last element should not wrap")
+
+        // Navigate to first element
+        let upEvent = KeyEvent(key: .up, ctrl: false, alt: false, shift: false)
+        manager.dispatchKeyEvent(upEvent)
+        manager.dispatchKeyEvent(upEvent)
+        #expect(manager.isFocused(item1))
+
+        // Up at first element: stays at item1 (no wrap)
+        manager.dispatchKeyEvent(upEvent)
+        #expect(manager.isFocused(item1), "Up arrow at first element should not wrap")
+    }
+
     @Test("Single section: Tab cycles elements within it")
     func singleSectionTabCyclesElements() {
         let manager = FocusManager()
