@@ -127,6 +127,19 @@ jobs:
 
       - name: Add routing support for GitHub Pages
         run: |
+          cp Sources/TUIkit/TUIkit.docc/theme-overrides.css docc-output/theme-overrides.css
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          link = '<link rel="stylesheet" href="/theme-overrides.css">'
+          for path in Path("docc-output").rglob("*.html"):
+              content = path.read_text(encoding="utf-8")
+              if link in content or "</head>" not in content:
+                  continue
+              path.write_text(content.replace("</head>", f"  {link}\n</head>"), encoding="utf-8")
+          PY
+
           # 404.html = copy of SPA index so all deep-link paths route through DocC
           cp docc-output/index.html docc-output/404.html
           # Root redirect: docs.tuikit.dev/ -> docs.tuikit.dev/documentation/tuikit/

@@ -192,7 +192,7 @@
       "generic-modal-background": { "dark": "#050905ee", "light": "#ffffffee" }
     },
     "typography": {
-      "html-font": "'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
+      "html-font": "'Barlow', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
       "html-font-mono": "'SF Mono', SFMono-Regular, ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace"
     },
     "icons": { "technology": "/images/TUIkit/tuikit-logo.png" }

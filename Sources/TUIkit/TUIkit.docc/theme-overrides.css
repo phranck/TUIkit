@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+
+html,
+body,
+input,
+textarea,
+select,
+button {
+  font-family: 'Barlow', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hero .title,
+.hero h1,
+.documentation-topic h1,
+.documentation-topic h2,
+.documentation-topic h3,
+.tutorial-hero h1,
+.tutorial-hero h2 {
+  font-family: 'Barlow Condensed', 'Barlow', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.01em;
+}
