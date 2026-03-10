@@ -255,6 +255,10 @@ extension View {
     /// When this view is rendered, the specified items will be displayed
     /// in the status bar. This replaces any existing global items.
     ///
+    /// If a user item uses the same shortcut string as a system item
+    /// (for example `q`), the user item wins in both display and event
+    /// handling for that view context.
+    ///
     /// # Example
     ///
     /// ```swift
@@ -283,6 +287,10 @@ extension View {
     /// items using the `.merge` strategy (default). Use
     /// ``statusBarItems(_:_:)`` to specify a different strategy.
     ///
+    /// A user-defined item can intentionally override a system shortcut such
+    /// as `q`. When the item has an action, it intercepts the key before the
+    /// built-in quit binding runs.
+    ///
     /// # Example
     ///
     /// ```swift
@@ -308,6 +316,9 @@ extension View {
     /// - **`.merge`** (default): Items are combined with parent items.
     ///   Child wins on shortcut conflict.
     /// - **`.replace`**: Items replace all parent items (cascade barrier).
+    ///
+    /// Shortcut conflicts are resolved in favor of the most local user item.
+    /// This also applies to system shortcuts such as `q`.
     ///
     /// # Example
     ///

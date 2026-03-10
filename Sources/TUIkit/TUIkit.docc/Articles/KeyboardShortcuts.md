@@ -186,6 +186,39 @@ Dialog(title: "Confirm") {
 }
 ```
 
+### Changing the built-in quit key
+
+The default quit binding is configurable through ``StatusBarState/quitShortcut``:
+
+```swift
+@Environment(\.statusBar) private var statusBar
+
+statusBar.quitShortcut = .escape
+statusBar.quitShortcut = .ctrlQ
+statusBar.quitShortcut = QuitShortcut(
+    key: .f12,
+    shortcutSymbol: Shortcut.f12,
+    label: "exit"
+)
+```
+
+This changes both the Layer 4 quit binding and the displayed system item.
+
+### Overriding `q` in a local view context
+
+A user-defined status bar item with shortcut `q` and an action intercepts the key before the default quit binding runs:
+
+```swift
+EditorView()
+    .statusBarItems {
+        StatusBarItem(shortcut: "q", label: "close") {
+            dismissEditor()
+        }
+    }
+```
+
+This is the correct way to repurpose `q` for a specific screen, dialog, or focus section. The matching user item handles the event in Layer 1, so Layer 4's built-in quit binding is never reached.
+
 ## Status Bar Shortcuts
 
 The status bar displays available shortcuts to the user. Use the ``Shortcut`` namespace for consistent, platform-standard symbols:
@@ -303,6 +336,8 @@ statusBar.showSystemItems = false       // Hide all system items
 statusBar.showThemeItem = false         // Hide only theme cycling
 statusBar.showAppearanceItem = false    // Hide only appearance cycling
 ```
+
+When all system items are hidden and there are no active user items, the status bar is hidden completely.
 
 ## Topics
 

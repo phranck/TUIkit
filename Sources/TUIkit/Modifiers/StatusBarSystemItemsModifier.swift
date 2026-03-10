@@ -68,6 +68,9 @@ public extension View {
     ///     .statusBarSystemItems(theme: true, appearance: true)
     /// ```
     ///
+    /// To hide the status bar completely, combine this with no registered
+    /// user items and set ``StatusBarState/showSystemItems`` to `false`.
+    ///
     /// - Parameters:
     ///   - theme: Whether to show the theme switcher (`t theme`). Default is `false`.
     ///   - appearance: Whether to show the appearance switcher (`a appearance`). Default is `false`.
