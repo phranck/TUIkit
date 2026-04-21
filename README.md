@@ -48,7 +48,7 @@ struct ContentView: View {
         VStack(spacing: 1) {
             Text("Hello, TUIkit!")
                 .bold()
-                .foregroundColor(.cyan)
+                .foregroundStyle(.cyan)
             
             Text("Count: \(count)")
             
@@ -77,18 +77,18 @@ struct ContentView: View {
 
 - **Primitive views**: `Text`, `EmptyView`, `Spacer`, `Divider`, `Image` (ASCII art rendering, multiple color modes, async loading)
 - **Layout containers**: `VStack`, `HStack`, `ZStack`, `LazyVStack`, `LazyHStack` with alignment and spacing
-- **Interactive**: `Button`, `Toggle`, `Menu`, `TextField`, `SecureField`, `Slider`, `Stepper`, `RadioButtonGroup` with keyboard navigation
-- **Data views**: `List`, `Table`, `Section`, `ForEach`, `NavigationSplitView`
+- **Interactive**: `Button`, `ButtonRow`, `Toggle` (default, checkbox, switch styles), `Menu`, `TextField`, `SecureField`, `Slider`, `Stepper`, `RadioButtonGroup` with keyboard navigation
+- **Data views**: `List`, `Table`, `Section`, `ForEach`, `NavigationSplitView`, `ContentUnavailableView`
 - **Containers**: `Alert`, `Dialog`, `Panel`, `Box`, `Card`
 - **Feedback**: `ProgressView` (5 bar styles), `Spinner` (animated)
-- **`StatusBar`**: context-sensitive keyboard shortcuts
+- **`StatusBar`**: context-sensitive keyboard shortcuts with `.compact` and `.bordered` styles
 
 ### Styling
 
 - **Text styling**: bold, italic, underline, strikethrough, dim, blink, inverted
 - **Full color support**: ANSI colors, 256-color palette, 24-bit RGB, hex values, HSL
 - **Theming**: 6 predefined palettes (Green, Amber, Red, Violet, Blue, White)
-- **Border styles**: rounded, line, double, thick, ASCII, and more
+- **Border styles**: `line`, `rounded`, `doubleLine`, `heavy`, `none`
 - **List styles**: `PlainListStyle`, `InsetGroupedListStyle` with alternating rows
 - **Badges**: `.badge()` modifier for counts and labels on list rows
 
@@ -107,8 +107,8 @@ struct ContentView: View {
 ### Advanced
 
 - **Lifecycle modifiers**: `.onAppear()`, `.onDisappear()`, `.task()`
-- **Key handling**: `.onKeyPress()` modifier for custom keyboard shortcuts
-- **Storage**: `@AppStorage`, `@SceneStorage` with JSON backend
+- **Key handling**: `.onKeyPress()` with modifier keys (ctrl, alt, shift) and function keys F1–F12
+- **Storage**: `@AppStorage` with JSON file backend (XDG paths) and `UserDefaults` backend
 - **Preferences**: bottom-up data flow with `PreferenceKey`
 - **Focus system**: Tab/Shift+Tab navigation, `.focusSection()` for grouped areas
 - **Render caching**: `.equatable()` for subtree memoization
@@ -237,7 +237,7 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          1100+ tests across 150+ test suites (including i18n consistency & localization tests)
+└── TUIkitTests/          1172+ tests across 93 test files (including i18n consistency & localization tests)
 ```
 
 ## Requirements
