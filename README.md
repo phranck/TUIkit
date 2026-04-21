@@ -1,10 +1,10 @@
 <p align="center">
     <img alt="Platforms" src="https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-005c00">
+    <a href="https://github.com/phranck/TUIkit/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/phranck/TUIkit?label=Release&color=009900"></a>
+    <img alt="Swift 6.0" src="https://img.shields.io/badge/Swift-6.0-00b300?logo=swift&logoColor=white">
+    <img alt="i18n" src="https://img.shields.io/badge/i18n-5%20Languages-00d900">
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-00b300?style=flat">
     <a href="https://github.com/phranck/TUIkit/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/phranck/TUIkit/ci.yml?branch=main&label=CI&color=009900"></a>
-    <a href="https://github.com/phranck/TUIkit/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/phranck/TUIkit?label=Release&color=00b300"></a>
-    <img alt="Swift 6.0" src="https://img.shields.io/badge/Swift-6.0-33ff33?logo=swift&logoColor=white">
-    <img alt="i18n" src="https://img.shields.io/badge/i18n-5%20Languages-00b300">
-    <img alt="License" src="https://img.shields.io/badge/License-MIT-009900?style=flat">
     <img alt="Tests" src="https://img.shields.io/badge/Tests-1172%2B_passing-005c00">
 </p>
 
