@@ -9,6 +9,7 @@ DerivedData/
 
 # DocC generated output
 /docs-output/
+/docc-output/
 
 # Docs site (Astro)
 docs/node_modules/
@@ -22,6 +23,15 @@ img/
 logo-prompt.md
 session-*.md
 *.backup
+
+# AI tooling / local caches (per-developer)
+.claude/
+.cursor/
+.serena/
+.vscode/
+.windsurfrules
+AGENTS.md
+WHATS-NEXT.md
 
 # Local tooling
 papers/
