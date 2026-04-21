@@ -251,8 +251,6 @@ Tests/
 - All 1172 tests run in parallel
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
-## Contribution
-
 ## License
 
 This repository has been published under the [MIT](https://mit-license.org) license.
