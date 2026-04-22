@@ -8,7 +8,7 @@
     <img alt="Tests" src="https://img.shields.io/badge/Tests-1172%2B_passing-005c00">
 </p>
 
-![TUIkit Banner](.github/assets/github-banner.png)
+<img width="1200" height="630" alt="og-image@1x" src="https://github.com/user-attachments/assets/8bf99da8-e87c-4447-b3cb-a6f3f52c6d18" />
 
 # TUIkit
 
