@@ -25,7 +25,10 @@ session-*.md
 *.backup
 
 # AI tooling / local caches (per-developer)
-.claude/
+.claude/*
+!.claude/plans/
+!.claude/CLAUDE.md
+!.claude/openspec/
 .cursor/
 .serena/
 .vscode/
