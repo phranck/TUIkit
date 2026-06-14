@@ -447,3 +447,298 @@ struct ItemListHandlerScrollTests {
         #expect(range == 0..<5)
     }
 }
+
+// MARK: - Item List Handler Vim Motion Tests
+
+@MainActor
+@Suite("ItemListHandler Vim Motion Tests")
+struct ItemListHandlerVimMotionTests {
+
+    // Helper that creates a handler with vim vertical navigation active.
+    func makeVimHandler(itemCount: Int, viewportHeight: Int) -> ItemListHandler<String> {
+        let handler = ItemListHandler<String>(
+            focusID: "test",
+            itemCount: itemCount,
+            viewportHeight: viewportHeight,
+            selectionMode: .single
+        )
+        handler.verticalNavigationStyles = [.vim]
+        return handler
+    }
+
+    // MARK: j / k
+
+    @Test("j moves focus down")
+    func jMovesDown() {
+        let handler = makeVimHandler(itemCount: 5, viewportHeight: 5)
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("j")))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 1)
+    }
+
+    @Test("j wraps to start when at last item")
+    func jWrapsToStart() {
+        let handler = makeVimHandler(itemCount: 3, viewportHeight: 3)
+        handler.focusedIndex = 2
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("j")))
+
+        #expect(handler.focusedIndex == 0)
+    }
+
+    @Test("k moves focus up")
+    func kMovesUp() {
+        let handler = makeVimHandler(itemCount: 5, viewportHeight: 5)
+        handler.focusedIndex = 3
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("k")))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 2)
+    }
+
+    @Test("k wraps to end when at first item")
+    func kWrapsToEnd() {
+        let handler = makeVimHandler(itemCount: 3, viewportHeight: 3)
+        handler.focusedIndex = 0
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("k")))
+
+        #expect(handler.focusedIndex == 2)
+    }
+
+    // MARK: g / G
+
+    @Test("g jumps to first item")
+    func gJumpsToFirst() {
+        let handler = makeVimHandler(itemCount: 10, viewportHeight: 5)
+        handler.focusedIndex = 7
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("g")))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 0)
+    }
+
+    @Test("G jumps to last item")
+    func bigGJumpsToLast() {
+        let handler = makeVimHandler(itemCount: 10, viewportHeight: 5)
+        handler.focusedIndex = 2
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("G")))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 9)
+    }
+
+    @Test("g respects selectableIndices — jumps to first selectable")
+    func gRespectsSelectableIndices() {
+        let handler = makeVimHandler(itemCount: 5, viewportHeight: 5)
+        handler.selectableIndices = [1, 2, 3, 4]  // index 0 is a section header
+        handler.focusedIndex = 3
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("g")))
+
+        #expect(handler.focusedIndex == 1)
+    }
+
+    @Test("G respects selectableIndices — jumps to last selectable")
+    func bigGRespectsSelectableIndices() {
+        let handler = makeVimHandler(itemCount: 5, viewportHeight: 5)
+        handler.selectableIndices = [0, 1, 2, 3]  // index 4 is a section footer
+        handler.focusedIndex = 1
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("G")))
+
+        #expect(handler.focusedIndex == 3)
+    }
+
+    // MARK: Ctrl+d / Ctrl+u (half page)
+
+    @Test("Ctrl+d moves half a viewport down")
+    func ctrlDHalfPageDown() {
+        let handler = makeVimHandler(itemCount: 20, viewportHeight: 6)
+        handler.focusedIndex = 2
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("d"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 5)  // 2 + max(1, 6/2) = 2 + 3
+    }
+
+    @Test("Ctrl+u moves half a viewport up")
+    func ctrlUHalfPageUp() {
+        let handler = makeVimHandler(itemCount: 20, viewportHeight: 6)
+        handler.focusedIndex = 8
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("u"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 5)  // 8 - max(1, 6/2) = 8 - 3
+    }
+
+    @Test("Ctrl+d clamps at last item")
+    func ctrlDClampsAtEnd() {
+        let handler = makeVimHandler(itemCount: 10, viewportHeight: 6)
+        handler.focusedIndex = 8  // 8 + 3 = 11, clamped to 9
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("d"), ctrl: true))
+
+        #expect(handler.focusedIndex == 9)
+    }
+
+    @Test("Ctrl+u clamps at first item")
+    func ctrlUClampsAtStart() {
+        let handler = makeVimHandler(itemCount: 10, viewportHeight: 6)
+        handler.focusedIndex = 1  // 1 - 3 = -2, clamped to 0
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("u"), ctrl: true))
+
+        #expect(handler.focusedIndex == 0)
+    }
+
+    @Test("Ctrl+d moves at least 1 step when viewport is 1")
+    func ctrlDMinimumStep() {
+        let handler = makeVimHandler(itemCount: 10, viewportHeight: 1)
+        handler.focusedIndex = 0
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .character("d"), ctrl: true))
+
+        #expect(handler.focusedIndex == 1)  // max(1, 1/2) = 1
+    }
+
+    // MARK: Ctrl+f / Ctrl+b (full page)
+
+    @Test("Ctrl+f moves a full viewport down")
+    func ctrlFFullPageDown() {
+        let handler = makeVimHandler(itemCount: 20, viewportHeight: 5)
+        handler.focusedIndex = 2
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("f"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 7)  // 2 + 5
+    }
+
+    @Test("Ctrl+b moves a full viewport up")
+    func ctrlBFullPageUp() {
+        let handler = makeVimHandler(itemCount: 20, viewportHeight: 5)
+        handler.focusedIndex = 10
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .character("b"), ctrl: true))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 5)  // 10 - 5
+    }
+}
+
+// MARK: - Item List Handler Navigation Style Gating Tests
+
+@MainActor
+@Suite("ItemListHandler Navigation Style Gating Tests")
+struct ItemListHandlerNavigationStyleGatingTests {
+
+    @Test("Default style is arrowKey — j/k are ignored")
+    func defaultStyleIgnoresVimKeys() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 5, viewportHeight: 5, selectionMode: .single
+        )
+        // verticalNavigationStyles defaults to [.arrowKey]
+
+        let jHandled = handler.handleKeyEvent(KeyEvent(key: .character("j")))
+        let kHandled = handler.handleKeyEvent(KeyEvent(key: .character("k")))
+
+        #expect(jHandled == false)
+        #expect(kHandled == false)
+        #expect(handler.focusedIndex == 0)  // Unchanged
+    }
+
+    @Test("Default style is arrowKey — arrow keys still work")
+    func defaultStyleArrowKeysWork() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 5, viewportHeight: 5, selectionMode: .single
+        )
+
+        let handled = handler.handleKeyEvent(KeyEvent(key: .down))
+
+        #expect(handled == true)
+        #expect(handler.focusedIndex == 1)
+    }
+
+    @Test("Vim-only style — j moves focus, arrow keys are ignored")
+    func vimOnlyStyleArrowKeysIgnored() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 5, viewportHeight: 5, selectionMode: .single
+        )
+        handler.verticalNavigationStyles = [.vim]
+
+        let downHandled = handler.handleKeyEvent(KeyEvent(key: .down))
+        let homeHandled = handler.handleKeyEvent(KeyEvent(key: .home))
+        let pageDownHandled = handler.handleKeyEvent(KeyEvent(key: .pageDown))
+
+        #expect(downHandled == false)
+        #expect(homeHandled == false)
+        #expect(pageDownHandled == false)
+        #expect(handler.focusedIndex == 0)  // Unchanged by arrow keys
+    }
+
+    @Test("Vim-only style — j/k/g/G all work")
+    func vimOnlyStyleVimKeysWork() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 5, viewportHeight: 5, selectionMode: .single
+        )
+        handler.verticalNavigationStyles = [.vim]
+
+        let jHandled = handler.handleKeyEvent(KeyEvent(key: .character("j")))
+        #expect(jHandled == true)
+        #expect(handler.focusedIndex == 1)
+
+        let bigGHandled = handler.handleKeyEvent(KeyEvent(key: .character("G")))
+        #expect(bigGHandled == true)
+        #expect(handler.focusedIndex == 4)
+
+        let gHandled = handler.handleKeyEvent(KeyEvent(key: .character("g")))
+        #expect(gHandled == true)
+        #expect(handler.focusedIndex == 0)
+    }
+
+    @Test("Both styles — arrow keys and vim keys all work")
+    func bothStylesAllKeysWork() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 10, viewportHeight: 5, selectionMode: .single
+        )
+        handler.verticalNavigationStyles = [.arrowKey, .vim]
+
+        let downHandled = handler.handleKeyEvent(KeyEvent(key: .down))
+        #expect(downHandled == true)
+        #expect(handler.focusedIndex == 1)
+
+        let jHandled = handler.handleKeyEvent(KeyEvent(key: .character("j")))
+        #expect(jHandled == true)
+        #expect(handler.focusedIndex == 2)
+
+        let homeHandled = handler.handleKeyEvent(KeyEvent(key: .home))
+        #expect(homeHandled == true)
+        #expect(handler.focusedIndex == 0)
+
+        let gHandled = handler.handleKeyEvent(KeyEvent(key: .character("G")))
+        #expect(gHandled == true)
+        #expect(handler.focusedIndex == 9)
+    }
+
+    @Test("Empty style set — all navigation keys ignored")
+    func emptyStyleIgnoresAll() {
+        let handler = ItemListHandler<String>(
+            focusID: "test", itemCount: 5, viewportHeight: 5, selectionMode: .single
+        )
+        handler.verticalNavigationStyles = []
+
+        #expect(handler.handleKeyEvent(KeyEvent(key: .down)) == false)
+        #expect(handler.handleKeyEvent(KeyEvent(key: .character("j"))) == false)
+        #expect(handler.handleKeyEvent(KeyEvent(key: .home)) == false)
+        #expect(handler.handleKeyEvent(KeyEvent(key: .character("g"))) == false)
+        #expect(handler.focusedIndex == 0)
+    }
+}

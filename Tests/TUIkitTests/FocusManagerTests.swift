@@ -336,3 +336,269 @@ struct FocusManagerEnvironmentTests {
         #expect(manager2.currentFocusedID == "test-2")
     }
 }
+
+// MARK: - Focus Manager Vertical Vim Navigation Tests
+
+@MainActor
+@Suite("FocusManager Vertical Vim Navigation Tests")
+struct FocusManagerVerticalVimTests {
+
+    @Test("Default style — j/k are not consumed")
+    func defaultStyleIgnoresJK() {
+        let manager = FocusManager()
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+        // verticalNavigationStyles defaults to [.arrowKey]
+
+        let jHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("j")))
+        let kHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("k")))
+
+        #expect(jHandled == false)
+        #expect(kHandled == false)
+        #expect(manager.isFocused(e1))  // Focus unchanged
+    }
+
+    @Test("Vertical vim — j moves focus to next element in section")
+    func jMovesToNextInSection() {
+        let manager = FocusManager()
+        manager.verticalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let handled = manager.dispatchKeyEvent(KeyEvent(key: .character("j")))
+
+        #expect(handled == true)
+        #expect(manager.isFocused(e2))
+    }
+
+    @Test("Vertical vim — k moves focus to previous element in section")
+    func kMovesToPreviousInSection() {
+        let manager = FocusManager()
+        manager.verticalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+        manager.focus(e2)
+
+        let handled = manager.dispatchKeyEvent(KeyEvent(key: .character("k")))
+
+        #expect(handled == true)
+        #expect(manager.isFocused(e1))
+    }
+
+    @Test("Vertical vim only — arrow keys are not consumed as section navigation")
+    func vimOnlyArrowKeysNotConsumedByFallback() {
+        let manager = FocusManager()
+        manager.verticalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a", shouldConsumeEvents: false)
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        // .down should not be handled by the fallback when arrowKey style is absent
+        let downHandled = manager.dispatchKeyEvent(KeyEvent(key: .down))
+
+        #expect(downHandled == false)
+        #expect(manager.isFocused(e1))  // Focus not changed
+    }
+
+    @Test("Both vertical styles — j and down arrow both navigate")
+    func bothVerticalStylesWork() {
+        let manager = FocusManager()
+        manager.verticalNavigationStyles = [.arrowKey, .vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        let e3 = MockFocusable(id: "c")
+        manager.register(e1)
+        manager.register(e2)
+        manager.register(e3)
+
+        let downHandled = manager.dispatchKeyEvent(KeyEvent(key: .down))
+        #expect(downHandled == true)
+        #expect(manager.isFocused(e2))
+
+        let jHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("j")))
+        #expect(jHandled == true)
+        #expect(manager.isFocused(e3))
+    }
+
+    @Test("beginRenderPass resets vertical styles to arrowKey default")
+    func beginRenderPassResetsVerticalStyles() {
+        let manager = FocusManager()
+        manager.verticalNavigationStyles = [.vim]
+
+        manager.beginRenderPass()
+
+        // After reset, vim keys should not be consumed
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let jHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("j")))
+        #expect(jHandled == false)
+
+        // Arrow keys should work again
+        let downHandled = manager.dispatchKeyEvent(KeyEvent(key: .down))
+        #expect(downHandled == true)
+    }
+}
+
+// MARK: - Focus Manager Horizontal Vim Navigation Tests
+
+@MainActor
+@Suite("FocusManager Horizontal Vim Navigation Tests")
+struct FocusManagerHorizontalVimTests {
+
+    @Test("Default style — h/l are not consumed")
+    func defaultStyleIgnoresHL() {
+        let manager = FocusManager()
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+        // horizontalNavigationStyles defaults to [.tab]
+
+        let lHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("l")))
+        let hHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("h")))
+
+        #expect(lHandled == false)
+        #expect(hHandled == false)
+        #expect(manager.isFocused(e1))  // Focus unchanged
+    }
+
+    @Test("Horizontal vim — l cycles to next focusable")
+    func lCyclesToNext() {
+        let manager = FocusManager()
+        manager.horizontalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let handled = manager.dispatchKeyEvent(KeyEvent(key: .character("l")))
+
+        #expect(handled == true)
+        #expect(manager.isFocused(e2))
+    }
+
+    @Test("Horizontal vim — h cycles to previous focusable")
+    func hCyclesToPrevious() {
+        let manager = FocusManager()
+        manager.horizontalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+        manager.focus(e2)
+
+        let handled = manager.dispatchKeyEvent(KeyEvent(key: .character("h")))
+
+        #expect(handled == true)
+        #expect(manager.isFocused(e1))
+    }
+
+    @Test("Horizontal vim only — Tab is not consumed")
+    func vimOnlyTabNotConsumed() {
+        let manager = FocusManager()
+        manager.horizontalNavigationStyles = [.vim]
+
+        let e1 = MockFocusable(id: "a", shouldConsumeEvents: false)
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let tabHandled = manager.dispatchKeyEvent(KeyEvent(key: .tab))
+
+        #expect(tabHandled == false)
+        #expect(manager.isFocused(e1))  // Focus not changed by Tab
+    }
+
+    @Test("Tab only — l/h are not consumed")
+    func tabOnlyIgnoresHL() {
+        let manager = FocusManager()
+        // horizontalNavigationStyles defaults to [.tab]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let lHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("l")))
+        #expect(lHandled == false)
+        #expect(manager.isFocused(e1))
+    }
+
+    @Test("Tab only — Tab still cycles focus")
+    func tabOnlyTabWorks() {
+        let manager = FocusManager()
+        // horizontalNavigationStyles defaults to [.tab]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let handled = manager.dispatchKeyEvent(KeyEvent(key: .tab))
+
+        #expect(handled == true)
+        #expect(manager.isFocused(e2))
+    }
+
+    @Test("Both horizontal styles — Tab and h/l all cycle focus")
+    func bothHorizontalStylesWork() {
+        let manager = FocusManager()
+        manager.horizontalNavigationStyles = [.tab, .vim]
+
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        let e3 = MockFocusable(id: "c")
+        manager.register(e1)
+        manager.register(e2)
+        manager.register(e3)
+
+        let tabHandled = manager.dispatchKeyEvent(KeyEvent(key: .tab))
+        #expect(tabHandled == true)
+        #expect(manager.isFocused(e2))
+
+        let lHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("l")))
+        #expect(lHandled == true)
+        #expect(manager.isFocused(e3))
+
+        let hHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("h")))
+        #expect(hHandled == true)
+        #expect(manager.isFocused(e2))
+    }
+
+    @Test("beginRenderPass resets horizontal styles to tab default")
+    func beginRenderPassResetsHorizontalStyles() {
+        let manager = FocusManager()
+        manager.horizontalNavigationStyles = [.vim]
+
+        manager.beginRenderPass()
+
+        // After reset, vim h/l should not be consumed
+        let e1 = MockFocusable(id: "a")
+        let e2 = MockFocusable(id: "b")
+        manager.register(e1)
+        manager.register(e2)
+
+        let lHandled = manager.dispatchKeyEvent(KeyEvent(key: .character("l")))
+        #expect(lHandled == false)
+
+        // Tab should work again
+        let tabHandled = manager.dispatchKeyEvent(KeyEvent(key: .tab))
+        #expect(tabHandled == true)
+    }
+}
