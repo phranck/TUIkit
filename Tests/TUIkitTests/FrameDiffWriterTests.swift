@@ -191,8 +191,6 @@ struct DiffIntegrationTests {
 
     @Test("Content and status bar caches are independent")
     func independentCaches() {
-        let writer = FrameDiffWriter()
-
         // Simulate writing content + status bar (using internal state check)
         let contentLines = ["Content1", "Content2"]
         let statusLines = ["Status1"]
