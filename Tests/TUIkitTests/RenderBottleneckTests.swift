@@ -25,6 +25,7 @@ struct RenderBottleneckTests {
     /// Uses `Date` instead of `CFAbsoluteTimeGetCurrent` because CoreFoundation
     /// timing functions are not available on Linux. The precision difference
     /// is negligible for performance benchmarks at millisecond granularity.
+    @discardableResult
     private func measure(_ name: String, iterations: Int = 1000, block: () -> Void) -> TimeInterval {
         let start = Date()
         for _ in 0..<iterations {
@@ -53,19 +54,19 @@ struct RenderBottleneckTests {
 
         // Depth 2
         let depth2 = VStack { VStack { Text("A") } }
-        let time2 = measure("Depth 2", iterations: iterations) {
+        measure("Depth 2", iterations: iterations) {
             _ = renderToBuffer(depth2, context: context)
         }
 
         // Depth 3
         let depth3 = VStack { VStack { VStack { Text("A") } } }
-        let time3 = measure("Depth 3", iterations: iterations) {
+        measure("Depth 3", iterations: iterations) {
             _ = renderToBuffer(depth3, context: context)
         }
 
         // Depth 5
         let depth5 = VStack { VStack { VStack { VStack { VStack { Text("A") } } } } }
-        let time5 = measure("Depth 5", iterations: iterations) {
+        measure("Depth 5", iterations: iterations) {
             _ = renderToBuffer(depth5, context: context)
         }
 

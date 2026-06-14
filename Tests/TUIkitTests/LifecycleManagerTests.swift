@@ -218,12 +218,13 @@ struct LifecycleManagerTaskTests {
         nonisolated(unsafe) var wasCancelled = false
         manager.startTask(token: "task-1", priority: .medium) {
             // Long-running task that checks cancellation
-            try? await Task.sleep(for: .seconds(10))
+            try? await Task.sleep(for: .milliseconds(100))
             wasCancelled = Task.isCancelled
         }
         // Cancel immediately
         manager.cancelTask(token: "task-1")
         try await Task.sleep(for: .milliseconds(50))
+        #expect(wasCancelled == true)
         // Task was cancelled, so it either didn't complete the sleep
         // or Task.isCancelled was true. Either way the task is cancelled.
         // We can't easily observe the internal state, but cancellation was requested.
