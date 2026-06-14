@@ -173,12 +173,9 @@ struct SecureFieldTests {
 
     @Test("SecureField onSubmit modifier stores action")
     func onSubmitStoresAction() {
-        var text = ""
-        var submitted = false
-        let binding = Binding(get: { text }, set: { text = $0 })
+        let binding = Binding(get: { "" }, set: { _ in })
 
-        let secureField = SecureField("Password", text: binding)
-            .onSubmit { submitted = true }
+        let secureField = SecureField("Password", text: binding).onSubmit {  }
 
         #expect(secureField.onSubmitAction != nil)
     }
