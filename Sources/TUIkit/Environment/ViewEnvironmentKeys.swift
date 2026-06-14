@@ -60,3 +60,41 @@ extension EnvironmentValues {
         set { self[SelectionDisabledKey.self] = newValue }
     }
 }
+
+// MARK: - Vertical Navigation Styles Environment Key
+
+/// Environment key for vertical (up/down) keyboard navigation styles.
+private struct VerticalNavigationStylesKey: EnvironmentKey {
+    static let defaultValue: Set<VerticalNavigationStyle> = [.arrowKey]
+}
+
+extension EnvironmentValues {
+    /// The active vertical navigation styles for scrollable views.
+    ///
+    /// Controls which key bindings drive up/down movement in `List`, `Table`, and `Menu`.
+    /// Set via `.verticalNavigationStyle(_:)` modifier.
+    /// Default: `[.arrowKey]` (arrow keys only).
+    var verticalNavigationStyles: Set<VerticalNavigationStyle> {
+        get { self[VerticalNavigationStylesKey.self] }
+        set { self[VerticalNavigationStylesKey.self] = newValue }
+    }
+}
+
+// MARK: - Horizontal Navigation Styles Environment Key
+
+/// Environment key for horizontal (Tab/section) keyboard navigation styles.
+private struct HorizontalNavigationStylesKey: EnvironmentKey {
+    static let defaultValue: Set<HorizontalNavigationStyle> = [.tab]
+}
+
+extension EnvironmentValues {
+    /// The active horizontal navigation styles for cycling between focusable views.
+    ///
+    /// Controls which key bindings drive Tab-style focus cycling.
+    /// Set via `.horizontalNavigationStyle(_:)` modifier.
+    /// Default: `[.tab]` (Tab / Shift+Tab only).
+    var horizontalNavigationStyles: Set<HorizontalNavigationStyle> {
+        get { self[HorizontalNavigationStylesKey.self] }
+        set { self[HorizontalNavigationStylesKey.self] = newValue }
+    }
+}
