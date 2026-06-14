@@ -240,6 +240,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             handler.itemCount = data.count
             handler.viewportHeight = viewportHeight
             handler.canBeFocused = !isDisabled
+            handler.verticalNavigationStyles = context.environment.verticalNavigationStyles
             handler.itemIDs = data.map { $0.id }
 
             // Assign selection bindings directly (type-safe, no AnyHashable conversion)

@@ -293,36 +293,53 @@ private struct _MenuCore: View, Renderable {
         let itemCount = items.count
         let menuItems = items
         let selectCallback = onSelect
+        let navStyles = context.environment.verticalNavigationStyles
+        let hasArrow = navStyles.contains(.arrowKey)
+        let hasVim = navStyles.contains(.vim)
 
         context.environment.keyEventDispatcher!.addHandler { event in
             switch event.key {
             case .up:
-                // Move selection up
+                guard hasArrow else { return false }
                 let current = binding.wrappedValue
-                if current > 0 {
-                    binding.wrappedValue = current - 1
-                } else {
-                    binding.wrappedValue = itemCount - 1  // Wrap to bottom
-                }
+                binding.wrappedValue = current > 0 ? current - 1 : itemCount - 1
                 return true
 
             case .down:
-                // Move selection down
+                guard hasArrow else { return false }
                 let current = binding.wrappedValue
-                if current < itemCount - 1 {
-                    binding.wrappedValue = current + 1
-                } else {
-                    binding.wrappedValue = 0  // Wrap to top
-                }
+                binding.wrappedValue = current < itemCount - 1 ? current + 1 : 0
+                return true
+
+            case .character("k"):
+                guard hasVim else { return false }
+                let current = binding.wrappedValue
+                binding.wrappedValue = current > 0 ? current - 1 : itemCount - 1
+                return true
+
+            case .character("j"):
+                guard hasVim else { return false }
+                let current = binding.wrappedValue
+                binding.wrappedValue = current < itemCount - 1 ? current + 1 : 0
+                return true
+
+            case .character("g"):
+                guard hasVim else { return false }
+                binding.wrappedValue = 0
+                return true
+
+            case .character("G"):
+                guard hasVim else { return false }
+                binding.wrappedValue = itemCount - 1
                 return true
 
             case .enter:
-                // Select current item
                 selectCallback?(binding.wrappedValue)
                 return true
 
             case .character(let character):
-                // Check for shortcut
+                // Shortcut jump — vim j/k/g/G are already handled above so they
+                // won't reach here when vim mode is active.
                 for (index, item) in menuItems.enumerated() {
                     if let shortcut = item.shortcut,
                         shortcut.lowercased() == character.lowercased()

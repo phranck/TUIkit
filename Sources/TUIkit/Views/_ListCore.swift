@@ -69,6 +69,7 @@ struct _ListCore<SelectionValue: Hashable & Sendable, Content: View, Footer: Vie
             handler.itemCount = rows.count
             handler.viewportHeight = viewportHeight
             handler.canBeFocused = !isDisabled
+            handler.verticalNavigationStyles = context.environment.verticalNavigationStyles
 
             // Build selectableIndices set and itemIDs from typed rows
             var selectableIndices = Set<Int>()
