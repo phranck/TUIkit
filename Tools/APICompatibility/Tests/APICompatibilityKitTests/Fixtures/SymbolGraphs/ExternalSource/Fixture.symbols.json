@@ -1,0 +1,15 @@
+{
+  "module": { "name": "Fixture" },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.struct" },
+      "identifier": { "precise": "s:Fixture.Widget" },
+      "pathComponents": ["Widget"],
+      "declarationFragments": [{ "kind": "text", "spelling": "struct Widget" }],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": [
+    { "kind": "memberOf", "source": "s:Fixture.Missing", "target": "s:Fixture.Widget" }
+  ]
+}

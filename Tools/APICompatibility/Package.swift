@@ -14,5 +14,10 @@ let package = Package(
             name: "TUIkitAPICheck",
             dependencies: ["APICompatibilityKit"]
         ),
+        .testTarget(
+            name: "APICompatibilityKitTests",
+            dependencies: ["APICompatibilityKit"],
+            resources: [.copy("Fixtures")]
+        ),
     ]
 )

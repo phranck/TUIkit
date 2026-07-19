@@ -1,0 +1,21 @@
+{
+  "issues" : [
+    {
+      "number" : 17,
+      "title" : "[P1-12] Align View, ContentBuilder, ViewModifier, and ModifiedContent with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/17"
+    },
+    {
+      "number" : 18,
+      "title" : "[P1-13] Align Binding, State, Environment, AppStorage, and Observation with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/18"
+    },
+    {
+      "number" : 35,
+      "title" : "[P2-30] Reduce the public implementation surface and namespace TUI-only APIs",
+      "url" : "https://github.com/phranck/TUIkit/issues/35"
+    }
+  ],
+  "repository" : "phranck/TUIkit",
+  "schemaVersion" : 1
+}

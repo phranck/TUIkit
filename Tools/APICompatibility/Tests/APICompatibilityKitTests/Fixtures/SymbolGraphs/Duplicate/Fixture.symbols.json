@@ -1,0 +1,13 @@
+{
+  "module": { "name": "Fixture" },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.struct" },
+      "identifier": { "precise": "s:Fixture.Duplicate" },
+      "pathComponents": ["Duplicate"],
+      "declarationFragments": [{ "kind": "text", "spelling": "struct Duplicate" }],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": []
+}

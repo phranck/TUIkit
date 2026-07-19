@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "formatVersion": { "major": 0, "minor": 6, "patch": 0 },
+    "generator": "volatile-generator-value"
+  },
+  "module": {
+    "name": "Fixture",
+    "platform": { "architecture": "arm64", "operatingSystem": { "name": "macosx" } }
+  },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.struct", "displayName": "Structure" },
+      "identifier": { "precise": "s:Fixture.Widget", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget"],
+      "names": { "title": "Widget" },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "struct" },
+        { "kind": "text", "spelling": "  " },
+        { "kind": "identifier", "spelling": "Widget" }
+      ],
+      "accessLevel": "public",
+      "location": { "uri": "file:///volatile/Widget.swift", "position": { "line": 1, "character": 1 } },
+      "docComment": { "lines": [{ "text": "Volatile prose", "range": { "start": { "line": 1, "character": 1 }, "end": { "line": 1, "character": 15 } } }] }
+    },
+    {
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "identifier": { "precise": "s:Fixture.Widget.render.text", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "render(_:)"] ,
+      "names": { "title": "render(_:)" },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "func" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "render" },
+        { "kind": "text", "spelling": "(_ value: String) -> Text" }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "identifier": { "precise": "s:Fixture.Widget.render.count", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "render(_:)"] ,
+      "names": { "title": "render(_:)" },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "func" },
+        { "kind": "text", "spelling": "\n    " },
+        { "kind": "identifier", "spelling": "render" },
+        { "kind": "text", "spelling": "(_ value: Int) -> Text" }
+      ],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": [
+    { "kind": "memberOf", "source": "s:Fixture.Widget.render.text", "target": "s:Fixture.Widget" },
+    { "kind": "memberOf", "source": "s:Fixture.Widget.render.count", "target": "s:Fixture.Widget" }
+  ]
+}
