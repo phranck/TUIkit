@@ -7,6 +7,7 @@ GENERATE_SCRIPT="$PROJECT_DIR/scripts/generate-api-snapshot-source.sh"
 ASSEMBLE_SCRIPT="$PROJECT_DIR/scripts/assemble-api-snapshot-set.sh"
 GENERATE_REFERENCE_SCRIPT="$PROJECT_DIR/scripts/generate-swiftui-reference-snapshots.sh"
 GENERATE_TUIKIT_SCRIPT="$PROJECT_DIR/scripts/generate-tuikit-api-snapshots.sh"
+API_PACKAGE="$PROJECT_DIR/Tools/APICompatibility/Package.swift"
 TEST_TEMP_DIR="$(mktemp -d)"
 FAILURE_INDEX=0
 TEST_TAB=$'\t'
@@ -703,6 +704,12 @@ test_tuikit_orchestrator_rejects_toolchain_drift() {
     assert_file_not_exists "$output_root/tool.log"
 }
 
+test_api_tool_declares_macos_deployment_target() {
+    grep -Fq '.macOS(.v14)' "$API_PACKAGE" || {
+        fail "API compatibility package must declare the macOS 14 deployment target"
+    }
+}
+
 test_generate_writes_isolated_source_artifacts
 test_generate_rejects_unsafe_or_existing_targets
 test_generate_validates_options_and_dependencies
@@ -715,5 +722,6 @@ test_reference_orchestrator_generates_all_required_sources
 test_reference_orchestrator_rejects_xcode_drift
 test_tuikit_orchestrator_generates_host_sources
 test_tuikit_orchestrator_rejects_toolchain_drift
+test_api_tool_declares_macos_deployment_target
 
 echo "API snapshot script self-tests passed"

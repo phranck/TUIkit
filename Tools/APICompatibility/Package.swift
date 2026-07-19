@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "APICompatibility",
+    platforms: [.macOS(.v14)],
     products: [
         .library(name: "APICompatibilityKit", targets: ["APICompatibilityKit"]),
         .executable(name: "TUIkitAPICheck", targets: ["TUIkitAPICheck"]),
