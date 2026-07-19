@@ -3,6 +3,9 @@
 
 import PackageDescription
 
+let isBuildingDocumentation = Context.environment["TUIKIT_BUILD_DOCUMENTATION"] == "1"
+let tuikitDocumentationExcludes = isBuildingDocumentation ? [] : ["TUIkit.docc"]
+let tuikitDocumentationResources: [Resource] = isBuildingDocumentation ? [.copy("TUIkit.docc")] : []
 let vendoredPNGSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
     .enableUpcomingFeature("BareSlashRegexLiterals"),
@@ -96,7 +99,8 @@ let package = Package(
         .target(
             name: "TUIkit",
             dependencies: ["TUIkitCore", "TUIkitStyling", "TUIkitImage", "TUIkitView"],
-            resources: [.copy("Localization/translations"), .copy("VERSION")]
+            exclude: tuikitDocumentationExcludes,
+            resources: [.copy("Localization/translations"), .copy("VERSION")] + tuikitDocumentationResources
         ),
 
         // ── App & Tests ─────────────────────────────────────────────────────────────────────────────────
