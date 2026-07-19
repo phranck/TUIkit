@@ -4,6 +4,7 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
 import Observation
 import Testing
 
@@ -245,6 +246,58 @@ struct TUIContextTests {
         #expect(secondContext.appState.needsRender)
     }
 
+    @Test("Image requests and caches are isolated per runtime")
+    func imageRequestsAndCachesAreIsolatedPerRuntime() async {
+        let firstLoader = RecordingRuntimeImageLoader()
+        let secondLoader = RecordingRuntimeImageLoader()
+        let firstCache = URLImageCache()
+        let secondCache = URLImageCache()
+        let firstContext = TUIContext(
+            imageLoader: firstLoader,
+            imageCache: firstCache
+        )
+        let secondContext = TUIContext(
+            imageLoader: secondLoader,
+            imageCache: secondCache
+        )
+        let url = "https://runtime.test/image.png"
+        let image = Image(.url(url)).imagePlaceholderSpinner(false)
+
+        _ = renderToBuffer(
+            image,
+            context: RenderContext(
+                availableWidth: 4,
+                availableHeight: 2,
+                tuiContext: firstContext,
+                identity: ViewIdentity(path: "image")
+            )
+        )
+        #expect(await waitForRequest(in: firstLoader))
+        #expect(firstLoader.requestedURLs == [url])
+        #expect(secondLoader.requestedURLs.isEmpty)
+        #expect(firstCache.get(url) != nil)
+        #expect(secondCache.get(url) == nil)
+
+        _ = renderToBuffer(
+            image,
+            context: RenderContext(
+                availableWidth: 4,
+                availableHeight: 2,
+                tuiContext: secondContext,
+                identity: ViewIdentity(path: "image")
+            )
+        )
+        #expect(await waitForRequest(in: secondLoader))
+        #expect(firstLoader.requestedURLs == [url])
+        #expect(secondLoader.requestedURLs == [url])
+        #expect(secondCache.get(url) != nil)
+
+        firstContext.reset()
+        secondContext.reset()
+        #expect(firstCache.get(url) == nil)
+        #expect(secondCache.get(url) == nil)
+    }
+
     @Test("Render context receives the complete owning runtime")
     func renderContextReceivesCompleteOwningRuntime() {
         let storageBackend = VolatileStorageBackend()
@@ -271,6 +324,7 @@ struct TUIContextTests {
         #expect(renderContext.environment.appearanceManager === tuiContext.appearanceManager)
         #expect(renderContext.environment.statusBar === tuiContext.statusBar)
         #expect(renderContext.environment.appHeader === tuiContext.appHeader)
+        #expect(renderContext.environment.imageCache === tuiContext.imageCache)
         let environmentStorage = renderContext.environment.storageBackend as? VolatileStorageBackend
         #expect(environmentStorage === storageBackend)
         #expect(renderContext.environment.runtimeClock.now() == 42)
@@ -293,4 +347,51 @@ private struct RuntimeObservationView: View {
     var body: some View {
         Text("value:\(model.value)")
     }
+}
+
+private final class RecordingRuntimeImageLoader: ImageLoader, @unchecked Sendable {
+    private let lock = NSLock()
+    private var urls: [String] = []
+    private let image = RGBAImage(
+        width: 1,
+        height: 1,
+        pixels: [RGBA(r: 255, g: 255, b: 255)]
+    )
+
+    var requestedURLs: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return urls
+    }
+
+    func loadImage(from path: String) throws -> RGBAImage {
+        image
+    }
+
+    func loadImage(from data: Data) throws -> RGBAImage {
+        image
+    }
+
+    func loadImage(
+        from urlString: String,
+        cache: URLImageCache,
+        timeout: TimeInterval,
+        maxPixelCount: Int?
+    ) throws -> RGBAImage {
+        cache.set(urlString, image: image)
+        lock.lock()
+        urls.append(urlString)
+        lock.unlock()
+        return image
+    }
+}
+
+private func waitForRequest(in loader: RecordingRuntimeImageLoader) async -> Bool {
+    for _ in 0..<1_000 {
+        if !loader.requestedURLs.isEmpty {
+            return true
+        }
+        await Task.yield()
+    }
+    return false
 }

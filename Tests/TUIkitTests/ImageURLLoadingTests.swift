@@ -22,13 +22,14 @@ struct ImageURLLoadingTests {
             height: 2,
             pixels: [RGBA](repeating: RGBA(r: 0, g: 0, b: 0), count: 4)
         )
-        URLImageCache.shared.set(urlString, image: cachedImage)
+        let cache = URLImageCache()
+        cache.set(urlString, image: cachedImage)
         let loader = PlatformImageLoader(
             limits: ImageDecodingLimits(maxPixelCount: 3)
         )
 
         do {
-            _ = try loader.loadImage(from: urlString, cache: .shared)
+            _ = try loader.loadImage(from: urlString, cache: cache)
             Issue.record("Expected the current loader limit to reject the cached image")
         } catch let error as ImageLoadError {
             guard case .imageTooLarge(pixelCount: 4, limit: 3) = error else {

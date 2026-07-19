@@ -63,6 +63,8 @@ struct _ImageCore: View, Renderable, Layoutable {
         let showSpinner = context.environment.imagePlaceholderSpinner
         let maxPixelCount = context.environment.imageMaxPixelCount
         let urlTimeout = context.environment.imageURLTimeout
+        let imageLoader = context.environment.imageLoader
+        let imageCache = context.environment.imageCache
 
         // Retrieve or create persistent phase state
         let phaseKey = StateStorage.StateKey(identity: identity, propertyIndex: StateIndex.phase)
@@ -84,18 +86,16 @@ struct _ImageCore: View, Renderable, Layoutable {
             _ = lifecycle.recordAppear(token: token) {}
 
             let src = source
-            lifecycle.startTask(token: token, priority: .userInitiated) {
-                let loader = PlatformImageLoader()
-
+            lifecycle.startTask(token: token, priority: .userInitiated) { [imageLoader, imageCache] in
                 do {
                     let rawImage: RGBAImage
                     switch src {
                     case .file(let path):
-                        rawImage = try loader.loadImage(from: path, maxPixelCount: maxPixelCount)
+                        rawImage = try imageLoader.loadImage(from: path, maxPixelCount: maxPixelCount)
                     case .url(let urlString):
-                        rawImage = try loader.loadImage(
+                        rawImage = try imageLoader.loadImage(
                             from: urlString,
-                            cache: .shared,
+                            cache: imageCache,
                             timeout: urlTimeout,
                             maxPixelCount: maxPixelCount
                         )

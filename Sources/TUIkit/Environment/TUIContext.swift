@@ -254,6 +254,12 @@ final class TUIContext {
     /// Application header state owned by this runtime.
     let appHeader: AppHeaderState
 
+    /// Image loader used by this runtime.
+    let imageLoader: any ImageLoader
+
+    /// URL image cache owned by this runtime.
+    let imageCache: URLImageCache
+
     /// Creates a new TUI context with fresh instances of all services.
     ///
     /// Each context owns an independent render cache.
@@ -274,6 +280,8 @@ final class TUIContext {
     ///   - clock: Clock used by time-based services.
     ///   - focusManager: Focus state to use.
     ///   - appHeader: Application header state to use.
+    ///   - imageLoader: Loader for file and URL image requests.
+    ///   - imageCache: Cache for URL image results.
     nonisolated init(
         appState: AppState = AppState(),
         lifecycle: LifecycleManager = LifecycleManager(),
@@ -286,7 +294,9 @@ final class TUIContext {
         notificationService: NotificationService? = nil,
         clock: RuntimeClock = .system,
         focusManager: FocusManager = FocusManager(),
-        appHeader: AppHeaderState = AppHeaderState()
+        appHeader: AppHeaderState = AppHeaderState(),
+        imageLoader: any ImageLoader = PlatformImageLoader(),
+        imageCache: URLImageCache = URLImageCache()
     ) {
         let localizationService = localizationService ?? LocalizationService.transient()
         let notificationService = notificationService ?? NotificationService()
@@ -324,6 +334,8 @@ final class TUIContext {
         )
         self.statusBar = StatusBarState(appState: appState)
         self.appHeader = appHeader
+        self.imageLoader = imageLoader
+        self.imageCache = imageCache
     }
 }
 
@@ -358,6 +370,8 @@ extension TUIContext {
         environment.appearanceManager = appearanceManager
         environment.statusBar = statusBar
         environment.appHeader = appHeader
+        environment.imageLoader = imageLoader
+        environment.imageCache = imageCache
 
         if let palette = paletteManager.currentPalette {
             environment.palette = palette
@@ -395,6 +409,7 @@ extension TUIContext {
         renderCache.reset()
         notificationService.clear()
         focusManager.clear()
+        imageCache.removeAll()
         storageBackend.synchronize()
     }
 }

@@ -165,6 +165,40 @@ public protocol ImageLoader: Sendable {
     /// - Returns: The decoded image as `RGBAImage`.
     /// - Throws: `ImageLoadError` if the data cannot be decoded.
     func loadImage(from data: Data) throws -> RGBAImage
+
+    /// Loads an image from a file path with an optional pixel limit.
+    func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage
+
+    /// Loads an image from a URL using the supplied runtime cache.
+    func loadImage(
+        from urlString: String,
+        cache: URLImageCache,
+        timeout: TimeInterval,
+        maxPixelCount: Int?
+    ) throws -> RGBAImage
+}
+
+// MARK: - ImageLoader Defaults
+
+public extension ImageLoader {
+    func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage {
+        let image = try loadImage(from: path)
+        try validatePixelCount(image, maxPixelCount: maxPixelCount)
+        return image
+    }
+
+    func loadImage(
+        from urlString: String,
+        cache: URLImageCache,
+        timeout: TimeInterval,
+        maxPixelCount: Int?
+    ) throws -> RGBAImage {
+        if let image = cache.get(urlString) {
+            try validatePixelCount(image, maxPixelCount: maxPixelCount)
+            return image
+        }
+        throw ImageLoadError.downloadFailed("URL loading is not supported by this image loader")
+    }
 }
 
 // MARK: - ImageLoadError
@@ -327,13 +361,11 @@ private extension PlatformImageLoader {
 /// Cached entries persist for the lifetime of the application.
 /// Thread-safe via an internal lock.
 public final class URLImageCache: @unchecked Sendable {
-    /// Shared session cache.
-    public static let shared = URLImageCache()
-
     private var cache: [String: RGBAImage] = [:]
     private let lock = NSLock()
 
-    private init() {}
+    /// Creates an empty session cache.
+    public init() {}
 
     /// Returns a cached image for the given URL string, or nil.
     public func get(_ urlString: String) -> RGBAImage? {
@@ -347,6 +379,13 @@ public final class URLImageCache: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         cache[urlString] = image
+    }
+
+    /// Removes every cached image.
+    public func removeAll() {
+        lock.lock()
+        defer { lock.unlock() }
+        cache.removeAll()
     }
 }
 
@@ -368,7 +407,7 @@ extension PlatformImageLoader {
     /// - Throws: `ImageLoadError` on network or decoding failure, or if image exceeds size limit.
     public func loadImage(
         from urlString: String,
-        cache: URLImageCache = .shared,
+        cache: URLImageCache,
         timeout: TimeInterval = 30,
         maxPixelCount: Int? = nil
     ) throws -> RGBAImage {
@@ -398,5 +437,18 @@ extension PlatformImageLoader {
         let image = try loadImage(from: data, maxPixelCount: maxPixelCount)
         cache.set(urlString, image: image)
         return image
+    }
+}
+
+// MARK: - Pixel Limit Validation
+
+private func validatePixelCount(_ image: RGBAImage, maxPixelCount: Int?) throws {
+    guard let maxPixelCount else { return }
+    let (pixelCount, overflow) = image.width.multipliedReportingOverflow(by: image.height)
+    guard !overflow else {
+        throw ImageLoadError.sizeOverflow(width: image.width, height: image.height)
+    }
+    guard pixelCount <= maxPixelCount else {
+        throw ImageLoadError.imageTooLarge(pixelCount: pixelCount, limit: maxPixelCount)
     }
 }
