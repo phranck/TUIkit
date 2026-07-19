@@ -51,6 +51,13 @@ let package = Package(
             dependencies: ["TUIkit"],
             resources: [.copy("Resources")]
         ),
-        .testTarget(name: "TUIkitTests", dependencies: ["TUIkit"]),
+        .target(
+            name: "TUIkitTestSupport",
+            path: "Tests/TUIkitTestSupport"
+        ),
+        .testTarget(
+            name: "TUIkitTests",
+            dependencies: ["TUIkit", "TUIkitTestSupport"]
+        ),
     ]
 )

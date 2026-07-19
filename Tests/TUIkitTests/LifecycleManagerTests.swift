@@ -6,6 +6,7 @@
 //
 
 import Testing
+import TUIkitTestSupport
 
 @testable import TUIkit
 
@@ -201,64 +202,134 @@ struct LifecycleManagerDisappearTests {
 @Suite("LifecycleManager Task Tests")
 struct LifecycleManagerTaskTests {
 
-    @Test("startTask creates a task")
-    func startTask() async throws {
+    @Test("startTask runs its operation", .timeLimit(.minutes(1)))
+    func startTask() async {
         let manager = LifecycleManager()
-        nonisolated(unsafe) var executed = false
+        let events = TraceRecorder<LifecycleTaskEvent>()
+        let started = AsyncSignal()
+
         manager.startTask(token: "task-1", priority: .medium) {
-            executed = true
+            events.record(.started("task-1"))
+            started.signal()
         }
-        try await Task.sleep(for: .milliseconds(50))
-        #expect(executed == true)
+
+        await started.wait()
+
+        #expect(events.snapshot() == [.started("task-1")])
     }
 
-    @Test("cancelTask sets cancellation flag")
-    func cancelTask() async throws {
+    @Test("cancelTask cancels a running task", .timeLimit(.minutes(1)))
+    func cancelTask() async {
         let manager = LifecycleManager()
-        nonisolated(unsafe) var wasCancelled = false
+        let events = TraceRecorder<LifecycleTaskEvent>()
+        let started = AsyncSignal()
+        let release = AsyncSignal()
+        let completed = AsyncSignal()
+
         manager.startTask(token: "task-1", priority: .medium) {
-            // Long-running task that checks cancellation
-            try? await Task.sleep(for: .seconds(10))
-            wasCancelled = Task.isCancelled
+            events.record(.started("task-1"))
+            started.signal()
+            await release.wait()
+            events.record(.completed("task-1", wasCancelled: Task.isCancelled))
+            completed.signal()
         }
-        // Cancel immediately
+
+        await started.wait()
+
         manager.cancelTask(token: "task-1")
-        try await Task.sleep(for: .milliseconds(50))
-        // Task was cancelled, so it either didn't complete the sleep
-        // or Task.isCancelled was true. Either way the task is cancelled.
-        // We can't easily observe the internal state, but cancellation was requested.
-        // This verifies cancelTask doesn't crash and processes correctly.
+        release.signal()
+        await completed.wait()
+
+        #expect(events.snapshot() == [
+            .started("task-1"),
+            .completed("task-1", wasCancelled: true)
+        ])
     }
 
-    @Test("startTask replaces existing task for same token")
-    func replaceTask() async throws {
+    @Test("startTask cancels the existing task and runs its replacement", .timeLimit(.minutes(1)))
+    func replaceTask() async {
         let manager = LifecycleManager()
-        nonisolated(unsafe) var secondExecuted = false
+        let events = TraceRecorder<LifecycleTaskEvent>()
+        let firstStarted = AsyncSignal()
+        let firstRelease = AsyncSignal()
+        let firstCompleted = AsyncSignal()
+        let replacementStarted = AsyncSignal()
 
         manager.startTask(token: "task-1", priority: .medium) {
-            // Long-running first task
-            try? await Task.sleep(for: .seconds(10))
+            events.record(.started("first"))
+            firstStarted.signal()
+            await firstRelease.wait()
+            events.record(.completed("first", wasCancelled: Task.isCancelled))
+            firstCompleted.signal()
         }
-        // Replace immediately with short task
+
+        await firstStarted.wait()
+
         manager.startTask(token: "task-1", priority: .medium) {
-            secondExecuted = true
+            events.record(.started("replacement"))
+            replacementStarted.signal()
         }
-        try await Task.sleep(for: .milliseconds(50))
-        #expect(secondExecuted == true)
+
+        firstRelease.signal()
+        await firstCompleted.wait()
+        await replacementStarted.wait()
+
+        let snapshot = events.snapshot()
+        #expect(snapshot.count == 3)
+        #expect(Set(snapshot) == [
+            .started("first"),
+            .completed("first", wasCancelled: true),
+            .started("replacement")
+        ])
     }
 
-    @Test("reset does not crash with running tasks")
-    func resetWithRunningTasks() async throws {
+    @Test("reset cancels all running tasks", .timeLimit(.minutes(1)))
+    func resetWithRunningTasks() async {
         let manager = LifecycleManager()
+        let events = TraceRecorder<LifecycleTaskEvent>()
+        let firstStarted = AsyncSignal()
+        let firstRelease = AsyncSignal()
+        let firstCompleted = AsyncSignal()
+        let secondStarted = AsyncSignal()
+        let secondRelease = AsyncSignal()
+        let secondCompleted = AsyncSignal()
+
         manager.startTask(token: "task-1", priority: .medium) {
-            try? await Task.sleep(for: .seconds(10))
+            events.record(.started("task-1"))
+            firstStarted.signal()
+            await firstRelease.wait()
+            events.record(.completed("task-1", wasCancelled: Task.isCancelled))
+            firstCompleted.signal()
         }
         manager.startTask(token: "task-2", priority: .medium) {
-            try? await Task.sleep(for: .seconds(10))
+            events.record(.started("task-2"))
+            secondStarted.signal()
+            await secondRelease.wait()
+            events.record(.completed("task-2", wasCancelled: Task.isCancelled))
+            secondCompleted.signal()
         }
-        // Reset should cancel all tasks without crashing
+
+        await firstStarted.wait()
+        await secondStarted.wait()
+
         manager.reset()
-        // Verify clean state
-        #expect(manager.hasAppeared(token: "task-1") == false)
+        firstRelease.signal()
+        secondRelease.signal()
+        await firstCompleted.wait()
+        await secondCompleted.wait()
+
+        let snapshot = events.snapshot()
+        #expect(snapshot.count == 4)
+        #expect(Set(snapshot) == [
+            .started("task-1"),
+            .completed("task-1", wasCancelled: true),
+            .started("task-2"),
+            .completed("task-2", wasCancelled: true)
+        ])
     }
+}
+
+private enum LifecycleTaskEvent: Hashable, Sendable {
+    case started(String)
+    case completed(String, wasCancelled: Bool)
 }
