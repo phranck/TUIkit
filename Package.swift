@@ -116,9 +116,10 @@ let package = Package(
         .testTarget(name: "TUIkitCoreTests", dependencies: ["TUIkitCore"]),
         .testTarget(name: "TUIkitStylingTests", dependencies: ["TUIkitStyling"]),
         .testTarget(name: "TUIkitViewTests", dependencies: ["TUIkitCore", "TUIkitView"]),
+        .testTarget(name: "TUIkitImageTests", dependencies: ["TUIkitImage"]),
         .testTarget(
             name: "TUIkitTests",
-            dependencies: ["TUIkit", "TUIkitImage", "TUIkitTestSupport"]
+            dependencies: ["TUIkit", "TUIkitTestSupport"]
         ),
     ]
 )
