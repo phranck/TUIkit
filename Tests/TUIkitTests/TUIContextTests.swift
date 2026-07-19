@@ -7,6 +7,7 @@
 import Foundation
 import Observation
 import Testing
+import TUIkitTestSupport
 
 @testable import TUIkit
 
@@ -246,7 +247,7 @@ struct TUIContextTests {
         #expect(secondContext.appState.needsRender)
     }
 
-    @Test("Image requests and caches are isolated per runtime")
+    @Test("Image requests and caches are isolated per runtime", .timeLimit(.minutes(1)))
     func imageRequestsAndCachesAreIsolatedPerRuntime() async {
         let firstLoader = RecordingRuntimeImageLoader()
         let secondLoader = RecordingRuntimeImageLoader()
@@ -272,7 +273,7 @@ struct TUIContextTests {
                 identity: ViewIdentity(path: "image")
             )
         )
-        #expect(await waitForRequest(in: firstLoader))
+        await firstLoader.waitForRequest()
         #expect(firstLoader.requestedURLs == [url])
         #expect(secondLoader.requestedURLs.isEmpty)
         #expect(firstCache.get(url) != nil)
@@ -287,7 +288,7 @@ struct TUIContextTests {
                 identity: ViewIdentity(path: "image")
             )
         )
-        #expect(await waitForRequest(in: secondLoader))
+        await secondLoader.waitForRequest()
         #expect(firstLoader.requestedURLs == [url])
         #expect(secondLoader.requestedURLs == [url])
         #expect(secondCache.get(url) != nil)
@@ -351,6 +352,7 @@ private struct RuntimeObservationView: View {
 
 private final class RecordingRuntimeImageLoader: ImageLoader, @unchecked Sendable {
     private let lock = NSLock()
+    private let requestRecorded = AsyncSignal()
     private var urls: [String] = []
     private let image = RGBAImage(
         width: 1,
@@ -362,6 +364,10 @@ private final class RecordingRuntimeImageLoader: ImageLoader, @unchecked Sendabl
         lock.lock()
         defer { lock.unlock() }
         return urls
+    }
+
+    func waitForRequest() async {
+        await requestRecorded.wait()
     }
 
     func loadImage(from path: String) throws -> RGBAImage {
@@ -382,16 +388,7 @@ private final class RecordingRuntimeImageLoader: ImageLoader, @unchecked Sendabl
         lock.lock()
         urls.append(urlString)
         lock.unlock()
+        requestRecorded.signal()
         return image
     }
-}
-
-private func waitForRequest(in loader: RecordingRuntimeImageLoader) async -> Bool {
-    for _ in 0..<1_000 {
-        if !loader.requestedURLs.isEmpty {
-            return true
-        }
-        await Task.yield()
-    }
-    return false
 }
