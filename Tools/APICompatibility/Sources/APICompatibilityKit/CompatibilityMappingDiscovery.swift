@@ -24,6 +24,10 @@ public struct CompatibilityMappingDiscovery: Sendable {
     ) -> [CompatibilityMappingCandidate] {
         let referencesByKey = identifiersByStructuralKey(in: referenceSet)
         let tuikitByKey = identifiersByStructuralKey(in: tuikitSet)
+        let surfaceAnalyzer = CompatibilityMappingSurfaceAnalyzer(
+            referenceSet: referenceSet,
+            tuikitSet: tuikitSet
+        )
         return referencesByKey.keys.compactMap { key in
             guard let referenceIDs = referencesByKey[key],
                   referenceIDs.count == 1,
@@ -37,10 +41,8 @@ public struct CompatibilityMappingDiscovery: Sendable {
             return CompatibilityMappingCandidate(
                 referenceID: referenceID,
                 tuikitSymbolID: tuikitID,
-                differences: compatibilityMappingDifferences(
+                differences: surfaceAnalyzer.differences(
                     manifest: manifest,
-                    referenceSet: referenceSet,
-                    tuikitSet: tuikitSet,
                     referenceID: referenceID,
                     tuikitID: tuikitID
                 )

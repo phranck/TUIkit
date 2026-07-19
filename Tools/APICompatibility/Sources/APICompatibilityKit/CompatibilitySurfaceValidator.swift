@@ -17,18 +17,45 @@ public struct CompatibilitySurfaceValidator: Sendable {
     }
 }
 
-func compatibilityMappingDifferences(
-    manifest: CompatibilityManifest,
-    referenceSet: APISnapshotSet,
-    tuikitSet: APISnapshotSet,
-    referenceID: String,
-    tuikitID: String
-) -> [CompatibilityDifference] {
-    SurfaceValidation(
-        manifest: manifest,
-        referenceSet: referenceSet,
-        tuikitSet: tuikitSet
-    ).mappingDifferences(referenceID: referenceID, tuikitID: tuikitID)
+struct CompatibilityMappingSurfaceAnalyzer {
+    private let referenceSet: APISnapshotSet
+    private let tuikitSet: APISnapshotSet
+    private let referenceRelationships: RelationshipAnchorIndex
+    private let tuikitRelationships: RelationshipAnchorIndex
+
+    init(referenceSet: APISnapshotSet, tuikitSet: APISnapshotSet) {
+        self.referenceSet = referenceSet
+        self.tuikitSet = tuikitSet
+        let validation = SurfaceValidation(
+            manifest: CompatibilityManifest(
+                schemaVersion: 2,
+                referenceIDs: [],
+                decisions: [],
+                tuikitDecisions: []
+            ),
+            referenceSet: referenceSet,
+            tuikitSet: tuikitSet
+        )
+        referenceRelationships = validation.relationshipIndex(in: referenceSet)
+        tuikitRelationships = validation.relationshipIndex(in: tuikitSet)
+    }
+
+    func differences(
+        manifest: CompatibilityManifest,
+        referenceID: String,
+        tuikitID: String
+    ) -> [CompatibilityDifference] {
+        SurfaceValidation(
+            manifest: manifest,
+            referenceSet: referenceSet,
+            tuikitSet: tuikitSet
+        ).mappingDifferences(
+            referenceID: referenceID,
+            tuikitID: tuikitID,
+            referenceRelationships: referenceRelationships,
+            tuikitRelationships: tuikitRelationships
+        )
+    }
 }
 
 private struct SurfaceValidation {
@@ -59,14 +86,14 @@ private struct SurfaceValidation {
 
     func mappingDifferences(
         referenceID: String,
-        tuikitID: String
+        tuikitID: String,
+        referenceRelationships: RelationshipAnchorIndex,
+        tuikitRelationships: RelationshipAnchorIndex
     ) -> [CompatibilityDifference] {
         let normalizer = SurfaceNormalizer(
             manifest: manifest,
             moduleNames: referenceSet.moduleNames + tuikitSet.moduleNames
         )
-        let referenceRelationships = relationshipIndex(in: referenceSet)
-        let tuikitRelationships = relationshipIndex(in: tuikitSet)
         let reference = surfaceOccurrences(
             in: referenceSet,
             identifier: referenceID,
@@ -318,7 +345,7 @@ private struct SurfaceValidation {
         }.sorted { $0.source.id < $1.source.id }
     }
 
-    private func relationshipIndex(in set: APISnapshotSet) -> RelationshipAnchorIndex {
+    func relationshipIndex(in set: APISnapshotSet) -> RelationshipAnchorIndex {
         let localIdentifiers = Set(set.unionPreciseIdentifiers)
         var relationships: [RelationshipAnchorKey: Set<CanonicalRelationship>] = [:]
         var unowned: [UnownedRelationship] = []
