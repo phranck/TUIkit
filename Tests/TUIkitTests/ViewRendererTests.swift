@@ -43,6 +43,26 @@ struct ViewRendererTests {
         #expect(terminal.outputContains("Abbrechen"))
     }
 
+    @Test("AppStorage projection reads from the owning runtime")
+    func appStorageProjectionReadsFromOwningRuntime() throws {
+        let terminal = MockTerminal()
+        let tuiContext = TUIContext()
+        tuiContext.storageBackend.setValue(true, forKey: "renderer-projection")
+        let renderer = ViewRenderer(terminal: terminal, tuiContext: tuiContext)
+
+        renderer.render {
+            RendererAppStorageProjectionView()
+        }
+
+        try #require(terminal.allOutput.stripped.contains("[x] Projection"))
+
+        tuiContext.appState.didRender()
+        #expect(tuiContext.focusManager.dispatchKeyEvent(KeyEvent(key: .space)))
+        let storedValue: Bool? = tuiContext.storageBackend.value(forKey: "renderer-projection")
+        #expect(storedValue == false)
+        #expect(tuiContext.appState.needsRender)
+    }
+
     @Test("Two runtimes render alternately without sharing state or services")
     func twoRuntimesRenderAlternatelyWithoutSharingStateOrServices() {
         let firstTerminal = MockTerminal()
@@ -140,6 +160,14 @@ private struct AlternatingRuntimeView: View {
     var body: some View {
         Text("\(name):\(value):\(localization.string(for: LocalizationKey.Button.cancel))")
             .equatable()
+    }
+}
+
+private struct RendererAppStorageProjectionView: View {
+    @AppStorage("renderer-projection") private var isEnabled = false
+
+    var body: some View {
+        Toggle("Projection", isOn: $isEnabled)
     }
 }
 

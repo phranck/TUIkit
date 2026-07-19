@@ -297,10 +297,7 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
 
     /// A binding to the stored value.
     public var projectedValue: Binding<Value> {
-        Binding(
-            get: { self.wrappedValue },
-            set: { self.wrappedValue = $0 }
-        )
+        box.binding
     }
 }
 
@@ -356,6 +353,15 @@ private final class AppStorageBox<Value: Codable>: @unchecked Sendable {
                 dependencies.invalidationSink?.invalidate(.all)
             }
         }
+    }
+
+    /// Binding captured while the property wrapper is hydrated by its runtime.
+    var binding: Binding<Value> {
+        bindToActiveRuntimeIfNeeded()
+        return Binding(
+            get: { self.value },
+            set: { self.value = $0 }
+        )
     }
 }
 
