@@ -25,16 +25,16 @@ Use `LocalizedString` to show localized text:
 import TUIkit
 
 VStack {
-    LocalizedString(.button(.ok))
-    LocalizedString(.error(.notFound))
-    LocalizedString(.dialog(.confirm))
+    LocalizedString(LocalizationKey.Button.ok)
+    LocalizedString(LocalizationKey.Error.notFound)
+    LocalizedString(LocalizationKey.Dialog.confirm)
 }
 ```
 
 Or use the `Text(localized:)` convenience initializer:
 
 ```swift
-Text(localized: .button(.save))
+Text(localized: LocalizationKey.Button.save)
 ```
 
 ### Switch Language at Runtime
@@ -147,9 +147,9 @@ Display a localized string as a View component:
 struct MyView: View {
     var body: some View {
         VStack {
-            LocalizedString(.button(.save))
-            LocalizedString(.error(.invalidInput))
-            LocalizedString(.validation(.emailInvalid))
+            LocalizedString(LocalizationKey.Button.save)
+            LocalizedString(LocalizationKey.Error.invalidInput)
+            LocalizedString(LocalizationKey.Validation.emailInvalid)
         }
     }
 }
@@ -163,8 +163,8 @@ Use the `Text(localized:)` initializer:
 struct MyControl: View {
     var body: some View {
         VStack {
-            Text(localized: .menu(.file))
-            Text(localized: .placeholder(.search))
+            Text(localized: LocalizationKey.Menu.file)
+            Text(localized: LocalizationKey.Placeholder.search)
         }
     }
 }
@@ -179,7 +179,7 @@ struct StatusLabel: View {
     @Environment(\.localizationService) private var localization
 
     var body: some View {
-        Text(localization.string(for: .button(.ok)))
+        Text(localization.string(for: LocalizationKey.Button.ok))
     }
 }
 ```
@@ -235,7 +235,7 @@ struct MyView: View {
     @Environment(\.localizationService) var localization
 
     var body: some View {
-        Text(localization.string(for: .button(.ok)))
+        Text(localization.string(for: LocalizationKey.Button.ok))
     }
 }
 ```
@@ -381,7 +381,7 @@ Create `Sources/TUIkit/Localization/translations/pt.json` with **all** keys from
 ```swift
 let service = LocalizationService()
 service.setLanguage(.portuguese)
-let ok = service.string(for: .button(.ok))
+let ok = service.string(for: LocalizationKey.Button.ok)
 ```
 
 ### 4. Run Consistency Tests
@@ -430,8 +430,8 @@ DispatchQueue.global().async {
 Translations are cached per language after first load:
 
 ```swift
-let text1 = service.string(for: .button(.ok))  // Loads and caches
-let text2 = service.string(for: .button(.ok))  // Uses cache
+let text1 = service.string(for: LocalizationKey.Button.ok)  // Loads and caches
+let text2 = service.string(for: LocalizationKey.Button.ok)  // Uses cache
 ```
 
 ## JSON File Format

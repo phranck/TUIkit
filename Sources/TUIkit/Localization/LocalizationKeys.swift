@@ -129,8 +129,8 @@ extension LocalizedString {
     /// # Example
     ///
     /// ```swift
-    /// LocalizedString(.button(.ok))
-    /// LocalizedString(.error(.notFound))
+    /// LocalizedString(LocalizationKey.Button.ok)
+    /// LocalizedString(LocalizationKey.Error.notFound)
     /// ```
     public init(_ key: LocalizationKey.Button) {
         self.init(key.rawValue)
@@ -173,8 +173,8 @@ extension Text {
     /// # Example
     ///
     /// ```swift
-    /// Text(localized: .button(.ok))
-    /// Text(localized: .error(.notFound))
+    /// Text(localized: LocalizationKey.Button.ok)
+    /// Text(localized: LocalizationKey.Error.notFound)
     /// ```
     public init(localized key: LocalizationKey.Button) {
         self.init(localized: key.rawValue)
@@ -218,8 +218,8 @@ extension LocalizationService {
     ///
     /// ```swift
     /// @Environment(\.localizationService) var localization
-    /// let okText = localization.string(for: .button(.ok))
-    /// let errorText = localization.string(for: .error(.notFound))
+    /// let okText = localization.string(for: LocalizationKey.Button.ok)
+    /// let errorText = localization.string(for: LocalizationKey.Error.notFound)
     /// ```
     public func string(for key: LocalizationKey.Button) -> String {
         string(for: key.rawValue)
