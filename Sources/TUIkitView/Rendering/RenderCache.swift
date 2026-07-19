@@ -18,7 +18,7 @@ import TUIkitCore
 ///
 /// ## How It Works
 ///
-/// When an ``EquatableView<V>`` renders, it:
+/// When an ``EquatableView`` renders, it:
 /// 1. Looks up a cached entry by the current `ViewIdentity`
 /// 2. Compares the new view value with the stored snapshot (`Equatable.==`)
 /// 3. Checks that the available size hasn't changed
@@ -55,8 +55,8 @@ public final class RenderCache: @unchecked Sendable {
     /// Aggregated cache performance statistics.
     ///
     /// Tracks hit/miss/store/clear counts. Use ``stats`` for cumulative
-    /// totals, or ``frameStats`` (after ``logFrameStats()``) for the
-    /// delta since the last ``beginRenderPass()``.
+    /// totals. ``logFrameStats()`` logs the delta since the last
+    /// ``beginRenderPass()``.
     public struct Stats: Equatable {
         /// Number of successful cache lookups (view and size matched).
         public var hits: Int = 0
@@ -314,7 +314,7 @@ extension RenderCache {
     ///
     /// Call this at the end of each render pass (after ``removeInactive()``)
     /// to emit a one-line summary showing **this frame's** cache activity
-    /// (delta since ``beginRenderPass()``) plus the current entry count.
+    /// (delta since `beginRenderPass()`) plus the current entry count.
     public func logFrameStats() {
         guard Self.debugEnabled else { return }
         let frame = stats.delta(since: statsAtFrameStart)

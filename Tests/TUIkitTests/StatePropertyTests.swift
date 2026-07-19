@@ -32,7 +32,6 @@ struct StatePropertyWrapperTests {
     func stateTriggerRender() {
         // StateBox.didSet calls AppState.shared.setNeedsRender().
         // We mutate and check that the shared instance is marked as needing render.
-        let initialNeedsRender = AppState.shared.needsRender
         let state = State(wrappedValue: "initial")
         state.wrappedValue = "changed"
         let triggered = AppState.shared.needsRender

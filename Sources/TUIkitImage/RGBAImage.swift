@@ -6,6 +6,8 @@
 
 // MARK: - RGBA Pixel
 
+// RGBA channel names are the conventional public API and intentionally remain single-letter.
+// swiftlint:disable identifier_name
 /// A single pixel with red, green, blue, and alpha channels.
 ///
 /// Used as the intermediate representation for image data before
@@ -24,6 +26,7 @@ public struct RGBA: Sendable, Equatable {
         self.a = a
     }
 }
+// swiftlint:enable identifier_name
 
 // MARK: - Luminance
 
@@ -69,6 +72,8 @@ public struct RGBAImage: Sendable {
 
 // MARK: - Pixel Access
 
+// Image coordinates are established public API and intentionally use conventional x/y names.
+// swiftlint:disable identifier_name
 extension RGBAImage {
 
     /// Returns the pixel at the given coordinates.
@@ -111,6 +116,7 @@ extension RGBAImage {
         )
     }
 }
+// swiftlint:enable identifier_name
 
 // MARK: - Image Scaling
 
@@ -129,11 +135,11 @@ extension RGBAImage {
 
         var result = [RGBA](repeating: RGBA(r: 0, g: 0, b: 0), count: targetWidth * targetHeight)
 
-        for y in 0..<targetHeight {
-            let srcY = y * height / targetHeight
-            for x in 0..<targetWidth {
-                let srcX = x * width / targetWidth
-                result[y * targetWidth + x] = pixel(at: srcX, srcY)
+        for targetRow in 0..<targetHeight {
+            let sourceRow = targetRow * height / targetHeight
+            for targetColumn in 0..<targetWidth {
+                let sourceColumn = targetColumn * width / targetWidth
+                result[targetRow * targetWidth + targetColumn] = pixel(at: sourceColumn, sourceRow)
             }
         }
 
@@ -155,14 +161,14 @@ extension RGBAImage {
         let xRatio = Double(width) / Double(targetWidth)
         let yRatio = Double(height) / Double(targetHeight)
 
-        for y in 0..<targetHeight {
-            let srcY = Double(y) * yRatio
+        for targetRow in 0..<targetHeight {
+            let srcY = Double(targetRow) * yRatio
             let y0 = min(Int(srcY), height - 1)
             let y1 = min(y0 + 1, height - 1)
             let yFrac = srcY - Double(y0)
 
-            for x in 0..<targetWidth {
-                let srcX = Double(x) * xRatio
+            for targetColumn in 0..<targetWidth {
+                let srcX = Double(targetColumn) * xRatio
                 let x0 = min(Int(srcX), width - 1)
                 let x1 = min(x0 + 1, width - 1)
                 let xFrac = srcX - Double(x0)
@@ -172,20 +178,20 @@ extension RGBAImage {
                 let p01 = pixel(at: x0, y1)
                 let p11 = pixel(at: x1, y1)
 
-                let r = bilinearInterpolate(
+                let red = bilinearInterpolate(
                     Double(p00.r), Double(p10.r), Double(p01.r), Double(p11.r), xFrac, yFrac
                 )
-                let g = bilinearInterpolate(
+                let green = bilinearInterpolate(
                     Double(p00.g), Double(p10.g), Double(p01.g), Double(p11.g), xFrac, yFrac
                 )
-                let b = bilinearInterpolate(
+                let blue = bilinearInterpolate(
                     Double(p00.b), Double(p10.b), Double(p01.b), Double(p11.b), xFrac, yFrac
                 )
 
-                result[y * targetWidth + x] = RGBA(
-                    r: UInt8(clamping: Int(r.rounded())),
-                    g: UInt8(clamping: Int(g.rounded())),
-                    b: UInt8(clamping: Int(b.rounded()))
+                result[targetRow * targetWidth + targetColumn] = RGBA(
+                    r: UInt8(clamping: Int(red.rounded())),
+                    g: UInt8(clamping: Int(green.rounded())),
+                    b: UInt8(clamping: Int(blue.rounded()))
                 )
             }
         }

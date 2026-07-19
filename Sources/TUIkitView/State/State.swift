@@ -17,7 +17,7 @@ import TUIkitCore
 ///
 /// The `AppRunner` subscribes to state changes and re-renders when notified.
 /// Property wrappers like ``State`` and ``AppStorage`` access the shared instance
-/// via ``AppState.shared``.
+/// via ``AppState/shared``.
 ///
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios

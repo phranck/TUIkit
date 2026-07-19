@@ -89,8 +89,8 @@ struct TextFieldContentRenderer {
     private func buildTextContent(text: String, palette: any Palette, background: Color, width: Int) -> String {
         let visibleCount = min(text.count, width)
         var displayText = ""
-        for i in 0..<visibleCount {
-            displayText.append(displayCharacter(i, text))
+        for characterIndex in 0..<visibleCount {
+            displayText.append(displayCharacter(characterIndex, text))
         }
         let paddedText = displayText.padding(toLength: width, withPad: " ", startingAt: 0)
         let foreground = isDisabled ? palette.foregroundTertiary : palette.foreground

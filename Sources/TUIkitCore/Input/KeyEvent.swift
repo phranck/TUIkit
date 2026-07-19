@@ -322,29 +322,39 @@ extension KeyEvent {
         let alt = modifiers.alt
         let ctrl = modifiers.ctrl
 
+        guard let key = navigationKey(for: number) ?? functionKey(for: number) else {
+            return nil
+        }
+        return KeyEvent(key: key, ctrl: ctrl, alt: alt, shift: shift)
+    }
+
+    /// Maps VT navigation key identifiers to keys.
+    private static func navigationKey(for number: Int) -> Key? {
         switch number {
-        // Navigation keys
-        case 1: return KeyEvent(key: .home, ctrl: ctrl, alt: alt, shift: shift)
-        case 2: return nil  // Insert - not commonly used in TUI apps
-        case 3: return KeyEvent(key: .delete, ctrl: ctrl, alt: alt, shift: shift)
-        case 4: return KeyEvent(key: .end, ctrl: ctrl, alt: alt, shift: shift)
-        case 5: return KeyEvent(key: .pageUp, ctrl: ctrl, alt: alt, shift: shift)
-        case 6: return KeyEvent(key: .pageDown, ctrl: ctrl, alt: alt, shift: shift)
+        case 1: return .home
+        case 3: return .delete
+        case 4: return .end
+        case 5: return .pageUp
+        case 6: return .pageDown
+        default: return nil
+        }
+    }
 
-        // Function keys (VT-style)
-        case 11: return KeyEvent(key: .f1, ctrl: ctrl, alt: alt, shift: shift)
-        case 12: return KeyEvent(key: .f2, ctrl: ctrl, alt: alt, shift: shift)
-        case 13: return KeyEvent(key: .f3, ctrl: ctrl, alt: alt, shift: shift)
-        case 14: return KeyEvent(key: .f4, ctrl: ctrl, alt: alt, shift: shift)
-        case 15: return KeyEvent(key: .f5, ctrl: ctrl, alt: alt, shift: shift)
-        case 17: return KeyEvent(key: .f6, ctrl: ctrl, alt: alt, shift: shift)
-        case 18: return KeyEvent(key: .f7, ctrl: ctrl, alt: alt, shift: shift)
-        case 19: return KeyEvent(key: .f8, ctrl: ctrl, alt: alt, shift: shift)
-        case 20: return KeyEvent(key: .f9, ctrl: ctrl, alt: alt, shift: shift)
-        case 21: return KeyEvent(key: .f10, ctrl: ctrl, alt: alt, shift: shift)
-        case 23: return KeyEvent(key: .f11, ctrl: ctrl, alt: alt, shift: shift)
-        case 24: return KeyEvent(key: .f12, ctrl: ctrl, alt: alt, shift: shift)
-
+    /// Maps VT function key identifiers to keys.
+    private static func functionKey(for number: Int) -> Key? {
+        switch number {
+        case 11: return .f1
+        case 12: return .f2
+        case 13: return .f3
+        case 14: return .f4
+        case 15: return .f5
+        case 17: return .f6
+        case 18: return .f7
+        case 19: return .f8
+        case 20: return .f9
+        case 21: return .f10
+        case 23: return .f11
+        case 24: return .f12
         default: return nil
         }
     }

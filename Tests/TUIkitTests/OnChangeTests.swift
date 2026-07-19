@@ -34,7 +34,7 @@ struct OnChangeTests {
             availableWidth: 40,
             availableHeight: 10,
             environment: env,
-            identity: ViewIdentity(rootType: OnChangeTests.self)
+            identity: ViewIdentity(rootType: Self.self)
         )
     }
 

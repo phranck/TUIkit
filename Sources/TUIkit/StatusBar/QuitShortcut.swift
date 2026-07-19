@@ -58,12 +58,15 @@ public struct QuitShortcut: Sendable {
 // MARK: - Presets
 
 extension QuitShortcut {
+    // The public preset name mirrors the key it represents and is retained for API compatibility.
+    // swiftlint:disable identifier_name
     /// The default quit shortcut: `q` (matches both `q` and `Q`).
     public static let q = QuitShortcut(
         key: .character("q"),
         shortcutSymbol: "q",
         label: "quit"
     )
+    // swiftlint:enable identifier_name
 
     /// Quit with the Escape key (`⎋`).
     public static let escape = QuitShortcut(

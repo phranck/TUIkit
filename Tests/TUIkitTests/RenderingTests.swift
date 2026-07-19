@@ -397,10 +397,10 @@ struct RenderingTests {
 
         print("Buffer height: \(buffer.height)")
         print("Buffer width: \(buffer.width)")
-        for (i, line) in buffer.lines.enumerated() {
+        for (lineIndex, line) in buffer.lines.enumerated() {
             let stripped = line.stripped
             if !stripped.trimmingCharacters(in: .whitespaces).isEmpty {
-                print("Line \(i): '\(stripped)'")
+                print("Line \(lineIndex): '\(stripped)'")
             }
         }
 

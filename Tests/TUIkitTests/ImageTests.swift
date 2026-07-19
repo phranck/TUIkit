@@ -45,11 +45,11 @@ struct RGBAPixelTests {
 
     @Test("RGBA equality works correctly")
     func rgbaEquality() {
-        let a = RGBA(r: 10, g: 20, b: 30, a: 40)
-        let b = RGBA(r: 10, g: 20, b: 30, a: 40)
-        let c = RGBA(r: 10, g: 20, b: 31, a: 40)
-        #expect(a == b)
-        #expect(a != c)
+        let pixel = RGBA(r: 10, g: 20, b: 30, a: 40)
+        let matchingPixel = RGBA(r: 10, g: 20, b: 30, a: 40)
+        let differentPixel = RGBA(r: 10, g: 20, b: 31, a: 40)
+        #expect(pixel == matchingPixel)
+        #expect(pixel != differentPixel)
     }
 }
 
@@ -239,11 +239,11 @@ struct ASCIIConverterTests {
     @Test("Floyd-Steinberg dithering does not crash")
     func ditheringNoCrash() {
         var pixels = [RGBA]()
-        for i in 0..<100 {
-            let r = UInt8(clamping: i * 2)
-            let g = UInt8(clamping: i)
-            let b = UInt8(clamping: 255 - i * 2)
-            pixels.append(RGBA(r: r, g: g, b: b))
+        for pixelIndex in 0..<100 {
+            let red = UInt8(clamping: pixelIndex * 2)
+            let green = UInt8(clamping: pixelIndex)
+            let blue = UInt8(clamping: 255 - pixelIndex * 2)
+            pixels.append(RGBA(r: red, g: green, b: blue))
         }
         let image = RGBAImage(width: 10, height: 10, pixels: pixels)
 
@@ -307,11 +307,11 @@ struct ImageViewTests {
 
     @Test("ImageSource equality works")
     func imageSourceEquality() {
-        let a = ImageSource.file("/path/a.png")
-        let b = ImageSource.file("/path/a.png")
-        let c = ImageSource.url("https://example.com")
-        #expect(a == b)
-        #expect(a != c)
+        let source = ImageSource.file("/path/a.png")
+        let matchingSource = ImageSource.file("/path/a.png")
+        let differentSource = ImageSource.url("https://example.com")
+        #expect(source == matchingSource)
+        #expect(source != differentSource)
     }
 }
 

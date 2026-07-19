@@ -271,8 +271,14 @@ public extension StatusBarItem {
 private extension StatusBarItem {
     /// Maps common shortcut symbols to Key values.
     static func keyFromShortcut(_ shortcut: String) -> Key? {
+        specialKeyFromShortcut(shortcut)
+            ?? navigationKeyFromShortcut(shortcut)
+            ?? functionKeyFromShortcut(shortcut)
+    }
+
+    /// Maps special-key shortcut symbols to Key values.
+    static func specialKeyFromShortcut(_ shortcut: String) -> Key? {
         switch shortcut {
-        // Special keys
         case Shortcut.escape, "esc", "escape":
             return .escape
         case Shortcut.enter, Shortcut.returnKey, "enter", "return":
@@ -285,8 +291,14 @@ private extension StatusBarItem {
             return .delete
         case Shortcut.space, "space":
             return .space
+        default:
+            return nil
+        }
+    }
 
-        // Arrow keys
+    /// Maps arrow and navigation shortcut symbols to Key values.
+    static func navigationKeyFromShortcut(_ shortcut: String) -> Key? {
+        switch shortcut {
         case Shortcut.arrowUp:
             return .up
         case Shortcut.arrowDown:
@@ -305,8 +317,14 @@ private extension StatusBarItem {
             return .pageUp
         case Shortcut.pageDown:
             return .pageDown
+        default:
+            return nil
+        }
+    }
 
-        // Function keys
+    /// Maps function-key shortcut symbols to Key values.
+    static func functionKeyFromShortcut(_ shortcut: String) -> Key? {
+        switch shortcut {
         case Shortcut.f1:
             return .f1
         case Shortcut.f2:

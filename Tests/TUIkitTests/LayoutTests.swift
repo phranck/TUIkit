@@ -47,12 +47,12 @@ struct ProposedSizeTests {
 
     @Test("ProposedSize is equatable")
     func equatable() {
-        let a = ProposedSize.fixed(80, 24)
-        let b = ProposedSize.fixed(80, 24)
-        let c = ProposedSize.fixed(40, 24)
+        let size = ProposedSize.fixed(80, 24)
+        let matchingSize = ProposedSize.fixed(80, 24)
+        let differentSize = ProposedSize.fixed(40, 24)
 
-        #expect(a == b)
-        #expect(a != c)
+        #expect(size == matchingSize)
+        #expect(size != differentSize)
     }
 }
 
@@ -99,12 +99,12 @@ struct ViewSizeTests {
 
     @Test("ViewSize is equatable")
     func equatable() {
-        let a = ViewSize.fixed(10, 5)
-        let b = ViewSize.fixed(10, 5)
-        let c = ViewSize.flexible(minWidth: 10, minHeight: 5)
+        let size = ViewSize.fixed(10, 5)
+        let matchingSize = ViewSize.fixed(10, 5)
+        let flexibleSize = ViewSize.flexible(minWidth: 10, minHeight: 5)
 
-        #expect(a == b)
-        #expect(a != c)  // Same dimensions but different flexibility
+        #expect(size == matchingSize)
+        #expect(size != flexibleSize)  // Same dimensions but different flexibility
     }
 }
 
