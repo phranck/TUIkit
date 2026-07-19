@@ -50,14 +50,23 @@ validate_test_target() {
                 {
                     line = $0
                     sub(/^[[:space:]]+/, "", line)
-                    sub(/^@testable[[:space:]]+/, "", line)
-                    if (line !~ /^import[[:space:]]+TUIkit/) {
+                    while (line ~ /^@[^[:space:]]+[[:space:]]+/) {
+                        sub(/^@[^[:space:]]+[[:space:]]+/, "", line)
+                    }
+                    if (line !~ /^import[[:space:]]+/) {
                         next
                     }
 
                     split(line, fields, /[[:space:]]+/)
-                    module = fields[2]
+                    module_index = 2
+                    if (fields[2] ~ /^(class|enum|func|let|protocol|struct|typealias|var)$/) {
+                        module_index = 3
+                    }
+                    module = fields[module_index]
                     sub(/[.].*$/, "", module)
+                    if (module !~ /^TUIkit(Core|Styling|View|Image)?$/) {
+                        next
+                    }
                     if (index(" " allowed " ", " " module " ") == 0) {
                         relative = substr(FILENAME, root_length + 2)
                         print relative ":" module

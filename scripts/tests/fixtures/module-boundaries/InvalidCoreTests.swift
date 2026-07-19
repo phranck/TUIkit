@@ -1,3 +1,3 @@
 import Testing
 
-@testable import TUIkit
+import struct TUIkit.Color
