@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+output=""
+while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output" ]]; then
+        output="$2"
+        shift 2
+    else
+        shift
+    fi
+done
+
+printf 'fixture archive' > "$output"

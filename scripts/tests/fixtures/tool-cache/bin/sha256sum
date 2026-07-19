@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+case "$1" in
+    *.zip|*.tar.gz)
+        printf '%s  %s\n' "$STUB_ARCHIVE_SHA" "$1"
+        ;;
+    *)
+        printf '%064d  %s\n' 0 "$1"
+        ;;
+esac
