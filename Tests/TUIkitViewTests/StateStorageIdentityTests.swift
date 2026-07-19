@@ -100,6 +100,33 @@ struct StateStorageIdentityTests {
         #expect(branch.path == "Root#true")
     }
 
+    @Test("Runtime scopes are stable and nested slots stay distinct")
+    func scopedIdentityPath() {
+        let root = ViewIdentity(path: "Root")
+
+        let firstPass = root.scoped("lifecycle.appear")
+        let secondPass = root.scoped("lifecycle.appear")
+        let nested = firstPass.scoped("lifecycle.appear")
+
+        #expect(firstPass == secondPass)
+        #expect(nested != firstPass)
+    }
+
+    @Test("Explicit keys preserve child identity independently of sibling order")
+    func keyedChildIdentity() {
+        let root = ViewIdentity(path: "Root")
+
+        let alphaBeforeReorder = root.keyedChild(type: String.self, key: "alpha")
+        let betaBeforeReorder = root.keyedChild(type: String.self, key: "beta")
+        let betaAfterReorder = root.keyedChild(type: String.self, key: "beta")
+        let alphaAfterReorder = root.keyedChild(type: String.self, key: "alpha")
+
+        #expect(alphaBeforeReorder == alphaAfterReorder)
+        #expect(betaBeforeReorder == betaAfterReorder)
+        #expect(alphaBeforeReorder != betaBeforeReorder)
+        #expect(root.keyedChild(type: String.self, key: "a/b") != root.keyedChild(type: String.self, key: "a#b"))
+    }
+
     @Test("isAncestor detects path descendants")
     func ancestorDetection() {
         let parent = ViewIdentity(path: "A/B")
@@ -200,5 +227,39 @@ struct StateStorageIdentityTests {
         let newStaleBox: StateBox<Int> = storage.storage(for: staleKey, default: 2)
         #expect(newStaleBox !== staleBox)
         #expect(newStaleBox.value == 2)
+    }
+
+    @Test("Keyed state follows reorder and removed keys are collected")
+    func keyedStateReorderAndRemoval() {
+        let storage = testStorage()
+        let root = ViewIdentity(path: "Root")
+        let firstIdentity = root.keyedChild(type: String.self, key: "first")
+        let secondIdentity = root.keyedChild(type: String.self, key: "second")
+        let firstKey = StateStorage.StateKey(identity: firstIdentity, propertyIndex: 0)
+        let secondKey = StateStorage.StateKey(identity: secondIdentity, propertyIndex: 0)
+        let firstBox: StateBox<Int> = storage.storage(for: firstKey, default: 1)
+        let secondBox: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        firstBox.value = 10
+        secondBox.value = 20
+
+        storage.beginRenderPass()
+        storage.markActive(secondIdentity)
+        storage.markActive(firstIdentity)
+        storage.endRenderPass()
+
+        let reorderedFirst: StateBox<Int> = storage.storage(for: firstKey, default: 1)
+        let reorderedSecond: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        #expect(reorderedFirst === firstBox)
+        #expect(reorderedSecond === secondBox)
+        #expect(reorderedFirst.value == 10)
+        #expect(reorderedSecond.value == 20)
+
+        storage.beginRenderPass()
+        storage.markActive(firstIdentity)
+        storage.endRenderPass()
+
+        let recreatedSecond: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        #expect(recreatedSecond !== secondBox)
+        #expect(recreatedSecond.value == 2)
     }
 }
