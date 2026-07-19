@@ -177,10 +177,19 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
         // Wrap body evaluation in observation tracking so that any @Observable
         // property accessed during body triggers a re-render when mutated.
         let body = StateRegistration.withHydration(of: view, context: context) {
-            withObservationTracking {
-                view.body
-            } onChange: {
-                invalidationSink?.invalidate(.all)
+            if let observationRegistry = context.environment.observationRegistry {
+                observationRegistry.track(
+                    identity: context.identity,
+                    invalidationSink: invalidationSink
+                ) {
+                    view.body
+                }
+            } else {
+                withObservationTracking {
+                    view.body
+                } onChange: {
+                    invalidationSink?.invalidate(.all)
+                }
             }
         }
 

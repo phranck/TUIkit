@@ -369,6 +369,9 @@ final class TUIContext {
     /// Persistent `@State` value storage indexed by `ViewIdentity`.
     let stateStorage: StateStorage
 
+    /// Identity-bound Observation registrations for this runtime.
+    let observationRegistry: ObservationRegistry
+
     /// Cache for memoized subtree rendering results.
     ///
     /// Stores rendered ``FrameBuffer`` output for ``EquatableView`` instances,
@@ -420,6 +423,7 @@ final class TUIContext {
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
     ///   - stateStorage: The state storage to use.
+    ///   - observationRegistry: The Observation registry to use.
     ///   - renderCache: The render cache to use.
     ///   - storageBackend: The AppStorage backend to use.
     ///   - localizationService: Optional localization service to adopt.
@@ -435,6 +439,7 @@ final class TUIContext {
         keyEventDispatcher: KeyEventDispatcher = KeyEventDispatcher(),
         preferences: PreferenceStorage = PreferenceStorage(),
         stateStorage: StateStorage = StateStorage(),
+        observationRegistry: ObservationRegistry = ObservationRegistry(),
         renderCache: RenderCache = RenderCache(),
         storageBackend: StorageBackend = VolatileStorageBackend(),
         localizationService: LocalizationService? = nil,
@@ -465,6 +470,7 @@ final class TUIContext {
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
         self.stateStorage = stateStorage
+        self.observationRegistry = observationRegistry
         self.renderCache = renderCache
         self.localizationService = localizationService
         self.notificationService = notificationService
@@ -507,6 +513,7 @@ extension TUIContext {
         statusBar.focusManager = focusManager
         lifecycle.beginRenderPass()
         stateStorage.beginRenderPass()
+        observationRegistry.beginRenderPass()
         renderCache.beginRenderPass()
         applyPendingRenderInvalidations()
     }
@@ -515,6 +522,7 @@ extension TUIContext {
     func endRenderPass() {
         lifecycle.endRenderPass()
         stateStorage.endRenderPass()
+        observationRegistry.endRenderPass()
         renderCache.removeInactive()
         renderCache.logFrameStats()
     }
@@ -525,6 +533,7 @@ extension TUIContext {
     ) -> EnvironmentValues {
         var environment = base
         environment.stateStorage = stateStorage
+        environment.observationRegistry = observationRegistry
         environment.lifecycle = lifecycle
         environment.keyEventDispatcher = keyEventDispatcher
         environment.renderCache = renderCache
@@ -575,6 +584,7 @@ extension TUIContext {
         keyEventDispatcher.clearHandlers()
         preferences.reset()
         stateStorage.reset()
+        observationRegistry.reset()
         renderCache.reset()
         notificationService.clear()
         focusManager.clear()
