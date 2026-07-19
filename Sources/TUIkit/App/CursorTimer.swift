@@ -8,12 +8,12 @@ import Foundation
 
 /// Drives the cursor animation for TextField and SecureField.
 ///
-/// `CursorTimer` maintains two phase values for different animation styles:
+/// `CursorTimer` derives two phase values for different animation styles:
 /// - `blinkVisible`: Boolean for sharp on/off blinking
 /// - `pulsePhase`: Smooth 0-1 sine wave for pulsing
 ///
-/// The timer runs independently from the `PulseTimer` (which handles focus indicators)
-/// to allow different animation speeds and precise control over cursor timing.
+/// The application event loop owns animation deadlines, so this type never
+/// creates a background timer or invalidates an idle application.
 ///
 /// ## Animation Speeds
 ///
@@ -25,7 +25,7 @@ import Foundation
 /// ## Usage
 ///
 /// ```swift
-/// let cursor = CursorTimer(renderNotifier: appState)
+/// let cursor = CursorTimer(clock: runtimeClock)
 /// cursor.start()
 /// // In render code:
 /// if cursor.blinkVisible(for: .regular) {
@@ -33,30 +33,19 @@ import Foundation
 /// }
 /// let phase = cursor.pulsePhase(for: .regular)
 /// ```
+@MainActor
 final class CursorTimer {
-    /// Base tick interval in milliseconds.
-    /// We use a fast tick (50ms) and derive phases from elapsed time.
-    private let tickIntervalMs = 50
+    /// Monotonic runtime clock used for phase calculation.
+    private let clock: RuntimeClock
 
-    /// Elapsed ticks since timer started.
-    private var elapsedTicks = 0
-
-    /// The GCD timer source.
-    private var timer: DispatchSourceTimer?
-
-    /// The render notifier to trigger re-renders.
-    private weak var renderNotifier: AppState?
+    /// Monotonic timestamp at which the current cursor cycle began.
+    private var startTime: TimeInterval?
 
     /// Creates a new cursor timer.
     ///
-    /// - Parameter renderNotifier: The app state to notify when a re-render
-    ///   is needed. Held weakly to avoid retain cycles.
-    init(renderNotifier: AppState) {
-        self.renderNotifier = renderNotifier
-    }
-
-    deinit {
-        stop()
+    /// - Parameter clock: Monotonic runtime clock used for animation phases.
+    init(clock: RuntimeClock) {
+        self.clock = clock
     }
 }
 
@@ -69,7 +58,7 @@ extension CursorTimer {
     /// - Returns: `true` if cursor should be visible, `false` if hidden.
     func blinkVisible(for speed: TextCursorStyle.Speed) -> Bool {
         let cycleMs = speed.blinkCycleMs
-        let elapsedMs = elapsedTicks * tickIntervalMs
+        let elapsedMs = elapsedMilliseconds
         let positionInCycle = elapsedMs % cycleMs
         // Visible for first half of cycle
         return positionInCycle < (cycleMs / 2)
@@ -85,7 +74,7 @@ extension CursorTimer {
     /// - Returns: Phase value between 0 and 1.
     func pulsePhase(for speed: TextCursorStyle.Speed) -> Double {
         let cycleMs = speed.pulseCycleMs
-        let elapsedMs = elapsedTicks * tickIntervalMs
+        let elapsedMs = elapsedMilliseconds
         let positionInCycle = elapsedMs % cycleMs
         let normalized = Double(positionInCycle) / Double(cycleMs)
         // Sine wave: 0 → 1 → 0 over the cycle
@@ -100,27 +89,13 @@ extension CursorTimer {
     ///
     /// If the timer is already running, this is a no-op.
     func start() {
-        guard timer == nil else { return }
-
-        let source = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
-        let interval = DispatchTimeInterval.milliseconds(tickIntervalMs)
-        source.schedule(deadline: .now() + interval, repeating: interval)
-
-        source.setEventHandler { [weak self] in
-            guard let self else { return }
-            self.elapsedTicks += 1
-            self.renderNotifier?.setNeedsRender()
-        }
-
-        source.resume()
-        timer = source
+        guard startTime == nil else { return }
+        startTime = clock.now()
     }
 
     /// Stops the cursor animation timer.
     func stop() {
-        timer?.cancel()
-        timer = nil
-        elapsedTicks = 0
+        startTime = nil
     }
 
     /// Resets the cursor animation to the visible/bright state.
@@ -128,7 +103,17 @@ extension CursorTimer {
     /// Call this when a text field gains focus to ensure the cursor
     /// starts in a visible state.
     func reset() {
-        elapsedTicks = 0
+        startTime = clock.now()
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension CursorTimer {
+    /// Elapsed whole milliseconds in the current cursor cycle.
+    var elapsedMilliseconds: Int {
+        guard let startTime else { return 0 }
+        return Int(max(0, clock.now() - startTime) * 1_000)
     }
 }
 

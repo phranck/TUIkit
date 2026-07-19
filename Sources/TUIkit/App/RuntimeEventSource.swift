@@ -26,6 +26,9 @@ internal enum RuntimeEvent: Sendable {
     /// The terminal dimensions changed.
     case terminalResized
 
+    /// The active animation reached its next frame deadline.
+    case animationDeadline
+
     /// The application should shut down gracefully.
     case shutdownRequested
 }

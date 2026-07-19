@@ -110,8 +110,46 @@ internal final class AppRunner<A: App> {
 
 extension AppRunner {
     func run() async {
-        // Create run-loop dependencies (previously IUOs, now local variables)
-        let inputHandler = InputHandler(
+        let inputHandler = makeInputHandler()
+        let renderer = makeRenderer()
+        let pulseTimer = PulseTimer(clock: tuiContext.clock)
+        let cursorTimer = CursorTimer(clock: tuiContext.clock)
+        let animationScheduler = RuntimeAnimationScheduler(
+            clock: tuiContext.clock,
+            eventChannel: eventChannel
+        )
+
+        await startRuntime(pulseTimer: pulseTimer, cursorTimer: cursorTimer)
+        defer {
+            stopRuntime(
+                pulseTimer: pulseTimer,
+                cursorTimer: cursorTimer,
+                animationScheduler: animationScheduler
+            )
+        }
+
+        render(
+            using: renderer,
+            pulseTimer: pulseTimer,
+            cursorTimer: cursorTimer,
+            animationScheduler: animationScheduler
+        )
+        await processEvents(
+            using: inputHandler,
+            renderer: renderer,
+            pulseTimer: pulseTimer,
+            cursorTimer: cursorTimer,
+            animationScheduler: animationScheduler
+        )
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension AppRunner {
+    /// Creates the runtime's input dispatcher.
+    func makeInputHandler() -> InputHandler {
+        InputHandler(
             statusBar: statusBar,
             keyEventDispatcher: tuiContext.keyEventDispatcher,
             focusManager: focusManager,
@@ -121,7 +159,11 @@ extension AppRunner {
                 eventChannel.send(.shutdownRequested)
             }
         )
-        let renderer = RenderLoop(
+    }
+
+    /// Creates the runtime's renderer.
+    func makeRenderer() -> RenderLoop<A> {
+        RenderLoop(
             app: app,
             terminal: terminal,
             statusBar: statusBar,
@@ -131,10 +173,10 @@ extension AppRunner {
             appearanceManager: appearanceManager,
             tuiContext: tuiContext
         )
-        let pulseTimer = PulseTimer(renderNotifier: appState)
-        let cursorTimer = CursorTimer(renderNotifier: appState)
+    }
 
-        // Setup
+    /// Installs event sources and prepares the terminal session.
+    func startRuntime(pulseTimer: PulseTimer, cursorTimer: CursorTimer) async {
         if let signals {
             await signals.install(sendingTo: eventChannel)
         }
@@ -143,52 +185,70 @@ extension AppRunner {
         terminal.hideCursor()
         terminal.enableRawMode()
 
-        // Register for state changes
         appState.observe { [eventChannel] in
             eventChannel.send(.renderRequested)
         }
-
-        // Reset pulse animation and trigger re-render when focus changes
         let runtimeFocusChangeHandler = focusManager.onFocusChange
         focusManager.onFocusChange = { [weak pulseTimer] in
             pulseTimer?.reset()
             runtimeFocusChangeHandler?()
         }
-
-        // Start animation timers
         pulseTimer.start()
         cursorTimer.start()
+    }
 
-        // Initial render
-        appState.didRender()
-        renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
+    /// Cancels runtime work and restores the terminal deterministically.
+    func stopRuntime(
+        pulseTimer: PulseTimer,
+        cursorTimer: CursorTimer,
+        animationScheduler: RuntimeAnimationScheduler
+    ) {
+        animationScheduler.stop()
+        pulseTimer.stop()
+        cursorTimer.stop()
+        inputSource?.stop()
+        signals?.stop()
+        eventChannel.finish()
+        cleanup()
+    }
 
-        defer {
-            pulseTimer.stop()
-            cursorTimer.stop()
-            inputSource?.stop()
-            signals?.stop()
-            eventChannel.finish()
-            cleanup()
-        }
-
+    /// Serially consumes state, input, signal, and animation events.
+    func processEvents(
+        using inputHandler: InputHandler,
+        renderer: RenderLoop<A>,
+        pulseTimer: PulseTimer,
+        cursorTimer: CursorTimer,
+        animationScheduler: RuntimeAnimationScheduler
+    ) async {
         await withTaskCancellationHandler {
             var iterator = eventChannel.events.makeAsyncIterator()
             while let event = await iterator.next() {
                 switch event {
                 case .renderRequested:
                     guard appState.needsRender else { continue }
-                    appState.didRender()
-                    renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
-
+                    render(
+                        using: renderer,
+                        pulseTimer: pulseTimer,
+                        cursorTimer: cursorTimer,
+                        animationScheduler: animationScheduler
+                    )
                 case .inputAvailable:
                     processAvailableInput(using: inputHandler)
-
                 case .terminalResized:
                     renderer.invalidateDiffCache()
-                    appState.didRender()
-                    renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
-
+                    render(
+                        using: renderer,
+                        pulseTimer: pulseTimer,
+                        cursorTimer: cursorTimer,
+                        animationScheduler: animationScheduler
+                    )
+                case .animationDeadline:
+                    render(
+                        using: renderer,
+                        pulseTimer: pulseTimer,
+                        cursorTimer: cursorTimer,
+                        animationScheduler: animationScheduler
+                    )
                 case .shutdownRequested:
                     return
                 }
@@ -197,11 +257,30 @@ extension AppRunner {
             eventChannel.send(.shutdownRequested)
         }
     }
-}
 
-// MARK: - Private Helpers
+    /// Renders one frame and schedules only the animation work it exposes.
+    func render(
+        using renderer: RenderLoop<A>,
+        pulseTimer: PulseTimer,
+        cursorTimer: CursorTimer,
+        animationScheduler: RuntimeAnimationScheduler
+    ) {
+        appState.didRender()
+        renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
+        animationScheduler.schedule(after: nextAnimationInterval)
+    }
 
-private extension AppRunner {
+    /// Returns the cadence required by currently visible focus animations.
+    var nextAnimationInterval: Double? {
+        if focusManager.hasTextInputFocus {
+            return 0.05
+        }
+        if focusManager.currentFocused != nil || focusManager.activeSectionIdentifier != nil {
+            return 0.1
+        }
+        return nil
+    }
+
     /// Drains a bounded batch after the input descriptor becomes readable.
     func processAvailableInput(using inputHandler: InputHandler) {
         var eventsProcessed = 0
