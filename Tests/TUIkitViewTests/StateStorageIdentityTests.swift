@@ -201,5 +201,4 @@ struct StateStorageIdentityTests {
         #expect(newStaleBox !== staleBox)
         #expect(newStaleBox.value == 2)
     }
-
 }
