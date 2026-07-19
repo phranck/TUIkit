@@ -13,7 +13,10 @@ import Testing
 
 /// Performance tests for string operations, especially ANSI handling.
 @MainActor
-@Suite("String Performance Tests")
+@Suite(
+    "String Performance Tests",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct StringPerformanceTests {
 
     /// Measures execution time of a block over multiple iterations.

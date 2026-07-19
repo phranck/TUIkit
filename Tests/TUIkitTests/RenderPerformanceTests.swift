@@ -18,7 +18,10 @@ import Testing
 /// These tests measure render time for various view hierarchies and
 /// compare against baseline expectations.
 @MainActor
-@Suite("Render Performance Tests")
+@Suite(
+    "Render Performance Tests",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderPerformanceTests {
 
     // MARK: - Test Helpers
@@ -346,7 +349,10 @@ struct RenderPerformanceTests {
 // MARK: - Performance Statistics
 
 @MainActor
-@Suite("Render Performance Statistics")
+@Suite(
+    "Render Performance Statistics",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderPerformanceStatistics {
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {

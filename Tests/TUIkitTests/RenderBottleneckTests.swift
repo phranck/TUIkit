@@ -13,7 +13,10 @@ import Testing
 
 /// Deep analysis tests to identify specific render bottlenecks.
 @MainActor
-@Suite("Render Bottleneck Analysis")
+@Suite(
+    "Render Bottleneck Analysis",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderBottleneckTests {
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {

@@ -3,9 +3,12 @@
 //
 //  License: MIT
 
+import Foundation
 import Testing
 
 @testable import TUIkit
+
+let performanceTestsEnabled = ProcessInfo.processInfo.environment["TUIKIT_RUN_PERFORMANCE_TESTS"] == "1"
 
 struct PerformanceRenderOutput {
     let rawLines: [String]
