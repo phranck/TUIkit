@@ -1,5 +1,5 @@
-//  🖥️ TUIKit — Terminal UI Kit for Swift
-//  main.swift
+//  🖥️ TUIkit — Terminal UI Kit for Swift
+//  ExampleApp.swift
 //
 //  Created by LAYERED.work
 //  License: MIT
@@ -12,6 +12,7 @@ import TUIkit
 // MARK: - Main App
 
 /// The main example application.
+@main
 struct ExampleApp: App {
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,3 @@ struct ExampleApp: App {
         }
     }
 }
-
-// Run the app
-ExampleApp.main()
