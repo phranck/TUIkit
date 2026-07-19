@@ -41,12 +41,18 @@ public struct CommandRunner: Sendable {
     private static let listOwnerRegistryUsage =
         "TUIkitAPICheck list-owner-registry --owner-registry <owners.json>"
 
+    private static let listMappingCandidatesUsage = [
+        "TUIkitAPICheck list-mapping-candidates",
+        "--reference-set <descriptor.json> --tuikit-set <descriptor.json>",
+    ].joined(separator: " ")
+
     public static let usage = """
     Usage:
       \(canonicalizeUsage)
       TUIkitAPICheck compare --reference <snapshot.json> --current <snapshot.json>
       \(extractUsage)
       \(generateManifestUsage)
+      \(listMappingCandidatesUsage)
       \(listOwnerRegistryUsage)
       \(runCompileContractsUsage)
       TUIkitAPICheck validate-contracts --registry <json> --event-stream <swift-test-events.jsonl>
@@ -71,6 +77,8 @@ public struct CommandRunner: Sendable {
                 return try runExtract(Array(arguments.dropFirst()))
             case "generate-manifest":
                 return try runGenerateManifest(Array(arguments.dropFirst()))
+            case "list-mapping-candidates":
+                return try runListMappingCandidates(Array(arguments.dropFirst()))
             case "list-owner-registry":
                 return try runListOwnerRegistry(Array(arguments.dropFirst()))
             case "run-compile-contracts":

@@ -17,6 +17,20 @@ public struct CompatibilitySurfaceValidator: Sendable {
     }
 }
 
+func compatibilityMappingDifferences(
+    manifest: CompatibilityManifest,
+    referenceSet: APISnapshotSet,
+    tuikitSet: APISnapshotSet,
+    referenceID: String,
+    tuikitID: String
+) -> [CompatibilityDifference] {
+    SurfaceValidation(
+        manifest: manifest,
+        referenceSet: referenceSet,
+        tuikitSet: tuikitSet
+    ).mappingDifferences(referenceID: referenceID, tuikitID: tuikitID)
+}
+
 private struct SurfaceValidation {
     let manifest: CompatibilityManifest
     let referenceSet: APISnapshotSet
@@ -41,6 +55,38 @@ private struct SurfaceValidation {
                 tuikit: tuikitRelationships
             )
             + collisionDiagnostics(normalizer: normalizer)
+    }
+
+    func mappingDifferences(
+        referenceID: String,
+        tuikitID: String
+    ) -> [CompatibilityDifference] {
+        let normalizer = SurfaceNormalizer(
+            manifest: manifest,
+            moduleNames: referenceSet.moduleNames + tuikitSet.moduleNames
+        )
+        let referenceRelationships = relationshipIndex(in: referenceSet)
+        let tuikitRelationships = relationshipIndex(in: tuikitSet)
+        let reference = surfaceOccurrences(
+            in: referenceSet,
+            identifier: referenceID,
+            relationshipIndex: referenceRelationships,
+            normalizer: normalizer
+        )
+        let current = surfaceOccurrences(
+            in: tuikitSet,
+            identifier: tuikitID,
+            relationshipIndex: tuikitRelationships,
+            normalizer: normalizer
+        )
+        return CompatibilityDifference.allCases.filter { difference in
+            reference.contains { referenceOccurrence in
+                current.contains { currentOccurrence in
+                    referenceOccurrence.surface.value(for: difference)
+                        != currentOccurrence.surface.value(for: difference)
+                }
+            }
+        }
     }
 
     private func inventoryDiagnostics() -> [APICheckDiagnostic] {
