@@ -4,10 +4,13 @@
 included:
   - Sources
   - Tests
+  - Tools/APICompatibility/Sources
+  - Tools/APICompatibility/Tests
 
 excluded:
   - .build
   - .swiftpm
+  - Tools/APICompatibility/.build
 
 # Rules
 disabled_rules:
