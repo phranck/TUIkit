@@ -3,6 +3,18 @@
 
 import PackageDescription
 
+let vendoredPNGSettings: [SwiftSetting] = [
+    .swiftLanguageMode(.v5),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ExistentialAny"),
+]
+let vendoredHashSettings: [SwiftSetting] = [
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableExperimentalFeature("StrictConcurrency"),
+    .define("DEBUG", .when(configuration: .debug)),
+]
+
 let package = Package(
     name: "TUIkit",
     // Minimum deployment targets for Apple platforms
@@ -29,6 +41,42 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
     ],
     targets: [
+        // ── Vendored pure Swift image codecs ────────────────────────────────────────────────────────────
+        .target(
+            name: "TUIkitVendorBaseDigits",
+            path: "Vendor/swift-hash/Sources/BaseDigits",
+            swiftSettings: vendoredHashSettings
+        ),
+        .target(
+            name: "TUIkitVendorBase16",
+            dependencies: ["TUIkitVendorBaseDigits"],
+            path: "Vendor/swift-hash/Sources/Base16",
+            swiftSettings: vendoredHashSettings
+        ),
+        .target(
+            name: "TUIkitVendorCRC",
+            dependencies: ["TUIkitVendorBase16"],
+            path: "Vendor/swift-hash/Sources/CRC",
+            swiftSettings: vendoredHashSettings
+        ),
+        .target(
+            name: "TUIkitVendorLZ77",
+            dependencies: ["TUIkitVendorCRC"],
+            path: "Vendor/swift-png/Sources/LZ77",
+            swiftSettings: vendoredPNGSettings
+        ),
+        .target(
+            name: "TUIkitVendorPNG",
+            dependencies: ["TUIkitVendorLZ77", "TUIkitVendorCRC"],
+            path: "Vendor/swift-png/Sources/PNG",
+            swiftSettings: vendoredPNGSettings
+        ),
+        .target(
+            name: "TUIkitVendorJPEG",
+            path: "Vendor/swift-jpeg/Sources/JPEG",
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+
         // ── Low-level (no deps) ─────────────────────────────────────────────────────────────────────────
         .target(name: "CSTBImage", publicHeadersPath: "include"),
         .target(name: "TUIkitCore"),
