@@ -57,7 +57,7 @@ Text("Hello")
 - **``State``**: Mutable per-view state that triggers re-renders
 - **``Binding``**: Two-way connection to a value owned elsewhere
 - **``EnvironmentValues``**: Values propagated down the view tree
-- **``AppStorage``**: Persistent key-value storage via `UserDefaults`
+- **``AppStorage``**: Persistent key-value storage through the app runtime
 
 ### 6. Rendering Layer
 
@@ -79,7 +79,12 @@ and URL loading feed data into that deterministic decoder rather than participat
 
 ## Event Loop
 
-`AppRunner` initializes all subsystems (Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, ThemeManager x2, TUIContext), creates InputHandler and RenderLoop, installs POSIX signal handlers, sets up the terminal (alternate screen, raw mode), starts PulseTimer (100 ms) and CursorTimer (50 ms), registers state and focus observers, and performs an initial render before entering the main loop.
+`AppRunner` owns the terminal session and signal manager plus one `TUIContext`.
+That context owns the application's render state, storage, caches, localization,
+notifications, focus, themes, image loading, and other view-facing services.
+`AppRunner` creates `InputHandler` and `RenderLoop`, installs POSIX signal handlers,
+sets up the terminal, starts `PulseTimer` and `CursorTimer`, registers state and
+focus observers, and performs an initial render before entering the main loop.
 
 Each loop iteration checks `shouldShutdown` (set by SIGINT), consumes the resize flag to invalidate the diff cache if SIGWINCH fired, then renders when `consumeRerenderFlag()` or `appState.needsRender` is true. After rendering, it reads up to 128 non-blocking key events per frame and dispatches each through five handler layers. A `usleep(28_000)` throttles the loop to approximately 35 FPS. Asynchronous render triggers (timers, @State changes, SIGWINCH, focus changes) feed back into the render decision via `appState.needsRender` or `signals.requestRerender()`.
 

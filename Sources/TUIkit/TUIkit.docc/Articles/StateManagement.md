@@ -85,7 +85,8 @@ ContentView()
 
 ## @AppStorage
 
-``AppStorage`` persists values across app launches using `UserDefaults`:
+``AppStorage`` persists values across app launches using the application's
+runtime-owned storage backend. TUIkit apps use ``JSONFileStorage`` by default:
 
 ```swift
 struct SettingsView: View {
@@ -95,6 +96,13 @@ struct SettingsView: View {
         Text("Hello, \(username)!")
     }
 }
+```
+
+Pass an explicit backend when a property wrapper is created outside the app
+runtime or needs dedicated storage:
+
+```swift
+@AppStorage("username", storage: MyStorageBackend()) var username = "Guest"
 ```
 
 ## How State Survives Re-Rendering
@@ -113,7 +121,7 @@ This path is built automatically during rendering based on:
 
 ### Persistent State Storage
 
-All `@State` values live in a central `StateStorage` (owned by `TUIContext`), keyed by:
+All `@State` values live in the owning runtime's `StateStorage`, keyed by:
 - The view's structural identity
 - The property's declaration index within the view (0, 1, 2, ...)
 
@@ -124,11 +132,11 @@ exists for this position. If it does, the existing value is used instead of the 
 
 When a ``State`` value changes:
 
-1. The `StateBox` triggers `RenderNotifier.current` -> `AppState.setNeedsRender()`
-2. The observer registered by `AppRunner` requests a re-render
+1. The `StateBox` sends a subtree invalidation to its runtime's `RenderInvalidationSink`
+2. That runtime's `AppState` notifies the observer registered by `AppRunner`
 3. The main loop re-evaluates `app.body` fresh: reconstructing all views
-4. Each `@State.init` self-hydrates from `StateStorage`, recovering persisted values
-5. The new ``FrameBuffer`` output is written to the terminal
+4. Each `@State.init` self-hydrates from the same runtime's `StateStorage`
+5. The owning runtime clears the affected cached subtree and writes the new ``FrameBuffer``
 
 ### Garbage Collection
 

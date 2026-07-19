@@ -15,9 +15,8 @@ struct StateStorageIdentityTests {
 
     /// Creates a fresh StateStorage for test isolation.
     ///
-    /// State mutations during tests call `setNeedsRender()` on the shared
-    /// `AppState.shared` instance — that's harmless and avoids race
-    /// conditions with parallel suites.
+    /// No invalidation sink is attached because these tests exercise storage
+    /// identity without a running application runtime.
     private func testStorage() -> StateStorage {
         StateStorage()
     }

@@ -33,16 +33,8 @@ public final class LocalizationService: @unchecked Sendable {
         }
     }
 
-    /// The shared localization service instance.
-    public static let shared = LocalizationService()
-
     /// Currently active language
-    public private(set) var currentLanguage: Language {
-        didSet {
-            saveLanguagePreference(currentLanguage)
-            AppState.shared.setNeedsRender()
-        }
-    }
+    public private(set) var currentLanguage: Language
 
     /// Cached translations: [languageCode: [dotPath: localizedString]]
     private var translationCache: [String: [String: String]] = [:]
@@ -53,12 +45,20 @@ public final class LocalizationService: @unchecked Sendable {
     /// Optional config directory override for testing.
     private let configDirectoryOverride: String?
 
+    /// Whether language changes are persisted to a configuration file.
+    private let persistsLanguagePreference: Bool
+
+    /// Runtime receiving invalidation requests after a language change.
+    private var invalidationSink: (any RenderInvalidationSink)?
+
     /// Creates and initializes the localization service.
     ///
     /// Loads the stored language preference, falling back to system locale
     /// or English if unavailable.
     public init() {
         self.configDirectoryOverride = nil
+        self.persistsLanguagePreference = true
+        self.invalidationSink = nil
 
         // Compute initial language before assignment to avoid didSet side effects.
         let initial: Language
@@ -82,6 +82,8 @@ public final class LocalizationService: @unchecked Sendable {
     /// Used for testing to isolate file system access.
     init(configDirectoryPath: String) {
         self.configDirectoryOverride = configDirectoryPath
+        self.persistsLanguagePreference = true
+        self.invalidationSink = nil
 
         let initial: Language
         if let stored = Self.loadLanguagePreference(from: configDirectoryPath) {
@@ -96,13 +98,45 @@ public final class LocalizationService: @unchecked Sendable {
         lock.unlock()
     }
 
+    /// Creates an in-memory localization service for isolated runtimes.
+    ///
+    /// The service starts in English and never reads or writes user config.
+    static func transient() -> LocalizationService {
+        LocalizationService(initialLanguage: .english)
+    }
+
+    /// Creates a non-persisting localization service.
+    private init(initialLanguage: Language) {
+        self.configDirectoryOverride = nil
+        self.persistsLanguagePreference = false
+        self.invalidationSink = nil
+        self.currentLanguage = initialLanguage
+
+        lock.lock()
+        _ = _translations(for: currentLanguage)
+        lock.unlock()
+    }
+
     /// Changes the active language and persists the preference.
     ///
     /// - Parameter language: The new language to activate.
     public func setLanguage(_ language: Language) {
         lock.lock()
-        defer { lock.unlock() }
         currentLanguage = language
+        let invalidationSink = invalidationSink
+        lock.unlock()
+
+        if persistsLanguagePreference {
+            saveLanguagePreference(language)
+        }
+        invalidationSink?.invalidate(.all)
+    }
+
+    /// Associates this service with the runtime that owns it.
+    func setInvalidationSink(_ invalidationSink: (any RenderInvalidationSink)?) {
+        lock.lock()
+        self.invalidationSink = invalidationSink
+        lock.unlock()
     }
 
     /// Resolves a localized string using a dot-notation key.

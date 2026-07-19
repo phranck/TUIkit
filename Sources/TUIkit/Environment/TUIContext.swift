@@ -202,7 +202,11 @@ extension LifecycleManager {
 ///     }
 /// }
 /// ```
-final class TUIContext: @unchecked Sendable {
+@MainActor
+final class TUIContext {
+
+    /// Thread-safe render state and invalidation sink owned by this runtime.
+    let appState: AppState
 
     /// View lifecycle tracking (appear, disappear, task management).
     let lifecycle: LifecycleManager
@@ -223,51 +227,209 @@ final class TUIContext: @unchecked Sendable {
     /// for removed views are garbage-collected at the end of each render pass.
     let renderCache: RenderCache
 
-    /// Creates a new TUI context with fresh instances of all services.
-    ///
-    /// Uses the shared `RenderCache` singleton for all instances.
-    init() {
-        self.lifecycle = LifecycleManager()
-        self.keyEventDispatcher = KeyEventDispatcher()
-        self.preferences = PreferenceStorage()
-        self.stateStorage = StateStorage()
-        self.renderCache = RenderCache.shared
-    }
+    /// Localization state owned by this runtime.
+    let localizationService: LocalizationService
 
-    /// Creates a new TUI context with the given services.
+    /// Notification queue owned by this runtime.
+    let notificationService: NotificationService
+
+    /// Persistent application storage owned by this runtime.
+    let storageBackend: StorageBackend
+
+    /// Clock used by time-based views and services.
+    let clock: RuntimeClock
+
+    /// Keyboard focus state owned by this runtime.
+    let focusManager: FocusManager
+
+    /// Color palette selection owned by this runtime.
+    let paletteManager: ThemeManager
+
+    /// Border appearance selection owned by this runtime.
+    let appearanceManager: ThemeManager
+
+    /// Status bar state owned by this runtime.
+    let statusBar: StatusBarState
+
+    /// Application header state owned by this runtime.
+    let appHeader: AppHeaderState
+
+    /// Image loader used by this runtime.
+    let imageLoader: any ImageLoader
+
+    /// URL image cache owned by this runtime.
+    let imageCache: URLImageCache
+
+    /// Creates a new isolated TUI context with injectable services.
     ///
-    /// Useful for testing where you want to inject mock services.
+    /// Every omitted service is created fresh, so contexts do not share state,
+    /// caches, or service instances. Tests can inject deterministic substitutes.
     ///
     /// - Parameters:
+    ///   - appState: The render state and invalidation sink to use.
     ///   - lifecycle: The lifecycle manager to use.
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
     ///   - stateStorage: The state storage to use.
-    ///   - renderCache: The render cache to use (defaults to the shared singleton).
-    init(
-        lifecycle: LifecycleManager,
-        keyEventDispatcher: KeyEventDispatcher,
-        preferences: PreferenceStorage,
+    ///   - renderCache: The render cache to use.
+    ///   - storageBackend: The AppStorage backend to use.
+    ///   - localizationService: Optional localization service to adopt.
+    ///   - notificationService: Optional notification service to adopt.
+    ///   - clock: Clock used by time-based services.
+    ///   - focusManager: Focus state to use.
+    ///   - appHeader: Application header state to use.
+    ///   - imageLoader: Loader for file and URL image requests.
+    ///   - imageCache: Cache for URL image results.
+    nonisolated init(
+        appState: AppState = AppState(),
+        lifecycle: LifecycleManager = LifecycleManager(),
+        keyEventDispatcher: KeyEventDispatcher = KeyEventDispatcher(),
+        preferences: PreferenceStorage = PreferenceStorage(),
         stateStorage: StateStorage = StateStorage(),
-        renderCache: RenderCache = RenderCache.shared
+        renderCache: RenderCache = RenderCache(),
+        storageBackend: StorageBackend = VolatileStorageBackend(),
+        localizationService: LocalizationService? = nil,
+        notificationService: NotificationService? = nil,
+        clock: RuntimeClock = .system,
+        focusManager: FocusManager = FocusManager(),
+        appHeader: AppHeaderState = AppHeaderState(),
+        imageLoader: any ImageLoader = PlatformImageLoader(),
+        imageCache: URLImageCache = URLImageCache()
     ) {
+        let localizationService = localizationService ?? LocalizationService.transient()
+        let notificationService = notificationService ?? NotificationService()
+
+        localizationService.setInvalidationSink(appState)
+        notificationService.setRuntimeDependencies(
+            clock: clock,
+            invalidationSink: appState
+        )
+        stateStorage.setInvalidationSink(appState)
+        let existingFocusChangeHandler = focusManager.onFocusChange
+        focusManager.onFocusChange = { [appState] in
+            existingFocusChangeHandler?()
+            appState.setNeedsRender()
+        }
+
+        self.appState = appState
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
         self.stateStorage = stateStorage
         self.renderCache = renderCache
+        self.localizationService = localizationService
+        self.notificationService = notificationService
+        self.storageBackend = storageBackend
+        self.clock = clock
+        self.focusManager = focusManager
+        self.paletteManager = ThemeManager(
+            items: PaletteRegistry.all,
+            renderTrigger: { [appState] in appState.setNeedsRender() }
+        )
+        self.appearanceManager = ThemeManager(
+            items: AppearanceRegistry.all,
+            renderTrigger: { [appState] in appState.setNeedsRender() }
+        )
+        self.statusBar = StatusBarState(appState: appState)
+        self.appHeader = appHeader
+        self.imageLoader = imageLoader
+        self.imageCache = imageCache
     }
 }
 
 // MARK: - Internal API
 
 extension TUIContext {
+    /// Creates a runtime backed by the user's persistent configuration.
+    static func production() -> TUIContext {
+        TUIContext(
+            storageBackend: StorageDefaults.runtimeBackend,
+            localizationService: LocalizationService()
+        )
+    }
+
+    /// Starts a complete view render pass for this runtime.
+    func beginRenderPass() {
+        keyEventDispatcher.clearHandlers()
+        preferences.beginRenderPass()
+        focusManager.beginRenderPass()
+        statusBar.clearSectionItems()
+        appHeader.beginRenderPass()
+        statusBar.focusManager = focusManager
+        lifecycle.beginRenderPass()
+        stateStorage.beginRenderPass()
+        renderCache.beginRenderPass()
+        applyPendingRenderInvalidations()
+    }
+
+    /// Finishes lifecycle, state, and cache tracking for a render pass.
+    func endRenderPass() {
+        lifecycle.endRenderPass()
+        stateStorage.endRenderPass()
+        renderCache.removeInactive()
+        renderCache.logFrameStats()
+    }
+
+    /// Builds complete environment values for this runtime.
+    func environmentValues(
+        extending base: EnvironmentValues = EnvironmentValues()
+    ) -> EnvironmentValues {
+        var environment = base
+        environment.stateStorage = stateStorage
+        environment.lifecycle = lifecycle
+        environment.keyEventDispatcher = keyEventDispatcher
+        environment.renderCache = renderCache
+        environment.renderInvalidationSink = appState
+        environment.preferenceStorage = preferences
+        environment.localizationService = localizationService
+        environment.notificationService = notificationService
+        environment.storageBackend = storageBackend
+        environment.runtimeClock = clock
+        environment.focusManager = focusManager
+        environment.paletteManager = paletteManager
+        environment.appearanceManager = appearanceManager
+        environment.statusBar = statusBar
+        environment.appHeader = appHeader
+        environment.imageLoader = imageLoader
+        environment.imageCache = imageCache
+
+        if let palette = paletteManager.currentPalette {
+            environment.palette = palette
+        }
+        if let appearance = appearanceManager.currentAppearance {
+            environment.appearance = appearance
+        }
+        return environment
+    }
+
+    /// Applies cache invalidations queued by state producers.
+    ///
+    /// This method runs on the render owner before a frame, keeping the
+    /// non-thread-safe render cache away from background state tasks.
+    func applyPendingRenderInvalidations() {
+        for invalidation in appState.consumePendingCacheInvalidations() {
+            switch invalidation {
+            case .renderOnly:
+                break
+            case .subtree(let identity):
+                renderCache.clearAffected(by: identity)
+            case .all:
+                renderCache.clearAll()
+            }
+        }
+    }
+
     /// Resets all services to their initial state.
     func reset() {
+        appState.reset()
         lifecycle.reset()
         keyEventDispatcher.clearHandlers()
         preferences.reset()
         stateStorage.reset()
         renderCache.reset()
+        notificationService.clear()
+        focusManager.clear()
+        imageCache.removeAll()
+        storageBackend.synchronize()
     }
 }

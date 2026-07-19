@@ -28,16 +28,18 @@ struct StatePropertyWrapperTests {
         #expect(state.wrappedValue == 10)
     }
 
-    @Test("State mutation triggers render via AppState.shared")
+    @Test("State box mutation triggers its injected runtime")
     func stateTriggerRender() {
-        // StateBox.didSet calls AppState.shared.setNeedsRender().
-        // We mutate and check that the shared instance is marked as needing render.
-        let state = State(wrappedValue: "initial")
-        state.wrappedValue = "changed"
-        let triggered = AppState.shared.needsRender
-        // Reset for other tests
-        AppState.shared.didRender()
-        #expect(triggered == true)
+        let appState = AppState()
+        let box = StateBox(
+            "initial",
+            identity: ViewIdentity(path: "state"),
+            invalidationSink: appState
+        )
+
+        box.value = "changed"
+
+        #expect(appState.needsRender)
     }
 
     @Test("Binding from State updates original")

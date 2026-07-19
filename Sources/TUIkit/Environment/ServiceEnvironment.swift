@@ -8,7 +8,21 @@
 
 /// EnvironmentKey for the localization service.
 private struct LocalizationServiceKey: EnvironmentKey {
-    static let defaultValue = LocalizationService.shared
+    static var defaultValue: LocalizationService { LocalizationService.transient() }
+}
+
+// MARK: - Runtime Clock
+
+/// EnvironmentKey for time-based runtime services.
+private struct RuntimeClockKey: EnvironmentKey {
+    static let defaultValue = RuntimeClock.system
+}
+
+// MARK: - Application Storage
+
+/// EnvironmentKey for the runtime-owned AppStorage backend.
+private struct StorageBackendKey: EnvironmentKey {
+    static var defaultValue: any StorageBackend { VolatileStorageBackend() }
 }
 
 // MARK: - Lifecycle Manager
@@ -65,14 +79,26 @@ private struct ActiveFocusSectionKey: EnvironmentKey {
 extension EnvironmentValues {
 
     /// The localization service for retrieving translated strings.
-    var localizationService: LocalizationService {
+    public var localizationService: LocalizationService {
         get { self[LocalizationServiceKey.self] }
         set { self[LocalizationServiceKey.self] = newValue }
     }
 
     /// The currently active language.
-    var currentLanguage: LocalizationService.Language {
+    public var currentLanguage: LocalizationService.Language {
         localizationService.currentLanguage
+    }
+
+    /// Clock used by time-based views and services in this runtime.
+    var runtimeClock: RuntimeClock {
+        get { self[RuntimeClockKey.self] }
+        set { self[RuntimeClockKey.self] = newValue }
+    }
+
+    /// Persistent storage backend owned by this runtime.
+    var storageBackend: any StorageBackend {
+        get { self[StorageBackendKey.self] }
+        set { self[StorageBackendKey.self] = newValue }
     }
 
     /// View lifecycle tracking (appear, disappear, task management).

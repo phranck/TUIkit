@@ -25,24 +25,33 @@ Use `LocalizedString` to show localized text:
 import TUIkit
 
 VStack {
-    LocalizedString(.button(.ok))
-    LocalizedString(.error(.notFound))
-    LocalizedString(.dialog(.confirm))
+    LocalizedString(LocalizationKey.Button.ok)
+    LocalizedString(LocalizationKey.Error.notFound)
+    LocalizedString(LocalizationKey.Dialog.confirm)
 }
 ```
 
 Or use the `Text(localized:)` convenience initializer:
 
 ```swift
-Text(localized: .button(.save))
+Text(localized: LocalizationKey.Button.save)
 ```
 
 ### Switch Language at Runtime
 
 ```swift
-AppState.shared.setLanguage(.german)
-// UI automatically re-renders with German strings
+struct LanguagePicker: View {
+    @Environment(\.localizationService) private var localization
+
+    var body: some View {
+        Button("Deutsch") {
+            localization.setLanguage(.german)
+        }
+    }
+}
 ```
+
+The runtime-owned service invalidates only its application and the UI re-renders with German strings.
 
 ### Supported Languages
 
@@ -138,9 +147,9 @@ Display a localized string as a View component:
 struct MyView: View {
     var body: some View {
         VStack {
-            LocalizedString(.button(.save))
-            LocalizedString(.error(.invalidInput))
-            LocalizedString(.validation(.emailInvalid))
+            LocalizedString(LocalizationKey.Button.save)
+            LocalizedString(LocalizationKey.Error.invalidInput)
+            LocalizedString(LocalizationKey.Validation.emailInvalid)
         }
     }
 }
@@ -154,8 +163,8 @@ Use the `Text(localized:)` initializer:
 struct MyControl: View {
     var body: some View {
         VStack {
-            Text(localized: .menu(.file))
-            Text(localized: .placeholder(.search))
+            Text(localized: LocalizationKey.Menu.file)
+            Text(localized: LocalizationKey.Placeholder.search)
         }
     }
 }
@@ -163,11 +172,16 @@ struct MyControl: View {
 
 ### Direct Service Access
 
-For advanced use cases, access the service directly:
+For advanced use cases, read the runtime-owned service from the environment:
 
 ```swift
-let service = LocalizationService.shared
-let text = service.string(for: .button(.ok))
+struct StatusLabel: View {
+    @Environment(\.localizationService) private var localization
+
+    var body: some View {
+        Text(localization.string(for: LocalizationKey.Button.ok))
+    }
+}
 ```
 
 ## Language Switching
@@ -175,18 +189,23 @@ let text = service.string(for: .button(.ok))
 ### Get Current Language
 
 ```swift
-let current = AppState.shared.currentLanguage
-print(current.displayName)  // "English", "Deutsch", etc.
+struct CurrentLanguageLabel: View {
+    @Environment(\.currentLanguage) private var currentLanguage
+
+    var body: some View {
+        Text(currentLanguage.displayName)
+    }
+}
 ```
 
 ### Change Language
 
 ```swift
-// Via AppState
-AppState.shared.setLanguage(.german)
+@Environment(\.localizationService) private var localization
 
-// Or directly via service
-LocalizationService.shared.setLanguage(.french)
+Button("Français") {
+    localization.setLanguage(.french)
+}
 ```
 
 ### Language Persistence
@@ -216,10 +235,15 @@ struct MyView: View {
     @Environment(\.localizationService) var localization
 
     var body: some View {
-        Text(localization.string(for: .button(.ok)))
+        Text(localization.string(for: LocalizationKey.Button.ok))
     }
 }
 ```
+
+Each application runtime owns its localization service. The former
+`LocalizationService.shared` and `AppState.shared` accessors are no longer
+available. Reading the service from `@Environment` also ensures that a language
+change invalidates the correct application when multiple runtimes share a process.
 
 ## Adding New Keys
 
@@ -357,7 +381,7 @@ Create `Sources/TUIkit/Localization/translations/pt.json` with **all** keys from
 ```swift
 let service = LocalizationService()
 service.setLanguage(.portuguese)
-let ok = service.string(for: .button(.ok))
+let ok = service.string(for: LocalizationKey.Button.ok)
 ```
 
 ### 4. Run Consistency Tests
@@ -395,8 +419,9 @@ This provides type safety, IDE autocomplete, and compile-time verification.
 
 ```swift
 // Safe to call from any thread
+let service = localization
 DispatchQueue.global().async {
-    AppState.shared.setLanguage(.german)
+    service.setLanguage(.german)
 }
 ```
 
@@ -405,8 +430,8 @@ DispatchQueue.global().async {
 Translations are cached per language after first load:
 
 ```swift
-let text1 = service.string(for: .button(.ok))  // Loads and caches
-let text2 = service.string(for: .button(.ok))  // Uses cache
+let text1 = service.string(for: LocalizationKey.Button.ok)  // Loads and caches
+let text2 = service.string(for: LocalizationKey.Button.ok)  // Uses cache
 ```
 
 ## JSON File Format
@@ -484,7 +509,7 @@ swift test --filter LocalizationKeyConsistencyTests
 
 ### Wrong Language Showing
 
-- Verify language was set: `AppState.shared.currentLanguage`
+- Verify `@Environment(\.currentLanguage)` reports the expected language
 - Confirm language is supported (en, de, fr, it, es)
 - Check translation file exists for that language
 

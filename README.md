@@ -188,6 +188,8 @@ TUIkit includes comprehensive i18n support with 5 languages and type-safe string
 import TUIkit
 
 struct MyView: View {
+    @Environment(\.localizationService) private var localization
+
     var body: some View {
         VStack {
             // Type-safe localized strings
@@ -196,7 +198,7 @@ struct MyView: View {
 
             // Switch language at runtime
             Button("Deutsch") {
-                AppState.shared.setLanguage(.german)
+                localization.setLanguage(.german)
             }
         }
     }

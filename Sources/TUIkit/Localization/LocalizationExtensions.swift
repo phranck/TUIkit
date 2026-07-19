@@ -20,32 +20,9 @@ extension Text {
     ///
     /// - Parameter key: The dot-notation key for the localized string.
     public init(localized key: String) {
-        let localizedValue = LocalizationService.shared.string(for: key)
+        let localizationService = StateRegistration.activeEnvironment?.localizationService
+            ?? LocalizationService.transient()
+        let localizedValue = localizationService.string(for: key)
         self.init(localizedValue)
-    }
-}
-
-// MARK: - AppState Language Convenience
-
-extension AppState {
-    /// Gets the currently active language.
-    public var currentLanguage: LocalizationService.Language {
-        LocalizationService.shared.currentLanguage
-    }
-
-    /// Changes the active language and triggers a re-render.
-    ///
-    /// The language preference is persisted to disk and will survive app restarts.
-    /// The UI automatically re-renders with the new language strings.
-    ///
-    /// # Example
-    ///
-    /// ```swift
-    /// AppState.shared.setLanguage(.german)
-    /// ```
-    ///
-    /// - Parameter language: The language to activate.
-    public func setLanguage(_ language: LocalizationService.Language) {
-        LocalizationService.shared.setLanguage(language)
     }
 }

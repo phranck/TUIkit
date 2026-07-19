@@ -16,20 +16,18 @@ import TUIkitCore
 /// by an `NSLock`.
 ///
 /// The `AppRunner` subscribes to state changes and re-renders when notified.
-/// Property wrappers like ``State`` and ``AppStorage`` access the shared instance
-/// via ``AppState/shared``.
+/// Property wrappers route changes to the runtime-owned instance through
+/// ``RenderInvalidationSink``.
 ///
 /// - Important: This is framework infrastructure. Prefer using ``State`` for reactive state
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
 public final class AppState: Sendable {
-    /// The global shared instance.
-    public static let shared = AppState()
-
     /// Internal state protected by a lock.
     private struct StateData: Sendable {
         var needsRender = false
-        var needsCacheClear = false
+        var invalidatesAllCachedOutput = false
+        var invalidatedSubtrees: Set<ViewIdentity> = []
         var observers: [@Sendable () -> Void] = []
     }
 
@@ -52,14 +50,7 @@ public extension AppState {
     /// automatically detects environment changes via `EnvironmentSnapshot`
     /// comparison and clears the cache when needed.
     func setNeedsRender() {
-        let observers = lock.withLock { state -> [@Sendable () -> Void] in
-            state.needsRender = true
-            return state.observers
-        }
-        // Call observers outside the lock to avoid potential deadlocks
-        for observer in observers {
-            observer()
-        }
+        invalidate(.renderOnly)
     }
 
     /// Marks state as changed and requests a full cache clear on next render.
@@ -71,14 +62,7 @@ public extension AppState {
     ///
     /// Thread-safe: can be called from any thread.
     func setNeedsRenderWithCacheClear() {
-        let observers = lock.withLock { state -> [@Sendable () -> Void] in
-            state.needsRender = true
-            state.needsCacheClear = true
-            return state.observers
-        }
-        for observer in observers {
-            observer()
-        }
+        invalidate(.all)
     }
 }
 
@@ -113,16 +97,75 @@ extension AppState {
         }
     }
 
-    /// Consumes and returns the cache-clear flag.
+    /// Consumes pending cache invalidations.
     ///
     /// Called by the render loop at the start of each frame. Returns `true`
-    /// if any `@Observable` property changed since the last render, signaling
-    /// that the render cache should be fully cleared.
-    public func consumeNeedsCacheClear() -> Bool {
+    /// The returned invalidations are applied by the owning runtime on the
+    /// main actor before rendering. Render-only requests are represented by
+    /// an empty array because they do not affect cached output.
+    public func consumePendingCacheInvalidations() -> [RenderInvalidation] {
         lock.withLock { state in
-            let value = state.needsCacheClear
-            state.needsCacheClear = false
-            return value
+            if state.invalidatesAllCachedOutput {
+                state.invalidatesAllCachedOutput = false
+                state.invalidatedSubtrees.removeAll(keepingCapacity: true)
+                return [.all]
+            }
+
+            let invalidations = state.invalidatedSubtrees.map(RenderInvalidation.subtree)
+            state.invalidatedSubtrees.removeAll(keepingCapacity: true)
+            return invalidations
+        }
+    }
+
+    /// Consumes pending invalidations and reports whether a full cache clear was requested.
+    ///
+    /// Prefer ``consumePendingCacheInvalidations()`` when subtree invalidations
+    /// must be preserved.
+    public func consumeNeedsCacheClear() -> Bool {
+        consumePendingCacheInvalidations().contains { invalidation in
+            if case .all = invalidation {
+                return true
+            }
+            return false
+        }
+    }
+
+    /// Clears render flags, pending invalidations, and observers.
+    public func reset() {
+        lock.withLock { state in
+            state.needsRender = false
+            state.invalidatesAllCachedOutput = false
+            state.invalidatedSubtrees.removeAll()
+            state.observers.removeAll()
+        }
+    }
+}
+
+// MARK: - Render Invalidation Sink
+
+extension AppState: RenderInvalidationSink {
+    public func invalidate(_ invalidation: RenderInvalidation) {
+        let observers = lock.withLock { state -> [@Sendable () -> Void] in
+            state.needsRender = true
+
+            switch invalidation {
+            case .renderOnly:
+                break
+            case .subtree(let identity):
+                if !state.invalidatesAllCachedOutput {
+                    state.invalidatedSubtrees.insert(identity)
+                }
+            case .all:
+                state.invalidatesAllCachedOutput = true
+                state.invalidatedSubtrees.removeAll(keepingCapacity: true)
+            }
+
+            return state.observers
+        }
+
+        // Call observers outside the lock to avoid potential deadlocks.
+        for observer in observers {
+            observer()
         }
     }
 }
@@ -141,10 +184,18 @@ public struct HydrationContext {
     /// The persistent state storage.
     public let storage: StateStorage
 
+    /// The runtime that owns state created in this context.
+    public let invalidationSink: (any RenderInvalidationSink)?
+
     /// Creates a new hydration context.
-    public init(identity: ViewIdentity, storage: StateStorage) {
+    public init(
+        identity: ViewIdentity,
+        storage: StateStorage,
+        invalidationSink: (any RenderInvalidationSink)? = nil
+    ) {
         self.identity = identity
         self.storage = storage
+        self.invalidationSink = invalidationSink
     }
 }
 
@@ -195,10 +246,13 @@ public enum StateRegistration {
         let previousCounter = counter
         let previousEnvironment = activeEnvironment
 
-        activeContext = HydrationContext(
-            identity: context.identity,
-            storage: context.environment.stateStorage!
-        )
+        activeContext = context.environment.stateStorage.map {
+            HydrationContext(
+                identity: context.identity,
+                storage: $0,
+                invalidationSink: context.environment.renderInvalidationSink
+            )
+        }
         counter = 0
         activeEnvironment = context.environment
 
@@ -313,7 +367,7 @@ public struct Binding<Value> {
 /// State is keyed by `ViewIdentity` and property index, ensuring values
 /// survive view reconstruction across render passes.
 ///
-/// Mutations signal re-renders through `AppState.shared`.
+/// Mutations signal re-renders through the owning runtime's invalidation sink.
 @propertyWrapper
 public struct State<Value> {
     /// The backing storage box for this state value.
@@ -331,13 +385,20 @@ public struct State<Value> {
 
     /// The current state value.
     public var wrappedValue: Value {
-        get { box.value }
-        nonmutating set { box.value = newValue }
+        get {
+            bindToActiveRuntime()
+            return box.value
+        }
+        nonmutating set {
+            bindToActiveRuntime()
+            box.value = newValue
+        }
     }
 
     /// A binding to the state value.
     public var projectedValue: Binding<Value> {
-        Binding(
+        bindToActiveRuntime()
+        return Binding(
             get: { self.box.value },
             set: { self.box.value = $0 }
         )
@@ -359,8 +420,18 @@ public struct State<Value> {
             StateRegistration.counter += 1
             let key = StateStorage.StateKey(identity: context.identity, propertyIndex: index)
             self.box = context.storage.storage(for: key, default: wrappedValue)
+            self.box.bind(identity: context.identity, invalidationSink: context.invalidationSink)
         } else {
             self.box = StateBox(wrappedValue)
         }
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension State {
+    func bindToActiveRuntime() {
+        guard let context = StateRegistration.activeContext else { return }
+        box.bind(identity: context.identity, invalidationSink: context.invalidationSink)
     }
 }

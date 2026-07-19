@@ -184,8 +184,9 @@ extension View {
     /// ContentView()
     ///     .notificationHost()
     ///
-    /// // Anywhere in the hierarchy:
-    /// NotificationService.current.post("Saved!")
+    /// // In a descendant view:
+    /// @Environment(\.notificationService) var notifications
+    /// notifications.post("Saved!")
     /// ```
     ///
     /// The base content remains fully interactive — notifications do not dim

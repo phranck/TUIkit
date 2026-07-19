@@ -54,10 +54,12 @@ extension NotificationHostModifier: Renderable {
         // Start the animation timer if not already running.
         startAnimationTask(
             entries: activeEntries,
-            lifecycle: context.environment.lifecycle!
+            lifecycle: context.environment.lifecycle!,
+            clock: context.environment.runtimeClock,
+            invalidationSink: context.environment.renderInvalidationSink
         )
 
-        let now = Date().timeIntervalSinceReferenceDate
+        let now = context.environment.runtimeClock.now()
         let palette = context.environment.palette
         let horizontalPadding = 1
         let innerWidth = max(1, width - BorderRenderer.borderWidthOverhead)
@@ -149,7 +151,9 @@ private extension NotificationHostModifier {
     /// The task stops automatically when no notifications are active.
     func startAnimationTask(
         entries: [NotificationEntry],
-        lifecycle: LifecycleManager
+        lifecycle: LifecycleManager,
+        clock: RuntimeClock,
+        invalidationSink: (any RenderInvalidationSink)?
     ) {
         let token = "notification-host-animation"
 
@@ -161,22 +165,22 @@ private extension NotificationHostModifier {
         let latestExpiry = entries.map { $0.postedAt + $0.duration + totalOverhead }
             .max() ?? 0
 
-        lifecycle.startTask(token: token, priority: .medium) { [lifecycle] in
+        lifecycle.startTask(token: token, priority: .medium) { [lifecycle, invalidationSink] in
             let triggerNanos: UInt64 = 23_800_000  // ~24ms (~42 FPS)
 
             while !Task.isCancelled {
-                let now = Date().timeIntervalSinceReferenceDate
+                let now = clock.now()
                 if now > latestExpiry {
                     break
                 }
                 try? await Task.sleep(nanoseconds: triggerNanos)
                 guard !Task.isCancelled else { break }
-                AppState.shared.setNeedsRender()
+                invalidationSink?.invalidate(.renderOnly)
             }
 
             // Final render to clear expired notifications.
             lifecycle.resetAppearance(token: token)
-            AppState.shared.setNeedsRender()
+            invalidationSink?.invalidate(.renderOnly)
         }
     }
 }

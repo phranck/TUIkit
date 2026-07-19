@@ -133,6 +133,16 @@ private struct ImageURLTimeoutKey: EnvironmentKey {
     static let defaultValue: TimeInterval = 30
 }
 
+/// Environment key for the runtime-owned image loader.
+private struct ImageLoaderKey: EnvironmentKey {
+    static var defaultValue: any ImageLoader { PlatformImageLoader() }
+}
+
+/// Environment key for the runtime-owned URL image cache.
+private struct ImageCacheKey: EnvironmentKey {
+    static var defaultValue: URLImageCache { URLImageCache() }
+}
+
 // MARK: - EnvironmentValues
 
 extension EnvironmentValues {
@@ -195,6 +205,18 @@ extension EnvironmentValues {
     var imageURLTimeout: TimeInterval {
         get { self[ImageURLTimeoutKey.self] }
         set { self[ImageURLTimeoutKey.self] = newValue }
+    }
+
+    /// Loader used for file and URL image requests in this runtime.
+    var imageLoader: any ImageLoader {
+        get { self[ImageLoaderKey.self] }
+        set { self[ImageLoaderKey.self] = newValue }
+    }
+
+    /// URL image cache owned by this runtime.
+    var imageCache: URLImageCache {
+        get { self[ImageCacheKey.self] }
+        set { self[ImageCacheKey.self] = newValue }
     }
 }
 

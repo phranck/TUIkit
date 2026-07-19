@@ -80,22 +80,27 @@ internal final class AppRunner<A: App> {
     private let focusManager: FocusManager
     private let paletteManager: ThemeManager
     private let statusBar: StatusBarState
-    private let terminal: Terminal
+    private let terminal: any TerminalProtocol
     private let tuiContext: TUIContext
     private var isRunning = false
     private var signals = SignalManager()
 
-    init(app: A) {
+    init(
+        app: A,
+        terminal: (any TerminalProtocol)? = nil,
+        tuiContext: TUIContext? = nil
+    ) {
+        let tuiContext = tuiContext ?? TUIContext.production()
         self.app = app
-        self.appState = AppState()
-        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-        self.appHeader = AppHeaderState()
-        self.focusManager = FocusManager()
-        self.paletteManager = ThemeManager(items: PaletteRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-        self.statusBar = StatusBarState(appState: appState)
+        self.appState = tuiContext.appState
+        self.appearanceManager = tuiContext.appearanceManager
+        self.appHeader = tuiContext.appHeader
+        self.focusManager = tuiContext.focusManager
+        self.paletteManager = tuiContext.paletteManager
+        self.statusBar = tuiContext.statusBar
         self.statusBar.style = .bordered
-        self.terminal = Terminal()
-        self.tuiContext = TUIContext()
+        self.terminal = terminal ?? Terminal()
+        self.tuiContext = tuiContext
     }
 }
 
@@ -139,9 +144,10 @@ extension AppRunner {
         }
 
         // Reset pulse animation and trigger re-render when focus changes
-        focusManager.onFocusChange = { [weak pulseTimer, weak appState] in
+        let runtimeFocusChangeHandler = focusManager.onFocusChange
+        focusManager.onFocusChange = { [weak pulseTimer] in
             pulseTimer?.reset()
-            appState?.setNeedsRender()
+            runtimeFocusChangeHandler?()
         }
 
         isRunning = true

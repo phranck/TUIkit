@@ -44,7 +44,7 @@ public let tuiKitVersion: String = {
 /// - Parameter content: A ViewBuilder closure that defines the view to render.
 @MainActor
 public func renderOnce<Content: View>(@ViewBuilder content: () -> Content) {
-    let view = content()
     let renderer = ViewRenderer()
-    renderer.render(view)
+    defer { renderer.shutdown() }
+    renderer.render(content: content)
 }

@@ -90,7 +90,7 @@ extension AppHeaderState {
 
 /// Environment key for the app header state.
 private struct AppHeaderKey: EnvironmentKey {
-    static let defaultValue = AppHeaderState()
+    static var defaultValue: AppHeaderState { AppHeaderState() }
 }
 
 extension EnvironmentValues {

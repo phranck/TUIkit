@@ -200,18 +200,12 @@ struct RuntimeCharacterizationTests {
         }
     }
 
-    @Test("Default render-cache crosstalk remains characterized for issue #8")
-    func knownDefaultRenderCacheCrosstalkDefect() {
+    @Test("Default runtime render caches are isolated")
+    func defaultRuntimeRenderCachesAreIsolated() {
         let firstContext = TUIContext()
         let secondContext = TUIContext()
-        let cachesAreIsolated = firstContext.renderCache !== secondContext.renderCache
 
-        withKnownIssue("Issue #8: default TUIContext instances share one render cache") {
-            #expect(cachesAreIsolated)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(firstContext.renderCache !== secondContext.renderCache)
     }
 
     @Test("Cached descendant lifecycle loss remains characterized for issue #14")

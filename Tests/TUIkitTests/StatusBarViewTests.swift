@@ -217,11 +217,10 @@ struct StatusBarItemsModifierTests {
 
     @Test("statusBarItems modifier sets items in environment")
     func modifierSetsItemsInEnvironment() {
-        // Setup: Create a status bar state and environment
-        let state = StatusBarState()
+        // Setup: Create a status bar state owned by the runtime
+        let tuiContext = TUIContext()
+        let state = tuiContext.statusBar
         state.showSystemItems = false  // Disable for cleaner test
-        var environment = EnvironmentValues()
-        environment.statusBar = state
 
         // Create view with modifier
         let view = Text("Test")
@@ -233,8 +232,7 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(view, context: context)
@@ -247,10 +245,9 @@ struct StatusBarItemsModifierTests {
     @Test("statusBarItems modifier with context pushes to stack")
     func modifierWithContextPushesToStack() {
         // Setup
-        let state = StatusBarState()
+        let tuiContext = TUIContext()
+        let state = tuiContext.statusBar
         state.showSystemItems = false  // Disable for cleaner test
-        var environment = EnvironmentValues()
-        environment.statusBar = state
 
         // Set global items first
         state.setItems([
@@ -267,8 +264,7 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(view, context: context)
@@ -287,9 +283,7 @@ struct StatusBarItemsModifierTests {
 
     @Test("statusBarItems modifier renders content")
     func modifierRendersContent() {
-        let state = StatusBarState()
-        var environment = EnvironmentValues()
-        environment.statusBar = state
+        let tuiContext = TUIContext()
 
         let view = Text("Hello World")
             .statusBarItems {
@@ -299,8 +293,7 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         let buffer = renderToBuffer(view, context: context)
@@ -312,10 +305,9 @@ struct StatusBarItemsModifierTests {
 
     @Test("Nested statusBarItems modifiers")
     func nestedModifiers() {
-        let state = StatusBarState()
+        let tuiContext = TUIContext()
+        let state = tuiContext.statusBar
         state.showSystemItems = false  // Disable for cleaner test
-        var environment = EnvironmentValues()
-        environment.statusBar = state
 
         // Outer sets global, inner pushes context
         let innerView = Text("Inner")
@@ -333,8 +325,7 @@ struct StatusBarItemsModifierTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(outerView, context: context)

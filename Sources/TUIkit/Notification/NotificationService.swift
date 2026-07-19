@@ -31,11 +31,11 @@ struct NotificationEntry: Identifiable, Sendable {
     /// - Parameters:
     ///   - message: The notification message text.
     ///   - duration: Display duration in seconds.
-    init(message: String, duration: TimeInterval) {
+    init(message: String, duration: TimeInterval, postedAt: TimeInterval) {
         self.id = UUID()
         self.message = message
         self.duration = duration
-        self.postedAt = Date().timeIntervalSinceReferenceDate
+        self.postedAt = postedAt
     }
 }
 
@@ -50,11 +50,12 @@ struct NotificationEntry: Identifiable, Sendable {
 ///
 /// ## Usage
 ///
-/// Post notifications from anywhere using the shared instance:
+/// Read the service from the environment before posting:
 ///
 /// ```swift
-/// NotificationService.current.post("Saved!")
-/// NotificationService.current.post("Connection lost", duration: 5.0)
+/// @Environment(\.notificationService) private var notifications
+/// notifications.post("Saved!")
+/// notifications.post("Connection lost", duration: 5.0)
 /// ```
 ///
 /// Attach the host once at the root of your view tree:
@@ -74,30 +75,32 @@ struct NotificationEntry: Identifiable, Sendable {
 /// The service automatically removes expired entries and triggers re-renders
 /// for animation frames.
 public final class NotificationService: @unchecked Sendable {
-    /// The shared instance used by the running application.
-    ///
-    /// This is a static accessor rather than environment-only because TUIKit
-    /// does not have an `@Environment` property wrapper. Button callbacks,
-    /// `onSelect` handlers, and other user-facing closures run outside the
-    /// render context and therefore cannot read `EnvironmentValues`. A static
-    /// reference is the only way to reach the service from those call sites.
-    ///
-    /// The same pattern is used by `AppState.shared` for the same reason.
-    /// For tests, create a fresh instance instead of using `current`.
-    ///
-    /// ```swift
-    /// NotificationService.current.post("Done!")
-    /// ```
-    nonisolated(unsafe) public static var current = NotificationService()
-
     /// Lock for thread-safe access to the entries array.
     private let lock = NSLock()
 
     /// The active notification entries, ordered by posting time.
     private var entries: [NotificationEntry] = []
 
+    /// Clock used for posting and pruning entries.
+    private var clock: RuntimeClock
+
+    /// Runtime receiving invalidations after queue changes.
+    private var invalidationSink: (any RenderInvalidationSink)?
+
     /// Creates an empty notification service.
-    public init() {}
+    public init() {
+        self.clock = .system
+        self.invalidationSink = nil
+    }
+
+    /// Creates a notification service with runtime dependencies.
+    init(
+        clock: RuntimeClock,
+        invalidationSink: (any RenderInvalidationSink)?
+    ) {
+        self.clock = clock
+        self.invalidationSink = invalidationSink
+    }
 }
 
 // MARK: - Public API
@@ -111,11 +114,16 @@ extension NotificationService {
     ///   - message: The notification message text.
     ///   - duration: How long the notification stays visible in seconds (default: 3.0).
     public func post(_ message: String, duration: TimeInterval = 3.0) {
-        let entry = NotificationEntry(message: message, duration: duration)
         lock.lock()
+        let entry = NotificationEntry(
+            message: message,
+            duration: duration,
+            postedAt: clock.now()
+        )
         entries.append(entry)
+        let invalidationSink = invalidationSink
         lock.unlock()
-        AppState.shared.setNeedsRender()
+        invalidationSink?.invalidate(.renderOnly)
     }
 
     /// Returns a snapshot of all currently active notifications.
@@ -123,10 +131,10 @@ extension NotificationService {
     /// Entries whose total animation time (fade-in + visible + fade-out) has
     /// elapsed are pruned before the snapshot is returned.
     func activeEntries() -> [NotificationEntry] {
-        let now = Date().timeIntervalSinceReferenceDate
         let totalAnimationOverhead = NotificationTiming.fadeInDuration + NotificationTiming.fadeOutDuration
 
         lock.lock()
+        let now = clock.now()
         entries.removeAll { entry in
             let totalDuration = totalAnimationOverhead + entry.duration
             return (now - entry.postedAt) > totalDuration
@@ -142,23 +150,34 @@ extension NotificationService {
         entries.removeAll()
         lock.unlock()
     }
+
+    /// Associates this service with runtime dependencies.
+    func setRuntimeDependencies(
+        clock: RuntimeClock,
+        invalidationSink: (any RenderInvalidationSink)?
+    ) {
+        lock.lock()
+        self.clock = clock
+        self.invalidationSink = invalidationSink
+        lock.unlock()
+    }
 }
 
 // MARK: - Environment Key
 
 /// Environment key for the notification service.
 private struct NotificationServiceKey: EnvironmentKey {
-    static let defaultValue = NotificationService()
+    static var defaultValue: NotificationService { NotificationService() }
 }
 
 extension EnvironmentValues {
     /// The notification service for posting and managing notifications.
     ///
     /// Used internally by the `NotificationHostModifier` to read active entries.
-    /// Post notifications via the static accessor:
+    /// Read this value with `@Environment` and retain it in callbacks:
     ///
     /// ```swift
-    /// NotificationService.current.post("Saved!")
+    /// @Environment(\.notificationService) private var notifications
     /// ```
     public var notificationService: NotificationService {
         get { self[NotificationServiceKey.self] }

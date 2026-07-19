@@ -79,7 +79,7 @@ private enum OverlayDemo: Int, CaseIterable {
         case .modalCustom:
             ".modal(isPresented: $show) { VStack { ... } }"
         case .notification:
-            "NotificationService.current.post(\"Saved!\")"
+            "@Environment(\\.notificationService) + notifications.post(\"Saved!\")"
         }
     }
 
@@ -97,6 +97,7 @@ private enum OverlayDemo: Int, CaseIterable {
 /// panel on the right. Pressing Enter shows the selected overlay
 /// with dimmed background content.
 struct OverlaysPage: View {
+    @Environment(\.notificationService) private var notifications
     @State var menuSelection: Int = 0
     @State var showOverlay: Bool = false
 
@@ -153,7 +154,7 @@ struct OverlaysPage: View {
                     selection: $menuSelection,
                     onSelect: { _ in
                         if selectedDemo.isNotification {
-                            NotificationService.current.post(
+                            notifications.post(
                                 "Operation completed successfully!"
                             )
                         } else {
@@ -175,7 +176,7 @@ struct OverlaysPage: View {
                     .foregroundStyle(.palette.foregroundSecondary)
                 Text("  .modal(isPresented:)        — for Dialog, custom content")
                     .foregroundStyle(.palette.foregroundSecondary)
-                Text("  NotificationService.current.post() — fire-and-forget with fade")
+                Text("  notifications.post()        — fire-and-forget with fade")
                     .foregroundStyle(.palette.foregroundSecondary)
                 Text("Modals dim the background. Notifications stay non-blocking.")
                     .bold()

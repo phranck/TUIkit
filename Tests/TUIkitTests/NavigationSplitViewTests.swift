@@ -328,8 +328,7 @@ struct NavigationSplitViewFocusSectionTests {
     @Test("Two-column split view registers two focus sections")
     func twoColumnRegistersTwoFocusSections() {
         let focusManager = FocusManager()
-        var environment = EnvironmentValues()
-        environment.focusManager = focusManager
+        let tuiContext = TUIContext(focusManager: focusManager)
 
         let splitView = NavigationSplitView {
             Text("Sidebar")
@@ -340,8 +339,7 @@ struct NavigationSplitViewFocusSectionTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(splitView, context: context)
@@ -354,8 +352,7 @@ struct NavigationSplitViewFocusSectionTests {
     @Test("Three-column split view registers three focus sections")
     func threeColumnRegistersThreeFocusSections() {
         let focusManager = FocusManager()
-        var environment = EnvironmentValues()
-        environment.focusManager = focusManager
+        let tuiContext = TUIContext(focusManager: focusManager)
 
         let splitView = NavigationSplitView {
             Text("Sidebar")
@@ -368,8 +365,7 @@ struct NavigationSplitViewFocusSectionTests {
         let context = RenderContext(
             availableWidth: 100,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(splitView, context: context)
@@ -383,8 +379,7 @@ struct NavigationSplitViewFocusSectionTests {
     @Test("Hidden columns do not register focus sections")
     func hiddenColumnsNoFocusSections() {
         let focusManager = FocusManager()
-        var environment = EnvironmentValues()
-        environment.focusManager = focusManager
+        let tuiContext = TUIContext(focusManager: focusManager)
 
         var visibility = NavigationSplitViewVisibility.detailOnly
         let binding = Binding(get: { visibility }, set: { visibility = $0 })
@@ -398,8 +393,7 @@ struct NavigationSplitViewFocusSectionTests {
         let context = RenderContext(
             availableWidth: 80,
             availableHeight: 24,
-            environment: environment,
-            tuiContext: TUIContext()
+            tuiContext: tuiContext
         )
 
         _ = renderToBuffer(splitView, context: context)

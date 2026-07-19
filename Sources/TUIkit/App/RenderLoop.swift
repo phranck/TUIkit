@@ -109,7 +109,7 @@ internal final class RenderLoop<A: App> {
     let app: A
 
     /// The terminal for output and size queries.
-    let terminal: Terminal
+    let terminal: any TerminalProtocol
 
     /// The status bar state (height, items, appearance).
     let statusBar: StatusBarState
@@ -151,7 +151,7 @@ internal final class RenderLoop<A: App> {
 
     init(
         app: A,
-        terminal: Terminal,
+        terminal: any TerminalProtocol,
         statusBar: StatusBarState,
         appHeader: AppHeaderState,
         focusManager: FocusManager,
@@ -183,12 +183,6 @@ extension RenderLoop {
     ///   - cursorTimer: The cursor timer for TextField/SecureField animations.
     func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
         beginRenderPass()
-
-        // If an @Published property changed, clear the entire render cache
-        // so EquatableView-cached subtrees re-render with new model data.
-        if AppState.shared.consumeNeedsCacheClear() {
-            tuiContext.renderCache.clearAll()
-        }
 
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
@@ -278,29 +272,7 @@ extension RenderLoop {
     ///
     /// - Returns: A fully populated environment.
     func buildEnvironment() -> EnvironmentValues {
-        var environment = EnvironmentValues()
-        environment.statusBar = statusBar
-        environment.appHeader = appHeader
-        environment.focusManager = focusManager
-        environment.paletteManager = paletteManager
-        if let palette = paletteManager.currentPalette {
-            environment.palette = palette
-        }
-        environment.appearanceManager = appearanceManager
-        if let appearance = appearanceManager.currentAppearance {
-            environment.appearance = appearance
-        }
-        environment.notificationService = NotificationService.current
-
-        // Runtime services (previously accessed via context.tuiContext)
-        environment.stateStorage = tuiContext.stateStorage
-        environment.lifecycle = tuiContext.lifecycle
-        environment.keyEventDispatcher = tuiContext.keyEventDispatcher
-        environment.renderCache = tuiContext.renderCache
-        environment.preferenceStorage = tuiContext.preferences
-        environment.localizationService = LocalizationService.shared
-
-        return environment
+        tuiContext.environmentValues()
     }
 }
 
@@ -309,15 +281,7 @@ extension RenderLoop {
 private extension RenderLoop {
     /// Clears all per-frame state and begins lifecycle/state/cache tracking.
     func beginRenderPass() {
-        tuiContext.keyEventDispatcher.clearHandlers()
-        tuiContext.preferences.beginRenderPass()
-        focusManager.beginRenderPass()
-        statusBar.clearSectionItems()
-        appHeader.beginRenderPass()
-        statusBar.focusManager = focusManager
-        tuiContext.lifecycle.beginRenderPass()
-        tuiContext.stateStorage.beginRenderPass()
-        tuiContext.renderCache.beginRenderPass()
+        tuiContext.beginRenderPass()
     }
 
     /// Evaluates `App.body` with hydration and environment context active.
@@ -329,7 +293,8 @@ private extension RenderLoop {
         let rootIdentity = ViewIdentity(rootType: A.self)
         StateRegistration.activeContext = HydrationContext(
             identity: rootIdentity,
-            storage: tuiContext.stateStorage
+            storage: tuiContext.stateStorage,
+            invalidationSink: tuiContext.appState
         )
         StateRegistration.counter = 0
         StateRegistration.activeEnvironment = environment
@@ -403,10 +368,7 @@ private extension RenderLoop {
     /// Fires `onDisappear` for removed views and removes state/cache
     /// entries for views no longer in the tree.
     func endRenderPass() {
-        tuiContext.lifecycle.endRenderPass()
-        tuiContext.stateStorage.endRenderPass()
-        tuiContext.renderCache.removeInactive()
-        tuiContext.renderCache.logFrameStats()
+        tuiContext.endRenderPass()
     }
 
     /// Clears the render cache when environment values affecting visual output changed.

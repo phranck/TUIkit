@@ -33,7 +33,7 @@
 /// The identity is **stable across render passes** as long as the view tree
 /// structure does not change. If a `ConditionalView` switches branches, the
 /// old branch's state is invalidated.
-public struct ViewIdentity: Hashable, CustomStringConvertible {
+public struct ViewIdentity: Hashable, CustomStringConvertible, Sendable {
     /// The structural path from root to this view.
     ///
     /// Format: `"TypeA/TypeB.childIndex/TypeC"`
