@@ -296,6 +296,37 @@ test_ci_rejects_missing_binary_hashes() {
         "$PROJECT_DIR/scripts/validate-ci-configuration.sh" "$invalid_hash_root"
 }
 
+test_module_test_boundaries_are_enforced() {
+    local valid_root="$FIXTURES_DIR/module-boundaries/valid"
+    "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$valid_root"
+
+    local invalid_import_root="$TEMP_DIR/invalid-test-import"
+    cp -R "$valid_root" "$invalid_import_root"
+    cp "$FIXTURES_DIR/module-boundaries/InvalidCoreTests.swift" \
+        "$invalid_import_root/Tests/TUIkitCoreTests/InvalidCoreTests.swift"
+    expect_failure \
+        "Test boundary error: Tests/TUIkitCoreTests/InvalidCoreTests.swift imports forbidden project module TUIkit" \
+        "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$invalid_import_root"
+
+    local invalid_dependency_root="$TEMP_DIR/invalid-test-dependency"
+    cp -R "$valid_root" "$invalid_dependency_root"
+    sed -i.bak \
+        's/dependencies: \["TUIkitCore"\]/dependencies: ["TUIkitCore", "TUIkit"]/' \
+        "$invalid_dependency_root/Package.swift"
+    find "$invalid_dependency_root" -name '*.bak' -delete
+    expect_failure \
+        "Test boundary error: Package.swift must declare the isolated TUIkitCoreTests dependency set exactly once" \
+        "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$invalid_dependency_root"
+
+    local native_source_root="$TEMP_DIR/native-source"
+    cp -R "$valid_root" "$native_source_root"
+    mkdir -p "$native_source_root/Sources/Decoder"
+    touch "$native_source_root/Sources/Decoder/decoder.c"
+    expect_failure \
+        "Test boundary error: native source is forbidden: Sources/Decoder/decoder.c" \
+        "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$native_source_root"
+}
+
 run_case() {
     local name="$1"
     local function_name="$2"
@@ -332,6 +363,7 @@ run_case invalid-docc test_ci_rejects_non_reexport_aware_docc
 run_case badge-provenance test_ci_rejects_badge_without_tested_sha_provenance
 run_case reusable-workflow test_ci_rejects_unpinned_reusable_workflow
 run_case binary-hashes test_ci_rejects_missing_binary_hashes
+run_case module-boundaries test_module_test_boundaries_are_enforced
 
 if [[ "$TEST_CASE" == "all" ]]; then
     "$PROJECT_DIR/scripts/tests/test-api-snapshot-scripts.sh"
