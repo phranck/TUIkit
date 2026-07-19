@@ -22,35 +22,26 @@ struct StateStorageIdentityTests {
         StateStorage()
     }
 
-    // MARK: - Self-Hydrating State
+    // MARK: - Dynamic Property Binding
 
-    @Test("State self-hydrates from StateStorage when active context is set")
-    func selfHydrationFromStorage() {
+    @Test("State binds to storage at the committed identity")
+    func dynamicPropertyBinding() {
         let storage = testStorage()
         let identity = ViewIdentity(path: "TestView")
+        let context = HydrationContext(identity: identity, storage: storage)
 
-        // First construction: creates new entry in storage
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstState = State(wrappedValue: 42)
-        StateRegistration.activeContext = nil
+        let first = SingleStateOwner(defaultValue: 42)
+        StateRegistration.bindDynamicProperties(in: first, context: context)
+        first.value = 99
 
-        // Mutate value through the first state
-        firstState.wrappedValue = 99
+        let reconstructed = SingleStateOwner(defaultValue: 42)
+        StateRegistration.bindDynamicProperties(in: reconstructed, context: context)
 
-        // Second construction at same identity: should get the persisted value (99)
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let secondState = State(wrappedValue: 42)
-        StateRegistration.activeContext = nil
-
-        #expect(secondState.wrappedValue == 99)
+        #expect(reconstructed.value == 99)
     }
 
     @Test("State uses local box when no active context is set")
     func localBoxWithoutContext() {
-        StateRegistration.activeContext = nil
-
         let state = State(wrappedValue: "hello")
         #expect(state.wrappedValue == "hello")
 
@@ -62,26 +53,18 @@ struct StateStorageIdentityTests {
     func multipleStateDistinctIndices() {
         let storage = testStorage()
         let identity = ViewIdentity(path: "MultiStateView")
+        let context = HydrationContext(identity: identity, storage: storage)
 
-        // Simulate a view with two @State properties
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstState = State(wrappedValue: 10)
-        let secondState = State(wrappedValue: "hello")
-        StateRegistration.activeContext = nil
+        let first = MultipleStateOwner()
+        StateRegistration.bindDynamicProperties(in: first, context: context)
+        first.number = 20
+        first.text = "world"
 
-        firstState.wrappedValue = 20
-        secondState.wrappedValue = "world"
+        let reconstructed = MultipleStateOwner()
+        StateRegistration.bindDynamicProperties(in: reconstructed, context: context)
 
-        // Reconstruct: both should get their persisted values
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstReconstructed = State(wrappedValue: 10)
-        let secondReconstructed = State(wrappedValue: "hello")
-        StateRegistration.activeContext = nil
-
-        #expect(firstReconstructed.wrappedValue == 20)
-        #expect(secondReconstructed.wrappedValue == "world")
+        #expect(reconstructed.number == 20)
+        #expect(reconstructed.text == "world")
     }
 
     // MARK: - View Identity
@@ -262,4 +245,19 @@ struct StateStorageIdentityTests {
         #expect(recreatedSecond !== secondBox)
         #expect(recreatedSecond.value == 2)
     }
+}
+
+// MARK: - Fixtures
+
+private struct SingleStateOwner {
+    @State var value: Int
+
+    init(defaultValue: Int) {
+        self._value = State(wrappedValue: defaultValue)
+    }
+}
+
+private struct MultipleStateOwner {
+    @State var number = 10
+    @State var text = "hello"
 }

@@ -69,7 +69,7 @@ internal struct RenderBackgroundCodes: Equatable {
 ///   3. Build EnvironmentValues from all subsystems
 ///   4. Create RenderContext with layout constraints
 ///   5. Evaluate App.body fresh → Scene (WindowGroup)
-///      @State values survive because State.init self-hydrates from StateStorage
+///      @State values bind to persistent storage at final structural identities
 ///   6. Call SceneRenderable.renderScene() → FrameBuffer
 ///   7. Convert FrameBuffer to terminal-ready output lines
 ///   8. Begin buffered frame (terminal.beginFrame())
@@ -286,23 +286,20 @@ private extension RenderLoop {
 
     /// Evaluates `App.body` with hydration and environment context active.
     ///
-    /// Sets up ``StateRegistration`` so `@State` self-hydrates from `StateStorage`
-    /// and `@Environment` reads from the current environment. Clears both
-    /// contexts after body evaluation.
+    /// Binds the app's dynamic properties to its root identity and makes the
+    /// current environment available while evaluating `body`.
     func evaluateAppBody(environment: EnvironmentValues) -> A.Body {
         let rootIdentity = ViewIdentity(rootType: A.self)
-        StateRegistration.activeContext = HydrationContext(
-            identity: rootIdentity,
-            storage: tuiContext.stateStorage,
-            invalidationSink: tuiContext.appState
+        let context = RenderContext(
+            availableWidth: 0,
+            availableHeight: 0,
+            environment: environment,
+            identity: rootIdentity
         )
-        StateRegistration.counter = 0
-        StateRegistration.activeEnvironment = environment
 
-        let scene = app.body
-
-        StateRegistration.activeContext = nil
-        StateRegistration.activeEnvironment = nil
+        let scene = StateRegistration.withHydration(of: app, context: context) {
+            app.body
+        }
         tuiContext.stateStorage.markActive(rootIdentity)
 
         return scene

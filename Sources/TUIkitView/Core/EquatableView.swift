@@ -95,7 +95,7 @@ extension EquatableView: Renderable {
             contextWidth: context.availableWidth,
             contextHeight: context.availableHeight
         ) {
-            // Still need to run hydration for @State properties inside
+            // Still need to keep @State properties inside
             // the cached subtree, so they stay active for GC.
             // But we skip the actual rendering work.
             markSubtreeActive(context: context)

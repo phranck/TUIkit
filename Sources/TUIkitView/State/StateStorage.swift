@@ -80,6 +80,11 @@ public final class StateStorage: @unchecked Sendable {
 
     /// The number of stored state entries (for testing/debugging).
     public var count: Int { values.count }
+
+    /// Structural identities currently owning stored values.
+    package var storedIdentities: Set<ViewIdentity> {
+        Set(values.keys.map(\.identity))
+    }
 }
 
 // MARK: - Internal API

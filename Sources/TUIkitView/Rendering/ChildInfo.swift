@@ -188,7 +188,7 @@ public func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: Re
     // injection) lives in renderToBuffer, not in body. They fall through
     // to the render-to-measure fallback below, which runs the full pipeline.
     if !(view is Renderable), V.Body.self != Never.self {
-        let body = StateRegistration.withHydration(context: context) {
+        let body = StateRegistration.withHydration(of: view, context: context) {
             view.body
         }
         return measureChild(body, proposal: proposal, context: context)
