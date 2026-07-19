@@ -97,6 +97,39 @@ struct AppRunnerTests {
         #expect(!terminal.isCursorHidden)
         #expect(!terminal.isInAlternateScreen)
     }
+
+    @Test("Shutdown cancels view tasks and restores the terminal", .timeLimit(.minutes(1)))
+    func shutdownCancelsTasksAndRestoresTerminal() async throws {
+        let taskStarted = AsyncSignal()
+        let taskCancelled = AsyncSignal()
+        let releaseTask = AsyncSignal()
+        let eventChannel = RuntimeEventChannel()
+        let terminal = MockTerminal()
+        let runner = AppRunner(
+            app: ShutdownTaskApp(
+                taskStarted: taskStarted,
+                taskCancelled: taskCancelled,
+                releaseTask: releaseTask
+            ),
+            terminal: terminal,
+            tuiContext: TUIContext(),
+            eventChannel: eventChannel,
+            inputSource: nil,
+            signals: nil
+        )
+
+        let runTask = Task {
+            try await runner.run()
+        }
+        await taskStarted.wait()
+        eventChannel.send(.shutdownRequested)
+        try await runTask.value
+        await taskCancelled.wait()
+
+        #expect(!terminal.isRawModeEnabled)
+        #expect(!terminal.isCursorHidden)
+        #expect(!terminal.isInAlternateScreen)
+    }
 }
 
 @MainActor
@@ -156,6 +189,43 @@ private struct IdleTaskApp: App {
                     taskStarted.signal()
                     await releaseTask.wait()
                     eventChannel.send(.shutdownRequested)
+                }
+        }
+    }
+}
+
+@MainActor
+private struct ShutdownTaskApp: App {
+    let taskStarted: AsyncSignal
+    let taskCancelled: AsyncSignal
+    let releaseTask: AsyncSignal
+
+    init() {
+        self.taskStarted = AsyncSignal()
+        self.taskCancelled = AsyncSignal()
+        self.releaseTask = AsyncSignal()
+    }
+
+    init(
+        taskStarted: AsyncSignal,
+        taskCancelled: AsyncSignal,
+        releaseTask: AsyncSignal
+    ) {
+        self.taskStarted = taskStarted
+        self.taskCancelled = taskCancelled
+        self.releaseTask = releaseTask
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            Text("Running")
+                .task {
+                    taskStarted.signal()
+                    await withTaskCancellationHandler {
+                        await releaseTask.wait()
+                    } onCancel: {
+                        taskCancelled.signal()
+                    }
                 }
         }
     }
