@@ -78,13 +78,19 @@ let package = Package(
         ),
 
         // ── Low-level (no deps) ─────────────────────────────────────────────────────────────────────────
-        .target(name: "CSTBImage", publicHeadersPath: "include"),
         .target(name: "TUIkitCore"),
         .target(name: "TUIkitStyling"),
 
         // ── Mid-level ───────────────────────────────────────────────────────────────────────────────────
         .target(name: "TUIkitView", dependencies: ["TUIkitCore"]),
-        .target(name: "TUIkitImage", dependencies: ["CSTBImage", "TUIkitStyling"]),
+        .target(
+            name: "TUIkitImage",
+            dependencies: [
+                "TUIkitStyling",
+                "TUIkitVendorPNG",
+                "TUIkitVendorJPEG",
+            ]
+        ),
 
         // ── High-level (aggregates all) ─────────────────────────────────────────────────────────────────
         .target(
@@ -105,7 +111,7 @@ let package = Package(
         ),
         .testTarget(
             name: "TUIkitTests",
-            dependencies: ["TUIkit", "TUIkitTestSupport"]
+            dependencies: ["TUIkit", "TUIkitImage", "TUIkitTestSupport"]
         ),
     ]
 )

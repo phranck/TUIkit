@@ -4,7 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import CSTBImage
 import Foundation
 
 #if canImport(FoundationNetworking)
@@ -15,8 +14,8 @@ import FoundationNetworking
 
 /// Loads images from file paths or raw data and converts them to `RGBAImage`.
 ///
-/// Uses stb_image (bundled C library) on all platforms for consistent behavior.
-/// Supported formats: PNG, JPEG, GIF, BMP, TGA, HDR, PSD, PNM.
+/// Uses pure Swift decoders on all platforms for consistent behavior.
+/// Supported formats: static PNG and JPEG, decoded as non-premultiplied 8-bit RGBA.
 public protocol ImageLoader: Sendable {
     /// Loads an image from a file path.
     ///
@@ -52,6 +51,24 @@ public enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
     /// The image exceeds the maximum allowed pixel count.
     case imageTooLarge(pixelCount: Int, limit: Int)
 
+    /// The encoded image exceeds the maximum allowed byte count.
+    case inputTooLarge(byteCount: Int, limit: Int)
+
+    /// An image dimension exceeds the maximum allowed size.
+    case dimensionTooLarge(width: Int, height: Int, limit: Int)
+
+    /// Image dimensions cannot be represented as a safe allocation size.
+    case sizeOverflow(width: Int, height: Int)
+
+    /// The final RGBA buffer would exceed its allocation limit.
+    case allocationLimitExceeded(byteCount: Int, limit: Int)
+
+    /// The decompressed source samples would exceed their byte limit.
+    case decompressionLimitExceeded(byteCount: Int, limit: Int)
+
+    /// The image contains more frames than the configured limit.
+    case frameLimitExceeded(frameCount: Int, limit: Int)
+
     public var description: String {
         switch self {
         case .fileNotFound(let path):
@@ -64,6 +81,18 @@ public enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
             return "Image download failed: \(reason)"
         case .imageTooLarge(let pixelCount, let limit):
             return "Image too large: \(pixelCount) pixels (limit: \(limit))"
+        case .inputTooLarge(let byteCount, let limit):
+            return "Image input too large: \(byteCount) bytes (limit: \(limit))"
+        case .dimensionTooLarge(let width, let height, let limit):
+            return "Image dimensions too large: \(width)x\(height) (limit: \(limit))"
+        case .sizeOverflow(let width, let height):
+            return "Image dimensions overflow: \(width)x\(height)"
+        case .allocationLimitExceeded(let byteCount, let limit):
+            return "Image allocation too large: \(byteCount) bytes (limit: \(limit))"
+        case .decompressionLimitExceeded(let byteCount, let limit):
+            return "Image decompression too large: \(byteCount) bytes (limit: \(limit))"
+        case .frameLimitExceeded(let frameCount, let limit):
+            return "Image frame count too large: \(frameCount) frames (limit: \(limit))"
         }
     }
 
@@ -72,14 +101,13 @@ public enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
 
 // MARK: - Platform Image Loader
 
-/// Cross-platform image loader using stb_image.
-///
-/// Supports PNG, JPEG, GIF, BMP, TGA, HDR, PSD, and PNM formats
-/// on both macOS and Linux. stb_image is a public-domain single-header
-/// C library bundled as a local `CSTBImage` target.
+/// Cross-platform image loader backed by pure Swift PNG and JPEG decoders.
 public struct PlatformImageLoader: ImageLoader {
+    private let decoder: PureSwiftImageDecoder
 
-    public init() {}
+    public init(limits: ImageDecodingLimits = .default) {
+        decoder = PureSwiftImageDecoder(limits: limits)
+    }
 
     public func loadImage(from path: String) throws -> RGBAImage {
         try loadImage(from: path, maxPixelCount: nil)
@@ -93,7 +121,7 @@ public struct PlatformImageLoader: ImageLoader {
     ///
     /// - Parameters:
     ///   - path: The absolute file path to the image.
-    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
+    ///   - maxPixelCount: An optional tighter pixel limit. The loader-wide limit always applies.
     /// - Returns: The decoded image as `RGBAImage`.
     /// - Throws: `ImageLoadError` if the file cannot be read, decoded, or exceeds the limit.
     public func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage {
@@ -101,87 +129,59 @@ public struct PlatformImageLoader: ImageLoader {
             throw ImageLoadError.fileNotFound(path)
         }
 
-        var width: Int32 = 0
-        var height: Int32 = 0
-        var channels: Int32 = 0
-
-        guard let rawPixels = stbi_load(path, &width, &height, &channels, 4) else {
-            let reason = String(cString: stbi_failure_reason())
-            throw ImageLoadError.decodingFailed("stb_image: \(reason)")
-        }
-        defer { stbi_image_free(rawPixels) }
-
-        let pixelCount = Int(width) * Int(height)
-        if let limit = maxPixelCount, pixelCount > limit {
-            throw ImageLoadError.imageTooLarge(pixelCount: pixelCount, limit: limit)
-        }
-
-        return pixelsFromRaw(rawPixels, width: Int(width), height: Int(height))
+        let data = try readImageData(at: path)
+        return try decoder.decode(data, maxPixelCount: maxPixelCount)
     }
 
     /// Loads an image from raw data with an optional pixel count limit.
     ///
     /// - Parameters:
     ///   - data: The image file data.
-    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
+    ///   - maxPixelCount: An optional tighter pixel limit. The loader-wide limit always applies.
     /// - Returns: The decoded image as `RGBAImage`.
     /// - Throws: `ImageLoadError` if the data cannot be decoded or exceeds the limit.
     public func loadImage(from data: Data, maxPixelCount: Int?) throws -> RGBAImage {
-        var width: Int32 = 0
-        var height: Int32 = 0
-        var channels: Int32 = 0
-
-        let rawPixels: UnsafeMutablePointer<UInt8>? = data.withUnsafeBytes { buffer in
-            guard let baseAddress = buffer.baseAddress else { return nil }
-            return stbi_load_from_memory(
-                baseAddress.assumingMemoryBound(to: UInt8.self),
-                Int32(data.count),
-                &width,
-                &height,
-                &channels,
-                4
-            )
-        }
-
-        guard let pixels = rawPixels else {
-            let reason = String(cString: stbi_failure_reason())
-            throw ImageLoadError.decodingFailed("stb_image: \(reason)")
-        }
-        defer { stbi_image_free(pixels) }
-
-        let pixelCount = Int(width) * Int(height)
-        if let limit = maxPixelCount, pixelCount > limit {
-            throw ImageLoadError.imageTooLarge(pixelCount: pixelCount, limit: limit)
-        }
-
-        return pixelsFromRaw(pixels, width: Int(width), height: Int(height))
+        try decoder.decode(data, maxPixelCount: maxPixelCount)
     }
 }
 
-// MARK: - Private Helpers
+private extension PlatformImageLoader {
 
-extension PlatformImageLoader {
-
-    /// Converts raw stb_image RGBA output to an `RGBAImage`.
-    private func pixelsFromRaw(
-        _ rawPixels: UnsafeMutablePointer<UInt8>,
-        width: Int,
-        height: Int
-    ) -> RGBAImage {
-        let count = width * height
-        var pixels = [RGBA](repeating: RGBA(r: 0, g: 0, b: 0), count: count)
-
-        for pixelIndex in 0..<count {
-            let offset = pixelIndex * 4
-            pixels[pixelIndex] = RGBA(
-                r: rawPixels[offset],
-                g: rawPixels[offset + 1],
-                b: rawPixels[offset + 2],
-                a: rawPixels[offset + 3]
-            )
+    func readImageData(at path: String) throws -> Data {
+        let limit = decoder.maxInputBytes
+        guard limit >= 0 else {
+            throw ImageLoadError.inputTooLarge(byteCount: 0, limit: limit)
         }
 
-        return RGBAImage(width: width, height: height, pixels: pixels)
+        let handle: FileHandle
+        do {
+            handle = try FileHandle(forReadingFrom: URL(fileURLWithPath: path))
+        } catch {
+            throw ImageLoadError.decodingFailed("unable to read image file")
+        }
+        defer { try? handle.close() }
+
+        var data = Data()
+        do {
+            while data.count <= limit {
+                let remainingByteCount = limit == Int.max ? Int.max - data.count : limit + 1 - data.count
+                let readByteCount = min(remainingByteCount, 64 * 1_024)
+                guard readByteCount > 0,
+                      let chunk = try handle.read(upToCount: readByteCount),
+                      !chunk.isEmpty
+                else {
+                    break
+                }
+                data.append(chunk)
+            }
+        } catch {
+            throw ImageLoadError.decodingFailed("unable to read image file")
+        }
+
+        guard data.count <= limit else {
+            throw ImageLoadError.inputTooLarge(byteCount: data.count, limit: limit)
+        }
+        return data
     }
 }
 
@@ -228,7 +228,7 @@ extension PlatformImageLoader {
     ///   - urlString: The URL to download.
     ///   - cache: The image cache to use.
     ///   - timeout: The download timeout in seconds (default: 30).
-    ///   - maxPixelCount: The maximum allowed total pixel count, or `nil` for no limit.
+    ///   - maxPixelCount: An optional tighter pixel limit. The loader-wide limit always applies.
     /// - Returns: The decoded image.
     /// - Throws: `ImageLoadError` on network or decoding failure, or if image exceeds size limit.
     public func loadImage(
@@ -249,13 +249,12 @@ extension PlatformImageLoader {
         do {
             var request = URLRequest(url: url)
             request.timeoutInterval = timeout
-
             nonisolated(unsafe) var responseData: Data?
             nonisolated(unsafe) var responseError: Error?
             let semaphore = DispatchSemaphore(value: 0)
 
-            let task = URLSession.shared.dataTask(with: request) { d, _, error in
-                responseData = d
+            let task = URLSession.shared.dataTask(with: request) { downloadedData, _, error in
+                responseData = downloadedData
                 responseError = error
                 semaphore.signal()
             }
