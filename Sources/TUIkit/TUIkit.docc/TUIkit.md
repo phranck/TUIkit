@@ -37,7 +37,7 @@ struct MyApp: App {
 - **Theming system**: 5 built-in phosphor themes with full RGB color support
 - **Focus management**: Keyboard-driven navigation between interactive elements
 - **Status bar**: Configurable shortcut bar with context stack
-- **No dependencies**: Pure Swift, no ncurses or other C libraries
+- **No native dependencies**: Pure Swift rendering and image decoding, with no ncurses or other C libraries
 - **Cross-platform**: macOS and Linux
 
 ## Topics
@@ -62,6 +62,7 @@ struct MyApp: App {
 - <doc:PaletteReference>
 - <doc:ListAndTable>
 - <doc:LayoutSystem>
+- <doc:ImageDecoding>
 
 ### App Structure
 
@@ -80,6 +81,14 @@ struct MyApp: App {
 - ``AnyView``
 - ``Spinner``
 - ``Divider``
+
+### Image Decoding
+
+- ``PlatformImageLoader``
+- ``ImageDecodingLimits``
+- ``ImageLoadError``
+- ``RGBAImage``
+- ``RGBA``
 
 ### Interactive Controls
 
