@@ -128,7 +128,7 @@ Four managers finalize the frame:
 
 - The **`LifecycleManager`** compares the current frame's structural slots with the previous frame's. Disappeared views fire their `onDisappear` callbacks, cancel mounted tasks, and leave the appeared set so a future mount can trigger `onAppear` again.
 - The **`StateStorage`** performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
-- The **observation registry** removes identities that were not evaluated in the completed render pass. Callbacks from older generations and unmounted identities become inert.
+- The **observation registry** removes identities that were not active in the completed render pass. Cache hits preserve existing registrations below skipped subtrees; callbacks from older generations and unmounted identities become inert.
 - The **`RenderCache`** removes inactive entries (subtrees no longer in the view tree) and optionally logs per-frame cache statistics.
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
@@ -359,7 +359,7 @@ When a view is wrapped in `.equatable()`, the rendering system:
 1. Looks up the cached ``FrameBuffer`` for this view's `ViewIdentity`
 2. Compares the **current view value** with the cached snapshot via `Equatable.==`
 3. Checks that the available **width and height** haven't changed
-4. On **cache hit**: returns the cached buffer: the entire subtree is skipped
+4. On **cache hit**: returns the cached buffer and preserves the subtree's State and Observation liveness without evaluating its body
 5. On **cache miss**: renders normally and stores the result
 
 ```swift

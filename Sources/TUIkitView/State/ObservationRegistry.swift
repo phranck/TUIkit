@@ -46,6 +46,16 @@ package extension ObservationRegistry {
         }
     }
 
+    /// Keeps existing registrations below a cached subtree mounted.
+    func markSubtreeActive(_ root: ViewIdentity) {
+        state.withLock { registry in
+            let mountedIdentities = registry.generations.keys.filter { identity in
+                identity == root || root.isAncestor(of: identity)
+            }
+            registry.activeIdentities.formUnion(mountedIdentities)
+        }
+    }
+
     /// Removes registrations for identities absent from the completed pass.
     func endRenderPass() {
         state.withLock { registry in

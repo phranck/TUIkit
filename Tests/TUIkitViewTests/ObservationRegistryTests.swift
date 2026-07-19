@@ -39,6 +39,35 @@ struct ObservationRegistryTests {
         #expect(sink.invalidatedSubtrees == [identity])
     }
 
+    @Test("Cached subtree keeps descendant registrations mounted")
+    func cachedSubtreeKeepsDescendantsMounted() {
+        let registry = ObservationRegistry()
+        let sink = RecordingInvalidationSink()
+        let model = ObservationModel()
+        let root = ViewIdentity(path: "Root/Cached")
+        let descendant = ViewIdentity(path: "Root/Cached/Observed")
+        let sibling = ViewIdentity(path: "Root/Sibling")
+
+        registry.beginRenderPass()
+        registry.track(identity: descendant, invalidationSink: sink) {
+            _ = model.value
+        }
+        registry.track(identity: sibling, invalidationSink: sink) {
+            _ = model.value
+        }
+        registry.endRenderPass()
+
+        registry.beginRenderPass()
+        registry.markSubtreeActive(root)
+        registry.endRenderPass()
+
+        #expect(registry.count == 1)
+
+        model.value = 1
+
+        #expect(sink.invalidatedSubtrees == [descendant])
+    }
+
     @Test("Unmount removes registration and makes pending callback inert")
     func unmountRemovesRegistration() {
         let registry = ObservationRegistry()

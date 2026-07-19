@@ -4,6 +4,7 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Observation
 import Testing
 
 @testable import TUIkit
@@ -14,6 +15,25 @@ private struct LabelView: View, Equatable {
 
     var body: some View {
         Text(text)
+    }
+}
+
+@Observable
+private final class EquatableObservationModel {
+    var value = 0
+}
+
+private struct ObservedLabelView: View {
+    let model: EquatableObservationModel
+
+    var body: some View {
+        Text("Value: \(model.value)")
+    }
+}
+
+extension ObservedLabelView: @preconcurrency Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.model === rhs.model
     }
 }
 
@@ -71,6 +91,32 @@ struct EquatableViewTests {
 
         #expect(buffer1.lines == buffer2.lines)
         #expect(context.environment.renderCache!.count == 1)
+    }
+
+    @Test("Cache hit keeps observed dependencies mounted")
+    func cacheHitKeepsObservationMounted() {
+        let tuiContext = TUIContext()
+        let model = EquatableObservationModel()
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: tuiContext.environmentValues(),
+            identity: ViewIdentity(path: "Root/ObservedCache")
+        )
+        let view = EquatableView(content: ObservedLabelView(model: model))
+
+        tuiContext.beginRenderPass()
+        _ = renderToBuffer(view, context: context)
+        tuiContext.endRenderPass()
+        #expect(tuiContext.observationRegistry.count == 1)
+
+        tuiContext.beginRenderPass()
+        _ = renderToBuffer(view, context: context)
+        tuiContext.endRenderPass()
+        #expect(tuiContext.observationRegistry.count == 1)
+
+        model.value = 1
+        #expect(tuiContext.appState.needsRender)
     }
 
     // MARK: - Cache Miss on Changed Content
