@@ -33,6 +33,7 @@ extension RenderContext {
         env.lifecycle = tuiContext.lifecycle
         env.keyEventDispatcher = tuiContext.keyEventDispatcher
         env.renderCache = tuiContext.renderCache
+        env.renderInvalidationSink = tuiContext.appState
         env.preferenceStorage = tuiContext.preferences
         self.init(
             availableWidth: availableWidth,

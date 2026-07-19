@@ -186,9 +186,7 @@ extension RenderLoop {
 
         // If an @Published property changed, clear the entire render cache
         // so EquatableView-cached subtrees re-render with new model data.
-        if AppState.shared.consumeNeedsCacheClear() {
-            tuiContext.renderCache.clearAll()
-        }
+        tuiContext.applyPendingRenderInvalidations()
 
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
@@ -297,6 +295,7 @@ extension RenderLoop {
         environment.lifecycle = tuiContext.lifecycle
         environment.keyEventDispatcher = tuiContext.keyEventDispatcher
         environment.renderCache = tuiContext.renderCache
+        environment.renderInvalidationSink = tuiContext.appState
         environment.preferenceStorage = tuiContext.preferences
         environment.localizationService = LocalizationService.shared
 
@@ -329,7 +328,8 @@ private extension RenderLoop {
         let rootIdentity = ViewIdentity(rootType: A.self)
         StateRegistration.activeContext = HydrationContext(
             identity: rootIdentity,
-            storage: tuiContext.stateStorage
+            storage: tuiContext.stateStorage,
+            invalidationSink: tuiContext.appState
         )
         StateRegistration.counter = 0
         StateRegistration.activeEnvironment = environment

@@ -204,6 +204,9 @@ extension LifecycleManager {
 /// ```
 final class TUIContext: @unchecked Sendable {
 
+    /// Thread-safe render state and invalidation sink owned by this runtime.
+    let appState: AppState
+
     /// View lifecycle tracking (appear, disappear, task management).
     let lifecycle: LifecycleManager
 
@@ -227,10 +230,12 @@ final class TUIContext: @unchecked Sendable {
     ///
     /// Each context owns an independent render cache.
     init() {
+        let appState = AppState()
+        self.appState = appState
         self.lifecycle = LifecycleManager()
         self.keyEventDispatcher = KeyEventDispatcher()
         self.preferences = PreferenceStorage()
-        self.stateStorage = StateStorage()
+        self.stateStorage = StateStorage(invalidationSink: appState)
         self.renderCache = RenderCache()
     }
 
@@ -242,28 +247,50 @@ final class TUIContext: @unchecked Sendable {
     ///   - lifecycle: The lifecycle manager to use.
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
+    ///   - appState: The render state and invalidation sink to use.
     ///   - stateStorage: The state storage to use.
     ///   - renderCache: The render cache to use.
     init(
         lifecycle: LifecycleManager,
         keyEventDispatcher: KeyEventDispatcher,
         preferences: PreferenceStorage,
+        appState: AppState = AppState(),
         stateStorage: StateStorage = StateStorage(),
         renderCache: RenderCache = RenderCache()
     ) {
+        self.appState = appState
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
         self.stateStorage = stateStorage
         self.renderCache = renderCache
+        stateStorage.setInvalidationSink(appState)
     }
 }
 
 // MARK: - Internal API
 
 extension TUIContext {
+    /// Applies cache invalidations queued by state producers.
+    ///
+    /// This method runs on the render owner before a frame, keeping the
+    /// non-thread-safe render cache away from background state tasks.
+    func applyPendingRenderInvalidations() {
+        for invalidation in appState.consumePendingCacheInvalidations() {
+            switch invalidation {
+            case .renderOnly:
+                break
+            case .subtree(let identity):
+                renderCache.clearAffected(by: identity)
+            case .all:
+                renderCache.clearAll()
+            }
+        }
+    }
+
     /// Resets all services to their initial state.
     func reset() {
+        appState.reset()
         lifecycle.reset()
         keyEventDispatcher.clearHandlers()
         preferences.reset()

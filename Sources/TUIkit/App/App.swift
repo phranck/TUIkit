@@ -86,8 +86,9 @@ internal final class AppRunner<A: App> {
     private var signals = SignalManager()
 
     init(app: A) {
+        let tuiContext = TUIContext()
         self.app = app
-        self.appState = AppState()
+        self.appState = tuiContext.appState
         self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
         self.appHeader = AppHeaderState()
         self.focusManager = FocusManager()
@@ -95,7 +96,7 @@ internal final class AppRunner<A: App> {
         self.statusBar = StatusBarState(appState: appState)
         self.statusBar.style = .bordered
         self.terminal = Terminal()
-        self.tuiContext = TUIContext()
+        self.tuiContext = tuiContext
     }
 }
 

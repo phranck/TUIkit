@@ -176,6 +176,7 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
     // that will be constructed inside this view's body.
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
+        let invalidationSink = context.environment.renderInvalidationSink
 
         // Wrap body evaluation in observation tracking so that any @Observable
         // property accessed during body triggers a re-render when mutated.
@@ -183,11 +184,11 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
             withObservationTracking {
                 view.body
             } onChange: {
-                AppState.shared.setNeedsRenderWithCacheClear()
+                invalidationSink?.invalidate(.all)
             }
         }
 
-        context.environment.stateStorage!.markActive(context.identity)
+        context.environment.stateStorage?.markActive(context.identity)
 
         return renderToBuffer(body, context: childContext)
     }

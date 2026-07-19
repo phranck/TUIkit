@@ -68,8 +68,15 @@ public final class StateStorage: @unchecked Sendable {
     /// Identities seen during the current render pass (for garbage collection).
     private var activeIdentities: Set<ViewIdentity> = []
 
+    /// Runtime receiving invalidations from state boxes created by this storage.
+    private var invalidationSink: (any RenderInvalidationSink)?
+
     /// Creates an empty state storage.
-    public init() {}
+    ///
+    /// - Parameter invalidationSink: Runtime that owns values stored here.
+    public init(invalidationSink: (any RenderInvalidationSink)? = nil) {
+        self.invalidationSink = invalidationSink
+    }
 
     /// The number of stored state entries (for testing/debugging).
     public var count: Int { values.count }
@@ -90,13 +97,24 @@ extension StateStorage {
     /// - Returns: The persistent `Storage` object for this property.
     public func storage<Value>(for key: StateKey, default defaultValue: Value) -> StateBox<Value> {
         if let existing = values[key] as? StateBox<Value> {
-            existing.identity = key.identity
+            existing.bind(identity: key.identity, invalidationSink: invalidationSink)
             return existing
         }
-        let fresh = StateBox(defaultValue)
-        fresh.identity = key.identity
+        let fresh = StateBox(
+            defaultValue,
+            identity: key.identity,
+            invalidationSink: invalidationSink
+        )
         values[key] = fresh
         return fresh
+    }
+
+    /// Assigns the runtime that owns subsequently retrieved state boxes.
+    ///
+    /// TUIContext calls this while assembling injected services, before a
+    /// render pass can create state.
+    public func setInvalidationSink(_ invalidationSink: (any RenderInvalidationSink)?) {
+        self.invalidationSink = invalidationSink
     }
 
     /// Marks an identity as active during the current render pass.
@@ -199,7 +217,7 @@ extension StateStorage {
 /// It is a reference type so that mutations are visible across all copies
 /// of the `@State` struct (which uses `nonmutating set`).
 ///
-/// On value change, signals a re-render through `AppState.shared`.
+/// On value change, signals a re-render through its owning runtime.
 /// Cache invalidation is identity-aware: only the affected subtree is
 /// cleared instead of the entire cache.
 public final class StateBox<Value>: @unchecked Sendable {
@@ -207,24 +225,49 @@ public final class StateBox<Value>: @unchecked Sendable {
     ///
     /// Set during hydration from ``StateStorage``. Used for targeted
     /// cache invalidation via ``RenderCache/clearAffected(by:)``.
-    var identity: ViewIdentity?
+    private var identity: ViewIdentity?
+
+    /// Runtime receiving invalidations when the value changes.
+    private var invalidationSink: (any RenderInvalidationSink)?
 
     /// The current value.
     public var value: Value {
         didSet {
+            guard let invalidationSink else { return }
             if let identity {
-                RenderCache.shared.clearAffected(by: identity)
+                invalidationSink.invalidate(.subtree(identity))
             } else {
-                RenderCache.shared.clearAll()
+                invalidationSink.invalidate(.all)
             }
-            AppState.shared.setNeedsRender()
         }
     }
 
     /// Creates a state box with an initial value.
     ///
-    /// - Parameter value: The initial value.
-    public init(_ value: Value) {
+    /// - Parameters:
+    ///   - value: The initial value.
+    ///   - identity: The identity owning this value, if known.
+    ///   - invalidationSink: Runtime receiving invalidations.
+    public init(
+        _ value: Value,
+        identity: ViewIdentity? = nil,
+        invalidationSink: (any RenderInvalidationSink)? = nil
+    ) {
         self.value = value
+        self.identity = identity
+        self.invalidationSink = invalidationSink
+    }
+}
+
+// MARK: - Internal API
+
+extension StateBox {
+    /// Associates this box with the runtime and identity owning it.
+    func bind(
+        identity: ViewIdentity,
+        invalidationSink: (any RenderInvalidationSink)?
+    ) {
+        self.identity = identity
+        self.invalidationSink = invalidationSink
     }
 }

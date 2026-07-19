@@ -20,6 +20,13 @@ private struct RenderCacheKey: EnvironmentKey {
     static let defaultValue: RenderCache? = nil
 }
 
+// MARK: - Render Invalidation
+
+/// EnvironmentKey for routing state changes to the owning runtime.
+private struct RenderInvalidationSinkKey: EnvironmentKey {
+    static let defaultValue: (any RenderInvalidationSink)? = nil
+}
+
 // MARK: - EnvironmentValues Extensions
 
 extension EnvironmentValues {
@@ -34,5 +41,11 @@ extension EnvironmentValues {
     public var renderCache: RenderCache? {
         get { self[RenderCacheKey.self] }
         set { self[RenderCacheKey.self] = newValue }
+    }
+
+    /// Sink that routes state changes to the runtime owning this render tree.
+    public var renderInvalidationSink: (any RenderInvalidationSink)? {
+        get { self[RenderInvalidationSinkKey.self] }
+        set { self[RenderInvalidationSinkKey.self] = newValue }
     }
 }
