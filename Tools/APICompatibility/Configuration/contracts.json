@@ -1,0 +1,311 @@
+{
+  "contracts" : [
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'withAnimation' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "AnimationNegative.swift"
+      },
+      "id" : "compile.issue-34",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'Link' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "ApplicationActionsNegative.swift"
+      },
+      "id" : "compile.issue-33",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ConformancePositive.swift"
+      },
+      "id" : "compile.conformance-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "does not conform to protocol 'EnvironmentKey'",
+          "outcome" : "fails"
+        },
+        "fixture" : "ConformanceNegative.swift"
+      },
+      "id" : "compile.conformance-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ContentPositive.swift"
+      },
+      "id" : "compile.issue-28",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "missing argument for parameter 'selection' in call",
+          "outcome" : "fails"
+        },
+        "fixture" : "ContainersNegative.swift"
+      },
+      "id" : "compile.issue-24",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ControlsPositive.swift"
+      },
+      "id" : "compile.issue-23",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "CorePositive.swift"
+      },
+      "id" : "compile.issue-17",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "DataFlowPositive.swift"
+      },
+      "id" : "compile.issue-18",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'PasteButton' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "DataTransferNegative.swift"
+      },
+      "id" : "compile.issue-42",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find type 'FileDocument' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "DocumentsNegative.swift"
+      },
+      "id" : "compile.issue-43",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "class 'FocusState' cannot be used as an attribute",
+          "outcome" : "fails"
+        },
+        "fixture" : "FocusNegative.swift"
+      },
+      "id" : "compile.issue-22",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "conform to 'Hashable'",
+          "outcome" : "fails"
+        },
+        "fixture" : "GenericsNegative.swift"
+      },
+      "id" : "compile.generics-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "GenericsPositive.swift"
+      },
+      "id" : "compile.generics-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'TapGesture' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "InputNegative.swift"
+      },
+      "id" : "compile.issue-41",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "'nonisolated' modifier cannot be applied to this declaration",
+          "outcome" : "fails"
+        },
+        "fixture" : "IsolationNegative.swift"
+      },
+      "id" : "compile.isolation-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "IsolationPositive.swift"
+      },
+      "id" : "compile.isolation-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "argument 'role' must precede argument 'action'",
+          "outcome" : "fails"
+        },
+        "fixture" : "LabelsOrderNegative.swift"
+      },
+      "id" : "compile.labels-order-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "LabelsOrderPositive.swift"
+      },
+      "id" : "compile.labels-order-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "LayoutPositive.swift"
+      },
+      "id" : "compile.issue-20",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ModifiersPositive.swift"
+      },
+      "id" : "compile.issue-21",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'NavigationStack' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "NavigationNegative.swift"
+      },
+      "id" : "compile.issue-31",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "requires that 'Int' conform to 'View'",
+          "outcome" : "fails"
+        },
+        "fixture" : "ResultBuilderNegative.swift"
+      },
+      "id" : "compile.result-builder-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ResultBuilderPositive.swift"
+      },
+      "id" : "compile.result-builder-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "ScenePositive.swift"
+      },
+      "id" : "compile.issue-19",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "does not conform to the 'Sendable' protocol",
+          "outcome" : "fails"
+        },
+        "fixture" : "SendabilityNegative.swift"
+      },
+      "id" : "compile.sendability-negative",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "outcome" : "succeeds"
+        },
+        "fixture" : "SendabilityPositive.swift"
+      },
+      "id" : "compile.sendability-positive",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find 'Form' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "StructuredControlsNegative.swift"
+      },
+      "id" : "compile.issue-32",
+      "kind" : "compile"
+    },
+    {
+      "compile" : {
+        "expectation" : {
+          "expectedDiagnosticSubstring" : "cannot find type 'Commands' in scope",
+          "outcome" : "fails"
+        },
+        "fixture" : "CommandsNegative.swift"
+      },
+      "id" : "compile.issue-5",
+      "kind" : "compile"
+    }
+  ],
+  "schemaVersion" : 1
+}

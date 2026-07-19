@@ -295,6 +295,20 @@ struct CompileContractTests {
 
         #expect(executions.map(\.contractID) == ["compile.real-negative", "compile.real-positive"])
     }
+
+    @Test("Compiler process captures output and a nonzero exit status")
+    func compilerProcessCapturesOutputAndExitStatus() throws {
+        let result = try FoundationSwiftCompilerProcess().run(
+            executable: URL(fileURLWithPath: "/bin/sh"),
+            arguments: ["-c", "printf standard-output; printf standard-error >&2; exit 7"]
+        )
+
+        #expect(result == SwiftCompilerProcessResult(
+            exitCode: 7,
+            standardOutput: "standard-output",
+            standardError: "standard-error"
+        ))
+    }
 }
 
 private extension CompileContractTests {

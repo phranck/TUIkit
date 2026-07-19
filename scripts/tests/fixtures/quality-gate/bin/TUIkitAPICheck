@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf 'TUIkitAPICheck %s\n' "$*" >> "$QUALITY_GATE_TEST_LOG"

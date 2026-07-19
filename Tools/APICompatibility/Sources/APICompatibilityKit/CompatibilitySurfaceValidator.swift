@@ -17,6 +17,47 @@ public struct CompatibilitySurfaceValidator: Sendable {
     }
 }
 
+struct CompatibilityMappingSurfaceAnalyzer {
+    private let referenceSet: APISnapshotSet
+    private let tuikitSet: APISnapshotSet
+    private let referenceRelationships: RelationshipAnchorIndex
+    private let tuikitRelationships: RelationshipAnchorIndex
+
+    init(referenceSet: APISnapshotSet, tuikitSet: APISnapshotSet) {
+        self.referenceSet = referenceSet
+        self.tuikitSet = tuikitSet
+        let validation = SurfaceValidation(
+            manifest: CompatibilityManifest(
+                schemaVersion: 2,
+                referenceIDs: [],
+                decisions: [],
+                tuikitDecisions: []
+            ),
+            referenceSet: referenceSet,
+            tuikitSet: tuikitSet
+        )
+        referenceRelationships = validation.relationshipIndex(in: referenceSet)
+        tuikitRelationships = validation.relationshipIndex(in: tuikitSet)
+    }
+
+    func differences(
+        manifest: CompatibilityManifest,
+        referenceID: String,
+        tuikitID: String
+    ) -> [CompatibilityDifference] {
+        SurfaceValidation(
+            manifest: manifest,
+            referenceSet: referenceSet,
+            tuikitSet: tuikitSet
+        ).mappingDifferences(
+            referenceID: referenceID,
+            tuikitID: tuikitID,
+            referenceRelationships: referenceRelationships,
+            tuikitRelationships: tuikitRelationships
+        )
+    }
+}
+
 private struct SurfaceValidation {
     let manifest: CompatibilityManifest
     let referenceSet: APISnapshotSet
@@ -41,6 +82,38 @@ private struct SurfaceValidation {
                 tuikit: tuikitRelationships
             )
             + collisionDiagnostics(normalizer: normalizer)
+    }
+
+    func mappingDifferences(
+        referenceID: String,
+        tuikitID: String,
+        referenceRelationships: RelationshipAnchorIndex,
+        tuikitRelationships: RelationshipAnchorIndex
+    ) -> [CompatibilityDifference] {
+        let normalizer = SurfaceNormalizer(
+            manifest: manifest,
+            moduleNames: referenceSet.moduleNames + tuikitSet.moduleNames
+        )
+        let reference = surfaceOccurrences(
+            in: referenceSet,
+            identifier: referenceID,
+            relationshipIndex: referenceRelationships,
+            normalizer: normalizer
+        )
+        let current = surfaceOccurrences(
+            in: tuikitSet,
+            identifier: tuikitID,
+            relationshipIndex: tuikitRelationships,
+            normalizer: normalizer
+        )
+        return CompatibilityDifference.allCases.filter { difference in
+            reference.contains { referenceOccurrence in
+                current.contains { currentOccurrence in
+                    referenceOccurrence.surface.value(for: difference)
+                        != currentOccurrence.surface.value(for: difference)
+                }
+            }
+        }
     }
 
     private func inventoryDiagnostics() -> [APICheckDiagnostic] {
@@ -272,7 +345,7 @@ private struct SurfaceValidation {
         }.sorted { $0.source.id < $1.source.id }
     }
 
-    private func relationshipIndex(in set: APISnapshotSet) -> RelationshipAnchorIndex {
+    func relationshipIndex(in set: APISnapshotSet) -> RelationshipAnchorIndex {
         let localIdentifiers = Set(set.unionPreciseIdentifiers)
         var relationships: [RelationshipAnchorKey: Set<CanonicalRelationship>] = [:]
         var unowned: [UnownedRelationship] = []

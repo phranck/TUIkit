@@ -48,6 +48,10 @@ run_gate() {
         ACTIONLINT_BIN="$test_root/bin/actionlint" \
         TUIKIT_BUILD_PATH="$test_root/build" \
         TUIKIT_API_BUILD_PATH="$test_root/api-build" \
+        TUIKIT_API_TOOL="$test_root/bin/TUIkitAPICheck" \
+        TUIKIT_SWIFTC_BIN="$test_root/bin/swift" \
+        TUIKIT_SWIFT_MODULE_PATH="$test_root/build/Modules" \
+        TUIKIT_CLANG_MODULE_PATH="$test_root" \
         TUIKIT_TEST_LIST_OUTPUT="$test_root/test-list.txt" \
         TUIKIT_TEST_EVENT_STREAM_OUTPUT="$test_root/test-events.jsonl" \
         TUIKIT_DOCC_OUTPUT="$test_root/docc-output" \
@@ -64,6 +68,10 @@ run_gate_without_build_path() {
         SWIFTLINT_BIN="$test_root/bin/swiftlint" \
         ACTIONLINT_BIN="$test_root/bin/actionlint" \
         TUIKIT_API_BUILD_PATH="$test_root/api-build" \
+        TUIKIT_API_TOOL="$test_root/bin/TUIkitAPICheck" \
+        TUIKIT_SWIFTC_BIN="$test_root/bin/swift" \
+        TUIKIT_SWIFT_MODULE_PATH="$test_root/build/Modules" \
+        TUIKIT_CLANG_MODULE_PATH="$test_root" \
         TUIKIT_TEST_LIST_OUTPUT="$test_root/test-list.txt" \
         TUIKIT_TEST_EVENT_STREAM_OUTPUT="$test_root/test-events.jsonl" \
         TUIKIT_DOCC_OUTPUT="$test_root/docc-output" \
@@ -109,15 +117,19 @@ test_runs_every_gate_in_order() {
         "swift test --package-path $test_root/Tools/APICompatibility --build-path $test_root/api-build -Xswiftc -warnings-as-errors"
     assert_log_line "$test_root/commands.log" 9 \
         "swift build --package-path $test_root --build-path $test_root/build -Xswiftc -warnings-as-errors"
-    assert_log_line "$test_root/commands.log" 10 "verify-versioned-consumer "
-    assert_log_line "$test_root/commands.log" 11 \
-        "swift test --package-path $test_root --build-path $test_root/build -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
+    assert_log_line "$test_root/commands.log" 10 \
+        "TUIkitAPICheck run-compile-contracts --registry $test_root/Tools/APICompatibility/Configuration/contracts.json --fixtures $test_root/Tools/APICompatibility/Configuration/CompileContracts --swiftc $test_root/bin/swift --swift-module-path $test_root/build/Modules --clang-module-path $test_root"
+    assert_log_line "$test_root/commands.log" 11 "verify-versioned-consumer "
     assert_log_line "$test_root/commands.log" 12 \
-        "swift test list --package-path $test_root --build-path $test_root/build --skip-build"
-    assert_log_line "$test_root/commands.log" 13 "generate-documentation $test_root/docc-output"
+        "swift test --package-path $test_root --build-path $test_root/build -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
+    assert_log_line "$test_root/commands.log" 13 \
+        "TUIkitAPICheck validate-contracts --registry $test_root/Tools/APICompatibility/Configuration/contracts.json --event-stream $test_root/test-events.jsonl"
     assert_log_line "$test_root/commands.log" 14 \
+        "swift test list --package-path $test_root --build-path $test_root/build --skip-build"
+    assert_log_line "$test_root/commands.log" 15 "generate-documentation $test_root/docc-output"
+    assert_log_line "$test_root/commands.log" 16 \
         "update-test-count --count-only --test-list $test_root/test-list.txt --expected-test-target TUIkitCoreTests --expected-test-target TUIkitStylingTests --expected-test-target TUIkitViewTests --expected-test-target TUIkitImageTests --expected-test-target TUIkitTests"
-    [[ "$(wc -l < "$test_root/commands.log" | tr -d '[:space:]')" == "14" ]] || {
+    [[ "$(wc -l < "$test_root/commands.log" | tr -d '[:space:]')" == "16" ]] || {
         fail "quality gate ran an unexpected number of commands"
     }
     grep -Fq "Quality gate passed with 2 discovered tests" "$stdout_file" || {
@@ -204,7 +216,7 @@ test_runs_under_system_bash_without_optional_build_path() {
 
     assert_log_line "$test_root/commands.log" 9 \
         "swift build --package-path $test_root -Xswiftc -warnings-as-errors"
-    assert_log_line "$test_root/commands.log" 11 \
+    assert_log_line "$test_root/commands.log" 12 \
         "swift test --package-path $test_root -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
 }
 

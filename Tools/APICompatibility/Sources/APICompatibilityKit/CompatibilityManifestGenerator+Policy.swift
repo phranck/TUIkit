@@ -25,6 +25,7 @@ extension CompatibilityManifestGenerator {
         )
         for rule in policy.referenceRules {
             try validate(rule, allowedOwnerIssues: allowedOwnerIssues)
+            try validateSignatureSemantics(rule, referenceSet: referenceSet)
         }
     }
 
@@ -153,6 +154,53 @@ extension CompatibilityManifestGenerator {
                 "review-policy.implemented-signature",
                 "Implemented include rule '\(rule.id)' cannot define planned signatures"
             )
+        }
+    }
+
+    func validateSignatureSemantics(
+        _ rule: ReferenceReviewRule,
+        referenceSet: APISnapshotSet
+    ) throws {
+        guard rule.action.kind == .include,
+              let status = rule.action.status,
+              let availability = rule.action.availability?.policy else {
+            return
+        }
+        for referenceID in rule.referenceIDs.sorted() {
+            let referenceSignature = try uniqueSignature(
+                in: referenceSet,
+                identifier: referenceID,
+                direction: "Reference"
+            )
+            let requiresCompilerFloor = ReviewPolicySignatureSemantics
+                .requiresSwift60CompilerFloor(referenceSignature)
+            guard (availability == .swift60CompilerFloor) == requiresCompilerFloor else {
+                throw manifestGenerationDiagnostic(
+                    "review-policy.compiler-floor",
+                    requiresCompilerFloor
+                        ? "Include rule '\(rule.id)' must use swift60CompilerFloor for '\(referenceID)'"
+                        : "Include rule '\(rule.id)' assigns swift60CompilerFloor to Swift 6.0-compatible "
+                            + "reference '\(referenceID)'"
+                )
+            }
+            guard status == .planned,
+                  let plannedSignature = rule.action.plannedTUIkitSignatures?[referenceID] else {
+                continue
+            }
+            if requiresCompilerFloor,
+               ReviewPolicySignatureSemantics.requiresSwift60CompilerFloor(plannedSignature) {
+                throw manifestGenerationDiagnostic(
+                    "review-policy.compiler-floor-signature",
+                    "Compiler-floor rule '\(rule.id)' must record a Swift 6.0-compatible planned signature "
+                        + "for '\(referenceID)'"
+                )
+            }
+            if let token = ReviewPolicySignatureSemantics.nonportableToken(in: plannedSignature) {
+                throw manifestGenerationDiagnostic(
+                    "review-policy.nonportable-signature",
+                    "Include rule '\(rule.id)' plans nonportable symbol '\(referenceID)' with type '\(token)'"
+                )
+            }
         }
     }
 
@@ -320,5 +368,61 @@ extension CompatibilityManifestGenerator {
 
     func isNonempty(_ value: String?) -> Bool {
         value.map(isNonempty) == true
+    }
+}
+
+private enum ReviewPolicySignatureSemantics {
+    static let nonportableTokens = [
+        "CAAnimation",
+        "CALayer",
+        "CGImage",
+        "CIImage",
+        "CoordinateSpace3D",
+        "CVPixelBuffer",
+        "NSColor",
+        "NSControl",
+        "NSDirectionalEdgeInsets",
+        "NSDraggingInfo",
+        "NSDraggingSession",
+        "NSGestureRecognizerRepresentable",
+        "NSHelpManager",
+        "NSImage",
+        "NSItemProvider",
+        "NSManagedObjectContext",
+        "NSTextContentType",
+        "NSUnderlineStyle",
+        "NSUserActivity",
+        "Selector",
+        "SurfaceClassification",
+        "SurfaceSnappingInfo",
+        "UIAccessibilityContrast",
+        "UIColor",
+        "UIContentSizeCategory",
+        "UIDragSession",
+        "UIDropSession",
+        "UIGestureRecognizerRepresentable",
+        "UIImage",
+        "UIKeyboardType",
+        "UILegibilityWeight",
+        "UITextAutocapitalizationType",
+        "UITextContentType",
+        "UITraitBridgedEnvironmentKey",
+        "UITraitEnvironmentLayoutDirection",
+        "UIUserInterfaceSizeClass",
+        "UIUserInterfaceStyle",
+        "WKTextContentType",
+    ]
+
+    static func requiresSwift60CompilerFloor(_ signature: String) -> Bool {
+        ["actor", "class", "enum", "protocol", "struct"].contains { declarationKind in
+            signature.hasPrefix("nonisolated \(declarationKind) ")
+        }
+    }
+
+    static func nonportableToken(in signature: String) -> String? {
+        let tokens = Set(signature.split { character in
+            !(character.isLetter || character.isNumber || character == "_")
+        })
+        return nonportableTokens.first { tokens.contains(Substring($0)) }
     }
 }
