@@ -84,8 +84,9 @@ validate_test_target "TUIkitStylingTests" '"TUIkitStyling"' "TUIkitStyling"
 validate_test_target "TUIkitViewTests" '"TUIkitCore", "TUIkitView"' "TUIkitCore TUIkitView"
 validate_test_target "TUIkitImageTests" '"TUIkitImage"' "TUIkitImage"
 
-if grep -Eq '\.(systemLibrary|binaryTarget)[[:space:]]*\(' "$PACKAGE_MANIFEST"; then
-    fail "Package.swift declares a native or binary target"
+if grep -Eq '\.(systemLibrary|binaryTarget|linkedLibrary|linkedFramework)[[:space:]]*\(' \
+    "$PACKAGE_MANIFEST"; then
+    fail "Package.swift declares a native or binary dependency"
 fi
 
 for source_root in Sources Vendor; do

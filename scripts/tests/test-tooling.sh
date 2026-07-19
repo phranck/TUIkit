@@ -335,6 +335,17 @@ test_module_test_boundaries_are_enforced() {
         "Test boundary error: Package.swift must declare the isolated TUIkitCoreTests dependency set exactly once" \
         "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$invalid_dependency_root"
 
+    local native_link_root="$TEMP_DIR/native-link"
+    cp -R "$valid_root" "$native_link_root"
+    sed -i.bak \
+        '/targets: \[/a\
+        .target(name: "NativeTarget", linkerSettings: [.linkedLibrary("ncurses")]),' \
+        "$native_link_root/Package.swift"
+    find "$native_link_root" -name '*.bak' -delete
+    expect_failure \
+        "Test boundary error: Package.swift declares a native or binary dependency" \
+        "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$native_link_root"
+
     local native_source_root="$TEMP_DIR/native-source"
     cp -R "$valid_root" "$native_source_root"
     mkdir -p "$native_source_root/Sources/Decoder"
