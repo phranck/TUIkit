@@ -6,7 +6,7 @@
 
 import Testing
 
-@testable import TUIkit
+@testable import TUIkitCore
 
 /// A simple string preference key for testing (default reduce = last value).
 private struct TestStringKey: PreferenceKey {
