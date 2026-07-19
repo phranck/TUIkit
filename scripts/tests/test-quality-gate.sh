@@ -57,7 +57,7 @@ run_gate() {
 run_gate_without_build_path() {
     local test_root="$1"
 
-    env \
+    env -u TUIKIT_BUILD_PATH \
         PATH="$test_root/bin:$PATH" \
         QUALITY_GATE_TEST_LOG="$test_root/commands.log" \
         SWIFTLINT_BIN="$test_root/bin/swiftlint" \
