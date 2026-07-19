@@ -120,6 +120,31 @@ struct RuntimeCharacterizationTests {
         harness.unmount()
     }
 
+    @Test("View task updates State and does not restart on reconstruction", .timeLimit(.minutes(1)))
+    func taskUpdatesStateAcrossReconstruction() async {
+        let harness = RuntimeCharacterizationHarness()
+        let trace = harness.trace
+        let started = AsyncSignal()
+
+        let initial = harness.render {
+            TaskStateCharacterizationView(trace: trace, started: started)
+        }
+
+        #expect(initial.ansiStrippedLines == ["task has not run"])
+
+        await started.wait()
+
+        let updated = harness.render {
+            TaskStateCharacterizationView(trace: trace, started: started)
+        }
+        let startCount = trace.snapshot().filter { $0 == .task("state task started") }.count
+
+        #expect(updated.ansiStrippedLines == ["task has run"])
+        #expect(startCount == 1)
+
+        harness.unmount()
+    }
+
     @Test("Observation changes can be traced deterministically", .timeLimit(.minutes(1)))
     func observationTrace() async {
         let harness = RuntimeCharacterizationHarness()
@@ -180,11 +205,17 @@ struct RuntimeCharacterizationTests {
                 .onAppear {
                     trace.record(.lifecycle("reconstructed appear"))
                 }
+                .onDisappear {
+                    trace.record(.lifecycle("reconstructed disappear"))
+                }
         }
         _ = harness.render {
             Text("mounted")
                 .onAppear {
                     trace.record(.lifecycle("reconstructed appear"))
+                }
+                .onDisappear {
+                    trace.record(.lifecycle("reconstructed disappear"))
                 }
         }
 
@@ -193,6 +224,14 @@ struct RuntimeCharacterizationTests {
         }.count
 
         #expect(appearanceCount == 1)
+        #expect(trace.snapshot().contains(.lifecycle("reconstructed disappear")) == false)
+
+        harness.unmount()
+
+        let disappearanceCount = trace.snapshot().filter {
+            $0 == .lifecycle("reconstructed disappear")
+        }.count
+        #expect(disappearanceCount == 1)
     }
 
     @Test("Default runtime render caches are isolated")
@@ -239,6 +278,22 @@ private struct StatefulCharacterizationView: View {
 
     var body: some View {
         Text("value:\(value)")
+    }
+}
+
+private struct TaskStateCharacterizationView: View {
+    @State private var taskHasRun = false
+
+    let trace: TraceRecorder<RuntimeTraceEvent>
+    let started: AsyncSignal
+
+    var body: some View {
+        Text("task has \(taskHasRun ? "" : "not ")run")
+            .task {
+                taskHasRun = true
+                trace.record(.task("state task started"))
+                started.signal()
+            }
     }
 }
 
