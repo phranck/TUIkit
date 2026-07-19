@@ -80,13 +80,17 @@ internal final class AppRunner<A: App> {
     private let focusManager: FocusManager
     private let paletteManager: ThemeManager
     private let statusBar: StatusBarState
-    private let terminal: Terminal
+    private let terminal: any TerminalProtocol
     private let tuiContext: TUIContext
     private var isRunning = false
     private var signals = SignalManager()
 
-    init(app: A) {
-        let tuiContext = TUIContext.production()
+    init(
+        app: A,
+        terminal: (any TerminalProtocol)? = nil,
+        tuiContext: TUIContext? = nil
+    ) {
+        let tuiContext = tuiContext ?? TUIContext.production()
         self.app = app
         self.appState = tuiContext.appState
         self.appearanceManager = tuiContext.appearanceManager
@@ -95,7 +99,7 @@ internal final class AppRunner<A: App> {
         self.paletteManager = tuiContext.paletteManager
         self.statusBar = tuiContext.statusBar
         self.statusBar.style = .bordered
-        self.terminal = Terminal()
+        self.terminal = terminal ?? Terminal()
         self.tuiContext = tuiContext
     }
 }

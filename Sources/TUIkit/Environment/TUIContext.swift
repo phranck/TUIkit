@@ -350,6 +350,28 @@ extension TUIContext {
         )
     }
 
+    /// Starts a complete view render pass for this runtime.
+    func beginRenderPass() {
+        keyEventDispatcher.clearHandlers()
+        preferences.beginRenderPass()
+        focusManager.beginRenderPass()
+        statusBar.clearSectionItems()
+        appHeader.beginRenderPass()
+        statusBar.focusManager = focusManager
+        lifecycle.beginRenderPass()
+        stateStorage.beginRenderPass()
+        renderCache.beginRenderPass()
+        applyPendingRenderInvalidations()
+    }
+
+    /// Finishes lifecycle, state, and cache tracking for a render pass.
+    func endRenderPass() {
+        lifecycle.endRenderPass()
+        stateStorage.endRenderPass()
+        renderCache.removeInactive()
+        renderCache.logFrameStats()
+    }
+
     /// Builds complete environment values for this runtime.
     func environmentValues(
         extending base: EnvironmentValues = EnvironmentValues()

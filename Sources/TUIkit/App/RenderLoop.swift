@@ -109,7 +109,7 @@ internal final class RenderLoop<A: App> {
     let app: A
 
     /// The terminal for output and size queries.
-    let terminal: Terminal
+    let terminal: any TerminalProtocol
 
     /// The status bar state (height, items, appearance).
     let statusBar: StatusBarState
@@ -151,7 +151,7 @@ internal final class RenderLoop<A: App> {
 
     init(
         app: A,
-        terminal: Terminal,
+        terminal: any TerminalProtocol,
         statusBar: StatusBarState,
         appHeader: AppHeaderState,
         focusManager: FocusManager,
@@ -183,10 +183,6 @@ extension RenderLoop {
     ///   - cursorTimer: The cursor timer for TextField/SecureField animations.
     func render(pulsePhase: Double = 0, cursorTimer: CursorTimer? = nil) {
         beginRenderPass()
-
-        // If an @Published property changed, clear the entire render cache
-        // so EquatableView-cached subtrees re-render with new model data.
-        tuiContext.applyPendingRenderInvalidations()
 
         // Terminal size: single getSize() call avoids 2 ioctl syscalls per frame.
         let terminalSize = terminal.getSize()
@@ -285,15 +281,7 @@ extension RenderLoop {
 private extension RenderLoop {
     /// Clears all per-frame state and begins lifecycle/state/cache tracking.
     func beginRenderPass() {
-        tuiContext.keyEventDispatcher.clearHandlers()
-        tuiContext.preferences.beginRenderPass()
-        focusManager.beginRenderPass()
-        statusBar.clearSectionItems()
-        appHeader.beginRenderPass()
-        statusBar.focusManager = focusManager
-        tuiContext.lifecycle.beginRenderPass()
-        tuiContext.stateStorage.beginRenderPass()
-        tuiContext.renderCache.beginRenderPass()
+        tuiContext.beginRenderPass()
     }
 
     /// Evaluates `App.body` with hydration and environment context active.
@@ -380,10 +368,7 @@ private extension RenderLoop {
     /// Fires `onDisappear` for removed views and removes state/cache
     /// entries for views no longer in the tree.
     func endRenderPass() {
-        tuiContext.lifecycle.endRenderPass()
-        tuiContext.stateStorage.endRenderPass()
-        tuiContext.renderCache.removeInactive()
-        tuiContext.renderCache.logFrameStats()
+        tuiContext.endRenderPass()
     }
 
     /// Clears the render cache when environment values affecting visual output changed.
