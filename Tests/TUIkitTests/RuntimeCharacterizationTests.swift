@@ -170,8 +170,8 @@ struct RuntimeCharacterizationTests {
         }
     }
 
-    @Test("Reconstructed lifecycle identity remains characterized for issue #10")
-    func knownReconstructedLifecycleIdentityDefect() {
+    @Test("Reconstructed lifecycle modifier keeps one mounted identity")
+    func reconstructedLifecycleIdentity() {
         let harness = RuntimeCharacterizationHarness()
         let trace = harness.trace
 
@@ -192,12 +192,7 @@ struct RuntimeCharacterizationTests {
             $0 == .lifecycle("reconstructed appear")
         }.count
 
-        withKnownIssue("Issue #10: lifecycle UUIDs change when a view is reconstructed") {
-            #expect(appearanceCount == 1)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(appearanceCount == 1)
     }
 
     @Test("Default runtime render caches are isolated")

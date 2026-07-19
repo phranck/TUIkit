@@ -15,30 +15,53 @@ import Foundation
 /// into a single cohesive manager.
 /// All mutable state is protected by `NSLock`.
 final class LifecycleManager: @unchecked Sendable {
+    /// A stable key for one lifecycle or task slot.
+    private struct Slot: Hashable, Sendable {
+        let value: String
+
+        init(token: String) {
+            self.value = "token:\(token)"
+        }
+
+        init(identity: ViewIdentity) {
+            self.value = "identity:\(identity.path)"
+        }
+    }
+
+    /// Type-erased task restart identity.
+    private struct TaskID: Equatable, @unchecked Sendable {
+        let value: AnyHashable
+    }
+
+    /// Mounted task and the value controlling its restart behavior.
+    private struct TaskRecord: @unchecked Sendable {
+        let id: TaskID?
+        let task: Task<Void, Never>
+    }
 
     /// Lock protecting all mutable state.
     private let lock = NSLock()
 
     // MARK: - Lifecycle Tracking
 
-    /// Set of tokens that have appeared.
-    private var appearedTokens: Set<String> = []
+    /// Set of lifecycle slots that have appeared.
+    private var appearedSlots: Set<Slot> = []
 
-    /// Set of tokens that are currently visible (for onDisappear tracking).
-    private var visibleTokens: Set<String> = []
+    /// Set of lifecycle slots that are currently visible.
+    private var visibleSlots: Set<Slot> = []
 
-    /// Tokens seen during the current render pass.
-    private var currentRenderTokens: Set<String> = []
+    /// Lifecycle slots seen during the current render pass.
+    private var currentRenderSlots: Set<Slot> = []
 
     // MARK: - Disappear Callbacks
 
     /// Callbacks registered for view disappearance.
-    private var disappearCallbacks: [String: () -> Void] = [:]
+    private var disappearCallbacks: [Slot: () -> Void] = [:]
 
     // MARK: - Task Storage
 
-    /// Running async tasks keyed by lifecycle token.
-    private var tasks: [String: Task<Void, Never>] = [:]
+    /// Mounted async tasks keyed by structural lifecycle slot.
+    private var tasks: [Slot: TaskRecord] = [:]
 
     // MARK: - Init
 
@@ -53,23 +76,29 @@ extension LifecycleManager {
     func beginRenderPass() {
         lock.lock()
         defer { lock.unlock() }
-        currentRenderTokens.removeAll()
+        currentRenderSlots.removeAll(keepingCapacity: true)
     }
 
     /// Marks the end of a render pass and triggers onDisappear for views that are no longer visible.
     func endRenderPass() {
         lock.lock()
-        let disappeared = visibleTokens.subtracting(currentRenderTokens)
-        for token in disappeared {
-            appearedTokens.remove(token)
+        let disappeared = visibleSlots.subtracting(currentRenderSlots).sorted {
+            $0.value < $1.value
         }
-        visibleTokens = currentRenderTokens
-        let callbacks = disappearCallbacks
+        for slot in disappeared {
+            appearedSlots.remove(slot)
+        }
+        visibleSlots = currentRenderSlots
+        let callbacks = disappeared.compactMap { disappearCallbacks.removeValue(forKey: $0) }
+        let removedTasks = disappeared.compactMap { tasks.removeValue(forKey: $0)?.task }
         lock.unlock()
 
-        // Execute callbacks outside the lock to avoid deadlocks
-        for token in disappeared {
-            callbacks[token]?()
+        // Cancellation and callbacks run outside the lock to avoid deadlocks.
+        for task in removedTasks {
+            task.cancel()
+        }
+        for callback in callbacks {
+            callback()
         }
     }
 
@@ -81,11 +110,21 @@ extension LifecycleManager {
     /// - Returns: True if this is the first appearance (action was executed).
     @discardableResult
     func recordAppear(token: String, action: () -> Void) -> Bool {
-        lock.lock()
-        currentRenderTokens.insert(token)
+        recordAppear(slot: Slot(token: token), action: action)
+    }
 
-        if !appearedTokens.contains(token) {
-            appearedTokens.insert(token)
+    /// Records an appearance for a structurally derived runtime slot.
+    @discardableResult
+    func recordAppear(identity: ViewIdentity, action: () -> Void) -> Bool {
+        recordAppear(slot: Slot(identity: identity), action: action)
+    }
+
+    private func recordAppear(slot: Slot, action: () -> Void) -> Bool {
+        lock.lock()
+        currentRenderSlots.insert(slot)
+
+        if !appearedSlots.contains(slot) {
+            appearedSlots.insert(slot)
             lock.unlock()
             action()
             return true
@@ -96,16 +135,34 @@ extension LifecycleManager {
 
     /// Checks if a view has appeared before.
     func hasAppeared(token: String) -> Bool {
+        hasAppeared(slot: Slot(token: token))
+    }
+
+    /// Checks whether a structural runtime slot has appeared.
+    func hasAppeared(identity: ViewIdentity) -> Bool {
+        hasAppeared(slot: Slot(identity: identity))
+    }
+
+    private func hasAppeared(slot: Slot) -> Bool {
         lock.lock()
         defer { lock.unlock() }
-        return appearedTokens.contains(token)
+        return appearedSlots.contains(slot)
     }
 
     /// Removes the appeared state for a token so the next `recordAppear`
     /// treats it as a fresh first appearance.
     func resetAppearance(token: String) {
+        resetAppearance(slot: Slot(token: token))
+    }
+
+    /// Resets appearance state for a structural runtime slot.
+    func resetAppearance(identity: ViewIdentity) {
+        resetAppearance(slot: Slot(identity: identity))
+    }
+
+    private func resetAppearance(slot: Slot) {
         lock.lock()
-        appearedTokens.remove(token)
+        appearedSlots.remove(slot)
         lock.unlock()
     }
 
@@ -115,16 +172,34 @@ extension LifecycleManager {
     ///   - token: Unique identifier for the view.
     ///   - action: The onDisappear action to execute.
     func registerDisappear(token: String, action: @escaping () -> Void) {
+        registerDisappear(slot: Slot(token: token), action: action)
+    }
+
+    /// Registers a callback for a structurally derived runtime slot.
+    func registerDisappear(identity: ViewIdentity, action: @escaping () -> Void) {
+        registerDisappear(slot: Slot(identity: identity), action: action)
+    }
+
+    private func registerDisappear(slot: Slot, action: @escaping () -> Void) {
         lock.lock()
         defer { lock.unlock() }
-        disappearCallbacks[token] = action
+        disappearCallbacks[slot] = action
     }
 
     /// Unregisters the disappear callback for the given token.
     func unregisterDisappear(token: String) {
+        unregisterDisappear(slot: Slot(token: token))
+    }
+
+    /// Unregisters a callback for a structurally derived runtime slot.
+    func unregisterDisappear(identity: ViewIdentity) {
+        unregisterDisappear(slot: Slot(identity: identity))
+    }
+
+    private func unregisterDisappear(slot: Slot) {
         lock.lock()
         defer { lock.unlock() }
-        disappearCallbacks.removeValue(forKey: token)
+        disappearCallbacks.removeValue(forKey: slot)
     }
 
     /// Starts an async task associated with a lifecycle token.
@@ -138,22 +213,77 @@ extension LifecycleManager {
     func startTask(
         token: String,
         priority: TaskPriority,
-        operation: @escaping @Sendable () async -> Void
+        @_inheritActorContext operation: @escaping @isolated(any) @Sendable () async -> Void
     ) {
+        replaceTask(
+            slot: Slot(token: token),
+            id: nil,
+            priority: priority,
+            operation: operation
+        )
+    }
+
+    /// Starts or preserves a task at a structural slot.
+    ///
+    /// The task remains mounted across unchanged render passes. A changed ID
+    /// cancels the existing task and starts exactly one replacement.
+    @discardableResult
+    func updateTask<ID: Hashable>(
+        identity: ViewIdentity,
+        id: ID,
+        priority: TaskPriority,
+        @_inheritActorContext operation: @escaping @isolated(any) @Sendable () async -> Void
+    ) -> Bool {
+        let slot = Slot(identity: identity)
+        let taskID = TaskID(value: AnyHashable(id))
+
         lock.lock()
-        tasks[token]?.cancel()
-        tasks[token] = Task(priority: priority) {
+        currentRenderSlots.insert(slot)
+        if tasks[slot]?.id == taskID {
+            lock.unlock()
+            return false
+        }
+
+        let previousTask = tasks.removeValue(forKey: slot)?.task
+        previousTask?.cancel()
+        let task = Task(priority: priority) {
             await operation()
         }
+        tasks[slot] = TaskRecord(id: taskID, task: task)
         lock.unlock()
+
+        return true
     }
 
     /// Cancels and removes the task associated with the given token.
     func cancelTask(token: String) {
+        cancelTask(slot: Slot(token: token))
+    }
+
+    /// Cancels and removes a task at a structural runtime slot.
+    func cancelTask(identity: ViewIdentity) {
+        cancelTask(slot: Slot(identity: identity))
+    }
+
+    private func cancelTask(slot: Slot) {
         lock.lock()
-        tasks[token]?.cancel()
-        tasks.removeValue(forKey: token)
+        let task = tasks.removeValue(forKey: slot)?.task
         lock.unlock()
+        task?.cancel()
+    }
+
+    /// Number of retained disappearance callbacks for tests and diagnostics.
+    var disappearCallbackCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return disappearCallbacks.count
+    }
+
+    /// Number of retained mounted task records for tests and diagnostics.
+    var taskCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return tasks.count
     }
 
     /// Resets all lifecycle state.
@@ -161,14 +291,33 @@ extension LifecycleManager {
     /// Cancels all running tasks, clears all callbacks and tracking state.
     func reset() {
         lock.lock()
-        appearedTokens.removeAll()
-        visibleTokens.removeAll()
-        currentRenderTokens.removeAll()
+        appearedSlots.removeAll()
+        visibleSlots.removeAll()
+        currentRenderSlots.removeAll()
         disappearCallbacks.removeAll()
-        for task in tasks.values {
+        let runningTasks = tasks.values.map(\.task)
+        tasks.removeAll()
+        lock.unlock()
+
+        for task in runningTasks {
             task.cancel()
         }
-        tasks.removeAll()
+    }
+
+    private func replaceTask(
+        slot: Slot,
+        id: TaskID?,
+        priority: TaskPriority,
+        operation: @escaping @isolated(any) @Sendable () async -> Void
+    ) {
+        lock.lock()
+        currentRenderSlots.insert(slot)
+        let previousTask = tasks.removeValue(forKey: slot)?.task
+        previousTask?.cancel()
+        let task = Task(priority: priority) {
+            await operation()
+        }
+        tasks[slot] = TaskRecord(id: id, task: task)
         lock.unlock()
     }
 }
