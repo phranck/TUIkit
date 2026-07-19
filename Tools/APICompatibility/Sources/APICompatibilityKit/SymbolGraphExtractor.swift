@@ -35,7 +35,7 @@ public struct SymbolGraphExtractor: Sendable {
     public init(executableURL: URL) {
         self.init(
             executableURL: executableURL,
-            processExecutor: FoundationSymbolGraphProcessExecutor()
+            processExecutor: POSIXSymbolGraphProcessExecutor()
         )
     }
 
@@ -206,42 +206,16 @@ protocol SymbolGraphProcessExecuting: Sendable {
     func execute(executableURL: URL, arguments: [String]) throws -> SymbolGraphProcessResult
 }
 
-private struct FoundationSymbolGraphProcessExecutor: SymbolGraphProcessExecuting {
+private struct POSIXSymbolGraphProcessExecutor: SymbolGraphProcessExecuting {
     func execute(executableURL: URL, arguments: [String]) throws -> SymbolGraphProcessResult {
-        let fileManager = FileManager.default
-        let captureDirectory = fileManager.temporaryDirectory.appendingPathComponent(
-            "TUIkitAPICheck-\(UUID().uuidString)",
-            isDirectory: true
+        let result = try POSIXSubprocessRunner().run(
+            executable: executableURL,
+            arguments: arguments
         )
-        try fileManager.createDirectory(at: captureDirectory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: captureDirectory) }
-
-        let standardOutputURL = captureDirectory.appendingPathComponent("stdout")
-        let standardErrorURL = captureDirectory.appendingPathComponent("stderr")
-        try Data().write(to: standardOutputURL)
-        try Data().write(to: standardErrorURL)
-
-        let standardOutputHandle = try FileHandle(forWritingTo: standardOutputURL)
-        defer { try? standardOutputHandle.close() }
-        let standardErrorHandle = try FileHandle(forWritingTo: standardErrorURL)
-        defer { try? standardErrorHandle.close() }
-
-        let process = Process()
-        process.executableURL = executableURL
-        process.arguments = arguments
-        process.standardOutput = standardOutputHandle
-        process.standardError = standardErrorHandle
-        try process.run()
-        process.waitUntilExit()
-
-        try standardOutputHandle.close()
-        try standardErrorHandle.close()
-        let standardOutput = try Data(contentsOf: standardOutputURL)
-        let standardError = try Data(contentsOf: standardErrorURL)
         return SymbolGraphProcessResult(
-            exitCode: process.terminationStatus,
-            standardOutput: decode(standardOutput),
-            standardError: decode(standardError)
+            exitCode: result.exitCode,
+            standardOutput: decode(result.standardOutput),
+            standardError: decode(result.standardError)
         )
     }
 
