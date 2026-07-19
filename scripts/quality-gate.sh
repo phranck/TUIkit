@@ -54,6 +54,7 @@ mkdir -p "$(dirname "$TEST_EVENT_STREAM_OUTPUT")"
 
 ./scripts/assert-tool-versions.sh
 ./scripts/tests/test-tooling.sh
+./scripts/validate-test-boundaries.sh
 
 "$SWIFTLINT_BIN" lint --strict --no-cache
 swift build "${API_SWIFT_ARGUMENTS[@]}" -Xswiftc -warnings-as-errors
@@ -71,5 +72,14 @@ fi
 swift test list "${SWIFT_ARGUMENTS[@]}" --skip-build > "$TEST_LIST_OUTPUT"
 ./scripts/generate-documentation.sh "$DOCC_OUTPUT"
 
-TEST_COUNT="$(./scripts/update-test-count.sh --count-only --test-list "$TEST_LIST_OUTPUT")"
+TEST_COUNT="$(
+    ./scripts/update-test-count.sh \
+        --count-only \
+        --test-list "$TEST_LIST_OUTPUT" \
+        --expected-test-target TUIkitCoreTests \
+        --expected-test-target TUIkitStylingTests \
+        --expected-test-target TUIkitViewTests \
+        --expected-test-target TUIkitImageTests \
+        --expected-test-target TUIkitTests
+)"
 echo "Quality gate passed with $TEST_COUNT discovered tests"

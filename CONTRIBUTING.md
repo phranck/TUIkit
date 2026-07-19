@@ -98,7 +98,10 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 
 - Uses Swift Testing framework (`@Test`, `#expect`, `@Suite`)
 - Independent tests run in parallel; suites that isolate shared state run serially
-- Test files mirror source structure in `Tests/TUIkitTests/`
+- Unit tests live in the matching `Tests/TUIkitCoreTests/`, `Tests/TUIkitStylingTests/`,
+  `Tests/TUIkitViewTests/`, or `Tests/TUIkitImageTests/` target
+- `Tests/TUIkitTests/` is reserved for public API and runtime integration coverage
+- The quality gate rejects upward module imports and incomplete test-target discovery
 
 ## Detailed Architecture Rules
 

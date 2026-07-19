@@ -6,7 +6,7 @@
 
 import Testing
 
-@testable import TUIkit
+@testable import TUIkitStyling
 
 /// Minimal palette that only provides required properties,
 /// so all defaults come from the protocol extension.

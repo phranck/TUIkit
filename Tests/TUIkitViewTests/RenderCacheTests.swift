@@ -5,8 +5,9 @@
 //  License: MIT
 
 import Testing
+import TUIkitCore
 
-@testable import TUIkit
+@testable import TUIkitView
 
 @MainActor
 @Suite("RenderCache Tests")
