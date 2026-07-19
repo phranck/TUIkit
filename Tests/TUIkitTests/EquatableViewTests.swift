@@ -37,6 +37,28 @@ extension ObservedLabelView: @preconcurrency Equatable {
     }
 }
 
+private struct CachedStateContainer: View {
+    var body: some View {
+        VStack {
+            CachedStateLeaf()
+        }
+    }
+}
+
+extension CachedStateContainer: @preconcurrency Equatable {
+    static func == (_: Self, _: Self) -> Bool {
+        true
+    }
+}
+
+private struct CachedStateLeaf: View {
+    @State private var value = 42
+
+    var body: some View {
+        Text("Value: \(value)")
+    }
+}
+
 @MainActor
 @Suite("EquatableView Tests", .serialized)
 struct EquatableViewTests {
@@ -117,6 +139,29 @@ struct EquatableViewTests {
 
         model.value = 1
         #expect(tuiContext.appState.needsRender)
+    }
+
+    @Test("Cache hit keeps descendant State mounted")
+    func cacheHitKeepsDescendantStateMounted() {
+        let tuiContext = TUIContext()
+        let context = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            environment: tuiContext.environmentValues(),
+            identity: ViewIdentity(path: "Root/StateCache")
+        )
+        let view = EquatableView(content: CachedStateContainer())
+
+        tuiContext.beginRenderPass()
+        _ = renderToBuffer(view, context: context)
+        tuiContext.endRenderPass()
+        #expect(tuiContext.stateStorage.count == 1)
+
+        tuiContext.beginRenderPass()
+        _ = renderToBuffer(view, context: context)
+        tuiContext.endRenderPass()
+
+        #expect(tuiContext.stateStorage.count == 1)
     }
 
     // MARK: - Cache Miss on Changed Content

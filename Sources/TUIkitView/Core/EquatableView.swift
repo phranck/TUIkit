@@ -125,7 +125,7 @@ private extension EquatableView {
     /// When returning a cached buffer, the subtree's views aren't visited.
     /// Their state and Observation identities must still be marked active.
     func markSubtreeActive(context: RenderContext) {
-        context.environment.stateStorage!.markActive(context.identity)
+        context.environment.stateStorage!.markSubtreeActive(context.identity)
         context.environment.observationRegistry?.markSubtreeActive(context.identity)
     }
 }

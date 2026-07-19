@@ -132,6 +132,18 @@ extension StateStorage {
         activeIdentities.insert(identity)
     }
 
+    /// Keeps state records below a cached subtree active without traversing it.
+    package func markSubtreeActive(_ root: ViewIdentity) {
+        let storedIdentities = values.keys.lazy.map(\.identity)
+        let trackedIdentities = trackedValues.keys.lazy.map(\.identity)
+        activeIdentities.formUnion(storedIdentities.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
+        activeIdentities.formUnion(trackedIdentities.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
+    }
+
     // MARK: - onChange Tracking
 
     /// Claims the next `onChange` property index for the given identity.
