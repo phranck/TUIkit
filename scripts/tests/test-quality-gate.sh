@@ -115,7 +115,8 @@ test_runs_every_gate_in_order() {
     assert_log_line "$test_root/commands.log" 12 \
         "swift test list --package-path $test_root --build-path $test_root/build --skip-build"
     assert_log_line "$test_root/commands.log" 13 "generate-documentation $test_root/docc-output"
-    assert_log_line "$test_root/commands.log" 14 "update-test-count --count-only --test-list $test_root/test-list.txt"
+    assert_log_line "$test_root/commands.log" 14 \
+        "update-test-count --count-only --test-list $test_root/test-list.txt --expected-test-target TUIkitCoreTests --expected-test-target TUIkitStylingTests --expected-test-target TUIkitViewTests --expected-test-target TUIkitImageTests --expected-test-target TUIkitTests"
     [[ "$(wc -l < "$test_root/commands.log" | tr -d '[:space:]')" == "14" ]] || {
         fail "quality gate ran an unexpected number of commands"
     }

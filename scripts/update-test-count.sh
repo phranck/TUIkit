@@ -7,6 +7,7 @@ TEST_LIST=""
 README_PATH="$PROJECT_DIR/README.md"
 CHECK_ONLY=0
 COUNT_ONLY=0
+EXPECTED_TEST_TARGETS=()
 
 count_pattern_occurrences() {
     local pattern="$1"
@@ -30,8 +31,8 @@ count_shields_test_badges() {
         "$1"
 }
 
-count_project_structure_markers() {
-    count_pattern_occurrences 'TUIkitTests/[^0-9]*[0-9]+[+]? tests' "$1"
+count_test_discovery_markers() {
+    count_pattern_occurrences 'Test discovery covers [0-9]+[+]? tests across all isolated targets' "$1"
 }
 
 count_developer_markers() {
@@ -55,6 +56,10 @@ while [[ $# -gt 0 ]]; do
         --count-only)
             COUNT_ONLY=1
             shift
+            ;;
+        --expected-test-target)
+            EXPECTED_TEST_TARGETS+=("$2")
+            shift 2
             ;;
         *)
             echo "Unknown argument: $1" >&2
@@ -82,6 +87,61 @@ DUPLICATE_TEST_ID="$(awk '
 if [[ -n "$DUPLICATE_TEST_ID" ]]; then
     echo "Test list contains duplicate discovered test ID: $DUPLICATE_TEST_ID" >&2
     exit 1
+fi
+
+DISCOVERED_TEST_TARGETS="$(awk '
+    {
+        test_id = $0
+        sub(/^[[:space:]]+/, "", test_id)
+        sub(/[[:space:]]+$/, "", test_id)
+        if (test_id != "") {
+            target = test_id
+            sub(/[.\/].*$/, "", target)
+            if (target != "") {
+                targets[target] = 1
+            }
+        }
+    }
+    END {
+        for (target in targets) {
+            print target
+        }
+    }
+' "$TEST_LIST" | LC_ALL=C sort)"
+
+if [[ "${#EXPECTED_TEST_TARGETS[@]}" -gt 0 ]]; then
+    for expected_index in "${!EXPECTED_TEST_TARGETS[@]}"; do
+        expected_target="${EXPECTED_TEST_TARGETS[$expected_index]}"
+        for previous_index in "${!EXPECTED_TEST_TARGETS[@]}"; do
+            if [[ "$previous_index" -ge "$expected_index" ]]; then
+                break
+            fi
+            if [[ "${EXPECTED_TEST_TARGETS[$previous_index]}" == "$expected_target" ]]; then
+                echo "Expected test target is listed more than once: $expected_target" >&2
+                exit 2
+            fi
+        done
+
+        if ! printf '%s\n' "$DISCOVERED_TEST_TARGETS" | grep -Fxq "$expected_target"; then
+            echo "Test list is missing expected test target: $expected_target" >&2
+            exit 1
+        fi
+    done
+
+    while IFS= read -r discovered_target; do
+        [[ -n "$discovered_target" ]] || continue
+        is_expected=0
+        for expected_target in "${EXPECTED_TEST_TARGETS[@]}"; do
+            if [[ "$discovered_target" == "$expected_target" ]]; then
+                is_expected=1
+                break
+            fi
+        done
+        if [[ "$is_expected" == "0" ]]; then
+            echo "Test list contains unexpected test target: $discovered_target" >&2
+            exit 1
+        fi
+    done <<< "$DISCOVERED_TEST_TARGETS"
 fi
 
 TEST_COUNT="$(awk '
@@ -115,9 +175,9 @@ if [[ "$BADGE_MARKER_COUNT" != "1" ]]; then
     echo "README must contain exactly one shields.io test badge marker" >&2
     exit 1
 fi
-PROJECT_COUNT_MARKERS="$(count_project_structure_markers "$README_PATH")"
-if [[ "$PROJECT_COUNT_MARKERS" != "1" ]]; then
-    echo "README must contain exactly one TUIkitTests project-structure count marker" >&2
+DISCOVERY_COUNT_MARKERS="$(count_test_discovery_markers "$README_PATH")"
+if [[ "$DISCOVERY_COUNT_MARKERS" != "1" ]]; then
+    echo "README must contain exactly one test discovery count marker" >&2
     exit 1
 fi
 DEVELOPER_COUNT_MARKERS="$(count_developer_markers "$README_PATH")"
@@ -136,7 +196,7 @@ trap cleanup EXIT
 
 sed -E \
     -e "s#(https://img[.]shields[.]io/badge/Tests-)[0-9]+(%2B|[+])?(_passing-005c00)#\\1${TEST_COUNT}\\3#g" \
-    -e "s#(TUIkitTests/[^0-9]*)[0-9]+\\+? tests#\\1${TEST_COUNT} tests#g" \
+    -e "s#(Test discovery covers )[0-9]+\\+?( tests across all isolated targets)#\\1${TEST_COUNT}\\2#g" \
     -e "s/(All )[0-9]+\\+?( tests run)/\\1${TEST_COUNT}\\2/g" \
     "$README_PATH" > "$TEMP_FILE"
 
@@ -149,13 +209,13 @@ grep -Fq "https://img.shields.io/badge/Tests-${TEST_COUNT}_passing-005c00" "$TEM
     echo "README updated shields.io test badge marker not found" >&2
     exit 1
 }
-PROJECT_COUNT_MARKERS="$(count_project_structure_markers "$TEMP_FILE")"
-if [[ "$PROJECT_COUNT_MARKERS" != "1" ]]; then
-    echo "README must contain exactly one TUIkitTests project-structure count marker" >&2
+DISCOVERY_COUNT_MARKERS="$(count_test_discovery_markers "$TEMP_FILE")"
+if [[ "$DISCOVERY_COUNT_MARKERS" != "1" ]]; then
+    echo "README must contain exactly one test discovery count marker" >&2
     exit 1
 fi
-grep -Eq "TUIkitTests/[^0-9]*${TEST_COUNT} tests" "$TEMP_FILE" || {
-    echo "README updated TUIkitTests project-structure count marker not found" >&2
+grep -Fq "Test discovery covers ${TEST_COUNT} tests across all isolated targets" "$TEMP_FILE" || {
+    echo "README updated test discovery count marker not found" >&2
     exit 1
 }
 DEVELOPER_COUNT_MARKERS="$(count_developer_markers "$TEMP_FILE")"

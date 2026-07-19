@@ -238,8 +238,14 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          1225 tests (including i18n consistency & localization tests)
+├── TUIkitCoreTests/      Core primitives and input parsing
+├── TUIkitStylingTests/   Colors, palettes, and theme behavior
+├── TUIkitViewTests/      View infrastructure, state, and rendering caches
+├── TUIkitImageTests/     Image data, conversion, loading, and decoding
+└── TUIkitTests/          Public API and runtime integration
 ```
+
+Test discovery covers 1211 tests across all isolated targets.
 
 ## Requirements
 

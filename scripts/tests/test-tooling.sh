@@ -54,7 +54,7 @@ test_badge_uses_discovered_tests() {
         --readme "$readme"
 
     assert_contains "$readme" "Tests-2_passing"
-    assert_contains "$readme" "contains 2 tests"
+    assert_contains "$readme" "Test discovery covers 2 tests across all isolated targets"
     assert_contains "$readme" "All 2 tests run"
 
     local annotation_count
@@ -90,11 +90,28 @@ test_badge_rejects_duplicate_test_ids() {
         --test-list "$FIXTURES_DIR/badge/duplicate-test-list.txt"
 }
 
+test_badge_requires_every_expected_test_target() {
+    expect_failure "Test list is missing expected test target: MissingTests" \
+        "$PROJECT_DIR/scripts/update-test-count.sh" \
+        --count-only \
+        --expected-test-target FixtureTests \
+        --expected-test-target MissingTests \
+        --test-list "$FIXTURES_DIR/badge/swift-test-list.txt"
+}
+
+test_badge_rejects_unexpected_test_targets() {
+    expect_failure "Test list contains unexpected test target: UnexpectedTests" \
+        "$PROJECT_DIR/scripts/update-test-count.sh" \
+        --count-only \
+        --expected-test-target FixtureTests \
+        --test-list "$FIXTURES_DIR/badge/unexpected-target-test-list.txt"
+}
+
 test_badge_rejects_duplicate_project_markers() {
     local readme="$TEMP_DIR/duplicate-project-marker-README.md"
     cp "$FIXTURES_DIR/badge/DuplicateProjectMarkerREADME.md" "$readme"
 
-    expect_failure "README must contain exactly one TUIkitTests project-structure count marker" \
+    expect_failure "README must contain exactly one test discovery count marker" \
         "$PROJECT_DIR/scripts/update-test-count.sh" \
         --test-list "$FIXTURES_DIR/badge/swift-test-list.txt" \
         --readme "$readme"
@@ -340,6 +357,8 @@ run_case badge-count test_badge_uses_discovered_tests
 run_case stale-readme test_badge_check_detects_stale_readme
 run_case duplicate-test-badge test_badge_rejects_duplicate_markers
 run_case duplicate-test-ids test_badge_rejects_duplicate_test_ids
+run_case missing-test-target test_badge_requires_every_expected_test_target
+run_case unexpected-test-target test_badge_rejects_unexpected_test_targets
 run_case duplicate-project-marker test_badge_rejects_duplicate_project_markers
 run_case duplicate-developer-marker test_badge_rejects_duplicate_developer_markers
 run_case ci-configuration test_ci_configuration_is_deterministic
