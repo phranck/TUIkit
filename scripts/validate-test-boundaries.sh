@@ -53,6 +53,9 @@ validate_test_target() {
                     while (line ~ /^@[^[:space:]]+[[:space:]]+/) {
                         sub(/^@[^[:space:]]+[[:space:]]+/, "", line)
                     }
+                    if (line ~ /^(private|fileprivate|internal|package|public)[[:space:]]+import[[:space:]]+/) {
+                        sub(/^(private|fileprivate|internal|package|public)[[:space:]]+/, "", line)
+                    }
                     if (line !~ /^import[[:space:]]+/) {
                         next
                     }
