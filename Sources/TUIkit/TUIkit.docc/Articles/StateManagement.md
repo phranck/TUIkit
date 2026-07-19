@@ -118,6 +118,7 @@ This path is built automatically during rendering based on:
 - The view's type name
 - Its position among siblings (child index)
 - Conditional branches (`true`/`false` for `if`/`else`)
+- Nested modifier and runtime slots
 
 ### Persistent State Storage
 
@@ -125,8 +126,10 @@ All `@State` values live in the owning runtime's `StateStorage`, keyed by:
 - The view's structural identity
 - The property's declaration index within the view (0, 1, 2, ...)
 
-When `@State var count = 0` is declared, the `init` checks if a persistent value already
-exists for this position. If it does, the existing value is used instead of the default.
+When `@State var count = 0` is constructed, it initially holds the declared default.
+Immediately before the renderer evaluates that view's `body`, it binds each direct dynamic
+property to the persistent location at the view's final structural identity. A reconstructed
+view therefore reads the stored value instead of resetting to its default.
 
 ### Re-Render Trigger
 
@@ -135,8 +138,12 @@ When a ``State`` value changes:
 1. The `StateBox` sends a subtree invalidation to its runtime's `RenderInvalidationSink`
 2. That runtime's `AppState` notifies the observer registered by `AppRunner`
 3. The main loop re-evaluates `app.body` fresh: reconstructing all views
-4. Each `@State.init` self-hydrates from the same runtime's `StateStorage`
+4. The renderer rebinds each view's dynamic properties to the same runtime's `StateStorage`
 5. The owning runtime clears the affected cached subtree and writes the new ``FrameBuffer``
+
+Observable dependencies read while evaluating `body` are tracked at the same committed
+identity. Re-evaluating an identity replaces its active observation generation, so callbacks
+from earlier view values become inert. Registrations are removed when their identity unmounts.
 
 ### Garbage Collection
 

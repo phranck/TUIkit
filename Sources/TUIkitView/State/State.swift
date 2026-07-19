@@ -224,7 +224,7 @@ public enum StateRegistration {
     /// The active hydration context, set during composite view body evaluation.
     ///
     /// Legacy mutable fallback retained for source compatibility. Production
-    /// rendering uses ``runtimeContext`` instead.
+    /// rendering uses `runtimeContext` instead.
     nonisolated(unsafe) public static var activeContext: HydrationContext?
 
     /// Legacy ambient property counter retained for source compatibility.
@@ -237,7 +237,7 @@ public enum StateRegistration {
     ///
     /// Used by `@Environment` to read environment values during `body` evaluation.
     /// Legacy mutable fallback retained for source compatibility. Production
-    /// rendering uses ``runtimeEnvironment`` instead.
+    /// rendering uses `runtimeEnvironment` instead.
     nonisolated(unsafe) public static var activeEnvironment: EnvironmentValues?
 
     /// Current dynamically scoped context, including the compatibility fallback.
