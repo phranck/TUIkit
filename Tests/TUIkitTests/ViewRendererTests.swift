@@ -43,6 +43,58 @@ struct ViewRendererTests {
         #expect(terminal.outputContains("Abbrechen"))
     }
 
+    @Test("Two runtimes render alternately without sharing state or services")
+    func twoRuntimesRenderAlternatelyWithoutSharingStateOrServices() {
+        let firstTerminal = MockTerminal()
+        let secondTerminal = MockTerminal()
+        let firstContext = TUIContext()
+        let secondContext = TUIContext()
+        firstContext.localizationService.setLanguage(.german)
+        secondContext.localizationService.setLanguage(.french)
+        firstContext.storageBackend.setValue("first", forKey: "alternating-runtime-name")
+        secondContext.storageBackend.setValue("second", forKey: "alternating-runtime-name")
+        firstContext.notificationService.post("first notification")
+        secondContext.notificationService.post("second notification")
+        firstContext.paletteManager.cycleNext()
+        firstContext.focusManager.register(MockFocusable(id: "first-focus"))
+
+        let firstRenderer = ViewRenderer(terminal: firstTerminal, tuiContext: firstContext)
+        let secondRenderer = ViewRenderer(terminal: secondTerminal, tuiContext: secondContext)
+
+        firstRenderer.render { AlternatingRuntimeView() }
+        secondRenderer.render { AlternatingRuntimeView() }
+
+        #expect(firstTerminal.outputContains("first:0:Abbrechen"))
+        #expect(secondTerminal.outputContains("second:0:Annuler"))
+        #expect(firstContext.notificationService.activeEntries().map(\.message) == ["first notification"])
+        #expect(secondContext.notificationService.activeEntries().map(\.message) == ["second notification"])
+        #expect(firstContext.paletteManager.current.id != secondContext.paletteManager.current.id)
+        #expect(firstContext.focusManager.currentFocusedID == "first-focus")
+        #expect(secondContext.focusManager.currentFocusedID == nil)
+
+        let stateKey = StateStorage.StateKey(
+            identity: ViewIdentity(rootType: AlternatingRuntimeView.self),
+            propertyIndex: 0
+        )
+        let firstState: StateBox<Int> = firstContext.stateStorage.storage(for: stateKey, default: -1)
+        firstContext.appState.didRender()
+        secondContext.appState.didRender()
+        firstState.value = 9
+
+        #expect(firstContext.appState.needsRender)
+        #expect(secondContext.appState.needsRender == false)
+
+        secondTerminal.reset()
+        secondRenderer.render { AlternatingRuntimeView() }
+        firstTerminal.reset()
+        firstRenderer.render { AlternatingRuntimeView() }
+
+        #expect(secondTerminal.outputContains("second:0:Annuler"))
+        #expect(firstTerminal.outputContains("first:9:Abbrechen"))
+        #expect(firstContext.renderCache.stats.subtreeClears == 1)
+        #expect(secondContext.renderCache.stats.subtreeClears == 0)
+    }
+
     @Test("App rendering accepts an injected terminal session")
     func appRenderingAcceptsInjectedTerminalSession() {
         let terminal = MockTerminal()
@@ -77,6 +129,17 @@ private struct RendererPropertyWrapperView: View {
         VStack {
             Text("\(name):\(value)")
         }
+    }
+}
+
+private struct AlternatingRuntimeView: View {
+    @State private var value = 0
+    @AppStorage("alternating-runtime-name") private var name = "fallback"
+    @Environment(\.localizationService) private var localization
+
+    var body: some View {
+        Text("\(name):\(value):\(localization.string(for: LocalizationKey.Button.cancel))")
+            .equatable()
     }
 }
 
