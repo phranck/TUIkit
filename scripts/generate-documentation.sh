@@ -21,7 +21,7 @@ trap cleanup EXIT
 
 cd "$PROJECT_DIR"
 
-SWIFT_BUILD_ARGUMENTS=()
+SWIFT_BUILD_ARGUMENTS=(--package-path "$PROJECT_DIR")
 if [[ -n "${TUIKIT_BUILD_PATH:-}" ]]; then
     SWIFT_BUILD_ARGUMENTS+=(--build-path "$TUIKIT_BUILD_PATH")
 fi

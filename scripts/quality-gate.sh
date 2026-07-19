@@ -37,7 +37,7 @@ if [[ -z "${ACTIONLINT_BIN:-}" ]]; then
 fi
 export ACTIONLINT_BIN
 
-SWIFT_ARGUMENTS=()
+SWIFT_ARGUMENTS=(--package-path "$PROJECT_DIR")
 if [[ -n "${TUIKIT_BUILD_PATH:-}" ]]; then
     SWIFT_ARGUMENTS+=(--build-path "$TUIKIT_BUILD_PATH")
 fi

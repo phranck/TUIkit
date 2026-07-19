@@ -54,6 +54,21 @@ run_gate() {
         "$test_root/scripts/quality-gate.sh"
 }
 
+run_gate_without_build_path() {
+    local test_root="$1"
+
+    env \
+        PATH="$test_root/bin:$PATH" \
+        QUALITY_GATE_TEST_LOG="$test_root/commands.log" \
+        SWIFTLINT_BIN="$test_root/bin/swiftlint" \
+        ACTIONLINT_BIN="$test_root/bin/actionlint" \
+        TUIKIT_API_BUILD_PATH="$test_root/api-build" \
+        TUIKIT_TEST_LIST_OUTPUT="$test_root/test-list.txt" \
+        TUIKIT_TEST_EVENT_STREAM_OUTPUT="$test_root/test-events.jsonl" \
+        TUIKIT_DOCC_OUTPUT="$test_root/docc-output" \
+        /bin/bash "$test_root/scripts/quality-gate.sh"
+}
+
 assert_log_line() {
     local log="$1"
     local line_number="$2"
@@ -90,11 +105,13 @@ test_runs_every_gate_in_order() {
         "swift build --package-path $test_root/Tools/APICompatibility --build-path $test_root/api-build -Xswiftc -warnings-as-errors"
     assert_log_line "$test_root/commands.log" 7 \
         "swift test --package-path $test_root/Tools/APICompatibility --build-path $test_root/api-build -Xswiftc -warnings-as-errors"
-    assert_log_line "$test_root/commands.log" 8 "swift build --build-path $test_root/build -Xswiftc -warnings-as-errors"
+    assert_log_line "$test_root/commands.log" 8 \
+        "swift build --package-path $test_root --build-path $test_root/build -Xswiftc -warnings-as-errors"
     assert_log_line "$test_root/commands.log" 9 "verify-versioned-consumer "
     assert_log_line "$test_root/commands.log" 10 \
-        "swift test --build-path $test_root/build -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
-    assert_log_line "$test_root/commands.log" 11 "swift test list --build-path $test_root/build --skip-build"
+        "swift test --package-path $test_root --build-path $test_root/build -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
+    assert_log_line "$test_root/commands.log" 11 \
+        "swift test list --package-path $test_root --build-path $test_root/build --skip-build"
     assert_log_line "$test_root/commands.log" 12 "generate-documentation $test_root/docc-output"
     assert_log_line "$test_root/commands.log" 13 "update-test-count --count-only --test-list $test_root/test-list.txt"
     [[ "$(wc -l < "$test_root/commands.log" | tr -d '[:space:]')" == "13" ]] || {
@@ -176,6 +193,25 @@ test_rejects_an_empty_event_stream() {
     assert_not_contains "$test_root/commands.log" "swift test list"
 }
 
+test_runs_under_system_bash_without_optional_build_path() {
+    local test_root
+    test_root="$(prepare_project system-bash)"
+
+    run_gate_without_build_path "$test_root"
+
+    assert_log_line "$test_root/commands.log" 8 \
+        "swift build --package-path $test_root -Xswiftc -warnings-as-errors"
+    assert_log_line "$test_root/commands.log" 10 \
+        "swift test --package-path $test_root -Xswiftc -warnings-as-errors --event-stream-version 0 --event-stream-output-path $test_root/test-events.jsonl"
+}
+
+test_documentation_declares_nonempty_build_arguments() {
+    grep -Fq 'SWIFT_BUILD_ARGUMENTS=(--package-path "$PROJECT_DIR")' \
+        "$PROJECT_DIR/scripts/generate-documentation.sh" || {
+        fail "documentation generation must keep Swift build arguments nonempty"
+    }
+}
+
 run_case() {
     local name="$1"
     local function_name="$2"
@@ -190,5 +226,7 @@ run_case actionlint-version test_rejects_wrong_actionlint_version
 run_case fail-fast test_propagates_failures_without_running_later_gates
 run_case missing-event-stream test_rejects_a_missing_event_stream_after_removing_stale_output
 run_case empty-event-stream test_rejects_an_empty_event_stream
+run_case system-bash test_runs_under_system_bash_without_optional_build_path
+run_case documentation-build-arguments test_documentation_declares_nonempty_build_arguments
 
 echo "Quality gate integration self-tests passed"
