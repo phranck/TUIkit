@@ -13,7 +13,7 @@ Several sources cause `RenderLoop` to produce a new frame. They converge on two 
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
 | Terminal resize | `SIGWINCH` signal | `SignalManager` sets `signalNeedsRerender` and `signalTerminalResized` |
-| State mutation | `@State` property change | `AppState` observer calls `signals.requestRerender()` |
+| State mutation | `@State` property change | The owning runtime's invalidation sink notifies `AppState` |
 | Animation timers | PulseTimer (100 ms) / CursorTimer (50 ms) | Calls `appState.setNeedsRender()` |
 | Focus change | `FocusManager.onFocusChange` | Resets pulse timer and calls `appState.setNeedsRender()` |
 
@@ -45,28 +45,30 @@ The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTo
 
 ### Step 3: Build Environment
 
-A fresh ``EnvironmentValues`` instance is assembled from the current subsystem state:
+A fresh ``EnvironmentValues`` instance is assembled from the owning runtime:
 
 ```swift
-// Simplified from RenderLoop.buildEnvironment()
+// Simplified from TUIContext.environmentValues()
 var env = EnvironmentValues()
-env.statusBar           = statusBar
-env.appHeader           = appHeader
-env.focusManager        = focusManager
-env.paletteManager      = paletteManager
-env.palette             = paletteManager.currentPalette
-env.appearanceManager   = appearanceManager
-env.appearance          = appearanceManager.currentAppearance
-env.notificationService = NotificationService.current
+env.renderInvalidationSink = tuiContext.appState
 env.stateStorage        = tuiContext.stateStorage
+env.renderCache         = tuiContext.renderCache
+env.storageBackend      = tuiContext.storageBackend
 env.lifecycle           = tuiContext.lifecycle
 env.keyEventDispatcher  = tuiContext.keyEventDispatcher
-env.renderCache         = tuiContext.renderCache
 env.preferenceStorage   = tuiContext.preferences
-env.localizationService = LocalizationService.shared
+env.localizationService = tuiContext.localizationService
+env.notificationService = tuiContext.notificationService
+env.focusManager        = tuiContext.focusManager
+env.paletteManager      = tuiContext.paletteManager
+env.appearanceManager   = tuiContext.appearanceManager
+env.imageLoader         = tuiContext.imageLoader
+env.imageCache          = tuiContext.imageCache
 ```
 
-This environment is immutable for the duration of the frame. Runtime services (state storage, lifecycle, key dispatch, render cache, preferences) are injected here so that views and modifiers can access them through the environment rather than through `TUIContext` directly.
+This environment is immutable for the duration of the frame. Every application
+owns its service instances, and views access them through the environment rather
+than through `TUIContext` or process-wide service globals.
 
 ### Step 4: Create Render Context
 
@@ -77,7 +79,6 @@ A ``RenderContext`` bundles everything a view needs to render:
 | `availableWidth` | Terminal width (mutable: containers reduce this for children) |
 | `availableHeight` | Terminal height minus status bar (mutable) |
 | `environment` | The ``EnvironmentValues`` from step 3 |
-| `tuiContext` | The `TUIContext` (lifecycle, key dispatch, preferences, state storage) |
 | `identity` | The current view's structural identity (`ViewIdentity`) |
 
 `RenderContext` is a pure data container: it does not hold a reference to `Terminal`. All terminal I/O happens after the view tree has been rendered into a ``FrameBuffer``.
@@ -381,14 +382,17 @@ FeatureBox("Pure Swift", "No ncurses").equatable()
 
 ### Cache Invalidation
 
-The `RenderCache` is **fully cleared** in two situations:
+The runtime applies pending cache invalidations before rendering:
 
 | Trigger | Mechanism |
 |---------|-----------|
-| Any `@State` change | `StateBox.value.didSet` calls `renderCache.clearAll()` |
+| `@State` or `@AppStorage` change | Invalidates the owning view subtree |
+| Observed model or language change | Requests a full runtime cache clear |
 | Environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
 
-Between these events: for example during Spinner animation frames at 25 FPS: the cache is fully active. Static subtrees are rendered once and reused for every subsequent frame.
+Each runtime owns its own `RenderCache`, so invalidation in one application cannot
+evict another application's cached output. Between invalidations, for example
+during Spinner animation frames, static subtrees are reused across frames.
 
 ### When to Use `.equatable()`
 

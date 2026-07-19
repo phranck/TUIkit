@@ -217,8 +217,9 @@ extension LocalizationService {
     /// # Example
     ///
     /// ```swift
-    /// let okText = LocalizationService.shared.string(for: .button(.ok))
-    /// let errorText = LocalizationService.shared.string(for: .error(.notFound))
+    /// @Environment(\.localizationService) var localization
+    /// let okText = localization.string(for: .button(.ok))
+    /// let errorText = localization.string(for: .error(.notFound))
     /// ```
     public func string(for key: LocalizationKey.Button) -> String {
         string(for: key.rawValue)

@@ -260,12 +260,10 @@ final class TUIContext {
     /// URL image cache owned by this runtime.
     let imageCache: URLImageCache
 
-    /// Creates a new TUI context with fresh instances of all services.
-    ///
-    /// Each context owns an independent render cache.
     /// Creates a new isolated TUI context with injectable services.
     ///
-    /// Useful for testing where you want to inject mock services.
+    /// Every omitted service is created fresh, so contexts do not share state,
+    /// caches, or service instances. Tests can inject deterministic substitutes.
     ///
     /// - Parameters:
     ///   - appState: The render state and invalidation sink to use.

@@ -195,11 +195,12 @@ private extension JSONFileStorage {
 
 /// Provides the default storage backend for ``AppStorage``.
 ///
-/// Override the backend before creating any `@AppStorage` properties
-/// if you want to use a custom storage backend.
+/// This global compatibility hook is deprecated. `@AppStorage` properties
+/// rendered inside an app bind to that app's runtime backend. Pass an explicit
+/// backend to the property wrapper when code outside a runtime needs one.
 ///
 /// ```swift
-/// StorageDefaults.backend = MyCustomBackend()
+/// @AppStorage("token", storage: MyCustomBackend()) var token = ""
 /// ```
 public enum StorageDefaults {
     /// Backing storage retained until issue #15 removes the global fallback.
@@ -209,7 +210,7 @@ public enum StorageDefaults {
     ///
     /// Defaults to a ``JSONFileStorage`` instance that persists to
     /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
-    @available(*, deprecated, message: "Inject storage through the application runtime instead")
+    @available(*, deprecated, message: "Pass a StorageBackend to the AppStorage initializer instead")
     public static var backend: StorageBackend {
         get { configuredBackend }
         set { configuredBackend = newValue }

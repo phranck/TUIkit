@@ -83,7 +83,7 @@ struct CounterView: View {
 
 ## One-Shot Rendering
 
-For simple scripts that don't need a full app lifecycle, use ``renderOnce(content:)``:
+For scripts that don't need an event loop, use ``renderOnce(content:)``:
 
 ```swift
 import TUIkit
@@ -99,6 +99,10 @@ renderOnce {
     }
 }
 ```
+
+One-shot rendering uses the same complete runtime contract as an app render.
+Composite views and property wrappers such as ``State``, ``AppStorage``, and
+``Environment`` are supported, but no input loop is started after the frame is written.
 
 ## Next Steps
 

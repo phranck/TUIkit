@@ -33,13 +33,29 @@ The `@main` attribute tells Swift to call the static `main()` method provided by
 
 ## Subsystem Initialization
 
-`AppRunner.init()` creates and wires the core subsystems: Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext (containing LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, and RenderCache), and two ThemeManagers (palette and appearance). `run()` then creates the remaining runtime components: InputHandler, RenderLoop, PulseTimer (100 ms), and CursorTimer (50 ms).
+`AppRunner.init()` creates a terminal session, a signal manager, and one
+`TUIContext`. The context is the sole owner of the application's mutable runtime
+services. `run()` then creates the session components that consume those services:
+`InputHandler`, `RenderLoop`, `PulseTimer`, and `CursorTimer`.
 
-@Image(source: "lifecycle-subsystem-init.png", alt: "Diagram showing subsystem initialization: @main calls App.main(), which creates the app instance via Self(), then AppRunner.init() creates Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, TUIContext with 5 children (LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, RenderCache), and two ThemeManagers.")
+```
+AppRunner
+├── Terminal session
+├── SignalManager
+└── TUIContext
+    ├── AppState, StateStorage, RenderCache
+    ├── LifecycleManager, KeyEventDispatcher, PreferenceStorage
+    ├── LocalizationService, NotificationService, StorageBackend, RuntimeClock
+    ├── FocusManager, palette and appearance managers
+    ├── StatusBarState, AppHeaderState
+    └── ImageLoader, URLImageCache
+```
 
 @Image(source: "lifecycle-run-creates.png", alt: "Diagram showing run() creating InputHandler, RenderLoop, PulseTimer (100ms), and CursorTimer (50ms).")
 
-The `AppRunner` is the sole owner of all subsystems. Dependencies flow through constructor injection and ``RenderContext``.
+`AppRunner` owns the session. `TUIContext` owns the view-facing runtime services.
+Dependencies flow through constructor injection and ``EnvironmentValues`` inside
+``RenderContext``. The render context itself never owns or accesses a terminal.
 
 ## Terminal Setup
 
@@ -80,7 +96,7 @@ Several sources cause a new frame to be rendered, all converging on two boolean 
 | Trigger | Path | Main loop check |
 |---------|------|-----------------|
 | SIGWINCH | Sets `signalNeedsRerender` + `signalTerminalResized` | `consumeRerenderFlag()` |
-| @State mutation | `AppState` observer calls `signals.requestRerender()` | `consumeRerenderFlag()` |
+| @State mutation | Owning runtime invalidates its subtree and notifies `AppState` | `consumeRerenderFlag()` |
 | PulseTimer / CursorTimer | Calls `appState.setNeedsRender()` | `appState.needsRender` |
 | Focus change | Calls `appState.setNeedsRender()` | `appState.needsRender` |
 
@@ -161,7 +177,7 @@ When the main loop exits: via Ctrl+C, the quit key, or programmatic shutdown: `c
 | 3 | Exit alternate screen | Restore the user's previous terminal content |
 | 4 | Clear state observers | Remove `AppState` observer callbacks |
 | 5 | Clear focus | Remove all focus registrations |
-| 6 | Reset TUIContext | Clear lifecycle, key handlers, and preferences |
+| 6 | Reset TUIContext | Clear runtime state, lifecycle, handlers, caches, notifications, and focus; synchronize app storage |
 
 The `Terminal` class also has a `deinit` safety net that disables raw mode if it was not explicitly restored.
 
@@ -169,12 +185,15 @@ The `Terminal` class also has a `deinit` safety net that disables raw mode if it
 
 ### Ownership
 
-AppRunner creates and owns every subsystem. TUIContext acts as a secondary container for lifecycle, key dispatch, and preference storage.
-
-@Image(source: "dep-graph-ownership.png", alt: "Ownership diagram showing AppRunner owning all subsystems: SignalManager, Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, both ThemeManagers, TUIContext, InputHandler, RenderLoop, PulseTimer, and CursorTimer. TUIContext contains LifecycleManager, KeyEventDispatcher, PreferenceStorage, StateStorage, and RenderCache. SignalManager sends SIGINT and SIGWINCH flags back to AppRunner.")
+`AppRunner` owns the terminal and signals. Its single `TUIContext` owns every
+mutable runtime service used by the view tree. A second runner receives a second
+context, so neither application can invalidate or reuse the other's state,
+caches, focus, localization, notifications, storage, or image requests.
 
 ### Runtime References
 
-During each frame, RenderLoop and InputHandler reference shared subsystems to build the environment and dispatch key events.
-
-@Image(source: "dep-graph-references.png", alt: "Runtime reference diagram showing RenderLoop writing output to Terminal, injecting environment values from StatusBarState, AppHeaderState, FocusManager, and both ThemeManagers, calling begin/end pass on LifecycleManager, StateStorage, and RenderCache, begin pass on PreferenceStorage, and clearing handlers on KeyEventDispatcher. InputHandler dispatches through Layer 0+3 FocusManager, Layer 1 StatusBarState, Layer 2 KeyEventDispatcher, and Layer 4 both ThemeManagers.")
+During each frame, `RenderLoop` obtains a complete environment from `TUIContext`,
+renders into a ``FrameBuffer``, then writes that buffer through the injected
+terminal session. `InputHandler` receives the same context-owned focus, status
+bar, key dispatch, palette, and appearance services. Timers invalidate only that
+context's `AppState`.
