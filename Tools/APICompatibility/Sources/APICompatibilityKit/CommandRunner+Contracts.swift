@@ -69,7 +69,7 @@ extension CommandRunner {
             noun: "Clang module path"
         )
         let executions = try CompileContractRunner(
-            compilerProcess: FoundationSwiftCompilerProcess(),
+            compilerProcess: POSIXSwiftCompilerProcess(),
             compilerExecutable: compiler,
             compilerArguments: ["-I", swiftModules.path, "-I", clangModules.path]
         ).runCompileContracts(in: registry, fixturesDirectory: fixtures)

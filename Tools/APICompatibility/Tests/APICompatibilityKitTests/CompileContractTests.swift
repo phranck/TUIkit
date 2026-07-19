@@ -271,7 +271,7 @@ struct CompileContractTests {
     @Test("Real Swift compiler accepts the positive fixture and rejects the negative fixture")
     func realSwiftCompilerFixtures() throws {
         let runner = CompileContractRunner(
-            compilerProcess: FoundationSwiftCompilerProcess(),
+            compilerProcess: POSIXSwiftCompilerProcess(),
             compilerExecutable: URL(fileURLWithPath: "/usr/bin/env"),
             leadingArguments: ["swiftc"]
         )
@@ -298,7 +298,7 @@ struct CompileContractTests {
 
     @Test("Compiler process captures output and a nonzero exit status")
     func compilerProcessCapturesOutputAndExitStatus() throws {
-        let result = try FoundationSwiftCompilerProcess().run(
+        let result = try POSIXSwiftCompilerProcess().run(
             executable: URL(fileURLWithPath: "/bin/sh"),
             arguments: ["-c", "printf standard-output; printf standard-error >&2; exit 7"]
         )
