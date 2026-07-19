@@ -333,6 +333,18 @@ test_module_test_boundaries_are_enforced() {
         "Test boundary error: Tests/TUIkitCoreTests/InvalidAccessLevelCoreTests.swift imports forbidden project module TUIkit" \
         "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$invalid_access_level_import_root"
 
+    local many_invalid_imports_root="$TEMP_DIR/many-invalid-imports"
+    cp -R "$valid_root" "$many_invalid_imports_root"
+    local many_invalid_imports_file="$many_invalid_imports_root/Tests/TUIkitCoreTests/ManyInvalidImports.swift"
+    local import_index=0
+    while [[ "$import_index" -lt 4096 ]]; do
+        printf 'import TUIkit\n' >> "$many_invalid_imports_file"
+        import_index=$((import_index + 1))
+    done
+    expect_failure \
+        "Test boundary error: Tests/TUIkitCoreTests/ManyInvalidImports.swift imports forbidden project module TUIkit" \
+        "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$many_invalid_imports_root"
+
     local invalid_dependency_root="$TEMP_DIR/invalid-test-dependency"
     cp -R "$valid_root" "$invalid_dependency_root"
     sed -i.bak \

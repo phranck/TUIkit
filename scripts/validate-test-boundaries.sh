@@ -76,7 +76,7 @@ validate_test_target() {
                     }
                 }
             ' {} +
-    } | LC_ALL=C sort | head -n 1)"
+    } | LC_ALL=C sort | sed -n '1p')"
     if [[ -n "$invalid_import" ]]; then
         fail "${invalid_import/:/ imports forbidden project module }"
     fi
@@ -102,7 +102,7 @@ for source_root in Sources Vendor; do
             \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \
             -o -name '*.h' -o -name '*.hpp' -o -name '*.m' -o -name '*.mm' \) \
             -print
-    } | LC_ALL=C sort | head -n 1)"
+    } | LC_ALL=C sort | sed -n '1p')"
     if [[ -n "$native_source" ]]; then
         fail "native source is forbidden: ${native_source#"$PROJECT_DIR/"}"
     fi
