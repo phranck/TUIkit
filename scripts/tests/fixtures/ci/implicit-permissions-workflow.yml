@@ -1,0 +1,7 @@
+name: Implicit permissions
+on: [pull_request]
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Permission default is repository-dependent"

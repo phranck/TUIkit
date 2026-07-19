@@ -1,0 +1,9 @@
+name: Git global option writer
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: git -C . push origin HEAD:main

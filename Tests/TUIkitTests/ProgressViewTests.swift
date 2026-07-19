@@ -198,7 +198,7 @@ struct ProgressViewStyleTests {
 
     @Test("All styles render correct width")
     func allStylesCorrectWidth() {
-        let styles: [ProgressBarStyle] = [.block, .blockFine, .shade, .bar, .dot]
+        let styles: [TrackStyle] = [.block, .blockFine, .shade, .bar, .dot]
         let context = testContext(width: 20)
 
         for style in styles {

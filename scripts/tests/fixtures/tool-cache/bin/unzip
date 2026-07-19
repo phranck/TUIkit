@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+destination=""
+while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "-d" ]]; then
+        destination="$2"
+        shift 2
+    else
+        shift
+    fi
+done
+
+mkdir -p "$destination"
+printf '#!/usr/bin/env bash\necho 0.65.0\n' > "$destination/swiftlint"

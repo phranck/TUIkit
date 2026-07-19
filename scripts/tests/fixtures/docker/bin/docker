@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "${1:-}" == "version" ]]; then
+    exit 0
+fi
+
+printf '%s\n' "$*" > "$DOCKER_STUB_LOG"

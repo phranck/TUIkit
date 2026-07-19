@@ -41,10 +41,10 @@ extension ASCIIConverter {
         }
 
         // 6x6x6 color cube (indices 16-231)
-        let r = Int((Double(pixel.r) / 255.0 * 5.0).rounded())
-        let g = Int((Double(pixel.g) / 255.0 * 5.0).rounded())
-        let b = Int((Double(pixel.b) / 255.0 * 5.0).rounded())
-        return UInt8(16 + 36 * r + 6 * g + b)
+        let red = Int((Double(pixel.r) / 255.0 * 5.0).rounded())
+        let green = Int((Double(pixel.g) / 255.0 * 5.0).rounded())
+        let blue = Int((Double(pixel.b) / 255.0 * 5.0).rounded())
+        return UInt8(16 + 36 * red + 6 * green + blue)
     }
 }
 
@@ -62,36 +62,36 @@ extension ASCIIConverter {
     func applyFloydSteinbergDithering(_ image: RGBAImage) -> RGBAImage {
         var result = image
 
-        for y in 0..<image.height {
-            for x in 0..<image.width {
-                let oldPixel = result.pixel(at: x, y)
+        for rowIndex in 0..<image.height {
+            for columnIndex in 0..<image.width {
+                let oldPixel = result.pixel(at: columnIndex, rowIndex)
                 let newPixel = quantizePixel(oldPixel)
-                result.setPixel(at: x, y, value: newPixel)
+                result.setPixel(at: columnIndex, rowIndex, value: newPixel)
 
                 let rErr = Double(oldPixel.r) - Double(newPixel.r)
                 let gErr = Double(oldPixel.g) - Double(newPixel.g)
                 let bErr = Double(oldPixel.b) - Double(newPixel.b)
 
                 // Distribute error to neighbors
-                if x + 1 < image.width {
-                    result.addError(at: x + 1, y,
+                if columnIndex + 1 < image.width {
+                    result.addError(at: columnIndex + 1, rowIndex,
                                     rError: rErr * 7.0 / 16.0,
                                     gError: gErr * 7.0 / 16.0,
                                     bError: bErr * 7.0 / 16.0)
                 }
-                if y + 1 < image.height {
-                    if x > 0 {
-                        result.addError(at: x - 1, y + 1,
+                if rowIndex + 1 < image.height {
+                    if columnIndex > 0 {
+                        result.addError(at: columnIndex - 1, rowIndex + 1,
                                         rError: rErr * 3.0 / 16.0,
                                         gError: gErr * 3.0 / 16.0,
                                         bError: bErr * 3.0 / 16.0)
                     }
-                    result.addError(at: x, y + 1,
+                    result.addError(at: columnIndex, rowIndex + 1,
                                     rError: rErr * 5.0 / 16.0,
                                     gError: gErr * 5.0 / 16.0,
                                     bError: bErr * 5.0 / 16.0)
-                    if x + 1 < image.width {
-                        result.addError(at: x + 1, y + 1,
+                    if columnIndex + 1 < image.width {
+                        result.addError(at: columnIndex + 1, rowIndex + 1,
                                         rError: rErr * 1.0 / 16.0,
                                         gError: gErr * 1.0 / 16.0,
                                         bError: bErr * 1.0 / 16.0)
@@ -134,18 +134,18 @@ extension ASCIIConverter {
                 (128, 128, 128), (255, 0, 0), (0, 255, 0), (255, 255, 0),
                 (0, 0, 255), (255, 0, 255), (0, 255, 255), (255, 255, 255),
             ]
-            let (r, g, b) = table[idx]
-            return RGBA(r: r, g: g, b: b)
+            let (red, green, blue) = table[idx]
+            return RGBA(r: red, g: green, b: blue)
         } else if idx < 232 {
             // 6x6x6 color cube
             let offset = idx - 16
-            let r = offset / 36
-            let g = (offset % 36) / 6
-            let b = offset % 6
+            let red = offset / 36
+            let green = (offset % 36) / 6
+            let blue = offset % 6
             return RGBA(
-                r: r == 0 ? 0 : UInt8(55 + r * 40),
-                g: g == 0 ? 0 : UInt8(55 + g * 40),
-                b: b == 0 ? 0 : UInt8(55 + b * 40)
+                r: red == 0 ? 0 : UInt8(55 + red * 40),
+                g: green == 0 ? 0 : UInt8(55 + green * 40),
+                b: blue == 0 ? 0 : UInt8(55 + blue * 40)
             )
         } else {
             // Grayscale ramp

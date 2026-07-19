@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "referenceIDs": ["s:SwiftUI.Pending"],
+  "decisions": [
+    {
+      "referenceID": "s:SwiftUI.Pending",
+      "referenceSignature": "struct PendingSurface",
+      "tuikitSignature": "struct PendingSurface",
+      "inclusion": "include",
+      "status": "unreviewed",
+      "availability": {
+        "policy": "matchesReference"
+      },
+      "evidence": [
+        {
+          "kind": "referenceSymbolGraph",
+          "reference": "reference-macos"
+        },
+        {
+          "kind": "compileContract",
+          "reference": "compile.pending"
+        }
+      ],
+      "ownerIssue": "#105",
+      "contractID": "compile.pending"
+    }
+  ],
+  "tuikitDecisions": []
+}

@@ -148,13 +148,13 @@ extension ASCIIConverter {
         var lines = [String]()
         lines.reserveCapacity(height)
 
-        for y in 0..<height {
+        for rowIndex in 0..<height {
             var line = ""
             line.reserveCapacity(width * 20) // Reserve for ANSI codes
             var lastColor = ""
 
-            for x in 0..<width {
-                let pixel = image.pixel(at: x, y)
+            for columnIndex in 0..<width {
+                let pixel = image.pixel(at: columnIndex, rowIndex)
 
                 // Map luminance to character
                 let charIndex = Int((pixel.luminance / 255.0) * Double(ramp.count - 1))

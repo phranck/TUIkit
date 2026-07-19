@@ -1,0 +1,6 @@
+name: Unpinned reusable workflow
+on:
+  workflow_call:
+jobs:
+  delegate:
+    uses: example/example/.github/workflows/reusable.yml@main

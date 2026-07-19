@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf 'swiftlint %s\n' "$*" >> "$QUALITY_GATE_TEST_LOG"
+if [[ "${1:-}" == "version" ]]; then
+    echo "0.65.0"
+fi

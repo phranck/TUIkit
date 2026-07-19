@@ -1,5 +1,7 @@
 .DS_Store
 /.build
+/Tools/APICompatibility/.build/
+/Tools/APICompatibility/.swiftpm/
 /Packages
 xcuserdata/
 DerivedData/

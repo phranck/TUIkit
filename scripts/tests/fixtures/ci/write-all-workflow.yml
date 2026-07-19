@@ -1,0 +1,8 @@
+name: Broad workflow writer
+on: [workflow_dispatch]
+permissions: write-all
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Unexpected broad writer"

@@ -6,27 +6,41 @@ TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure
 
 | Requirement | Details |
 |-------------|---------|
-| **Swift 6.0** | `swift-tools-version: 6.0`. Never use features from a newer compiler. |
-| **Cross-platform** | Must build and run on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container). |
+| **Swift 6.0.3** | Development and CI use exactly Swift 6.0.3; `swift-tools-version` remains 6.0. Never use features from a newer compiler. |
+| **Cross-platform** | Must build and run on both macOS and Linux. The Linux image and digest are pinned in `scripts/toolchain.env`. |
 | **CI must pass** | All tests and linting must pass before merge. |
 
-## Build, Test & Lint
+## Local Quality Gate
 
 ```bash
-# Build
-swift build
+# Run lint, build, tests, test discovery, DocC, and CI configuration checks on macOS and Linux
+./scripts/test-linux.sh
 
-# Run all tests (1037+ tests, Swift Testing framework)
-swift test
+# Run one platform only
+./scripts/test-linux.sh macos
+./scripts/test-linux.sh linux
+```
+
+The gate installs the pinned SwiftLint release into `.build/tooling`, verifies its SHA-256 checksum, and rejects any Swift or SwiftLint version drift. Compiler and DocC warnings are errors, and SwiftLint runs with `--strict --no-cache`.
+
+Focused commands remain useful while developing, but they do not replace the complete gate:
+
+```bash
+swift build -Xswiftc -warnings-as-errors
+swift test -Xswiftc -warnings-as-errors
 
 # Run a single test suite
 swift test --filter <TestSuiteName>
 
-# Lint
-swiftlint
+# Run the pinned linter through the gate installer
+SWIFTLINT_BIN=$(./scripts/install-swiftlint.sh macos)
+"$SWIFTLINT_BIN" lint --strict --no-cache
 
 # Format (configured but not enforced in CI)
 swift-format format -i -r Sources Tests
+
+# Generate the deployable DocC archive
+./scripts/generate-documentation.sh
 ```
 
 ## Pull Request Requirements
@@ -66,6 +80,13 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 - Search the codebase for similar patterns before implementing anything new
 - Consolidate and reuse before adding new functions or types
 
+### Image Decoding
+
+- `TUIkitImage` supports static PNG and JPEG input with non-premultiplied 8-bit RGBA output.
+- Vendored decoder sources must remain pure Swift, namespaced, provenance-documented, and compatible with Swift 6.0 on macOS and Linux.
+- Input, dimensions, pixels, frames, decompressed samples, and final allocation are bounded before decoding.
+- Format decoding stays separate from file and network lifecycle code so it remains deterministic and fuzzable.
+
 ## Code Style
 
 - Line length: 140 characters (warning), 200 (error)
@@ -76,7 +97,7 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 ## Testing
 
 - Uses Swift Testing framework (`@Test`, `#expect`, `@Suite`)
-- Tests run in parallel
+- Independent tests run in parallel; suites that isolate shared state run serially
 - Test files mirror source structure in `Tests/TUIkitTests/`
 
 ## Detailed Architecture Rules

@@ -1,0 +1,9 @@
+name: Git flag writer
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: git --no-pager push origin HEAD:main

@@ -77,12 +77,7 @@ struct _ImageCore: View, Renderable, Layoutable {
         let token = "image-\(identity.path)"
 
         // Detect source change and force reload
-        if let lastSource = lastSourceBox.value, lastSource != source {
-            lifecycle.cancelTask(token: token)
-            lifecycle.resetAppearance(token: token)
-            phaseBox.value = .loading
-        }
-        lastSourceBox.value = source
+        resetLoadingPhaseIfNeeded(phaseBox: phaseBox, lastSourceBox: lastSourceBox, lifecycle: lifecycle, token: token)
 
         // Start loading on first appearance
         if !lifecycle.hasAppeared(token: token) {
@@ -152,6 +147,26 @@ struct _ImageCore: View, Renderable, Layoutable {
         case .failure(let message):
             return renderError(message, width: width, height: height, context: context)
         }
+    }
+}
+
+// MARK: - Loading State
+
+extension _ImageCore {
+
+    /// Resets the loading phase when the image source changes.
+    private func resetLoadingPhaseIfNeeded(
+        phaseBox: StateBox<ImageLoadingPhase>,
+        lastSourceBox: StateBox<ImageSource?>,
+        lifecycle: LifecycleManager,
+        token: String
+    ) {
+        if let lastSource = lastSourceBox.value, lastSource != source {
+            lifecycle.cancelTask(token: token)
+            lifecycle.resetAppearance(token: token)
+            phaseBox.value = .loading
+        }
+        lastSourceBox.value = source
     }
 }
 
@@ -247,15 +262,15 @@ extension _ImageCore {
 
         let startY = max(0, (height - contentLines.count) / 2)
 
-        for (i, content) in contentLines.enumerated() {
-            let y = startY + i
-            guard y < height else { break }
+        for (lineIndex, content) in contentLines.enumerated() {
+            let rowIndex = startY + lineIndex
+            guard rowIndex < height else { break }
 
             // Calculate visible width of content (excluding ANSI codes)
             let visibleWidth = content.filter { !$0.isASCII || ($0.asciiValue ?? 0) >= 32 }.count
             let padding = max(0, (width - visibleWidth) / 2)
             let padded = String(repeating: " ", count: padding) + content
-            lines[y] = padded
+            lines[rowIndex] = padded
         }
 
         return FrameBuffer(lines: lines, width: width)

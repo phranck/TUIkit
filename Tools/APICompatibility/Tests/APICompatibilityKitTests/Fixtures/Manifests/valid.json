@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "referenceIDs": [
+    "s:SwiftUI.Excluded",
+    "s:SwiftUI.Exact",
+    "s:SwiftUI.Exception",
+    "s:SwiftUI.Planned"
+  ],
+  "decisions": [
+    {
+      "referenceID": "s:SwiftUI.Exception",
+      "referenceSignature": "func exception(_ value: SwiftUI.Value) -> SwiftUI.Text",
+      "tuikitSignature": "func exception(_ value: TUIkit.Value) -> TUIkit.Text",
+      "inclusion": "include",
+      "status": "implemented",
+      "availability": {
+        "policy": "terminalCrossPlatform",
+        "reason": "The terminal implementation is available on every supported TUIkit platform."
+      },
+      "evidence": [
+        {
+          "kind": "referenceSymbolGraph",
+          "reference": "reference-macos"
+        },
+        {
+          "kind": "tuikitSymbolGraph",
+          "reference": "tuikit-macos"
+        },
+        {
+          "kind": "compileContract",
+          "reference": "compile.exception"
+        }
+      ],
+      "ownerIssue": "#102",
+      "contractID": "compile.exception",
+      "tuikitSymbolID": "s:TUIkit.Exception"
+    },
+    {
+      "referenceID": "s:SwiftUI.Excluded",
+      "referenceSignature": "struct ExcludedSurface",
+      "inclusion": "exclude",
+      "status": "verified",
+      "availability": {
+        "policy": "excluded",
+        "reason": "The API requires pixel-addressable GPU rendering."
+      },
+      "evidence": [
+        {
+          "kind": "referenceSymbolGraph",
+          "reference": "reference-macos"
+        }
+      ],
+      "exclusion": {
+        "category": "rasterOrGPU",
+        "reason": "Requires pixel-addressable GPU rendering."
+      }
+    },
+    {
+      "referenceID": "s:SwiftUI.Planned",
+      "referenceSignature": "struct PlannedSurface",
+      "tuikitSignature": "struct PlannedSurface",
+      "inclusion": "include",
+      "status": "planned",
+      "availability": {
+        "policy": "matchesReference"
+      },
+      "evidence": [
+        {
+          "kind": "referenceSymbolGraph",
+          "reference": "reference-macos"
+        },
+        {
+          "kind": "compileContract",
+          "reference": "compile.planned"
+        }
+      ],
+      "ownerIssue": "#103",
+      "contractID": "compile.planned"
+    },
+    {
+      "referenceID": "s:SwiftUI.Exact",
+      "referenceSignature": "func exact(_ value: SwiftUI.Value) -> SwiftUI.Text",
+      "tuikitSignature": "func exact(_ value: TUIkit.Value) -> TUIkit.Text",
+      "inclusion": "include",
+      "status": "verified",
+      "availability": {
+        "policy": "terminalCrossPlatform",
+        "reason": "The terminal implementation is available on every supported TUIkit platform."
+      },
+      "evidence": [
+        {
+          "kind": "referenceSymbolGraph",
+          "reference": "reference-macos"
+        },
+        {
+          "kind": "tuikitSymbolGraph",
+          "reference": "tuikit-macos"
+        },
+        {
+          "kind": "compileContract",
+          "reference": "compile.exact"
+        }
+      ],
+      "ownerIssue": "#101",
+      "contractID": "compile.exact",
+      "tuikitSymbolID": "s:TUIkit.Exact"
+    }
+  ],
+  "tuikitDecisions": [
+    {
+      "symbolID": "s:TUIkit.Leak",
+      "classification": "implementationLeak",
+      "ownerIssue": "#104"
+    },
+    {
+      "symbolID": "s:TUIkit.Exception",
+      "classification": "reviewedException",
+      "referenceID": "s:SwiftUI.Exception",
+      "exception": {
+        "kind": "terminal",
+        "reason": "Terminal cells do not expose raster layout metrics.",
+        "allowedDifferences": [
+          "declaration"
+        ]
+      }
+    },
+    {
+      "symbolID": "s:TUIkit.Exact",
+      "classification": "swiftUIExact",
+      "referenceID": "s:SwiftUI.Exact"
+    },
+    {
+      "symbolID": "s:TUIkit.TerminalOnly",
+      "classification": "tuiSpecific"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+name: CI
+on: [push]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  reference-snapshots:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: test -d /Applications/Xcode_26.6.app/Contents/Developer
+      - run: ./scripts/generate-swiftui-reference-snapshots.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: swiftui-reference-snapshots
+          path: ${{ runner.temp }}/swiftui-reference-snapshots
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+      - run: ./scripts/test-linux.sh macos
+        env:
+          TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-macos-snapshots
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tuikit-macos-snapshots
+          path: ${{ runner.temp }}/tuikit-macos-snapshots
+      - run: tar -czf "$RUNNER_TEMP/docc-output.tar.gz" -C docc-output .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: docc-output
+          path: ${{ runner.temp }}/docc-output.tar.gz
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: ./scripts/test-linux.sh linux
+        env:
+          TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-linux-snapshots
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tuikit-linux-snapshots
+          path: ${{ runner.temp }}/tuikit-linux-snapshots
+  api-compatibility:
+    needs: [reference-snapshots, macos, linux]
+    runs-on: macos-15
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: swiftui-reference-snapshots
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: tuikit-macos-snapshots
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: tuikit-linux-snapshots
+      - run: ./scripts/assemble-api-snapshot-set.sh
+      - run: ./scripts/verify-compatibility-owner-registry.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: api-compatibility-inputs
+          path: ${{ runner.temp }}/api-compatibility-inputs
+  update-badge:
+    needs: [macos, linux, api-compatibility]
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - id: badge-provenance
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "$TESTED_SHA" ]]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "stale=false" >> "$GITHUB_OUTPUT"
+      - if: steps.badge-provenance.outputs.stale == 'false'
+        run: ./scripts/update-test-count.sh --test-list test-list.txt
+      - if: steps.badge-provenance.outputs.stale == 'false'
+        run: |
+          if git push origin HEAD:main; then
+            exit 0
+          fi
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "${{ github.sha }}" ]]; then
+            exit 0
+          fi
+          exit 1
+  deploy-docs:
+    needs: [macos, linux, api-compatibility]
+    runs-on: macos-15
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: docc-output
+          path: ${{ runner.temp }}/docc-artifact
+      - run: |
+          mkdir -p docc-output
+          tar -xzf "$RUNNER_TEMP/docc-artifact/docc-output.tar.gz" -C docc-output
+      - run: echo deploy

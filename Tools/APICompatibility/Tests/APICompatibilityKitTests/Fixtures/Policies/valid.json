@@ -1,0 +1,40 @@
+{
+  "referenceRules" : [
+    {
+      "action" : {
+        "availability" : {
+          "policy" : "matchesReference"
+        },
+        "contractID" : "compile.core-controls",
+        "contractKind" : "compile",
+        "kind" : "include",
+        "ownerIssue" : "#17",
+        "status" : "implemented"
+      },
+      "id" : "include-core-controls",
+      "referenceIDs" : [
+        "s:SwiftUI.Widget",
+        "s:SwiftUICore.Gadget"
+      ]
+    },
+    {
+      "action" : {
+        "category" : "rasterOrGPU",
+        "kind" : "exclude",
+        "reason" : "Raster rendering does not map to terminal cells."
+      },
+      "id" : "exclude-raster-rendering",
+      "referenceIDs" : [
+        "s:SwiftUI.ImageRenderer"
+      ]
+    }
+  ],
+  "schemaVersion" : 1,
+  "tuikitOverrides" : [
+    {
+      "action" : "tuiSpecific",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:TUIkit.TerminalOnly"
+    }
+  ]
+}

@@ -498,6 +498,6 @@ If translation files won't load:
 
 ## See Also
 
-- <doc:GettingStarted> — Getting started with TUIkit
-- <doc:AppLifecycle> — Application lifecycle and setup
-- <doc:Architecture> — Framework architecture
+- <doc:GettingStarted>
+- <doc:AppLifecycle>
+- <doc:Architecture>

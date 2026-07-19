@@ -1,0 +1,116 @@
+{
+  "issues" : [
+    {
+      "number" : 5,
+      "title" : "Enhancement: Implementation of an Application Menu System",
+      "url" : "https://github.com/phranck/TUIkit/issues/5"
+    },
+    {
+      "number" : 12,
+      "title" : "[P0-07] Render ForEach and keyed dynamic collections correctly",
+      "url" : "https://github.com/phranck/TUIkit/issues/12"
+    },
+    {
+      "number" : 17,
+      "title" : "[P1-12] Align View, ContentBuilder, ViewModifier, and ModifiedContent with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/17"
+    },
+    {
+      "number" : 18,
+      "title" : "[P1-13] Align Binding, State, Environment, AppStorage, and Observation with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/18"
+    },
+    {
+      "number" : 19,
+      "title" : "[P1-14] Add composable Scene modifiers and Scene environment propagation",
+      "url" : "https://github.com/phranck/TUIkit/issues/19"
+    },
+    {
+      "number" : 20,
+      "title" : "[P1-15] Align layout primitives and terminal geometry semantics with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/20"
+    },
+    {
+      "number" : 21,
+      "title" : "[P1-16] Add environment-driven shared View modifiers with exact signatures",
+      "url" : "https://github.com/phranck/TUIkit/issues/21"
+    },
+    {
+      "number" : 22,
+      "title" : "[P1-17] Replace the FocusState collision with SwiftUI-compatible focus APIs",
+      "url" : "https://github.com/phranck/TUIkit/issues/22"
+    },
+    {
+      "number" : 23,
+      "title" : "[P1-18] Align controls and style protocols with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/23"
+    },
+    {
+      "number" : 24,
+      "title" : "[P1-19] Align List, Section, Menu, Table, and navigation containers with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/24"
+    },
+    {
+      "number" : 25,
+      "title" : "[P1-20] Implement true viewport-driven lazy collections",
+      "url" : "https://github.com/phranck/TUIkit/issues/25"
+    },
+    {
+      "number" : 26,
+      "title" : "[P1-21] Schedule animations only while committed and visible",
+      "url" : "https://github.com/phranck/TUIkit/issues/26"
+    },
+    {
+      "number" : 27,
+      "title" : "[P1-22] Harden and test the asynchronous image pipeline",
+      "url" : "https://github.com/phranck/TUIkit/issues/27"
+    },
+    {
+      "number" : 28,
+      "title" : "[P1-23] Align Text, Image, localization, and presentation APIs with SwiftUI",
+      "url" : "https://github.com/phranck/TUIkit/issues/28"
+    },
+    {
+      "number" : 31,
+      "title" : "[P2-26] Add terminal-native scrolling, navigation stack, and tab navigation",
+      "url" : "https://github.com/phranck/TUIkit/issues/31"
+    },
+    {
+      "number" : 32,
+      "title" : "[P2-27] Add form, disclosure, grid, and structured input primitives",
+      "url" : "https://github.com/phranck/TUIkit/issues/32"
+    },
+    {
+      "number" : 33,
+      "title" : "[P2-28] Add terminal accessibility, search, refresh, and application actions",
+      "url" : "https://github.com/phranck/TUIkit/issues/33"
+    },
+    {
+      "number" : 34,
+      "title" : "[P2-29] Add terminal-native Animation, Transaction, and TimelineView semantics",
+      "url" : "https://github.com/phranck/TUIkit/issues/34"
+    },
+    {
+      "number" : 35,
+      "title" : "[P2-30] Reduce the public implementation surface and namespace TUI-only APIs",
+      "url" : "https://github.com/phranck/TUIkit/issues/35"
+    },
+    {
+      "number" : 41,
+      "title" : "[P1-35] Add terminal input, hit-testing, and gesture semantics",
+      "url" : "https://github.com/phranck/TUIkit/issues/41"
+    },
+    {
+      "number" : 42,
+      "title" : "[P2-36] Add portable clipboard and data-transfer APIs",
+      "url" : "https://github.com/phranck/TUIkit/issues/42"
+    },
+    {
+      "number" : 43,
+      "title" : "[P2-37] Add portable file and document workflows",
+      "url" : "https://github.com/phranck/TUIkit/issues/43"
+    }
+  ],
+  "repository" : "phranck/TUIkit",
+  "schemaVersion" : 1
+}

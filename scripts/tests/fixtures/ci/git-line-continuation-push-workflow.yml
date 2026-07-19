@@ -1,0 +1,11 @@
+name: Git line continuation writer
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          git \
+            push origin HEAD:main

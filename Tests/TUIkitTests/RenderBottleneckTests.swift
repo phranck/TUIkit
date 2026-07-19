@@ -13,7 +13,10 @@ import Testing
 
 /// Deep analysis tests to identify specific render bottlenecks.
 @MainActor
-@Suite("Render Bottleneck Analysis")
+@Suite(
+    "Render Bottleneck Analysis",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderBottleneckTests {
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {
@@ -39,7 +42,7 @@ struct RenderBottleneckTests {
     // MARK: - Stack Depth Analysis
 
     @Test("Analyze stack nesting depth impact")
-    func analyzeStackNestingDepth() {
+    func analyzeStackNestingDepth() throws {
         let context = testContext()
         let iterations = 500
 
@@ -47,32 +50,53 @@ struct RenderBottleneckTests {
 
         // Depth 1
         let depth1 = VStack { Text("A") }
+        try requireRenderedOutput(depth1, context: context) { $0.strippedLines == ["A"] }
         let time1 = measure("Depth 1", iterations: iterations) {
             _ = renderToBuffer(depth1, context: context)
         }
 
         // Depth 2
         let depth2 = VStack { VStack { Text("A") } }
-        let time2 = measure("Depth 2", iterations: iterations) {
+        try requireRenderedOutput(depth2, context: context) { $0.strippedLines == ["A"] }
+        _ = measure("Depth 2", iterations: iterations) {
             _ = renderToBuffer(depth2, context: context)
         }
 
         // Depth 3
         let depth3 = VStack { VStack { VStack { Text("A") } } }
-        let time3 = measure("Depth 3", iterations: iterations) {
+        try requireRenderedOutput(depth3, context: context) { $0.strippedLines == ["A"] }
+        _ = measure("Depth 3", iterations: iterations) {
             _ = renderToBuffer(depth3, context: context)
         }
 
         // Depth 5
         let depth5 = VStack { VStack { VStack { VStack { VStack { Text("A") } } } } }
-        let time5 = measure("Depth 5", iterations: iterations) {
+        try requireRenderedOutput(depth5, context: context) { $0.strippedLines == ["A"] }
+        _ = measure("Depth 5", iterations: iterations) {
             _ = renderToBuffer(depth5, context: context)
         }
 
         // Depth 10
-        let depth10 = VStack { VStack { VStack { VStack { VStack {
-            VStack { VStack { VStack { VStack { VStack { Text("A") } } } } }
-        } } } } }
+        let depth10 = VStack {
+            VStack {
+                VStack {
+                    VStack {
+                        VStack {
+                            VStack {
+                                VStack {
+                                    VStack {
+                                        VStack {
+                                            VStack { Text("A") }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        try requireRenderedOutput(depth10, context: context) { $0.strippedLines == ["A"] }
         let time10 = measure("Depth 10", iterations: iterations) {
             _ = renderToBuffer(depth10, context: context)
         }
@@ -95,7 +119,7 @@ struct RenderBottleneckTests {
     // MARK: - Child Count Analysis
 
     @Test("Analyze child count impact on VStack")
-    func analyzeChildCountVStack() {
+    func analyzeChildCountVStack() throws {
         let context = testContext()
         let iterations = 500
 
@@ -103,6 +127,7 @@ struct RenderBottleneckTests {
 
         // 1 child
         let children1 = VStack { Text("A") }
+        try requireRenderedOutput(children1, context: context) { $0.strippedLines == ["A"] }
         _ = measure("1 child", iterations: iterations) {
             _ = renderToBuffer(children1, context: context)
         }
@@ -110,6 +135,9 @@ struct RenderBottleneckTests {
         // 5 children
         let children5 = VStack {
             Text("A"); Text("B"); Text("C"); Text("D"); Text("E")
+        }
+        try requireRenderedOutput(children5, context: context) {
+            $0.strippedLines == ["A", "B", "C", "D", "E"]
         }
         _ = measure("5 children", iterations: iterations) {
             _ = renderToBuffer(children5, context: context)
@@ -119,6 +147,9 @@ struct RenderBottleneckTests {
         let children10 = VStack {
             Text("A"); Text("B"); Text("C"); Text("D"); Text("E")
             Text("F"); Text("G"); Text("H"); Text("I"); Text("J")
+        }
+        try requireRenderedOutput(children10, context: context) {
+            $0.strippedLines == ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
         }
         let time10 = measure("10 children", iterations: iterations) {
             _ = renderToBuffer(children10, context: context)
@@ -132,52 +163,65 @@ struct RenderBottleneckTests {
 
     // MARK: - ForEach Analysis
 
-    @Test("Analyze ForEach iteration count impact")
-    func analyzeForEachIterations() {
+    @Test(
+        "Analyze ForEach iteration count impact",
+        .disabled("Issue #12 must restore ForEach output before timing it")
+    )
+    func analyzeForEachIterations() throws {
         let context = testContext()
         let iterations = 200
 
         print("\n=== ForEach Iteration Analysis ===")
 
-        // 5 items
         let items5 = Array(0..<5)
         let forEach5 = VStack {
-            ForEach(items5, id: \.self) { i in
-                Text("Row \(i)")
+            ForEach(items5, id: \.self) { item in
+                Text("Row \(item)")
             }
-        }
-        _ = measure("5 items", iterations: iterations) {
-            _ = renderToBuffer(forEach5, context: context)
         }
 
-        // 20 items
         let items20 = Array(0..<20)
         let forEach20 = VStack {
-            ForEach(items20, id: \.self) { i in
-                Text("Row \(i)")
+            ForEach(items20, id: \.self) { item in
+                Text("Row \(item)")
             }
+        }
+
+        let items50 = Array(0..<50)
+        let forEach50 = VStack {
+            ForEach(items50, id: \.self) { item in
+                Text("Row \(item)")
+            }
+        }
+
+        let items100 = Array(0..<100)
+        let forEach100 = VStack {
+            ForEach(items100, id: \.self) { item in
+                Text("Row \(item)")
+            }
+        }
+
+        try requireRenderedOutput(forEach5, context: context) {
+            $0.strippedLines == items5.map { "Row \($0)" }
+        }
+        try requireRenderedOutput(forEach20, context: context) {
+            $0.strippedLines == items20.map { "Row \($0)" }
+        }
+        try requireRenderedOutput(forEach50, context: context) {
+            $0.strippedLines == items50.prefix(context.availableHeight).map { "Row \($0)" }
+        }
+        try requireRenderedOutput(forEach100, context: context) {
+            $0.strippedLines == items100.prefix(context.availableHeight).map { "Row \($0)" }
+        }
+
+        _ = measure("5 items", iterations: iterations) {
+            _ = renderToBuffer(forEach5, context: context)
         }
         _ = measure("20 items", iterations: iterations) {
             _ = renderToBuffer(forEach20, context: context)
         }
-
-        // 50 items
-        let items50 = Array(0..<50)
-        let forEach50 = VStack {
-            ForEach(items50, id: \.self) { i in
-                Text("Row \(i)")
-            }
-        }
         let time50 = measure("50 items", iterations: iterations) {
             _ = renderToBuffer(forEach50, context: context)
-        }
-
-        // 100 items
-        let items100 = Array(0..<100)
-        let forEach100 = VStack {
-            ForEach(items100, id: \.self) { i in
-                Text("Row \(i)")
-            }
         }
         let time100 = measure("100 items", iterations: iterations) {
             _ = renderToBuffer(forEach100, context: context)
@@ -194,7 +238,7 @@ struct RenderBottleneckTests {
     // MARK: - Modifier Chain Analysis
 
     @Test("Analyze modifier chain depth impact")
-    func analyzeModifierChainDepth() {
+    func analyzeModifierChainDepth() throws {
         let context = testContext()
         let iterations = 500
 
@@ -202,18 +246,33 @@ struct RenderBottleneckTests {
 
         // No modifiers
         let noModifiers = Text("Hello")
+        try requireRenderedOutput(noModifiers, context: context) { $0.strippedLines == ["Hello"] }
         _ = measure("0 modifiers", iterations: iterations) {
             _ = renderToBuffer(noModifiers, context: context)
         }
 
         // 1 modifier
         let oneModifier = Text("Hello").bold()
+        try requireRenderedOutput(oneModifier, context: context) { output in
+            output.strippedLines == ["Hello"]
+                && output.rawLines[0].contains("\u{1B}[1;")
+        }
         _ = measure("1 modifier", iterations: iterations) {
             _ = renderToBuffer(oneModifier, context: context)
         }
 
         // 3 modifiers
-        let threeModifiers = Text("Hello").bold().foregroundStyle(.red).dimmed()
+        let styledText = Text("Hello").bold().foregroundStyle(.red)
+        let threeModifiers = styledText.dimmed()
+        try requireRenderedOutput(styledText, context: context) { output in
+            output.strippedLines == ["Hello"]
+                && output.rawLines == ["\u{1B}[1;31mHello\u{1B}[0m"]
+        }
+        try requireRenderedOutput(threeModifiers, context: context) { output in
+            output.strippedLines == ["Hello"]
+                && output.rawLines[0].contains("\u{1B}[2;")
+                && output.rawLines[0].contains(";48;2;")
+        }
         _ = measure("3 modifiers", iterations: iterations) {
             _ = renderToBuffer(threeModifiers, context: context)
         }
@@ -225,6 +284,11 @@ struct RenderBottleneckTests {
             .dimmed()
             .padding(1)
             .border(.line)
+        try requireRenderedOutput(fiveModifiers, context: context) { output in
+            output.strippedLines.count == 5
+                && output.strippedLines.joined(separator: "\n").contains("Hello")
+                && output.rawLines.contains { $0.contains("\u{1B}[2;") }
+        }
         let time5 = measure("5 modifiers", iterations: iterations) {
             _ = renderToBuffer(fiveModifiers, context: context)
         }
@@ -237,7 +301,7 @@ struct RenderBottleneckTests {
     // MARK: - Interactive Controls Analysis
 
     @Test("Analyze interactive control overhead")
-    func analyzeInteractiveControlOverhead() {
+    func analyzeInteractiveControlOverhead() throws {
         let context = testContext()
         let iterations = 500
 
@@ -245,12 +309,20 @@ struct RenderBottleneckTests {
 
         // Simple Text (baseline)
         let text = Text("Hello")
+        try requireRenderedOutput(text, context: context) { $0.strippedLines == ["Hello"] }
         _ = measure("Text (baseline)", iterations: iterations) {
             _ = renderToBuffer(text, context: context)
         }
 
         // Button
         let button = Button("Click") {}
+        try requireRenderedOutput(button, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1
+                && lines[0].contains("▐")
+                && lines[0].contains("Click")
+                && lines[0].contains("▌")
+        }
         _ = measure("Button", iterations: iterations) {
             _ = renderToBuffer(button, context: context)
         }
@@ -258,6 +330,10 @@ struct RenderBottleneckTests {
         // Toggle
         var isOn = false
         let toggle = Toggle("Enable", isOn: Binding(get: { isOn }, set: { isOn = $0 }))
+        try requireRenderedOutput(toggle, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1 && lines[0].contains("[ ]") && lines[0].contains("Enable")
+        }
         _ = measure("Toggle", iterations: iterations) {
             _ = renderToBuffer(toggle, context: context)
         }
@@ -271,6 +347,15 @@ struct RenderBottleneckTests {
                 MenuItem(label: "C")
             ]
         )
+        try requireRenderedOutput(menu, context: context) { renderOutput in
+            let lines = renderOutput.strippedLines
+            let output = lines.joined(separator: "\n")
+            return lines.count > 3
+                && output.contains("Menu")
+                && output.contains("A")
+                && output.contains("B")
+                && output.contains("C")
+        }
         _ = measure("Menu (3 items)", iterations: iterations) {
             _ = renderToBuffer(menu, context: context)
         }
@@ -284,6 +369,13 @@ struct RenderBottleneckTests {
             RadioButtonItem("b", "Option B")
             RadioButtonItem("c", "Option C")
         }
+        try requireRenderedOutput(radioGroup, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 3
+                && lines[0].contains("Option A")
+                && lines[1].contains("Option B")
+                && lines[2].contains("Option C")
+        }
         let timeRadio = measure("RadioButtonGroup (3 items)", iterations: iterations) {
             _ = renderToBuffer(radioGroup, context: context)
         }
@@ -296,7 +388,7 @@ struct RenderBottleneckTests {
     // MARK: - String Operations Analysis
 
     @Test("Analyze ANSI string operations impact")
-    func analyzeStringOperations() {
+    func analyzeStringOperations() throws {
         let context = testContext()
         let iterations = 500
 
@@ -304,24 +396,36 @@ struct RenderBottleneckTests {
 
         // Short text
         let shortText = Text("Hi")
+        try requireRenderedOutput(shortText, context: context) { $0.strippedLines == ["Hi"] }
         _ = measure("Short text (2 chars)", iterations: iterations) {
             _ = renderToBuffer(shortText, context: context)
         }
 
         // Medium text
         let mediumText = Text("This is a medium length text string")
+        try requireRenderedOutput(mediumText, context: context) {
+            $0.strippedLines == ["This is a medium length text string"]
+        }
         _ = measure("Medium text (36 chars)", iterations: iterations) {
             _ = renderToBuffer(mediumText, context: context)
         }
 
         // Long text
-        let longText = Text(String(repeating: "A", count: 200))
+        let longValue = String(repeating: "A", count: 200)
+        let longText = Text(longValue)
+        try requireRenderedOutput(longText, context: context) {
+            $0.strippedLines.joined() == longValue
+        }
         _ = measure("Long text (200 chars)", iterations: iterations) {
             _ = renderToBuffer(longText, context: context)
         }
 
         // Very long text
-        let veryLongText = Text(String(repeating: "B", count: 1000))
+        let veryLongValue = String(repeating: "B", count: 1000)
+        let veryLongText = Text(veryLongValue)
+        try requireRenderedOutput(veryLongText, context: context) {
+            $0.strippedLines.joined() == veryLongValue
+        }
         let timeLong = measure("Very long text (1000 chars)", iterations: iterations) {
             _ = renderToBuffer(veryLongText, context: context)
         }
@@ -333,8 +437,11 @@ struct RenderBottleneckTests {
 
     // MARK: - LazyStack vs Regular Stack
 
-    @Test("Compare LazyStack vs regular Stack performance")
-    func compareLazyVsRegular() {
+    @Test(
+        "Compare LazyStack vs regular Stack performance",
+        .disabled("Issue #12 must restore ForEach output before timing it")
+    )
+    func compareLazyVsRegular() throws {
         let iterations = 300
 
         print("\n=== Lazy vs Regular Stack Comparison ===")
@@ -344,18 +451,26 @@ struct RenderBottleneckTests {
         let smallContext = testContext(height: 10)
 
         let regularStack = VStack {
-            ForEach(items, id: \.self) { i in
-                Text("Row \(i)")
+            ForEach(items, id: \.self) { item in
+                Text("Row \(item)")
             }
         }
-        let regularTime = measure("VStack (100 items, 10 visible)", iterations: iterations) {
-            _ = renderToBuffer(regularStack, context: smallContext)
+        let lazyStack = LazyVStack {
+            ForEach(items, id: \.self) { item in
+                Text("Row \(item)")
+            }
         }
 
-        let lazyStack = LazyVStack {
-            ForEach(items, id: \.self) { i in
-                Text("Row \(i)")
-            }
+        let expectedOutput = items.prefix(smallContext.availableHeight).map { "Row \($0)" }
+        try requireRenderedOutput(regularStack, context: smallContext) {
+            $0.strippedLines == expectedOutput
+        }
+        try requireRenderedOutput(lazyStack, context: smallContext) {
+            $0.strippedLines == expectedOutput
+        }
+
+        let regularTime = measure("VStack (100 items, 10 visible)", iterations: iterations) {
+            _ = renderToBuffer(regularStack, context: smallContext)
         }
         let lazyTime = measure("LazyVStack (100 items, 10 visible)", iterations: iterations) {
             _ = renderToBuffer(lazyStack, context: smallContext)

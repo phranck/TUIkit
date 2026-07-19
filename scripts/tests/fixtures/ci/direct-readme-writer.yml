@@ -1,0 +1,12 @@
+name: Direct README writer
+on: [push]
+permissions:
+  contents: read
+jobs:
+  badge:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          sed 's/Tests-1/Tests-2/' README.md > README.tmp
+          mv README.tmp README.md
+          git push origin HEAD:main

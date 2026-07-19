@@ -310,6 +310,9 @@ struct TextFieldSelectionTests {
         #expect(handler.cursorPosition == 5)
         #expect(handler.hasSelection == false)  // Empty selection
     }
+}
+
+extension TextFieldSelectionTests {
 
     // MARK: - Selection Editing
 

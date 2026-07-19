@@ -204,36 +204,7 @@ extension TextFieldHandler {
             return true
 
         case .character(let char):
-            // Handle Ctrl+key shortcuts
-            if event.ctrl {
-                switch char {
-                case "a", "A":
-                    selectAll()
-                    return true
-                case "c", "C":
-                    copySelection()
-                    return true
-                case "x", "X":
-                    cutSelection()
-                    return true
-                case "v", "V":
-                    paste()
-                    return true
-                case "z", "Z":
-                    undo()
-                    return true
-                default:
-                    return false
-                }
-            }
-
-            // Ignore control characters except printable ones
-            if char.isLetter || char.isNumber || char.isPunctuation ||
-               char.isSymbol || char.isWhitespace {
-                insertCharacter(char)
-                return true
-            }
-            return false
+            return handleCharacter(char, ctrl: event.ctrl)
 
         case .backspace:
             deleteBackward()
@@ -243,59 +214,8 @@ extension TextFieldHandler {
             deleteForward()
             return true
 
-        case .left:
-            if event.shift {
-                extendSelectionLeft()
-            } else {
-                clearSelection()
-                moveCursorLeft()
-            }
-            return true
-
-        case .right:
-            if event.shift {
-                extendSelectionRight()
-            } else {
-                clearSelection()
-                moveCursorRight()
-            }
-            return true
-
-        case .up:
-            if event.shift {
-                extendSelectionToStart()
-            } else {
-                clearSelection()
-                cursorPosition = 0
-            }
-            return true
-
-        case .down:
-            if event.shift {
-                extendSelectionToEnd()
-            } else {
-                clearSelection()
-                cursorPosition = text.wrappedValue.count
-            }
-            return true
-
-        case .home:
-            if event.shift {
-                extendSelectionToStart()
-            } else {
-                clearSelection()
-                cursorPosition = 0
-            }
-            return true
-
-        case .end:
-            if event.shift {
-                extendSelectionToEnd()
-            } else {
-                clearSelection()
-                cursorPosition = text.wrappedValue.count
-            }
-            return true
+        case .left, .right, .up, .down, .home, .end:
+            return handleNavigation(event.key, extendingSelection: event.shift)
 
         case .enter:
             onSubmit?()
@@ -308,6 +228,81 @@ extension TextFieldHandler {
         default:
             return false
         }
+    }
+
+    /// Handles printable characters and Ctrl-based editing shortcuts.
+    private func handleCharacter(_ char: Character, ctrl: Bool) -> Bool {
+        if ctrl {
+            switch char {
+            case "a", "A": selectAll()
+            case "c", "C": copySelection()
+            case "x", "X": cutSelection()
+            case "v", "V": paste()
+            case "z", "Z": undo()
+            default: return false
+            }
+            return true
+        }
+
+        guard char.isLetter || char.isNumber || char.isPunctuation ||
+              char.isSymbol || char.isWhitespace else {
+            return false
+        }
+        insertCharacter(char)
+        return true
+    }
+
+    /// Handles cursor navigation with optional selection extension.
+    private func handleNavigation(_ key: Key, extendingSelection: Bool) -> Bool {
+        switch key {
+        case .left:
+            if extendingSelection {
+                extendSelectionLeft()
+            } else {
+                moveLeftClearingSelection()
+            }
+        case .right:
+            if extendingSelection {
+                extendSelectionRight()
+            } else {
+                moveRightClearingSelection()
+            }
+        case .up, .home:
+            if extendingSelection {
+                extendSelectionToStart()
+            } else {
+                moveToStartClearingSelection()
+            }
+        case .down, .end:
+            if extendingSelection {
+                extendSelectionToEnd()
+            } else {
+                moveToEndClearingSelection()
+            }
+        default:
+            return false
+        }
+        return true
+    }
+
+    private func moveLeftClearingSelection() {
+        clearSelection()
+        moveCursorLeft()
+    }
+
+    private func moveRightClearingSelection() {
+        clearSelection()
+        moveCursorRight()
+    }
+
+    private func moveToStartClearingSelection() {
+        clearSelection()
+        cursorPosition = 0
+    }
+
+    private func moveToEndClearingSelection() {
+        clearSelection()
+        cursorPosition = text.wrappedValue.count
     }
 }
 

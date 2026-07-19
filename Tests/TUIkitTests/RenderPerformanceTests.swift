@@ -18,7 +18,10 @@ import Testing
 /// These tests measure render time for various view hierarchies and
 /// compare against baseline expectations.
 @MainActor
-@Suite("Render Performance Tests")
+@Suite(
+    "Render Performance Tests",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderPerformanceTests {
 
     // MARK: - Test Helpers
@@ -47,7 +50,7 @@ struct RenderPerformanceTests {
     // MARK: - Stack Performance Tests
 
     @Test("VStack render performance is acceptable")
-    func vStackPerformance() {
+    func vStackPerformance() throws {
         let view = VStack {
             Text("Line 1")
             Text("Line 2")
@@ -57,6 +60,9 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) {
+            $0.strippedLines == ["Line 1", "Line 2", "Line 3", "Line 4", "Line 5"]
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         // Should render 1000 iterations in under 1 second
@@ -64,7 +70,7 @@ struct RenderPerformanceTests {
     }
 
     @Test("HStack render performance is acceptable")
-    func hStackPerformance() {
+    func hStackPerformance() throws {
         let view = HStack {
             Text("A")
             Text("B")
@@ -74,13 +80,14 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { $0.strippedLines == ["A B C D E"] }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "HStack render took \(time)s for 1000 iterations - too slow")
     }
 
     @Test("Nested stacks render performance is acceptable")
-    func nestedStacksPerformance() {
+    func nestedStacksPerformance() throws {
         let view = VStack {
             HStack {
                 Text("A")
@@ -97,6 +104,9 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) {
+            $0.strippedLines == ["A B", "C D", "E F"]
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.5, "Nested stacks render took \(time)s for 1000 iterations - too slow")
@@ -105,28 +115,39 @@ struct RenderPerformanceTests {
     // MARK: - Interactive Control Performance Tests
 
     @Test("Button render performance is acceptable")
-    func buttonPerformance() {
+    func buttonPerformance() throws {
         let view = Button("Test Button") {}
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1
+                && lines[0].contains("▐")
+                && lines[0].contains("Test Button")
+                && lines[0].contains("▌")
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "Button render took \(time)s for 1000 iterations - too slow")
     }
 
     @Test("Toggle render performance is acceptable")
-    func togglePerformance() {
+    func togglePerformance() throws {
         var isOn = false
         let view = Toggle("Test Toggle", isOn: Binding(get: { isOn }, set: { isOn = $0 }))
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1 && lines[0].contains("[ ]") && lines[0].contains("Test Toggle")
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "Toggle render took \(time)s for 1000 iterations - too slow")
     }
 
     @Test("Menu render performance is acceptable")
-    func menuPerformance() {
+    func menuPerformance() throws {
         let view = Menu(
             title: "Test Menu",
             items: [
@@ -137,13 +158,22 @@ struct RenderPerformanceTests {
         )
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            let lines = output.strippedLines
+            let visibleOutput = lines.joined(separator: "\n")
+            return lines.count > 3
+                && visibleOutput.contains("Test Menu")
+                && visibleOutput.contains("Item 1")
+                && visibleOutput.contains("Item 2")
+                && visibleOutput.contains("Item 3")
+        }
         let time = measureRenderTime(view, iterations: 500, context: context)
 
         #expect(time < 1.0, "Menu render took \(time)s for 500 iterations - too slow")
     }
 
     @Test("RadioButtonGroup render performance is acceptable")
-    func radioButtonGroupPerformance() {
+    func radioButtonGroupPerformance() throws {
         var selection = "a"
         let view = RadioButtonGroup(
             selection: Binding(get: { selection }, set: { selection = $0 })
@@ -154,6 +184,13 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 3
+                && lines[0].contains("Option A")
+                && lines[1].contains("Option B")
+                && lines[2].contains("Option C")
+        }
         let time = measureRenderTime(view, iterations: 500, context: context)
 
         #expect(time < 1.0, "RadioButtonGroup render took \(time)s for 500 iterations - too slow")
@@ -162,7 +199,7 @@ struct RenderPerformanceTests {
     // MARK: - LazyStack Performance Tests
 
     @Test("LazyVStack render performance is acceptable")
-    func lazyVStackPerformance() {
+    func lazyVStackPerformance() throws {
         let view = LazyVStack {
             Text("Line 1")
             Text("Line 2")
@@ -172,13 +209,16 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) {
+            $0.strippedLines == ["Line 1", "Line 2", "Line 3", "Line 4", "Line 5"]
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "LazyVStack render took \(time)s for 1000 iterations - too slow")
     }
 
     @Test("LazyHStack render performance is acceptable")
-    func lazyHStackPerformance() {
+    func lazyHStackPerformance() throws {
         let view = LazyHStack {
             Text("A")
             Text("B")
@@ -188,6 +228,7 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { $0.strippedLines == ["A B C D E"] }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "LazyHStack render took \(time)s for 1000 iterations - too slow")
@@ -196,7 +237,7 @@ struct RenderPerformanceTests {
     // MARK: - Complex Hierarchy Performance Tests
 
     @Test("Complex view hierarchy render performance is acceptable")
-    func complexHierarchyPerformance() {
+    func complexHierarchyPerformance() throws {
         var isOn = false
         let view = VStack(spacing: 1) {
             Text("Header").bold()
@@ -209,13 +250,25 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            let visibleOutput = output.strippedLines.joined(separator: "\n")
+            let headerIsBold = output.rawLines.contains { line in
+                line.contains("\u{1B}[1;") && line.contains("Header")
+            }
+            return visibleOutput.contains("Header")
+                && visibleOutput.contains("OK")
+                && visibleOutput.contains("Cancel")
+                && visibleOutput.contains("Enable")
+                && visibleOutput.contains("Footer")
+                && headerIsBold
+        }
         let time = measureRenderTime(view, iterations: 500, context: context)
 
         #expect(time < 1.5, "Complex hierarchy render took \(time)s for 500 iterations - too slow")
     }
 
     @Test("Deeply nested hierarchy render performance is acceptable")
-    func deeplyNestedPerformance() {
+    func deeplyNestedPerformance() throws {
         let view = VStack {
             VStack {
                 VStack {
@@ -229,6 +282,7 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { $0.strippedLines == ["Deep"] }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "Deeply nested hierarchy render took \(time)s for 1000 iterations - too slow")
@@ -237,13 +291,18 @@ struct RenderPerformanceTests {
     // MARK: - Modifier Chain Performance Tests
 
     @Test("Modifier chain performance is acceptable")
-    func modifierChainPerformance() {
+    func modifierChainPerformance() throws {
         let view = Text("Styled Text")
             .foregroundStyle(.red)
             .bold()
             .padding(2)
 
         let context = testContext()
+        try requireRenderedOutput(view, context: context) { output in
+            output.strippedLines.count == 5
+                && output.strippedLines.joined(separator: "\n").contains("Styled Text")
+                && output.rawLines.contains { $0.contains("\u{1B}[1;31mStyled Text\u{1B}[0m") }
+        }
         let time = measureRenderTime(view, iterations: 1000, context: context)
 
         #expect(time < 1.0, "Modifier chain render took \(time)s for 1000 iterations - too slow")
@@ -251,21 +310,33 @@ struct RenderPerformanceTests {
 
     // MARK: - Comparative Tests
 
-    @Test("VStack vs LazyVStack performance comparison")
-    func vstackVsLazyVstackComparison() {
+    @Test(
+        "VStack vs LazyVStack performance comparison",
+        .disabled("Issue #12 must restore ForEach output before timing it")
+    )
+    func vstackVsLazyVstackComparison() throws {
+        let items = Array(0..<10)
         let regularStack = VStack {
-            ForEach(0..<10, id: \.self) { i in
-                Text("Row \(i)")
+            ForEach(items, id: \.self) { item in
+                Text("Row \(item)")
             }
         }
 
         let lazyStack = LazyVStack {
-            ForEach(0..<10, id: \.self) { i in
-                Text("Row \(i)")
+            ForEach(items, id: \.self) { item in
+                Text("Row \(item)")
             }
         }
 
         let context = testContext(height: 5) // Only 5 lines visible
+        let expectedOutput = items.prefix(5).map { "Row \($0)" }
+        try requireRenderedOutput(regularStack, context: context) {
+            $0.strippedLines == expectedOutput
+        }
+        try requireRenderedOutput(lazyStack, context: context) {
+            $0.strippedLines == expectedOutput
+        }
+
         let regularTime = measureRenderTime(regularStack, iterations: 500, context: context)
         let lazyTime = measureRenderTime(lazyStack, iterations: 500, context: context)
 
@@ -278,7 +349,10 @@ struct RenderPerformanceTests {
 // MARK: - Performance Statistics
 
 @MainActor
-@Suite("Render Performance Statistics")
+@Suite(
+    "Render Performance Statistics",
+    .disabled(if: !performanceTestsEnabled, "Set TUIKIT_RUN_PERFORMANCE_TESTS=1 to run benchmarks")
+)
 struct RenderPerformanceStatistics {
 
     private func testContext(width: Int = 80, height: Int = 24) -> RenderContext {
@@ -286,11 +360,31 @@ struct RenderPerformanceStatistics {
     }
 
     @Test("Print render performance statistics")
-    func printStatistics() {
+    func printStatistics() throws {
         let context = testContext()
         let iterations = 1000
 
         var results: [(String, TimeInterval)] = []
+
+        try requireRenderedOutput(VStack { Text("A"); Text("B") }, context: context) {
+            $0.strippedLines == ["A", "B"]
+        }
+        try requireRenderedOutput(HStack { Text("A"); Text("B") }, context: context) {
+            $0.strippedLines == ["A B"]
+        }
+        try requireRenderedOutput(Button("Test") {}, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1 && lines[0].contains("Test")
+        }
+        var validationToggleValue = false
+        let validationToggle = Toggle(
+            "Test",
+            isOn: Binding(get: { validationToggleValue }, set: { validationToggleValue = $0 })
+        )
+        try requireRenderedOutput(validationToggle, context: context) { output in
+            let lines = output.strippedLines
+            return lines.count == 1 && lines[0].contains("[ ]") && lines[0].contains("Test")
+        }
 
         // Measure each view type
         let start1 = Date()

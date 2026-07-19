@@ -71,6 +71,16 @@ struct ContentView: View {
     @ViewBuilder
     private func pageContent(for page: DemoPage, pageSetter: Binding<DemoPage>) -> some View {
         switch page {
+        case .menu, .textStyles, .colors, .containers, .overlays, .layout, .buttons, .toggles, .textFields, .secureFields:
+            primaryPageContent(for: page, pageSetter: pageSetter)
+        case .radioButtons, .spinners, .lists, .tables, .sliders, .steppers, .splitView, .imageFile, .imageURL:
+            secondaryPageContent(for: page, pageSetter: pageSetter)
+        }
+    }
+
+    @ViewBuilder
+    private func primaryPageContent(for page: DemoPage, pageSetter: Binding<DemoPage>) -> some View {
+        switch page {
         case .menu:
             MainMenuPage(currentPage: $currentPage, menuSelection: $menuSelection)
                  .statusBarItems {
@@ -104,6 +114,14 @@ struct ContentView: View {
         case .secureFields:
             SecureFieldPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
+        default:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func secondaryPageContent(for page: DemoPage, pageSetter: Binding<DemoPage>) -> some View {
+        switch page {
         case .radioButtons:
             RadioButtonPage()
                 .statusBarItems(subPageItems(pageSetter: pageSetter))
@@ -129,6 +147,8 @@ struct ContentView: View {
             ImageFilePage()
         case .imageURL:
             ImageURLPage()
+        default:
+            EmptyView()
         }
     }
 

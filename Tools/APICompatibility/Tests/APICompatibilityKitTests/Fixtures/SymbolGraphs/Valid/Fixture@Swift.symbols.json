@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "formatVersion": { "major": 0, "minor": 6, "patch": 0 },
+    "generator": "another-volatile-generator"
+  },
+  "module": {
+    "name": "Fixture",
+    "platform": { "architecture": "x86_64", "operatingSystem": { "name": "linux" } }
+  },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.property", "displayName": "Instance Property" },
+      "identifier": { "precise": "s:Fixture.Widget.badge", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "badge"],
+      "names": { "title": "badge" },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "var" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "badge" },
+        { "kind": "text", "spelling": ": String { get }" }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "identifier": { "precise": "s:Fixture.Widget.label", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "label(_:)"] ,
+      "names": { "title": "label(_:)" },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "func" },
+        { "kind": "text", "spelling": "\n    " },
+        { "kind": "identifier", "spelling": "label" },
+        { "kind": "text", "spelling": "(_ value: String = \"a  b\") -> Text" }
+      ],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": [
+    { "kind": "memberOf", "source": "s:Fixture.Widget.badge", "target": "s:Fixture.Widget" },
+    { "kind": "memberOf", "source": "s:Fixture.Widget.label", "target": "s:Fixture.Widget" }
+  ]
+}

@@ -68,6 +68,15 @@ The rendering pipeline converts the view tree into terminal output:
 3. **ANSI rendering**: The `ANSIRenderer` converts colors and styles to escape codes
 4. **Terminal output**: The ``FrameBuffer`` lines are written to the terminal
 
+## Package Boundaries
+
+The framework is split into five Swift library modules. `TUIkitImage` depends on `TUIkitStyling` plus vendored, namespaced pure Swift PNG,
+JPEG, and checksum targets with documented upstream revisions. The package graph has no C or C++ target and no native decoder dependency.
+
+``PlatformImageLoader`` accepts static PNG and JPEG data and produces non-premultiplied 8-bit RGBA pixels. Before a format decoder runs,
+the internal decoding layer validates encoded bytes, dimensions, pixel and frame counts, decompressed samples, and final allocation. File
+and URL loading feed data into that deterministic decoder rather than participating in format parsing.
+
 ## Event Loop
 
 `AppRunner` initializes all subsystems (Terminal, AppState, StatusBarState, AppHeaderState, FocusManager, ThemeManager x2, TUIContext), creates InputHandler and RenderLoop, installs POSIX signal handlers, sets up the terminal (alternate screen, raw mode), starts PulseTimer (100 ms) and CursorTimer (50 ms), registers state and focus observers, and performs an initial render before entering the main loop.
