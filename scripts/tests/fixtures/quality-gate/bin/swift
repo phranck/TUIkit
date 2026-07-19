@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf 'swift %s\n' "$*" >> "$QUALITY_GATE_TEST_LOG"
+
+if [[ "${1:-}" == "--version" ]]; then
+    echo "Swift version 6.0.3 (swift-6.0.3-RELEASE)"
+    exit 0
+fi
+
+if [[ "${1:-}" == "test" && "${2:-}" != "list" && -n "${TUIKIT_STUB_FAIL_SWIFT_TEST:-}" ]]; then
+    exit "$TUIKIT_STUB_FAIL_SWIFT_TEST"
+fi
+
+if [[ "${1:-}" == "test" && "${2:-}" != "list" ]]; then
+    arguments=("$@")
+    for index in "${!arguments[@]}"; do
+        if [[ "${arguments[$index]}" == "--event-stream-output-path" ]]; then
+            output_index=$((index + 1))
+            output_path="${arguments[$output_index]}"
+            if [[ -z "${TUIKIT_STUB_SKIP_EVENT_STREAM:-}" ]]; then
+                if [[ -n "${TUIKIT_STUB_EMPTY_EVENT_STREAM:-}" ]]; then
+                    : > "$output_path"
+                else
+                    printf '%s\n' '{"schemaVersion":0}' > "$output_path"
+                fi
+            fi
+        fi
+    done
+fi
+
+if [[ "${1:-}" == "test" && "${2:-}" == "list" ]]; then
+    printf '%s\n' "TUIkitTests.first()" "TUIkitTests.second()"
+fi

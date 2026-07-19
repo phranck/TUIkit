@@ -1,0 +1,11 @@
+name: Unexpected contents writer
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - run: echo "Unexpected writer"

@@ -1,0 +1,31 @@
+name: CI
+on: [push]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+      - run: ./scripts/test-linux.sh macos
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: ./scripts/test-linux.sh linux
+  update-badge:
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: main
+      - run: ./scripts/update-test-count.sh --test-list test-list.txt

@@ -1,0 +1,13 @@
+name: Alias contents writer
+on: [workflow_dispatch]
+env:
+  WRITE_LEVEL: &write write
+permissions:
+  contents: read
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: *write
+    steps:
+      - run: echo "Unexpected alias writer"

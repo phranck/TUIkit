@@ -16,150 +16,266 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # ── Lint, Build & Test on macOS and Linux ──────────────────────
-  build:
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.container }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "macOS"
-            runner: macos-15
-            container: ""
-            install-swiftlint: brew install swiftlint
-          - name: "Linux"
-            runner: ubuntu-latest
-            container: swift:6.0
-            install-swiftlint: |
-              apt-get update && apt-get install -y curl unzip
-              SWIFTLINT_VERSION="0.58.2"
-              curl -fsSL "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/swiftlint_linux.zip" -o swiftlint.zip
-              unzip -o swiftlint.zip -d /usr/local/bin
-              chmod +x /usr/local/bin/swiftlint
-              rm swiftlint.zip
-
+  reference-snapshots:
+    name: SwiftUI reference snapshots
+    runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - name: Install SwiftLint
-        run: ${{ matrix.install-swiftlint }}
-
-      - name: Lint
-        run: swiftlint
-
-      - name: Build
+      - name: Generate stable SwiftUI snapshots
         env:
-          DISABLE_SWIFTLINT: "1"
-        run: swift build
+          DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+        run: |
+          source scripts/toolchain.env
+          test "$DEVELOPER_DIR" = "$SWIFTUI_REFERENCE_XCODE_PATH"
+          test -d "$DEVELOPER_DIR"
+          API_BUILD_PATH="$RUNNER_TEMP/api-reference-tool"
+          swift build \
+            --package-path Tools/APICompatibility \
+            --build-path "$API_BUILD_PATH" \
+            -Xswiftc -warnings-as-errors
+          API_TOOL="$(swift build \
+            --package-path Tools/APICompatibility \
+            --build-path "$API_BUILD_PATH" \
+            --show-bin-path)/TUIkitAPICheck"
+          SNAPSHOT_OUTPUT="$RUNNER_TEMP/swiftui-reference-snapshots"
+          mkdir -p "$SNAPSHOT_OUTPUT"
+          ./scripts/generate-swiftui-reference-snapshots.sh \
+            --tool "$API_TOOL" \
+            --developer-dir "$DEVELOPER_DIR" \
+            --output-root "$SNAPSHOT_OUTPUT"
 
-      - name: Test
+      - name: Upload stable SwiftUI snapshots
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swiftui-reference-snapshots
+          path: |
+            ${{ runner.temp }}/swiftui-reference-snapshots/snapshots
+            ${{ runner.temp }}/swiftui-reference-snapshots/sources
+            ${{ runner.temp }}/swiftui-reference-snapshots/sources.tsv
+            ${{ runner.temp }}/swiftui-reference-snapshots/snapshot-set.json
+          if-no-files-found: error
+
+  macos:
+    name: macOS
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Select Swift 6.0.3
+        run: |
+          test -d /Applications/Xcode_16.2.app/Contents/Developer
+          sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Run deterministic quality gate
         env:
-          DISABLE_SWIFTLINT: "1"
-        run: swift test
+          TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-macos-snapshots
+        run: ./scripts/test-linux.sh macos
 
-  # ── Update test count badge in README (main only) ─────────────
+      - name: Upload macOS API snapshots
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tuikit-macos-snapshots
+          path: |
+            ${{ runner.temp }}/tuikit-macos-snapshots/snapshots
+            ${{ runner.temp }}/tuikit-macos-snapshots/sources
+          if-no-files-found: error
+
+      - name: Upload discovered test list
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: discovered-tests
+          path: .build/quality/test-list.txt
+          if-no-files-found: error
+
+      - name: Upload DocC output
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docc-output
+          path: docc-output
+          if-no-files-found: error
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Run deterministic quality gate
+        env:
+          TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-linux-snapshots
+        run: ./scripts/test-linux.sh linux
+
+      - name: Upload Linux API snapshots
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tuikit-linux-snapshots
+          path: |
+            ${{ runner.temp }}/tuikit-linux-snapshots/snapshots
+            ${{ runner.temp }}/tuikit-linux-snapshots/sources
+          if-no-files-found: error
+
+  api-compatibility:
+    name: API compatibility inputs
+    needs: [reference-snapshots, macos, linux]
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Select Swift 6.0.3
+        run: |
+          test -d /Applications/Xcode_16.2.app/Contents/Developer
+          sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Download stable SwiftUI snapshots
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: swiftui-reference-snapshots
+          path: ${{ runner.temp }}/swiftui-reference-snapshots
+
+      - name: Download macOS API snapshots
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tuikit-macos-snapshots
+          path: ${{ runner.temp }}/tuikit-macos-snapshots
+
+      - name: Download Linux API snapshots
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tuikit-linux-snapshots
+          path: ${{ runner.temp }}/tuikit-linux-snapshots
+
+      - name: Assemble and verify API inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          API_BUILD_PATH="$RUNNER_TEMP/api-compatibility-tool"
+          swift build \
+            --package-path Tools/APICompatibility \
+            --build-path "$API_BUILD_PATH" \
+            -Xswiftc -warnings-as-errors
+          API_TOOL="$(swift build \
+            --package-path Tools/APICompatibility \
+            --build-path "$API_BUILD_PATH" \
+            --show-bin-path)/TUIkitAPICheck"
+          OUTPUT_ROOT="$RUNNER_TEMP/api-compatibility-inputs"
+          TUIKIT_OUTPUT="$OUTPUT_ROOT/tuikit"
+          REFERENCE_OUTPUT="$OUTPUT_ROOT/reference"
+          mkdir -p \
+            "$TUIKIT_OUTPUT/sources" \
+            "$TUIKIT_OUTPUT/snapshots" \
+            "$REFERENCE_OUTPUT"
+          cp "$RUNNER_TEMP/tuikit-macos-snapshots/sources/"*.tsv "$TUIKIT_OUTPUT/sources/"
+          cp "$RUNNER_TEMP/tuikit-linux-snapshots/sources/"*.tsv "$TUIKIT_OUTPUT/sources/"
+          cp "$RUNNER_TEMP/tuikit-macos-snapshots/snapshots/"*.json "$TUIKIT_OUTPUT/snapshots/"
+          cp "$RUNNER_TEMP/tuikit-linux-snapshots/snapshots/"*.json "$TUIKIT_OUTPUT/snapshots/"
+          ./scripts/assemble-api-snapshot-set.sh \
+            --tool "$API_TOOL" \
+            --name "TUIkit Swift 6.0.3 macOS and Linux" \
+            --coverage Tools/APICompatibility/Configuration/tuikit-coverage.tsv \
+            --output-root "$TUIKIT_OUTPUT"
+          ./scripts/verify-compatibility-owner-registry.sh \
+            --tool "$API_TOOL" \
+            --registry Tools/APICompatibility/Configuration/owners.json \
+            --repository phranck/TUIkit \
+            --gh "$(command -v gh)"
+          cp -R "$RUNNER_TEMP/swiftui-reference-snapshots/snapshots" "$REFERENCE_OUTPUT/"
+          cp -R "$RUNNER_TEMP/swiftui-reference-snapshots/sources" "$REFERENCE_OUTPUT/"
+          cp "$RUNNER_TEMP/swiftui-reference-snapshots/sources.tsv" "$REFERENCE_OUTPUT/"
+          cp "$RUNNER_TEMP/swiftui-reference-snapshots/snapshot-set.json" "$REFERENCE_OUTPUT/"
+
+      - name: Upload assembled API inputs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: api-compatibility-inputs
+          path: ${{ runner.temp }}/api-compatibility-inputs
+          if-no-files-found: error
+
   update-badge:
     name: Update test badge
-    needs: build
+    needs: [macos, linux, api-compatibility]
     runs-on: macos-15
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     permissions:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: main
+          ref: ${{ github.sha }}
+          fetch-depth: 0
 
-      - name: Count tests and suites
+      - name: Verify tested revision is current
+        id: badge-provenance
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "$TESTED_SHA" ]]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping stale badge update for $TESTED_SHA; current main is $REMOTE_MAIN_SHA"
+            exit 0
+          fi
+          echo "stale=false" >> "$GITHUB_OUTPUT"
+
+      - name: Download discovered test list
+        if: steps.badge-provenance.outputs.stale == 'false'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: discovered-tests
+          path: .build/quality
+
+      - name: Update README test count
+        if: steps.badge-provenance.outputs.stale == 'false'
         id: counts
         run: |
-          TESTS=$(grep -r '@Test\b' Tests/ --include='*.swift' | wc -l | tr -d ' ')
-          SUITES=$(grep -r '@Suite\b' Tests/ --include='*.swift' | wc -l | tr -d ' ')
+          ./scripts/update-test-count.sh \
+            --test-list .build/quality/test-list.txt \
+            --readme README.md
+          TESTS=$(./scripts/update-test-count.sh \
+            --count-only \
+            --test-list .build/quality/test-list.txt)
           echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
-          echo "suites=$SUITES" >> "$GITHUB_OUTPUT"
-          echo "Found $TESTS tests in $SUITES suites"
-
-      - name: Update README badge and counts
-        env:
-          TESTS: ${{ steps.counts.outputs.tests }}
-          SUITES: ${{ steps.counts.outputs.suites }}
-        run: |
-          # Badge: Tests-NNN_passing
-          sed -i '' "s/Tests-[0-9]*_passing/Tests-${TESTS}_passing/" README.md
-          # Project structure: NNN tests across NN test suites
-          sed -i '' "s/[0-9]* tests across [0-9]* test suites/${TESTS} tests across ${SUITES} test suites/" README.md
-          # Developer notes: All NNN tests run in parallel
-          sed -i '' "s/All [0-9]* tests run/All ${TESTS} tests run/" README.md
 
       - name: Commit if changed
+        if: steps.badge-provenance.outputs.stale == 'false'
         run: |
           git diff --quiet README.md && echo "No changes" && exit 0
-          git config user.name "Frank Gregor"
-          git config user.email "phranck@mac.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          # [skip ci] prevents the push from triggering another workflow run
           git commit -m "Chore: Update test count badge to ${{ steps.counts.outputs.tests }} tests [skip ci]"
-          git push
+          if git push origin HEAD:main; then
+            exit 0
+          fi
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "${{ github.sha }}" ]]; then
+            echo "Skipping badge push because main advanced to $REMOTE_MAIN_SHA"
+            exit 0
+          fi
+          echo "Badge push failed while main still points to $REMOTE_MAIN_SHA" >&2
+          exit 1
 
-  # ── DocC Documentation (→ docs.tuikit.dev) ───────────────────
   deploy-docs:
-    name: Build & Deploy DocC
-    needs: build
+    name: Deploy DocC
+    needs: [macos, linux, api-compatibility]
     runs-on: macos-15
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build DocC documentation
-        env:
-          DISABLE_SWIFTLINT: "1"
-        run: |
-          swift package --allow-writing-to-directory docc-output \
-            generate-documentation \
-            --target TUIkit \
-            --output-path docc-output \
-            --transform-for-static-hosting
-
-      - name: Add routing support for GitHub Pages
-        run: |
-          cp Sources/TUIkit/TUIkit.docc/theme-overrides.css docc-output/theme-overrides.css
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          link = '<link rel="stylesheet" href="/theme-overrides.css">'
-          for path in Path("docc-output").rglob("*.html"):
-              content = path.read_text(encoding="utf-8")
-              if link in content or "</head>" not in content:
-                  continue
-              path.write_text(content.replace("</head>", f"  {link}\n</head>"), encoding="utf-8")
-          PY
-
-          # 404.html = copy of SPA index so all deep-link paths route through DocC
-          cp docc-output/index.html docc-output/404.html
-          # Root redirect: docs.tuikit.dev/ -> docs.tuikit.dev/documentation/tuikit/
-          cat > docc-output/index.html << 'REDIRECT'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta http-equiv="refresh" content="0; url=/documentation/tuikit/">
-            <link rel="canonical" href="/documentation/tuikit/">
-            <title>Redirecting to TUIkit Documentation</title>
-          </head>
-          <body>
-            <p>Redirecting to <a href="/documentation/tuikit/">TUIkit Documentation</a>...</p>
-          </body>
-          </html>
-          REDIRECT
+      - name: Download DocC output
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docc-output
+          path: docc-output
 
       - name: Deploy to tuikit-docs
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
           external_repository: phranck/tuikit-docs

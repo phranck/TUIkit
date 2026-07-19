@@ -1,0 +1,7 @@
+name: Duplicate Badge Writer
+on: [push]
+jobs:
+  badge:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: ./scripts/update-test-count.sh --test-list test-list.txt

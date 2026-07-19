@@ -1,0 +1,51 @@
+name: CI
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+      - run: ./scripts/test-linux.sh macos
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: ./scripts/test-linux.sh linux
+  update-badge:
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - id: badge-provenance
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "$TESTED_SHA" ]]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "stale=false" >> "$GITHUB_OUTPUT"
+      - if: steps.badge-provenance.outputs.stale == 'false'
+        run: ./scripts/update-test-count.sh --test-list test-list.txt
+      - if: steps.badge-provenance.outputs.stale == 'false'
+        run: |
+          if git push origin HEAD:main; then
+            exit 0
+          fi
+          git fetch --no-tags origin main
+          REMOTE_MAIN_SHA="$(git rev-parse origin/main)"
+          if [[ "$REMOTE_MAIN_SHA" != "${{ github.sha }}" ]]; then
+            exit 0
+          fi
+          exit 1

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf 'actionlint %s\n' "$*" >> "$QUALITY_GATE_TEST_LOG"
+if [[ "${1:-}" == "-version" ]]; then
+    echo "${TUIKIT_STUB_ACTIONLINT_VERSION:-1.7.12}"
+fi

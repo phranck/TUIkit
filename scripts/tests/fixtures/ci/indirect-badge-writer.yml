@@ -1,0 +1,11 @@
+name: Indirect badge writer
+on: [push]
+permissions:
+  contents: read
+jobs:
+  badge:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          ./scripts/refresh-badge.sh
+          git push origin HEAD:main

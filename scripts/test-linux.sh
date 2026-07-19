@@ -1,26 +1,20 @@
 #!/usr/bin/env bash
 #
-# Cross-platform build & test runner for TUIkit.
-# Runs swift build + swift test on both macOS (native) and Linux (Docker).
+# Authoritative local quality gate for TUIkit.
 #
 # Usage:
-#   ./scripts/test-linux.sh          # Run both macOS and Linux
-#   ./scripts/test-linux.sh linux    # Run Linux only
-#   ./scripts/test-linux.sh macos    # Run macOS only
-#   ./scripts/test-linux.sh shell    # Open interactive shell in Linux container
-#
-# Requirements:
-#   - Docker Desktop (or compatible runtime) for Linux tests
-#   - Swift 6.0+ toolchain for macOS tests
+#   ./scripts/test-linux.sh          # Run macOS and Linux gates
+#   ./scripts/test-linux.sh linux    # Run the Linux gate in Docker
+#   ./scripts/test-linux.sh macos    # Run the native macOS gate
+#   ./scripts/test-linux.sh shell    # Open a shell in the pinned Linux image
 
 set -euo pipefail
 
-SWIFT_IMAGE="swift:6.0"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=toolchain.env
+source "$PROJECT_DIR/scripts/toolchain.env"
+
 TARGET="${1:-all}"
-# Separate build directory inside the container to avoid permission conflicts
-# with the host's .build directory (different Swift versions, different UIDs).
-LINUX_BUILD_PATH="/tmp/tui-build"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -39,63 +33,130 @@ success() {
 }
 
 fail() {
-    echo -e "${RED}✗ $1${RESET}"
+    echo -e "${RED}✗ $1${RESET}" >&2
 }
 
 check_docker() {
-    if ! docker info &>/dev/null; then
-        echo -e "${RED}Error: Docker is not running.${RESET}"
-        echo "Start Docker Desktop and try again."
+    if ! docker version >/dev/null 2>&1; then
+        echo -e "${RED}Error: Docker is not available.${RESET}" >&2
         exit 1
     fi
 }
 
 run_macos() {
-    header "macOS: swift build"
-    if swift build 2>&1; then
-        success "macOS build passed"
+    header "macOS: deterministic quality gate"
+    local swiftlint_bin
+    swiftlint_bin="$($PROJECT_DIR/scripts/install-swiftlint.sh macos)"
+    local actionlint_bin
+    actionlint_bin="$($PROJECT_DIR/scripts/install-actionlint.sh macos)"
+
+    if SWIFTLINT_BIN="$swiftlint_bin" \
+        ACTIONLINT_BIN="$actionlint_bin" \
+        TUIKIT_TEST_LIST_OUTPUT="$PROJECT_DIR/.build/quality/test-list.txt" \
+        TUIKIT_DOCC_OUTPUT="$PROJECT_DIR/docc-output" \
+        "$PROJECT_DIR/scripts/quality-gate.sh"; then
+        success "macOS quality gate passed"
     else
-        fail "macOS build failed"
+        fail "macOS quality gate failed"
         exit 1
     fi
 
-    header "macOS: swift test"
-    if swift test 2>&1; then
-        success "macOS tests passed"
-    else
-        fail "macOS tests failed"
-        exit 1
+    if [[ -n "${TUIKIT_API_SNAPSHOT_OUTPUT:-}" ]]; then
+        mkdir -p "$TUIKIT_API_SNAPSHOT_OUTPUT"
+        local api_build_path="${TUIKIT_API_BUILD_PATH:-$PROJECT_DIR/.build/api-compatibility}"
+        local tuikit_build_path="${TUIKIT_BUILD_PATH:-$PROJECT_DIR/.build}"
+        local api_tool
+        api_tool="$(
+            swift build \
+                --package-path "$PROJECT_DIR/Tools/APICompatibility" \
+                --build-path "$api_build_path" \
+                --show-bin-path
+        )/TUIkitAPICheck"
+        "$PROJECT_DIR/scripts/generate-tuikit-api-snapshots.sh" \
+            --tool "$api_tool" \
+            --platform macOS \
+            --output-root "$TUIKIT_API_SNAPSHOT_OUTPUT" \
+            --build-path "$tuikit_build_path"
+        success "macOS API snapshots generated"
     fi
 }
 
 run_linux() {
     check_docker
+    header "Linux ($SWIFT_LINUX_IMAGE): deterministic quality gate"
 
-    header "Linux ($SWIFT_IMAGE): swift build + swift test"
-    if docker run --rm \
-        -v "$PROJECT_DIR:/workspace:ro" \
-        -w /tmp/src \
-        "$SWIFT_IMAGE" \
-        bash -c "cp -a /workspace/. . && swift build --build-path $LINUX_BUILD_PATH && swift test --build-path $LINUX_BUILD_PATH" 2>&1; then
-        success "Linux build + tests passed"
+    local swiftlint_bin="${SWIFTLINT_BIN:-}"
+    if [[ -z "$swiftlint_bin" ]]; then
+        swiftlint_bin="$($PROJECT_DIR/scripts/install-swiftlint.sh linux-amd64)"
+    fi
+    local actionlint_bin="${ACTIONLINT_BIN:-}"
+    if [[ -z "$actionlint_bin" ]]; then
+        actionlint_bin="$($PROJECT_DIR/scripts/install-actionlint.sh linux-amd64)"
+    fi
+
+    local docker_arguments=(
+        run --rm --platform linux/amd64
+        -v "$PROJECT_DIR:/workspace:ro"
+        -v "$swiftlint_bin:/opt/tuikit/swiftlint:ro"
+        -v "$actionlint_bin:/opt/tuikit/actionlint:ro"
+    )
+    if [[ -n "${TUIKIT_API_SNAPSHOT_OUTPUT:-}" ]]; then
+        mkdir -p "$TUIKIT_API_SNAPSHOT_OUTPUT"
+        docker_arguments+=(
+            -v "$TUIKIT_API_SNAPSHOT_OUTPUT:/api-snapshots"
+            -e TUIKIT_CONTAINER_API_SNAPSHOT_OUTPUT=/api-snapshots
+        )
+    fi
+
+    if docker "${docker_arguments[@]}" \
+        "$SWIFT_LINUX_IMAGE" \
+        bash -lc '
+            set -euo pipefail
+            mkdir -p /tmp/src
+            tar --exclude=.build --exclude=docc-output -C /workspace -cf - . | tar -C /tmp/src -xf -
+            cd /tmp/src
+            SWIFTLINT_BIN=/opt/tuikit/swiftlint \
+            ACTIONLINT_BIN=/opt/tuikit/actionlint \
+            TUIKIT_BUILD_PATH=/tmp/tui-build \
+            TUIKIT_API_BUILD_PATH=/tmp/api-build \
+            TUIKIT_TEST_LIST_OUTPUT=/tmp/test-list.txt \
+            TUIKIT_DOCC_OUTPUT=/tmp/docc-output \
+                ./scripts/quality-gate.sh
+            if [[ -n "${TUIKIT_CONTAINER_API_SNAPSHOT_OUTPUT:-}" ]]; then
+                api_tool="$(
+                    swift build \
+                        --package-path Tools/APICompatibility \
+                        --build-path /tmp/api-build \
+                        --show-bin-path
+                )/TUIkitAPICheck"
+                ./scripts/generate-tuikit-api-snapshots.sh \
+                    --tool "$api_tool" \
+                    --platform Linux \
+                    --output-root "$TUIKIT_CONTAINER_API_SNAPSHOT_OUTPUT" \
+                    --build-path /tmp/tui-build
+            fi
+        '; then
+        success "Linux quality gate passed"
     else
-        fail "Linux build or tests failed"
+        fail "Linux quality gate failed"
         exit 1
     fi
 }
 
 run_shell() {
     check_docker
-    header "Opening interactive shell in $SWIFT_IMAGE"
-    echo -e "${YELLOW}Project mounted read-only at /workspace, working copy at /tmp/src${RESET}"
-    echo -e "${YELLOW}Run: swift build --build-path $LINUX_BUILD_PATH${RESET}"
-    echo -e "${YELLOW}Type 'exit' to leave the container${RESET}"
-    echo ""
-    docker run --rm -it \
+    header "Opening shell in $SWIFT_LINUX_IMAGE"
+    echo -e "${YELLOW}Project is copied from /workspace into writable /tmp/src.${RESET}"
+    docker run --rm -it --platform linux/amd64 \
         -v "$PROJECT_DIR:/workspace:ro" \
-        -w /tmp/src \
-        "$SWIFT_IMAGE" \
-        bash -c "cp -a /workspace/. . && exec /bin/bash"
+        "$SWIFT_LINUX_IMAGE" \
+        bash -lc '
+            set -euo pipefail
+            mkdir -p /tmp/src
+            tar --exclude=.build --exclude=docc-output -C /workspace -cf - . | tar -C /tmp/src -xf -
+            cd /tmp/src
+            exec /bin/bash
+        '
 }
 
 case "$TARGET" in
@@ -113,10 +174,10 @@ case "$TARGET" in
         run_linux
         ;;
     *)
-        echo "Usage: $0 [all|macos|linux|shell]"
-        exit 1
+        echo "Usage: $0 [all|macos|linux|shell]" >&2
+        exit 2
         ;;
 esac
 
 header "Done"
-success "All checks passed!"
+success "All requested quality gates passed"
