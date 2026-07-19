@@ -176,7 +176,7 @@ extension AppState: RenderInvalidationSink {
 ///
 /// Created by `renderToBuffer(_:context:)` after a view reaches its final
 /// structural position and before evaluating that view's `body`.
-public struct HydrationContext {
+public struct HydrationContext: Sendable {
     /// The current view's structural identity.
     public let identity: ViewIdentity
 
@@ -215,10 +215,16 @@ package protocol RuntimeDynamicProperty {
 /// them to its final structural identity. Ambient context remains available
 /// while evaluating `body` for environment-backed construction APIs.
 public enum StateRegistration {
+    /// Dynamically scoped hydration context used by production rendering.
+    @TaskLocal package static var runtimeContext: HydrationContext?
+
+    /// Dynamically scoped environment used by production rendering.
+    @TaskLocal package static var runtimeEnvironment: EnvironmentValues?
+
     /// The active hydration context, set during composite view body evaluation.
     ///
-    /// - Important: Must be set before and cleared after each `body` call.
-    ///   Nested composite views save/restore the previous context.
+    /// Legacy mutable fallback retained for source compatibility. Production
+    /// rendering uses ``runtimeContext`` instead.
     nonisolated(unsafe) public static var activeContext: HydrationContext?
 
     /// Legacy ambient property counter retained for source compatibility.
@@ -230,12 +236,24 @@ public enum StateRegistration {
     /// The active environment values, set during composite view body evaluation.
     ///
     /// Used by `@Environment` to read environment values during `body` evaluation.
-    /// Set alongside ``activeContext`` in `renderToBuffer(_:context:)`.
+    /// Legacy mutable fallback retained for source compatibility. Production
+    /// rendering uses ``runtimeEnvironment`` instead.
     nonisolated(unsafe) public static var activeEnvironment: EnvironmentValues?
+
+    /// Current dynamically scoped context, including the compatibility fallback.
+    package static var currentContext: HydrationContext? {
+        runtimeContext ?? activeContext
+    }
+
+    /// Current dynamically scoped environment, including the compatibility fallback.
+    package static var currentEnvironment: EnvironmentValues? {
+        runtimeEnvironment ?? activeEnvironment
+    }
+
     /// Evaluates a closure with a hydration context active.
     ///
-    /// Sets up `activeContext`, `counter`, and `activeEnvironment` before
-    /// calling the closure, then restores the previous state. This pattern
+    /// Installs task-local runtime context and environment values while
+    /// calling the closure, then restores the enclosing scope. This pattern
     /// is needed whenever `view.body` is evaluated outside the normal
     /// `renderToBuffer` dispatch (e.g., in `measureChild`).
     ///
@@ -283,10 +301,6 @@ public enum StateRegistration {
         context: RenderContext,
         _ block: () -> R
     ) -> R {
-        let previousContext = activeContext
-        let previousCounter = counter
-        let previousEnvironment = activeEnvironment
-
         let hydrationContext = context.environment.stateStorage.map {
             HydrationContext(
                 identity: context.identity,
@@ -294,21 +308,15 @@ public enum StateRegistration {
                 invalidationSink: context.environment.renderInvalidationSink
             )
         }
-        activeContext = hydrationContext
-        counter = 0
-        activeEnvironment = context.environment
 
-        if let owner, let hydrationContext {
-            bindDynamicProperties(in: owner, context: hydrationContext)
+        return $runtimeContext.withValue(hydrationContext) {
+            $runtimeEnvironment.withValue(context.environment) {
+                if let owner, let hydrationContext {
+                    bindDynamicProperties(in: owner, context: hydrationContext)
+                }
+                return block()
+            }
         }
-
-        defer {
-            activeContext = previousContext
-            counter = previousCounter
-            activeEnvironment = previousEnvironment
-        }
-
-        return block()
     }
 }
 

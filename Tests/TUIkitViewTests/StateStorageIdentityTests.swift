@@ -67,6 +67,39 @@ struct StateStorageIdentityTests {
         #expect(reconstructed.text == "world")
     }
 
+    @Test("Hydration contexts restore through nested dynamic scopes")
+    func nestedHydrationScopes() {
+        let storage = testStorage()
+        var environment = EnvironmentValues()
+        environment.stateStorage = storage
+        let outerContext = RenderContext(
+            availableWidth: 10,
+            availableHeight: 1,
+            environment: environment,
+            identity: ViewIdentity(path: "Outer")
+        )
+        let innerContext = RenderContext(
+            availableWidth: 10,
+            availableHeight: 1,
+            environment: environment,
+            identity: ViewIdentity(path: "Inner")
+        )
+
+        #expect(StateRegistration.currentContext == nil)
+
+        StateRegistration.withHydration(context: outerContext) {
+            #expect(StateRegistration.currentContext?.identity == outerContext.identity)
+
+            StateRegistration.withHydration(context: innerContext) {
+                #expect(StateRegistration.currentContext?.identity == innerContext.identity)
+            }
+
+            #expect(StateRegistration.currentContext?.identity == outerContext.identity)
+        }
+
+        #expect(StateRegistration.currentContext == nil)
+    }
+
     // MARK: - View Identity
 
     @Test("Child identity appends type and index")
