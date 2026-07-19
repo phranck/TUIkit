@@ -12,7 +12,7 @@ import TUIkitTestSupport
 @Suite("AppRunner Tests", .serialized)
 struct AppRunnerTests {
     @Test("App runner yields the MainActor to view tasks before shutdown")
-    func yieldsMainActorToViewTasks() async {
+    func yieldsMainActorToViewTasks() async throws {
         let events = TraceRecorder<String>()
         let eventChannel = RuntimeEventChannel()
         let terminal = MockTerminal()
@@ -26,7 +26,7 @@ struct AppRunnerTests {
             signals: nil
         )
 
-        await runner.run()
+        try await runner.run()
 
         #expect(events.snapshot() == ["completed"])
     }
@@ -55,14 +55,47 @@ struct AppRunnerTests {
         )
 
         let runTask = Task {
-            await runner.run()
+            try await runner.run()
         }
         await taskStarted.wait()
         try await ContinuousClock().sleep(for: .milliseconds(250))
         releaseTask.signal()
-        await runTask.value
+        try await runTask.value
 
         #expect(invalidations.snapshot().isEmpty)
+    }
+
+    @Test("Terminal failures are thrown after terminal cleanup")
+    func terminalFailureIsThrownAfterCleanup() async {
+        let expectedFailure = TerminalIOFailure(
+            operation: .write,
+            errorCode: 5,
+            remainingByteCount: 4
+        )
+        let terminal = MockTerminal()
+        terminal.pendingIOFailure = expectedFailure
+        let eventChannel = RuntimeEventChannel()
+        let runner = AppRunner(
+            app: MainActorTaskApp(events: TraceRecorder<String>(), eventChannel: eventChannel),
+            terminal: terminal,
+            tuiContext: TUIContext(),
+            eventChannel: eventChannel,
+            inputSource: nil,
+            signals: nil
+        )
+
+        do {
+            try await runner.run()
+            Issue.record("Expected the terminal failure to be thrown")
+        } catch let failure as TerminalIOFailure {
+            #expect(failure == expectedFailure)
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+
+        #expect(!terminal.isRawModeEnabled)
+        #expect(!terminal.isCursorHidden)
+        #expect(!terminal.isInAlternateScreen)
     }
 }
 

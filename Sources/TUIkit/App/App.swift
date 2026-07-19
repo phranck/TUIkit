@@ -50,10 +50,10 @@ extension App {
     /// This method is called by the `@main` attribute and starts
     /// the main run loop of the application.
     ///
-    public static func main() async {
+    public static func main() async throws {
         let app = Self()
         let runner = AppRunner<Self>(app: app)
-        await runner.run()
+        try await runner.run()
     }
 }
 
@@ -109,7 +109,7 @@ internal final class AppRunner<A: App> {
 // MARK: - Internal API
 
 extension AppRunner {
-    func run() async {
+    func run() async throws {
         let inputHandler = makeInputHandler()
         let renderer = makeRenderer()
         let pulseTimer = PulseTimer(clock: tuiContext.clock)
@@ -120,27 +120,36 @@ extension AppRunner {
         )
 
         await startRuntime(pulseTimer: pulseTimer, cursorTimer: cursorTimer)
-        defer {
+        do {
+            try throwPendingTerminalFailure()
+            try render(
+                using: renderer,
+                pulseTimer: pulseTimer,
+                cursorTimer: cursorTimer,
+                animationScheduler: animationScheduler
+            )
+            try await processEvents(
+                using: inputHandler,
+                renderer: renderer,
+                pulseTimer: pulseTimer,
+                cursorTimer: cursorTimer,
+                animationScheduler: animationScheduler
+            )
+        } catch {
             stopRuntime(
                 pulseTimer: pulseTimer,
                 cursorTimer: cursorTimer,
                 animationScheduler: animationScheduler
             )
+            throw error
         }
 
-        render(
-            using: renderer,
+        stopRuntime(
             pulseTimer: pulseTimer,
             cursorTimer: cursorTimer,
             animationScheduler: animationScheduler
         )
-        await processEvents(
-            using: inputHandler,
-            renderer: renderer,
-            pulseTimer: pulseTimer,
-            cursorTimer: cursorTimer,
-            animationScheduler: animationScheduler
-        )
+        try throwPendingTerminalFailure()
     }
 }
 
@@ -219,31 +228,31 @@ private extension AppRunner {
         pulseTimer: PulseTimer,
         cursorTimer: CursorTimer,
         animationScheduler: RuntimeAnimationScheduler
-    ) async {
-        await withTaskCancellationHandler {
+    ) async throws {
+        try await withTaskCancellationHandler {
             var iterator = eventChannel.events.makeAsyncIterator()
             while let event = await iterator.next() {
                 switch event {
                 case .renderRequested:
                     guard appState.needsRender else { continue }
-                    render(
+                    try render(
                         using: renderer,
                         pulseTimer: pulseTimer,
                         cursorTimer: cursorTimer,
                         animationScheduler: animationScheduler
                     )
                 case .inputAvailable:
-                    processAvailableInput(using: inputHandler)
+                    try processAvailableInput(using: inputHandler)
                 case .terminalResized:
                     renderer.invalidateDiffCache()
-                    render(
+                    try render(
                         using: renderer,
                         pulseTimer: pulseTimer,
                         cursorTimer: cursorTimer,
                         animationScheduler: animationScheduler
                     )
                 case .animationDeadline:
-                    render(
+                    try render(
                         using: renderer,
                         pulseTimer: pulseTimer,
                         cursorTimer: cursorTimer,
@@ -264,9 +273,10 @@ private extension AppRunner {
         pulseTimer: PulseTimer,
         cursorTimer: CursorTimer,
         animationScheduler: RuntimeAnimationScheduler
-    ) {
+    ) throws {
         appState.didRender()
         renderer.render(pulsePhase: pulseTimer.phase, cursorTimer: cursorTimer)
+        try throwPendingTerminalFailure()
         animationScheduler.schedule(after: nextAnimationInterval)
     }
 
@@ -282,15 +292,26 @@ private extension AppRunner {
     }
 
     /// Drains a bounded batch after the input descriptor becomes readable.
-    func processAvailableInput(using inputHandler: InputHandler) {
+    func processAvailableInput(using inputHandler: InputHandler) throws {
         var eventsProcessed = 0
         let maxEventsPerBatch = 128
 
-        while eventsProcessed < maxEventsPerBatch,
-              let keyEvent = terminal.readKeyEvent() {
+        while eventsProcessed < maxEventsPerBatch {
+            let keyEvent = terminal.readKeyEvent()
+            try throwPendingTerminalFailure()
+            guard let keyEvent else { return }
             inputHandler.handle(keyEvent)
             eventsProcessed += 1
         }
+    }
+
+    /// Throws the first terminal I/O failure exposed by the concrete terminal.
+    func throwPendingTerminalFailure() throws {
+        guard let failureReporter = terminal as? any TerminalFailureReporting,
+              let failure = failureReporter.takeIOFailure() else {
+            return
+        }
+        throw failure
     }
 
     func cleanup() {
