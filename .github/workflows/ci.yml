@@ -90,11 +90,14 @@ jobs:
           path: .build/quality/test-list.txt
           if-no-files-found: error
 
+      - name: Archive DocC output
+        run: tar -czf "$RUNNER_TEMP/docc-output.tar.gz" -C docc-output .
+
       - name: Upload DocC output
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: docc-output
-          path: docc-output
+          path: ${{ runner.temp }}/docc-output.tar.gz
           if-no-files-found: error
 
   linux:
@@ -272,7 +275,12 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: docc-output
-          path: docc-output
+          path: ${{ runner.temp }}/docc-artifact
+
+      - name: Extract DocC output
+        run: |
+          mkdir -p docc-output
+          tar -xzf "$RUNNER_TEMP/docc-artifact/docc-output.tar.gz" -C docc-output
 
       - name: Deploy to tuikit-docs
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0

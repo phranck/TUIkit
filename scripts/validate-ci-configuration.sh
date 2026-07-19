@@ -683,6 +683,10 @@ grep -Fq 'TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-macos-snapshots'
     <<< "$MACOS_JOB_BLOCK" || fail "macOS CI must export TUIkit API snapshots"
 grep -Fq 'name: tuikit-macos-snapshots' <<< "$MACOS_JOB_BLOCK" \
     || fail "macOS CI must upload TUIkit API snapshots"
+grep -Fq 'tar -czf "$RUNNER_TEMP/docc-output.tar.gz" -C docc-output .' <<< "$MACOS_JOB_BLOCK" \
+    || fail "macOS CI must archive DocC output before artifact upload"
+grep -Fq 'path: ${{ runner.temp }}/docc-output.tar.gz' <<< "$MACOS_JOB_BLOCK" \
+    || fail "macOS CI must upload the portable DocC archive"
 grep -Fq 'TUIKIT_API_SNAPSHOT_OUTPUT: ${{ runner.temp }}/tuikit-linux-snapshots' \
     <<< "$LINUX_JOB_BLOCK" || fail "Linux CI must export TUIkit API snapshots"
 grep -Fq 'name: tuikit-linux-snapshots' <<< "$LINUX_JOB_BLOCK" \
@@ -713,6 +717,10 @@ DOCC_JOB_BLOCK="$(extract_job_block "$CI_WORKFLOW" "deploy-docs")"
 DOCC_NEEDS="$(printf '%s\n' "$DOCC_JOB_BLOCK" | grep -F 'needs:' | sed -n '1p')"
 [[ "$DOCC_NEEDS" == *"api-compatibility"* ]] \
     || fail "documentation deployment must wait for API compatibility"
+grep -Fq 'path: ${{ runner.temp }}/docc-artifact' <<< "$DOCC_JOB_BLOCK" \
+    || fail "documentation deployment must download the portable DocC archive"
+grep -Fq 'tar -xzf "$RUNNER_TEMP/docc-artifact/docc-output.tar.gz" -C docc-output' \
+    <<< "$DOCC_JOB_BLOCK" || fail "documentation deployment must extract the DocC archive"
 
 PROVENANCE_LINE="$(grep -nF 'if [[ "$REMOTE_MAIN_SHA" != "$TESTED_SHA" ]]; then' "$CI_WORKFLOW" | sed -n '1s/:.*//p')"
 MUTATION_LINE="$(grep -nF 'scripts/update-test-count.sh' "$CI_WORKFLOW" | sed -n '1s/:.*//p')"

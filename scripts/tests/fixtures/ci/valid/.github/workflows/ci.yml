@@ -31,6 +31,11 @@ jobs:
         with:
           name: tuikit-macos-snapshots
           path: ${{ runner.temp }}/tuikit-macos-snapshots
+      - run: tar -czf "$RUNNER_TEMP/docc-output.tar.gz" -C docc-output .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: docc-output
+          path: ${{ runner.temp }}/docc-output.tar.gz
   linux:
     runs-on: ubuntu-24.04
     steps:
@@ -99,4 +104,11 @@ jobs:
     needs: [macos, linux, api-compatibility]
     runs-on: macos-15
     steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: docc-output
+          path: ${{ runner.temp }}/docc-artifact
+      - run: |
+          mkdir -p docc-output
+          tar -xzf "$RUNNER_TEMP/docc-artifact/docc-output.tar.gz" -C docc-output
       - run: echo deploy
