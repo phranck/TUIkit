@@ -98,7 +98,7 @@ private func platformWrite(
 /// `Terminal` is `@MainActor` isolated. All terminal operations must occur
 /// on the main thread, which is enforced by the Swift concurrency system.
 @MainActor
-final class Terminal: TerminalProtocol {
+final class Terminal: TerminalProtocol, TerminalFailureReporting {
     /// File descriptor used for terminal input.
     private let inputFileDescriptor: Int32
 
@@ -107,6 +107,9 @@ final class Terminal: TerminalProtocol {
 
     /// POSIX calls used for input and output.
     private let systemCalls: TerminalSystemCalls
+
+    /// The first terminal I/O failure not yet consumed by the runtime.
+    private var pendingIOFailure: TerminalIOFailure?
 
     /// Whether raw mode is active.
     private var isRawMode = false
@@ -288,6 +291,12 @@ extension Terminal {
         write(ANSIRenderer.exitAlternateScreen)
     }
 
+    /// Removes and returns the first pending terminal I/O failure.
+    func takeIOFailure() -> TerminalIOFailure? {
+        defer { pendingIOFailure = nil }
+        return pendingIOFailure
+    }
+
     /// Reads raw bytes from the terminal, handling escape sequences.
     ///
     /// Reads exactly one key event worth of bytes. For escape sequences,
@@ -297,56 +306,40 @@ extension Terminal {
     /// - Parameter maxBytes: Maximum bytes to read (default: 8).
     /// - Returns: The bytes read, or empty array on timeout/error.
     func readBytes(maxBytes: Int = 8) -> [UInt8] {
-        var buffer = [UInt8](repeating: 0, count: 1)
-        let bytesRead = buffer.withUnsafeMutableBytes { bytes in
-            systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
-        }
-
-        guard bytesRead > 0 else { return [] }
+        guard let firstByte = readByte() else { return [] }
 
         // Not an escape sequence - return single byte
-        guard buffer[0] == 0x1B else {
-            return [buffer[0]]
+        guard firstByte == 0x1B else {
+            return [firstByte]
         }
 
         // Read the next byte to determine sequence type
         var result: [UInt8] = [0x1B]
-        var nextByte = [UInt8](repeating: 0, count: 1)
-
-        let nextRead = nextByte.withUnsafeMutableBytes { bytes in
-            systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
-        }
-        guard nextRead > 0 else {
+        guard let nextByte = readByte() else {
             // Just ESC alone
             return result
         }
 
-        result.append(nextByte[0])
+        result.append(nextByte)
 
         // CSI sequence: ESC [
-        if nextByte[0] == 0x5B {  // '['
+        if nextByte == 0x5B {  // '['
             // Read until we find a CSI terminator (letter A-Za-z or ~)
             for _ in 0..<(maxBytes - 2) {
-                let paramRead = nextByte.withUnsafeMutableBytes { bytes in
-                    systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
-                }
-                guard paramRead > 0 else { break }
+                guard let parameterByte = readByte() else { break }
 
-                result.append(nextByte[0])
+                result.append(parameterByte)
 
                 // CSI terminators: letters (0x40-0x7E) mark end of sequence
                 // Common: A-D (arrows), H/F (home/end), Z (shift-tab), ~ (extended)
-                if nextByte[0] >= 0x40 && nextByte[0] <= 0x7E {
+                if parameterByte >= 0x40 && parameterByte <= 0x7E {
                     break
                 }
             }
-        } else if nextByte[0] == 0x4F {  // SS3 sequence: ESC O
+        } else if nextByte == 0x4F {  // SS3 sequence: ESC O
             // Read one more byte for F1-F4 keys
-            let funcRead = nextByte.withUnsafeMutableBytes { bytes in
-                systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
-            }
-            if funcRead > 0 {
-                result.append(nextByte[0])
+            if let functionByte = readByte() {
+                result.append(functionByte)
             }
         }
         // Alt+key: ESC followed by single key - already have both bytes
@@ -391,11 +384,7 @@ extension Terminal {
         let maxPasteBytes = 65_536
 
         while content.count < maxPasteBytes {
-            var byte = [UInt8](repeating: 0, count: 1)
-            let bytesRead = byte.withUnsafeMutableBytes { bytes in
-                systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
-            }
-            guard bytesRead > 0 else {
+            guard let byte = readByte() else {
                 // No more data available right now. For non-blocking reads
                 // (VMIN=0, VTIME=0) this means the paste end marker has not
                 // yet arrived. Wait briefly and retry.
@@ -403,7 +392,7 @@ extension Terminal {
                 continue
             }
 
-            content.append(byte[0])
+            content.append(byte)
 
             // Check if content ends with the paste end marker.
             if content.count >= endMarker.count {
@@ -423,6 +412,46 @@ extension Terminal {
 // MARK: - Private Helpers
 
 private extension Terminal {
+    /// Reads one byte, retrying when the system call is interrupted.
+    func readByte() -> UInt8? {
+        var byte: UInt8 = 0
+
+        while true {
+            let result = withUnsafeMutableBytes(of: &byte) { buffer in
+                systemCalls.read(inputFileDescriptor, buffer.baseAddress, 1)
+            }
+
+            if result > 0 {
+                return byte
+            }
+            if result < 0, systemCalls.errorCode() == EINTR {
+                continue
+            }
+            if result < 0 {
+                recordIOFailure(
+                    operation: .read,
+                    errorCode: systemCalls.errorCode(),
+                    remainingByteCount: 1
+                )
+            }
+            return nil
+        }
+    }
+
+    /// Records the first terminal I/O failure until the runtime consumes it.
+    func recordIOFailure(
+        operation: TerminalIOFailure.Operation,
+        errorCode: Int32,
+        remainingByteCount: Int
+    ) {
+        guard pendingIOFailure == nil else { return }
+        pendingIOFailure = TerminalIOFailure(
+            operation: operation,
+            errorCode: errorCode,
+            remainingByteCount: remainingByteCount
+        )
+    }
+
     /// Appends a string's UTF-8 bytes to the frame buffer.
     func appendToBuffer(_ string: String) {
         frameBuffer.append(contentsOf: string.utf8)
@@ -433,13 +462,7 @@ private extension Terminal {
         guard !frameBuffer.isEmpty else { return }
         frameBuffer.withUnsafeBufferPointer { buffer in
             guard let baseAddress = buffer.baseAddress else { return }
-            let count = buffer.count
-            var written = 0
-            while written < count {
-                let result = systemCalls.write(outputFileDescriptor, baseAddress + written, count - written)
-                if result <= 0 { break }
-                written += result
-            }
+            writeBytes(baseAddress, count: buffer.count)
         }
         frameBuffer.removeAll(keepingCapacity: true)
     }
@@ -451,12 +474,28 @@ private extension Terminal {
             let count = buffer.count - 1
             guard count >= 1, let baseAddress = buffer.baseAddress else { return }
             baseAddress.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
-                var written = 0
-                while written < count {
-                    let result = systemCalls.write(outputFileDescriptor, pointer + written, count - written)
-                    if result <= 0 { break }
-                    written += result
-                }
+                writeBytes(pointer, count: count)
+            }
+        }
+    }
+
+    /// Writes every byte, retrying interrupted and partial system calls.
+    func writeBytes(_ baseAddress: UnsafePointer<UInt8>, count: Int) {
+        var written = 0
+
+        while written < count {
+            let result = systemCalls.write(outputFileDescriptor, baseAddress + written, count - written)
+            if result > 0 {
+                written += result
+            } else if result < 0, systemCalls.errorCode() == EINTR {
+                continue
+            } else {
+                recordIOFailure(
+                    operation: .write,
+                    errorCode: result < 0 ? systemCalls.errorCode() : EIO,
+                    remainingByteCount: count - written
+                )
+                return
             }
         }
     }
