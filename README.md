@@ -245,7 +245,7 @@ Tests/
 └── TUIkitTests/          Public API and runtime integration
 ```
 
-Test discovery covers 1211 tests across all isolated targets.
+Test discovery covers 1225 tests across all isolated targets.
 
 ## Requirements
 
