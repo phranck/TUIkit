@@ -414,6 +414,7 @@ run_case module-boundaries test_module_test_boundaries_are_enforced
 
 if [[ "$TEST_CASE" == "all" ]]; then
     "$PROJECT_DIR/scripts/tests/test-api-snapshot-scripts.sh"
+    "$PROJECT_DIR/scripts/tests/test-compatibility-manifest.sh"
     "$PROJECT_DIR/scripts/tests/test-owner-registry.sh"
     "$PROJECT_DIR/scripts/tests/test-tool-cache.sh"
     "$PROJECT_DIR/scripts/tests/test-quality-gate.sh"
