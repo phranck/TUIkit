@@ -12,6 +12,8 @@
     import Darwin
 #endif
 
+import Dispatch
+
 // MARK: - App Protocol
 
 /// The base protocol for TUIkit applications.
@@ -50,10 +52,44 @@ extension App {
     /// This method is called by the `@main` attribute and starts
     /// the main run loop of the application.
     ///
-    public static func main() async throws {
-        let app = Self()
-        let runner = AppRunner<Self>(app: app)
-        try await runner.run()
+    public static func main() {
+        _ = Task { @MainActor in
+            do {
+                let runner = AppRunner<Self>(app: Self())
+                try await runner.run()
+                exit(EXIT_SUCCESS)
+            } catch {
+                writeApplicationFailure(error)
+                exit(EXIT_FAILURE)
+            }
+        }
+        dispatchMain()
+    }
+}
+
+/// Writes a best-effort runtime failure diagnostic to standard error.
+private func writeApplicationFailure(_ error: any Error) {
+    let bytes = Array("TUIkit application failed: \(error)\n".utf8)
+    let systemCalls = TerminalSystemCalls.system
+
+    bytes.withUnsafeBufferPointer { buffer in
+        guard let baseAddress = buffer.baseAddress else { return }
+        var written = 0
+
+        while written < buffer.count {
+            let result = systemCalls.write(
+                STDERR_FILENO,
+                baseAddress + written,
+                buffer.count - written
+            )
+            if result > 0 {
+                written += result
+            } else if result < 0, systemCalls.errorCode() == EINTR {
+                continue
+            } else {
+                return
+            }
+        }
     }
 }
 
