@@ -18,9 +18,9 @@ import Foundation
 /// ## Animation Speeds
 ///
 /// The speed is controlled by ``TextCursorStyle/Speed``:
-/// - `.slow`: 800ms cycle (visible 400ms, hidden 400ms)
-/// - `.regular`: 530ms cycle (visible 265ms, hidden 265ms)
-/// - `.fast`: 300ms cycle (visible 150ms, hidden 150ms)
+/// - `.slow`: 1000ms cycle (visible 500ms, hidden 500ms)
+/// - `.regular`: 660ms cycle (visible 330ms, hidden 330ms)
+/// - `.fast`: 400ms cycle (visible 200ms, hidden 200ms)
 ///
 /// ## Usage
 ///
@@ -82,18 +82,18 @@ extension CursorTimer {
     }
 }
 
-// MARK: - Timer Control
+// MARK: - Phase Control
 
 extension CursorTimer {
-    /// Starts the cursor animation timer.
+    /// Starts the cursor animation phase clock.
     ///
-    /// If the timer is already running, this is a no-op.
+    /// If the phase clock is already active, this is a no-op.
     func start() {
         guard startTime == nil else { return }
         startTime = clock.now()
     }
 
-    /// Stops the cursor animation timer.
+    /// Stops the cursor animation phase clock.
     func stop() {
         startTime = nil
     }

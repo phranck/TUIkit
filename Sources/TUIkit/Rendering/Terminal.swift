@@ -81,14 +81,15 @@ private func platformWrite(
 /// - Terminal size queries
 /// - Raw mode configuration
 /// - Safe input and output
-/// - Frame-buffered output (all writes collected, flushed in one syscall)
+/// - Frame-buffered output (all writes collected, normally flushed in one syscall)
 ///
 /// ## Output Buffering
 ///
 /// During rendering, call ``beginFrame()`` before writing and ``endFrame()``
 /// after. All ``write(_:)`` calls between them are collected in an internal
-/// `[UInt8]` buffer and flushed as a single `write()` syscall, reducing
-/// per-frame syscalls from ~40+ to exactly 1.
+/// `[UInt8]` buffer and normally flushed as a single `write()` syscall, reducing
+/// per-frame syscalls from ~40+ to one in the normal case. Interrupted and
+/// partial writes are retried until the frame is complete or an error is surfaced.
 ///
 /// Outside of a frame (setup, teardown), ``write(_:)`` writes immediately
 /// as before — safe by default.
@@ -232,7 +233,7 @@ extension Terminal {
     ///
     /// After this call, all ``write(_:)`` calls append to an internal
     /// `[UInt8]` buffer instead of issuing syscalls. Call ``endFrame()``
-    /// to flush the collected output in a single `write()` syscall.
+    /// to flush the collected output, normally in a single `write()` syscall.
     func beginFrame() {
         guard !isBuffering else { return }
         isBuffering = true
@@ -457,7 +458,7 @@ private extension Terminal {
         frameBuffer.append(contentsOf: string.utf8)
     }
 
-    /// Writes all buffered bytes to `STDOUT_FILENO` in a single syscall.
+    /// Writes all buffered bytes, retrying interrupted or partial syscalls.
     func flushBuffer() {
         guard !frameBuffer.isEmpty else { return }
         frameBuffer.withUnsafeBufferPointer { buffer in

@@ -75,7 +75,7 @@ internal struct RenderBackgroundCodes: Equatable {
 ///   8. Begin buffered frame (terminal.beginFrame())
 ///   9. Diff against previous frame, write only changed lines to buffer
 ///  10. Render status bar into same buffer (with its own diff tracking)
-///  11. Flush entire frame in one write() syscall (terminal.endFrame())
+///  11. Flush the entire frame (normally one write() syscall)
 ///  12. End lifecycle tracking (fires onDisappear for removed views)
 /// ```
 ///
@@ -88,9 +88,10 @@ internal struct RenderBackgroundCodes: Equatable {
 /// ## Output Buffering
 ///
 /// All diff writes (content + status bar) are collected in `Terminal`'s
-/// frame buffer and flushed as a single `write()` syscall via
+/// frame buffer and normally flushed as a single `write()` syscall via
 /// `Terminal.beginFrame()` / `Terminal.endFrame()`. This reduces
-/// per-frame syscalls from ~40+ to exactly 1.
+/// per-frame syscalls from ~40+ to one unless the platform reports an
+/// interruption or partial transfer that must be retried.
 ///
 /// On terminal resize (SIGWINCH), the diff cache is invalidated to force
 /// a full repaint.
@@ -311,7 +312,7 @@ private extension RenderLoop {
     /// Writes the assembled frame to the terminal using diff-based output.
     ///
     /// Builds terminal-ready output lines, then writes app header, content,
-    /// and status bar inside a single buffered frame (one `write()` syscall).
+    /// and status bar inside a single buffered frame (normally one syscall).
     func writeFrame(
         buffer: FrameBuffer,
         environment: EnvironmentValues,

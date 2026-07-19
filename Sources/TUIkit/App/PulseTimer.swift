@@ -65,13 +65,13 @@ final class PulseTimer {
 extension PulseTimer {
     /// Starts the breathing animation.
     ///
-    /// If the timer is already running, this is a no-op.
+    /// If the phase clock is already active, this is a no-op.
     func start() {
         guard startTime == nil else { return }
         startTime = clock.now()
     }
 
-    /// Stops the breathing animation.
+    /// Stops phase calculation for the breathing animation.
     func stop() {
         startTime = nil
     }
