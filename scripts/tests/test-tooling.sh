@@ -23,7 +23,7 @@ assert_contains() {
     local file="$1"
     local expected="$2"
 
-    grep -Fq "$expected" "$file" || fail "$file does not contain: $expected"
+    grep -Fq -- "$expected" "$file" || fail "$file does not contain: $expected"
 }
 
 expect_failure() {
@@ -131,6 +131,12 @@ test_ci_configuration_is_deterministic() {
     "$PROJECT_DIR/scripts/validate-ci-configuration.sh" "$FIXTURES_DIR/ci/valid"
 
     "$PROJECT_DIR/scripts/validate-ci-configuration.sh" "$PROJECT_DIR"
+    assert_contains \
+        "$PROJECT_DIR/.github/workflows/ci.yml" \
+        "./scripts/verify-compatibility-manifest.sh"
+    assert_contains \
+        "$PROJECT_DIR/.github/workflows/ci.yml" \
+        "--manifest Tools/APICompatibility/Configuration/compatibility-manifest.json"
 }
 
 test_ci_rejects_duplicate_badge_writer() {

@@ -122,7 +122,7 @@ jobs:
           if-no-files-found: error
 
   api-compatibility:
-    name: API compatibility inputs
+    name: API compatibility manifest
     needs: [reference-snapshots, macos, linux]
     runs-on: macos-15
     steps:
@@ -190,6 +190,14 @@ jobs:
           cp -R "$RUNNER_TEMP/swiftui-reference-snapshots/sources" "$REFERENCE_OUTPUT/"
           cp "$RUNNER_TEMP/swiftui-reference-snapshots/sources.tsv" "$REFERENCE_OUTPUT/"
           cp "$RUNNER_TEMP/swiftui-reference-snapshots/snapshot-set.json" "$REFERENCE_OUTPUT/"
+          ./scripts/verify-compatibility-manifest.sh \
+            --tool "$API_TOOL" \
+            --policy Tools/APICompatibility/Configuration/review-policy.json \
+            --owner-registry Tools/APICompatibility/Configuration/owners.json \
+            --reference-set "$REFERENCE_OUTPUT/snapshot-set.json" \
+            --tuikit-set "$TUIKIT_OUTPUT/snapshot-set.json" \
+            --contracts Tools/APICompatibility/Configuration/contracts.json \
+            --manifest Tools/APICompatibility/Configuration/compatibility-manifest.json
 
       - name: Upload assembled API inputs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
