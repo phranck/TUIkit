@@ -14,6 +14,57 @@ import Foundation
     import Darwin
 #endif
 
+// MARK: - Terminal System Calls
+
+/// Injectable POSIX calls used by terminal input and output.
+internal struct TerminalSystemCalls: Sendable {
+    /// Reads bytes from a file descriptor.
+    let read: @Sendable (Int32, UnsafeMutableRawPointer?, Int) -> Int
+
+    /// Writes bytes to a file descriptor.
+    let write: @Sendable (Int32, UnsafeRawPointer?, Int) -> Int
+
+    /// Returns the current thread-local POSIX error code.
+    let errorCode: @Sendable () -> Int32
+
+    /// Production calls supplied by the active platform module.
+    static let system = Self(
+        read: platformRead,
+        write: platformWrite,
+        errorCode: { errno }
+    )
+}
+
+/// Calls the active platform's POSIX `read` function.
+private func platformRead(
+    _ fileDescriptor: Int32,
+    _ buffer: UnsafeMutableRawPointer?,
+    _ count: Int
+) -> Int {
+    #if canImport(Glibc)
+        Glibc.read(fileDescriptor, buffer, count)
+    #elseif canImport(Musl)
+        Musl.read(fileDescriptor, buffer, count)
+    #else
+        Darwin.read(fileDescriptor, buffer, count)
+    #endif
+}
+
+/// Calls the active platform's POSIX `write` function.
+private func platformWrite(
+    _ fileDescriptor: Int32,
+    _ buffer: UnsafeRawPointer?,
+    _ count: Int
+) -> Int {
+    #if canImport(Glibc)
+        Glibc.write(fileDescriptor, buffer, count)
+    #elseif canImport(Musl)
+        Musl.write(fileDescriptor, buffer, count)
+    #else
+        Darwin.write(fileDescriptor, buffer, count)
+    #endif
+}
+
 /// Platform-specific type for `termios` flag fields.
 ///
 /// Darwin uses `UInt` (64-bit), Linux uses `tcflag_t` (`UInt32`).
@@ -48,6 +99,15 @@ import Foundation
 /// on the main thread, which is enforced by the Swift concurrency system.
 @MainActor
 final class Terminal: TerminalProtocol {
+    /// File descriptor used for terminal input.
+    private let inputFileDescriptor: Int32
+
+    /// File descriptor used for terminal output.
+    private let outputFileDescriptor: Int32
+
+    /// POSIX calls used for input and output.
+    private let systemCalls: TerminalSystemCalls
+
     /// Whether raw mode is active.
     private var isRawMode = false
 
@@ -67,7 +127,14 @@ final class Terminal: TerminalProtocol {
     private var frameBuffer: [UInt8] = []
 
     /// Creates a new terminal instance.
-    init() {
+    init(
+        inputFileDescriptor: Int32 = STDIN_FILENO,
+        outputFileDescriptor: Int32 = STDOUT_FILENO,
+        systemCalls: TerminalSystemCalls = .system
+    ) {
+        self.inputFileDescriptor = inputFileDescriptor
+        self.outputFileDescriptor = outputFileDescriptor
+        self.systemCalls = systemCalls
         frameBuffer.reserveCapacity(16_384)
     }
 
@@ -95,9 +162,9 @@ extension Terminal {
         var windowSize = winsize()
 
         #if canImport(Glibc) || canImport(Musl)
-            let result = ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &windowSize)
+            let result = ioctl(outputFileDescriptor, UInt(TIOCGWINSZ), &windowSize)
         #else
-            let result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &windowSize)
+            let result = ioctl(outputFileDescriptor, TIOCGWINSZ, &windowSize)
         #endif
 
         if result == 0 && windowSize.ws_col > 0 && windowSize.ws_row > 0 {
@@ -121,7 +188,7 @@ extension Terminal {
         guard !isRawMode else { return }
 
         var raw = termios()
-        tcgetattr(STDIN_FILENO, &raw)
+        tcgetattr(inputFileDescriptor, &raw)
         originalTermios = raw
 
         raw.c_lflag &= ~TermFlag(ECHO | ICANON | ISIG | IEXTEN)
@@ -137,7 +204,7 @@ extension Terminal {
             }
         }
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
+        tcsetattr(inputFileDescriptor, TCSAFLUSH, &raw)
         isRawMode = true
 
         // Enable bracketed paste mode so that terminal paste operations
@@ -154,7 +221,7 @@ extension Terminal {
         // Disable bracketed paste mode before restoring terminal state.
         writeImmediate("\u{1B}[?2004l")
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &original)
+        tcsetattr(inputFileDescriptor, TCSAFLUSH, &original)
         isRawMode = false
     }
 
@@ -231,7 +298,9 @@ extension Terminal {
     /// - Returns: The bytes read, or empty array on timeout/error.
     func readBytes(maxBytes: Int = 8) -> [UInt8] {
         var buffer = [UInt8](repeating: 0, count: 1)
-        let bytesRead = read(STDIN_FILENO, &buffer, 1)
+        let bytesRead = buffer.withUnsafeMutableBytes { bytes in
+            systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
+        }
 
         guard bytesRead > 0 else { return [] }
 
@@ -244,7 +313,9 @@ extension Terminal {
         var result: [UInt8] = [0x1B]
         var nextByte = [UInt8](repeating: 0, count: 1)
 
-        let nextRead = read(STDIN_FILENO, &nextByte, 1)
+        let nextRead = nextByte.withUnsafeMutableBytes { bytes in
+            systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
+        }
         guard nextRead > 0 else {
             // Just ESC alone
             return result
@@ -256,7 +327,9 @@ extension Terminal {
         if nextByte[0] == 0x5B {  // '['
             // Read until we find a CSI terminator (letter A-Za-z or ~)
             for _ in 0..<(maxBytes - 2) {
-                let paramRead = read(STDIN_FILENO, &nextByte, 1)
+                let paramRead = nextByte.withUnsafeMutableBytes { bytes in
+                    systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
+                }
                 guard paramRead > 0 else { break }
 
                 result.append(nextByte[0])
@@ -269,7 +342,9 @@ extension Terminal {
             }
         } else if nextByte[0] == 0x4F {  // SS3 sequence: ESC O
             // Read one more byte for F1-F4 keys
-            let funcRead = read(STDIN_FILENO, &nextByte, 1)
+            let funcRead = nextByte.withUnsafeMutableBytes { bytes in
+                systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
+            }
             if funcRead > 0 {
                 result.append(nextByte[0])
             }
@@ -317,7 +392,9 @@ extension Terminal {
 
         while content.count < maxPasteBytes {
             var byte = [UInt8](repeating: 0, count: 1)
-            let bytesRead = read(STDIN_FILENO, &byte, 1)
+            let bytesRead = byte.withUnsafeMutableBytes { bytes in
+                systemCalls.read(inputFileDescriptor, bytes.baseAddress, 1)
+            }
             guard bytesRead > 0 else {
                 // No more data available right now. For non-blocking reads
                 // (VMIN=0, VTIME=0) this means the paste end marker has not
@@ -359,7 +436,7 @@ private extension Terminal {
             let count = buffer.count
             var written = 0
             while written < count {
-                let result = Foundation.write(STDOUT_FILENO, baseAddress + written, count - written)
+                let result = systemCalls.write(outputFileDescriptor, baseAddress + written, count - written)
                 if result <= 0 { break }
                 written += result
             }
@@ -376,7 +453,7 @@ private extension Terminal {
             baseAddress.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
                 var written = 0
                 while written < count {
-                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
+                    let result = systemCalls.write(outputFileDescriptor, pointer + written, count - written)
                     if result <= 0 { break }
                     written += result
                 }
