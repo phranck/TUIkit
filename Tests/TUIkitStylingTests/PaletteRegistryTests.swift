@@ -6,7 +6,7 @@
 
 import Testing
 
-@testable import TUIkit
+@testable import TUIkitStyling
 
 @MainActor
 @Suite("Palette Registry Tests")
