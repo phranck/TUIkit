@@ -323,7 +323,7 @@ private extension StatusBarState {
 
 /// Environment key for accessing the status bar state.
 private struct StatusBarKey: EnvironmentKey {
-    static let defaultValue = StatusBarState()
+    static var defaultValue: StatusBarState { StatusBarState() }
 }
 
 extension EnvironmentValues {

@@ -41,7 +41,9 @@ extension EnvironmentValues {
 
 /// Environment key for the palette manager.
 private struct PaletteManagerKey: EnvironmentKey {
-    static let defaultValue = ThemeManager(items: PaletteRegistry.all)
+    static var defaultValue: ThemeManager {
+        ThemeManager(items: PaletteRegistry.all)
+    }
 }
 
 extension EnvironmentValues {

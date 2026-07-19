@@ -272,10 +272,12 @@ private struct _SpinnerCore: View, Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let lifecycle = context.environment.lifecycle!
         let stateStorage = context.environment.stateStorage!
+        let clock = context.environment.runtimeClock
+        let invalidationSink = context.environment.renderInvalidationSink
 
         // Retrieve or create persistent start time for this spinner.
         let timeKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
-        let startTimeBox: StateBox<Double> = stateStorage.storage(for: timeKey, default: Date().timeIntervalSinceReferenceDate)
+        let startTimeBox: StateBox<Double> = stateStorage.storage(for: timeKey, default: clock.now())
         stateStorage.markActive(context.identity)
 
         // Start render-trigger task on first appearance.
@@ -283,11 +285,11 @@ private struct _SpinnerCore: View, Renderable {
             _ = lifecycle.recordAppear(token: token) {}
 
             let triggerNanos: UInt64 = 23_800_000  // ~24ms — matches run loop poll rate (~42 FPS)
-            lifecycle.startTask(token: token, priority: .medium) {
+            lifecycle.startTask(token: token, priority: .medium) { [invalidationSink] in
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: triggerNanos)
                     guard !Task.isCancelled else { break }
-                    AppState.shared.setNeedsRender()
+                    invalidationSink?.invalidate(.renderOnly)
                 }
             }
         } else {
@@ -300,7 +302,7 @@ private struct _SpinnerCore: View, Renderable {
         }
 
         // Calculate frame index from elapsed time.
-        let elapsed = Date().timeIntervalSinceReferenceDate - startTimeBox.value
+        let elapsed = clock.now() - startTimeBox.value
         let frameCount: Int
         switch style {
         case .bouncing:

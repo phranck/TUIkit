@@ -86,14 +86,14 @@ internal final class AppRunner<A: App> {
     private var signals = SignalManager()
 
     init(app: A) {
-        let tuiContext = TUIContext()
+        let tuiContext = TUIContext.production()
         self.app = app
         self.appState = tuiContext.appState
-        self.appearanceManager = ThemeManager(items: AppearanceRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-        self.appHeader = AppHeaderState()
-        self.focusManager = FocusManager()
-        self.paletteManager = ThemeManager(items: PaletteRegistry.all, renderTrigger: { [appState] in appState.setNeedsRender() })
-        self.statusBar = StatusBarState(appState: appState)
+        self.appearanceManager = tuiContext.appearanceManager
+        self.appHeader = tuiContext.appHeader
+        self.focusManager = tuiContext.focusManager
+        self.paletteManager = tuiContext.paletteManager
+        self.statusBar = tuiContext.statusBar
         self.statusBar.style = .bordered
         self.terminal = Terminal()
         self.tuiContext = tuiContext
@@ -140,9 +140,10 @@ extension AppRunner {
         }
 
         // Reset pulse animation and trigger re-render when focus changes
-        focusManager.onFocusChange = { [weak pulseTimer, weak appState] in
+        let runtimeFocusChangeHandler = focusManager.onFocusChange
+        focusManager.onFocusChange = { [weak pulseTimer] in
             pulseTimer?.reset()
-            appState?.setNeedsRender()
+            runtimeFocusChangeHandler?()
         }
 
         isRunning = true

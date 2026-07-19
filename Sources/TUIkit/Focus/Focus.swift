@@ -533,7 +533,7 @@ private extension FocusManager {
 
 /// Environment key for the focus manager.
 private struct FocusManagerKey: EnvironmentKey {
-    static let defaultValue = FocusManager()
+    static var defaultValue: FocusManager { FocusManager() }
 }
 
 extension EnvironmentValues {

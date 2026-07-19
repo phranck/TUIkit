@@ -23,9 +23,6 @@ import TUIkitCore
 ///   management in your views. Direct use of `AppState` is only necessary in advanced scenarios
 ///   where you manage state outside the view hierarchy.
 public final class AppState: Sendable {
-    /// Legacy process-wide render state used by services awaiting runtime injection.
-    public static let shared = AppState()
-
     /// Internal state protected by a lock.
     private struct StateData: Sendable {
         var needsRender = false

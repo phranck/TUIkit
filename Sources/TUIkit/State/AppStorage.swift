@@ -202,11 +202,23 @@ private extension JSONFileStorage {
 /// StorageDefaults.backend = MyCustomBackend()
 /// ```
 public enum StorageDefaults {
+    /// Backing storage retained until issue #15 removes the global fallback.
+    nonisolated(unsafe) private static var configuredBackend: StorageBackend = JSONFileStorage()
+
     /// The default storage backend used by ``AppStorage``.
     ///
     /// Defaults to a ``JSONFileStorage`` instance that persists to
     /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
-    nonisolated(unsafe) public static var backend: StorageBackend = JSONFileStorage()
+    @available(*, deprecated, message: "Inject storage through the application runtime instead")
+    public static var backend: StorageBackend {
+        get { configuredBackend }
+        set { configuredBackend = newValue }
+    }
+
+    /// Legacy fallback used only when AppStorage is accessed outside a runtime.
+    static var runtimeBackend: StorageBackend {
+        configuredBackend
+    }
 }
 
 // MARK: - AppStorage Property Wrapper
@@ -242,14 +254,8 @@ public enum StorageDefaults {
 /// - Custom Codable structs and enums
 @propertyWrapper
 public struct AppStorage<Value: Codable>: @unchecked Sendable {
-    /// The key used for storage.
-    private let key: String
-
-    /// The default value if no stored value exists.
-    private let defaultValue: Value
-
-    /// The storage backend to use.
-    private let storage: StorageBackend
+    /// Reference storage that captures the first runtime owning this property.
+    private let box: AppStorageBox<Value>
 
     /// Creates an AppStorage with the default storage backend.
     ///
@@ -257,9 +263,11 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
     ///   - wrappedValue: The default value.
     ///   - key: The key to use for storage.
     public init(wrappedValue: Value, _ key: String) {
-        self.key = key
-        self.defaultValue = wrappedValue
-        self.storage = StorageDefaults.backend
+        self.box = AppStorageBox(
+            key: key,
+            defaultValue: wrappedValue,
+            explicitStorage: nil
+        )
     }
 
     /// Creates an AppStorage with a custom storage backend.
@@ -269,19 +277,20 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
     ///   - key: The key to use for storage.
     ///   - storage: The storage backend to use.
     public init(wrappedValue: Value, _ key: String, storage: StorageBackend) {
-        self.key = key
-        self.defaultValue = wrappedValue
-        self.storage = storage
+        self.box = AppStorageBox(
+            key: key,
+            defaultValue: wrappedValue,
+            explicitStorage: storage
+        )
     }
 
     /// The current value.
     public var wrappedValue: Value {
         get {
-            storage.value(forKey: key) ?? defaultValue
+            box.value
         }
         nonmutating set {
-            storage.setValue(newValue, forKey: key)
-            AppState.shared.setNeedsRender()
+            box.value = newValue
         }
     }
 
@@ -291,5 +300,93 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
             get: { self.wrappedValue },
             set: { self.wrappedValue = $0 }
         )
+    }
+}
+
+// MARK: - App Storage Box
+
+/// Reference storage that binds AppStorage to its first rendering runtime.
+private final class AppStorageBox<Value: Codable>: @unchecked Sendable {
+    /// Persistent key.
+    private let key: String
+
+    /// Value returned when the backend contains no entry.
+    private let defaultValue: Value
+
+    /// Explicit backend supplied by the property-wrapper initializer.
+    private let explicitStorage: StorageBackend?
+
+    /// Backend captured from the owning runtime.
+    private var runtimeStorage: StorageBackend?
+
+    /// Runtime receiving changes made through this property.
+    private var invalidationSink: (any RenderInvalidationSink)?
+
+    /// Structural identity owning this property.
+    private var identity: ViewIdentity?
+
+    /// Lock protecting dependency binding.
+    private let lock = NSLock()
+
+    /// Creates reference storage for one AppStorage property.
+    init(
+        key: String,
+        defaultValue: Value,
+        explicitStorage: StorageBackend?
+    ) {
+        self.key = key
+        self.defaultValue = defaultValue
+        self.explicitStorage = explicitStorage
+    }
+
+    /// Current persisted value.
+    var value: Value {
+        get {
+            let storage = resolvedDependencies().storage
+            return storage.value(forKey: key) ?? defaultValue
+        }
+        set {
+            let dependencies = resolvedDependencies()
+            dependencies.storage.setValue(newValue, forKey: key)
+
+            if let identity = dependencies.identity {
+                dependencies.invalidationSink?.invalidate(.subtree(identity))
+            } else {
+                dependencies.invalidationSink?.invalidate(.all)
+            }
+        }
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension AppStorageBox {
+    typealias Dependencies = (
+        storage: StorageBackend,
+        invalidationSink: (any RenderInvalidationSink)?,
+        identity: ViewIdentity?
+    )
+
+    func resolvedDependencies() -> Dependencies {
+        bindToActiveRuntimeIfNeeded()
+
+        lock.lock()
+        let storage = explicitStorage ?? runtimeStorage ?? StorageDefaults.runtimeBackend
+        let invalidationSink = invalidationSink
+        let identity = identity
+        lock.unlock()
+        return (storage, invalidationSink, identity)
+    }
+
+    func bindToActiveRuntimeIfNeeded() {
+        guard let environment = StateRegistration.activeEnvironment else { return }
+
+        lock.lock()
+        if runtimeStorage == nil {
+            runtimeStorage = environment.storageBackend
+            invalidationSink = environment.renderInvalidationSink
+            identity = StateRegistration.activeContext?.identity
+        }
+        lock.unlock()
     }
 }

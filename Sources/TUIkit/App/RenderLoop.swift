@@ -276,30 +276,7 @@ extension RenderLoop {
     ///
     /// - Returns: A fully populated environment.
     func buildEnvironment() -> EnvironmentValues {
-        var environment = EnvironmentValues()
-        environment.statusBar = statusBar
-        environment.appHeader = appHeader
-        environment.focusManager = focusManager
-        environment.paletteManager = paletteManager
-        if let palette = paletteManager.currentPalette {
-            environment.palette = palette
-        }
-        environment.appearanceManager = appearanceManager
-        if let appearance = appearanceManager.currentAppearance {
-            environment.appearance = appearance
-        }
-        environment.notificationService = NotificationService.current
-
-        // Runtime services (previously accessed via context.tuiContext)
-        environment.stateStorage = tuiContext.stateStorage
-        environment.lifecycle = tuiContext.lifecycle
-        environment.keyEventDispatcher = tuiContext.keyEventDispatcher
-        environment.renderCache = tuiContext.renderCache
-        environment.renderInvalidationSink = tuiContext.appState
-        environment.preferenceStorage = tuiContext.preferences
-        environment.localizationService = LocalizationService.shared
-
-        return environment
+        tuiContext.environmentValues()
     }
 }
 

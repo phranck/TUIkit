@@ -116,6 +116,165 @@ struct TUIContextTests {
         #expect(firstContext.renderCache.stats.clears == 1)
         #expect(secondContext.renderCache.stats.clears == 0)
     }
+
+    @Test("Application services are isolated per runtime")
+    func applicationServicesAreIsolatedPerRuntime() {
+        let firstContext = TUIContext()
+        let secondContext = TUIContext()
+
+        #expect(firstContext.localizationService !== secondContext.localizationService)
+        #expect(firstContext.notificationService !== secondContext.notificationService)
+        #expect(firstContext.focusManager !== secondContext.focusManager)
+        #expect(firstContext.paletteManager !== secondContext.paletteManager)
+        #expect(firstContext.appearanceManager !== secondContext.appearanceManager)
+        #expect(firstContext.statusBar !== secondContext.statusBar)
+        #expect(firstContext.appHeader !== secondContext.appHeader)
+
+        firstContext.localizationService.setLanguage(.german)
+        firstContext.notificationService.post("first")
+        firstContext.storageBackend.setValue("first", forKey: "runtime")
+        let secondStoredValue: String? = secondContext.storageBackend.value(forKey: "runtime")
+
+        #expect(firstContext.localizationService.currentLanguage == .german)
+        #expect(secondContext.localizationService.currentLanguage == .english)
+        #expect(firstContext.notificationService.activeEntries().map(\.message) == ["first"])
+        #expect(secondContext.notificationService.activeEntries().isEmpty)
+        #expect(secondStoredValue == nil)
+    }
+
+    @Test("Runtime services invalidate only their owning runtime")
+    func runtimeServicesInvalidateOnlyTheirOwningRuntime() {
+        let firstContext = TUIContext()
+        let secondContext = TUIContext()
+
+        func resetInvalidationState() {
+            firstContext.applyPendingRenderInvalidations()
+            secondContext.applyPendingRenderInvalidations()
+            firstContext.appState.didRender()
+            secondContext.appState.didRender()
+        }
+
+        func expectOnlyFirstContextNeedsRender() {
+            #expect(firstContext.appState.needsRender)
+            #expect(secondContext.appState.needsRender == false)
+        }
+
+        resetInvalidationState()
+        firstContext.localizationService.setLanguage(.german)
+        expectOnlyFirstContextNeedsRender()
+
+        resetInvalidationState()
+        firstContext.notificationService.post("first")
+        expectOnlyFirstContextNeedsRender()
+
+        resetInvalidationState()
+        firstContext.paletteManager.cycleNext()
+        expectOnlyFirstContextNeedsRender()
+
+        resetInvalidationState()
+        firstContext.appearanceManager.cycleNext()
+        expectOnlyFirstContextNeedsRender()
+
+        resetInvalidationState()
+        firstContext.statusBar.setItems([])
+        expectOnlyFirstContextNeedsRender()
+    }
+
+    @Test("Focus changes invalidate only the owning runtime")
+    func focusChangesInvalidateOnlyOwningRuntime() {
+        let firstContext = TUIContext()
+        let secondContext = TUIContext()
+
+        firstContext.appState.didRender()
+        secondContext.appState.didRender()
+        firstContext.focusManager.register(MockFocusable(id: "first"))
+
+        #expect(firstContext.appState.needsRender)
+        #expect(secondContext.appState.needsRender == false)
+        #expect(firstContext.focusManager.currentFocusedID == "first")
+        #expect(secondContext.focusManager.currentFocusedID == nil)
+    }
+
+    @Test("AppStorage binds to the owning runtime")
+    func appStorageBindsToOwningRuntime() {
+        let firstContext = TUIContext()
+        let secondContext = TUIContext()
+        let firstStorage = AppStorage(wrappedValue: "default", "runtime-key")
+        let secondStorage = AppStorage(wrappedValue: "default", "runtime-key")
+        let firstRenderContext = RenderContext(
+            availableWidth: 20,
+            availableHeight: 1,
+            tuiContext: firstContext,
+            identity: ViewIdentity(path: "first")
+        )
+        let secondRenderContext = RenderContext(
+            availableWidth: 20,
+            availableHeight: 1,
+            tuiContext: secondContext,
+            identity: ViewIdentity(path: "second")
+        )
+
+        firstContext.appState.didRender()
+        secondContext.appState.didRender()
+        StateRegistration.withHydration(context: firstRenderContext) {
+            firstStorage.wrappedValue = "first"
+        }
+
+        let firstPersistedValue: String? = firstContext.storageBackend.value(forKey: "runtime-key")
+        let secondPersistedValue: String? = secondContext.storageBackend.value(forKey: "runtime-key")
+        #expect(firstPersistedValue == "first")
+        #expect(secondPersistedValue == nil)
+        #expect(firstContext.appState.needsRender)
+        #expect(secondContext.appState.needsRender == false)
+
+        firstContext.applyPendingRenderInvalidations()
+        firstContext.appState.didRender()
+        StateRegistration.withHydration(context: secondRenderContext) {
+            secondStorage.wrappedValue = "second"
+        }
+
+        let firstValue = StateRegistration.withHydration(context: firstRenderContext) {
+            firstStorage.wrappedValue
+        }
+        let secondValue = StateRegistration.withHydration(context: secondRenderContext) {
+            secondStorage.wrappedValue
+        }
+        #expect(firstValue == "first")
+        #expect(secondValue == "second")
+        #expect(firstContext.appState.needsRender == false)
+        #expect(secondContext.appState.needsRender)
+    }
+
+    @Test("Render context receives the complete owning runtime")
+    func renderContextReceivesCompleteOwningRuntime() {
+        let storageBackend = VolatileStorageBackend()
+        let tuiContext = TUIContext(
+            storageBackend: storageBackend,
+            clock: RuntimeClock { 42 }
+        )
+        let renderContext = RenderContext(
+            availableWidth: 80,
+            availableHeight: 24,
+            tuiContext: tuiContext
+        )
+
+        #expect(renderContext.environment.stateStorage === tuiContext.stateStorage)
+        #expect(renderContext.environment.lifecycle === tuiContext.lifecycle)
+        #expect(renderContext.environment.keyEventDispatcher === tuiContext.keyEventDispatcher)
+        #expect(renderContext.environment.renderCache === tuiContext.renderCache)
+        #expect(renderContext.environment.renderInvalidationSink === tuiContext.appState)
+        #expect(renderContext.environment.preferenceStorage === tuiContext.preferences)
+        #expect(renderContext.environment.localizationService === tuiContext.localizationService)
+        #expect(renderContext.environment.notificationService === tuiContext.notificationService)
+        #expect(renderContext.environment.focusManager === tuiContext.focusManager)
+        #expect(renderContext.environment.paletteManager === tuiContext.paletteManager)
+        #expect(renderContext.environment.appearanceManager === tuiContext.appearanceManager)
+        #expect(renderContext.environment.statusBar === tuiContext.statusBar)
+        #expect(renderContext.environment.appHeader === tuiContext.appHeader)
+        let environmentStorage = renderContext.environment.storageBackend as? VolatileStorageBackend
+        #expect(environmentStorage === storageBackend)
+        #expect(renderContext.environment.runtimeClock.now() == 42)
+    }
 }
 
 /// Test preference key for TUIContext tests.

@@ -22,6 +22,9 @@
 ///
 /// Use this for all UI strings that need localization.
 public struct LocalizedString: View {
+    /// Localization service inherited from the owning runtime.
+    @Environment(\.localizationService) private var localizationService
+
     /// The dot-notation key for the string to display.
     private let key: String
 
@@ -33,6 +36,6 @@ public struct LocalizedString: View {
     }
 
     public var body: some View {
-        Text(LocalizationService.shared.string(for: key))
+        Text(localizationService.string(for: key))
     }
 }

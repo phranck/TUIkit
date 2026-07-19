@@ -28,17 +28,13 @@ extension RenderContext {
         tuiContext: TUIContext,
         identity: ViewIdentity = ViewIdentity(path: "")
     ) {
-        var env = environment
-        env.stateStorage = tuiContext.stateStorage
-        env.lifecycle = tuiContext.lifecycle
-        env.keyEventDispatcher = tuiContext.keyEventDispatcher
-        env.renderCache = tuiContext.renderCache
-        env.renderInvalidationSink = tuiContext.appState
-        env.preferenceStorage = tuiContext.preferences
+        let environment = MainActor.assumeIsolated {
+            tuiContext.environmentValues(extending: environment)
+        }
         self.init(
             availableWidth: availableWidth,
             availableHeight: availableHeight,
-            environment: env,
+            environment: environment,
             identity: identity
         )
     }
