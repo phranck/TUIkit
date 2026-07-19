@@ -357,11 +357,8 @@ test_module_test_boundaries_are_enforced() {
 
     local native_link_root="$TEMP_DIR/native-link"
     cp -R "$valid_root" "$native_link_root"
-    sed -i.bak \
-        '/targets: \[/a\
-        .target(name: "NativeTarget", linkerSettings: [.linkedLibrary("ncurses")]),' \
+    cp "$FIXTURES_DIR/module-boundaries/NativeLinkPackage.swift" \
         "$native_link_root/Package.swift"
-    find "$native_link_root" -name '*.bak' -delete
     expect_failure \
         "Test boundary error: Package.swift declares a native or binary dependency" \
         "$PROJECT_DIR/scripts/validate-test-boundaries.sh" "$native_link_root"
