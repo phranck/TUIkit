@@ -162,7 +162,7 @@
     {
       "compile" : {
         "expectation" : {
-          "expectedDiagnosticSubstring" : "main actor-isolated initializer",
+          "expectedDiagnosticSubstring" : "'nonisolated' modifier cannot be applied to this declaration",
           "outcome" : "fails"
         },
         "fixture" : "IsolationNegative.swift"
