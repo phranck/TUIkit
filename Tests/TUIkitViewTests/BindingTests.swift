@@ -6,7 +6,7 @@
 
 import Testing
 
-@testable import TUIkit
+@testable import TUIkitView
 
 @MainActor
 @Suite("Binding Tests")
