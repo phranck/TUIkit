@@ -5,7 +5,7 @@
     <img alt="i18n" src="https://img.shields.io/badge/i18n-5%20Languages-00d900">
     <img alt="License" src="https://img.shields.io/badge/License-MIT-00b300?style=flat">
     <a href="https://github.com/phranck/TUIkit/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/phranck/TUIkit/ci.yml?branch=main&label=CI&color=009900"></a>
-    <img alt="Tests" src="https://img.shields.io/badge/Tests-1172%2B_passing-005c00">
+    <img alt="Tests" src="https://img.shields.io/badge/Tests-1211_passing-005c00">
 </p>
 
 <img width="1200" height="630" alt="og-image@1x" src="https://github.com/user-attachments/assets/8bf99da8-e87c-4447-b3cb-a6f3f52c6d18" />
@@ -209,7 +209,7 @@ For complete documentation, see [Localization Guide](https://github.com/phranck/
 
 ## Architecture
 
-- **Modular package**: 5 Swift modules + 1 C target (see Project Structure below)
+- **Modular package**: 5 Swift modules with no native targets (see Project Structure below)
 - **No singletons for state**: All state flows through the Environment system
 - **Pure ANSI rendering**: No ncurses or other C dependencies
 - **Linux compatible**: Works on macOS and Linux (XDG paths supported)
@@ -219,11 +219,10 @@ For complete documentation, see [Localization Guide](https://github.com/phranck/
 
 ```
 Sources/
-├── CSTBImage/            C bindings for stb_image (PNG/JPEG decoding)
 ├── TUIkitCore/           Primitives, key events, frame buffer, concurrency helpers
 ├── TUIkitStyling/        Color, theme palettes, border styles
 ├── TUIkitView/           View protocol, ViewBuilder, State, Environment, Renderable
-├── TUIkitImage/          ASCII art converter, image loading (depends on CSTBImage)
+├── TUIkitImage/          ASCII art conversion and bounded pure Swift PNG/JPEG decoding
 ├── TUIkit/               Main module: App, Views, Modifiers, Focus, StatusBar, Notification
 │   ├── App/              App, Scene, WindowGroup
 │   ├── Environment/      Environment keys, service configuration
@@ -237,18 +236,23 @@ Sources/
 └── TUIkitExample/        Example app (executable target)
 
 Tests/
-└── TUIkitTests/          1172+ tests across 93 test files (including i18n consistency & localization tests)
+└── TUIkitTests/          1211 tests (including i18n consistency & localization tests)
 ```
 
 ## Requirements
 
-- Swift 6.0+
+- Swift 6.0+ for package consumers; development and CI use exactly Swift 6.0.3
 - macOS 14+ or Linux
+
+Image decoding supports static PNG and JPEG input and always produces non-premultiplied 8-bit RGBA pixels. Audited decoder and checksum
+sources are vendored as namespaced Swift targets; the package graph contains no C, C++, or native decoder target.
 
 ## Developer Notes
 
 - Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
-- All 1172 tests run in parallel
+- Run the complete local macOS/Linux quality gate with `./scripts/test-linux.sh`
+- Generate the deployable DocC archive with `./scripts/generate-documentation.sh`
+- All 1211 tests run through Swift Testing; suites that isolate shared state run serially
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## License

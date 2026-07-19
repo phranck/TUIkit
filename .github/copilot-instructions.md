@@ -2,8 +2,8 @@
 
 ## Hard Constraints (non-negotiable)
 
-- **Swift 6.0 only**: `swift-tools-version: 6.0`. Never use features that require a newer compiler.
-- **Cross-platform**: Must build and run on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
+- **Swift 6.0.3 for development and CI**: `swift-tools-version: 6.0`. Never use features that require a newer compiler.
+- **Cross-platform**: Must build and run on both macOS and Linux. CI tests both (`macos-15` + the pinned Linux image from `scripts/toolchain.env`).
 - **CI must pass**: All tests and linting must pass before merge.
 
 ## Project
@@ -13,17 +13,19 @@ TUIkit is a SwiftUI-like framework for building Terminal User Interfaces in pure
 ## Build, Test & Lint
 
 ```bash
-# Build
-swift build
+# Complete warning-fatal macOS and Linux gate
+./scripts/test-linux.sh
 
-# Run all tests (1037+ tests, Swift Testing framework)
-swift test
+# Focused build and test commands
+swift build -Xswiftc -warnings-as-errors
+swift test -Xswiftc -warnings-as-errors
 
 # Run a single test suite
 swift test --filter <TestSuiteName>
 
-# Lint
-swiftlint
+# Strict lint with the pinned binary
+SWIFTLINT_BIN=$(./scripts/install-swiftlint.sh macos)
+"$SWIFTLINT_BIN" lint --strict --no-cache
 
 # Format (configured but not enforced in CI)
 swift-format format -i -r Sources Tests
@@ -114,7 +116,7 @@ Public APIs **must** match SwiftUI signatures exactly unless terminal constraint
 ## Testing
 
 - Uses Swift Testing framework (`@Test`, `#expect`, `@Suite`)
-- Tests run in parallel
+- Independent tests run in parallel; suites that isolate shared state run serially
 - Test files mirror source structure in `Tests/TUIkitTests/`
 
 ## Code Style

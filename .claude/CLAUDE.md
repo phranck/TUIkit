@@ -2,20 +2,23 @@
 
 ### Compatibility (non-negotiable)
 - **Swift 6.0 compatible**: `swift-tools-version: 6.0`. Never use features that require a newer compiler.
-- **Cross-platform**: must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + `swift:6.0` container).
+- **Cross-platform**: must build and run without crashes/segfaults on both macOS and Linux. CI tests both (`macos-15` + the pinned Linux image from `scripts/toolchain.env`).
 - When in doubt, verify with the CI pipeline before merging.
 
 ### Pre-Push Verification (non-negotiable)
 - **Before pushing to GitHub**: ALWAYS run `./scripts/test-linux.sh` to verify build + tests pass on both macOS and Linux.
-- The script runs `swift build` and `swift test` natively on macOS, then repeats both inside a `swift:6.0` Docker container (same image as CI).
+- The script runs the complete warning-fatal quality gate natively on macOS, then repeats it in the immutable Swift 6.0.3 Docker image from `scripts/toolchain.env`.
 - **Never push code that has not been verified on both platforms.**
-- Usage: `./scripts/test-linux.sh` (both), `./scripts/test-linux.sh linux` (Linux only), `./scripts/test-linux.sh shell` (interactive Linux shell)
+- Usage: `./scripts/test-linux.sh` (both), `./scripts/test-linux.sh macos`, `./scripts/test-linux.sh linux`, or `./scripts/test-linux.sh shell`
 - Requires Docker Desktop to be running.
 
 ### Architecture (non-negotiable)
 
 #### General Principles
 - No Singletons
+- The package graph contains no C/C++ targets or native decoder dependencies
+- Image decoding is limited to static PNG and JPEG, implemented by vendored, namespaced pure Swift sources with documented provenance
+- Validate image resource limits before invoking a format decoder
 - **Before implementing ANYTHING NEW: Search the codebase** for similar patterns, reusable code, existing solutions
 - Consolidate and reuse before adding new functions or types
 - "Reinventing the wheel" is a code smell: investigate why it exists first
