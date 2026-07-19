@@ -704,6 +704,29 @@ test_tuikit_orchestrator_rejects_toolchain_drift() {
     assert_file_not_exists "$output_root/tool.log"
 }
 
+test_tuikit_orchestrator_supports_system_bash_without_optional_arguments() {
+    local root="$TEST_TEMP_DIR/tuikit-system-bash"
+    local output_root="$root/output"
+    mkdir -p "$output_root"
+    make_fake_tools "$root"
+    make_fake_swift_tools "$root"
+
+    PATH="$FAKE_SWIFT_BIN_DIR:$PATH" \
+        FAKE_HOST_SYSTEM=Linux \
+        FAKE_SWIFT_BIN_PATH="$FAKE_SWIFT_BIN_PATH" \
+        FAKE_SWIFT_LOG="$FAKE_SWIFT_LOG" \
+        FAKE_API_TOOL_LOG="$output_root/tool.log" \
+        /bin/bash "$GENERATE_TUIKIT_SCRIPT" \
+        --tool "$FAKE_API_TOOL" \
+        --platform Linux \
+        --output-root "$output_root" \
+        --build-path "$root/build"
+
+    [[ "$(find "$output_root/sources" -type f -name '*.tsv' | wc -l | tr -d '[:space:]')" == "5" ]] || {
+        fail "system Bash did not generate five Linux source records"
+    }
+}
+
 test_api_tool_declares_macos_deployment_target() {
     grep -Fq '.macOS(.v14)' "$API_PACKAGE" || {
         fail "API compatibility package must declare the macOS 14 deployment target"
@@ -722,6 +745,7 @@ test_reference_orchestrator_generates_all_required_sources
 test_reference_orchestrator_rejects_xcode_drift
 test_tuikit_orchestrator_generates_host_sources
 test_tuikit_orchestrator_rejects_toolchain_drift
+test_tuikit_orchestrator_supports_system_bash_without_optional_arguments
 test_api_tool_declares_macos_deployment_target
 
 echo "API snapshot script self-tests passed"

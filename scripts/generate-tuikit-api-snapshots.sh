@@ -109,18 +109,22 @@ fi
 
 for module in TUIkit TUIkitCore TUIkitImage TUIkitStyling TUIkitView; do
     module_id="$(printf '%s' "$module" | tr '[:upper:]' '[:lower:]')"
-    "$PROJECT_DIR/scripts/generate-api-snapshot-source.sh" \
-        --tool "$TOOL" \
-        --extractor "$EXTRACTOR" \
-        --module "$module" \
-        --source-id "$module_id-$PLATFORM_ID-swift-$SWIFT_VERSION" \
-        --platform "$PLATFORM" \
-        --target "$TARGET" \
-        --sdk-name "$SDK_NAME" \
-        --sdk-version "$SDK_VERSION" \
-        --sdk-build "$SDK_BUILD" \
-        --compiler-version "$COMPILER_VERSION" \
-        --output-root "$OUTPUT_ROOT" \
-        --swift-module-path "$SWIFT_MODULE_PATH" \
-        "${SDK_ARGUMENTS[@]}"
+    SOURCE_ARGUMENTS=(
+        --tool "$TOOL"
+        --extractor "$EXTRACTOR"
+        --module "$module"
+        --source-id "$module_id-$PLATFORM_ID-swift-$SWIFT_VERSION"
+        --platform "$PLATFORM"
+        --target "$TARGET"
+        --sdk-name "$SDK_NAME"
+        --sdk-version "$SDK_VERSION"
+        --sdk-build "$SDK_BUILD"
+        --compiler-version "$COMPILER_VERSION"
+        --output-root "$OUTPUT_ROOT"
+        --swift-module-path "$SWIFT_MODULE_PATH"
+    )
+    if [[ ${#SDK_ARGUMENTS[@]} -gt 0 ]]; then
+        SOURCE_ARGUMENTS+=("${SDK_ARGUMENTS[@]}")
+    fi
+    "$PROJECT_DIR/scripts/generate-api-snapshot-source.sh" "${SOURCE_ARGUMENTS[@]}"
 done
