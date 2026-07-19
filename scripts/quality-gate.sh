@@ -54,6 +54,7 @@ mkdir -p "$(dirname "$TEST_EVENT_STREAM_OUTPUT")"
 
 ./scripts/assert-tool-versions.sh
 ./scripts/tests/test-tooling.sh
+./scripts/validate-test-boundaries.sh
 
 "$SWIFTLINT_BIN" lint --strict --no-cache
 swift build "${API_SWIFT_ARGUMENTS[@]}" -Xswiftc -warnings-as-errors
