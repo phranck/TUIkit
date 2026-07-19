@@ -5,6 +5,7 @@
 //  License: MIT
 
 import Testing
+import TUIkitTestSupport
 
 @testable import TUIkit
 
@@ -138,6 +139,31 @@ struct ViewRendererTests {
         #expect(terminal.outputContains("owned:7"))
         #expect(terminal.isRawModeEnabled == false)
         #expect(terminal.isInAlternateScreen == false)
+    }
+
+    @Test("Standalone shutdown cancels runtime tasks", .timeLimit(.minutes(1)))
+    func standaloneShutdownCancelsRuntimeTasks() async {
+        let started = AsyncSignal()
+        let release = AsyncSignal()
+        let completed = AsyncSignal()
+        let cancellationStates = TraceRecorder<Bool>()
+        let tuiContext = TUIContext()
+        let renderer = ViewRenderer(terminal: MockTerminal(), tuiContext: tuiContext)
+
+        renderer.render {
+            Text("Task").task {
+                started.signal()
+                await release.wait()
+                cancellationStates.record(Task.isCancelled)
+                completed.signal()
+            }
+        }
+
+        await started.wait()
+        renderer.shutdown()
+        release.signal()
+        await completed.wait()
+        #expect(cancellationStates.snapshot() == [true])
     }
 }
 

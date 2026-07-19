@@ -45,5 +45,6 @@ public let tuiKitVersion: String = {
 @MainActor
 public func renderOnce<Content: View>(@ViewBuilder content: () -> Content) {
     let renderer = ViewRenderer()
+    defer { renderer.shutdown() }
     renderer.render(content: content)
 }

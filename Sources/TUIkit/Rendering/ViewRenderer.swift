@@ -95,6 +95,14 @@ extension ViewRenderer {
         flush(buffer, atRow: row, column: column)
         terminal.endFrame()
     }
+
+    /// Releases tasks and mutable services owned by this standalone runtime.
+    ///
+    /// Reusable renderers stay alive across calls until their owner explicitly
+    /// shuts them down. The public one-shot API calls this after its only frame.
+    func shutdown() {
+        tuiContext.reset()
+    }
 }
 
 // MARK: - Private Helpers
