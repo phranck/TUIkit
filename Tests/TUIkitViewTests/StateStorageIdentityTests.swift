@@ -40,6 +40,31 @@ struct StateStorageIdentityTests {
         #expect(reconstructed.value == 99)
     }
 
+    @Test("State rebinding isolates identical paths across runtimes")
+    func runtimeStorageIsolation() {
+        let firstStorage = testStorage()
+        let secondStorage = testStorage()
+        let identity = ViewIdentity(path: "SharedPath")
+        let firstContext = HydrationContext(identity: identity, storage: firstStorage)
+        let secondContext = HydrationContext(identity: identity, storage: secondStorage)
+        let owner = SingleStateOwner(defaultValue: 1)
+
+        StateRegistration.bindDynamicProperties(in: owner, context: firstContext)
+        owner.value = 10
+
+        StateRegistration.bindDynamicProperties(in: owner, context: secondContext)
+        #expect(owner.value == 1)
+        owner.value = 20
+
+        let firstReconstruction = SingleStateOwner(defaultValue: 1)
+        StateRegistration.bindDynamicProperties(in: firstReconstruction, context: firstContext)
+        let secondReconstruction = SingleStateOwner(defaultValue: 1)
+        StateRegistration.bindDynamicProperties(in: secondReconstruction, context: secondContext)
+
+        #expect(firstReconstruction.value == 10)
+        #expect(secondReconstruction.value == 20)
+    }
+
     @Test("State uses local box when no active context is set")
     func localBoxWithoutContext() {
         let state = State(wrappedValue: "hello")

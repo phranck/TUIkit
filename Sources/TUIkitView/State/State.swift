@@ -470,6 +470,7 @@ extension State: RuntimeDynamicProperty {
 private final class StateLocation<Value> {
     let defaultValue: Value
     var box: StateBox<Value>
+    private weak var storage: StateStorage?
     private var key: StateStorage.StateKey?
 
     init(defaultValue: Value) {
@@ -483,8 +484,9 @@ private final class StateLocation<Value> {
             propertyIndex: propertyIndex
         )
 
-        if self.key != key {
+        if self.key != key || storage !== context.storage {
             box = context.storage.storage(for: key, default: defaultValue)
+            storage = context.storage
             self.key = key
         }
         box.bind(identity: context.identity, invalidationSink: context.invalidationSink)
