@@ -214,6 +214,21 @@ struct ForEachTests {
         #expect(buffer.lines.map(\.stripped) == ["Before Alpha Beta After"])
     }
 
+    @Test("ForEach expands through native builder arrays")
+    func forEachExpandsThroughBuilderArray() {
+        let stack = HStack(spacing: 1) {
+            for group in 1...2 {
+                ForEach(["A", "B"], id: \.self) { item in
+                    Text("\(group)\(item)")
+                }
+            }
+        }
+
+        let buffer = renderToBuffer(stack, context: testContext())
+
+        #expect(buffer.lines.map(\.stripped) == ["1A 1B 2A 2B"])
+    }
+
     @Test("ForEach with empty array produces empty result")
     func forEachEmptyArray() {
         let items: [TestItem] = []
