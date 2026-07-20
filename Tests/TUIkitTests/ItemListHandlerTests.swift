@@ -350,6 +350,33 @@ struct ItemListHandlerSelectionTests {
         #expect(handler.isFocused(at: 1) == true)
         #expect(handler.isFocused(at: 2) == false)
     }
+
+    @Test("Focus and selection follow item IDs across reorder")
+    func focusAndSelectionFollowReorder() {
+        var selectedID: String? = "b"
+        let handler = ItemListHandler<String>(
+            focusID: "test",
+            itemCount: 3,
+            viewportHeight: 3,
+            selectionMode: .single
+        )
+        handler.itemIDs = ["a", "b", "c"]
+        handler.singleSelection = Binding(
+            get: { selectedID },
+            set: { selectedID = $0 }
+        )
+        handler.focusedIndex = 1
+
+        handler.itemIDs = ["c", "a", "b"]
+
+        #expect(handler.focusedIndex == 2)
+        #expect(handler.isFocused(at: 2))
+        #expect(handler.isSelected(at: 2))
+
+        _ = handler.handleKeyEvent(KeyEvent(key: .enter))
+
+        #expect(selectedID == nil)
+    }
 }
 
 // MARK: - Item List Handler Scroll Tests

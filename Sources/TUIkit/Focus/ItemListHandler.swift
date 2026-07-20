@@ -84,14 +84,22 @@ final class ItemListHandler<SelectionValue: Hashable>: Focusable {
     /// Maps item indices to their IDs for selection management.
     ///
     /// Entries are `nil` for non-selectable rows (e.g. section headers/footers in List).
-    var itemIDs: [SelectionValue?] = []
+    var itemIDs: [SelectionValue?] = [] {
+        didSet {
+            preserveFocusedItem(from: oldValue)
+        }
+    }
 
     /// The set of indices that can be selected and focused.
     ///
     /// Headers and footers have non-selectable indices (not in this set).
     /// Only content rows have indices in `selectableIndices`.
     /// When empty, all items are considered selectable (backward compatibility).
-    var selectableIndices: Set<Int> = []
+    var selectableIndices: Set<Int> = [] {
+        didSet {
+            moveFocusToSelectableItemIfNeeded()
+        }
+    }
 
     /// Creates an item list handler.
     ///
@@ -204,6 +212,32 @@ extension ItemListHandler {
 // MARK: - Navigation Helpers
 
 extension ItemListHandler {
+    /// Keeps the keyboard cursor attached to the same item when rows move.
+    private func preserveFocusedItem(from previousIDs: [SelectionValue?]) {
+        guard !itemIDs.isEmpty else {
+            focusedIndex = 0
+            scrollOffset = 0
+            return
+        }
+
+        if previousIDs.indices.contains(focusedIndex),
+           let focusedID = previousIDs[focusedIndex],
+           let reorderedIndex = itemIDs.firstIndex(of: focusedID) {
+            focusedIndex = reorderedIndex
+        } else {
+            focusedIndex = min(focusedIndex, itemIDs.count - 1)
+        }
+    }
+
+    /// Moves a removed or non-selectable cursor to the nearest valid row.
+    private func moveFocusToSelectableItemIfNeeded() {
+        guard !selectableIndices.isEmpty,
+              !selectableIndices.contains(focusedIndex) else { return }
+
+        let orderedIndices = selectableIndices.sorted()
+        focusedIndex = orderedIndices.first(where: { $0 >= focusedIndex }) ?? orderedIndices.last ?? 0
+    }
+
     /// Moves focus by the given delta, optionally wrapping around.
     ///
     /// - Parameters:
