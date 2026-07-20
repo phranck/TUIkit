@@ -223,6 +223,111 @@ struct RuntimeCharacterizationTests {
         #expect(harness.storedStateCount == 1)
     }
 
+    @Test("ForEach lifecycle follows IDs across reorder and removal")
+    func forEachLifecycleFollowsIDs() {
+        let harness = RuntimeCharacterizationHarness()
+        let trace = harness.trace
+
+        _ = harness.render {
+            VStack {
+                ForEach([1, 2], id: \.self) { id in
+                    Text("\(id)")
+                        .onAppear {
+                            trace.record(.lifecycle("appear:\(id)"))
+                        }
+                        .onDisappear {
+                            trace.record(.lifecycle("disappear:\(id)"))
+                        }
+                }
+            }
+        }
+        _ = harness.render {
+            VStack {
+                ForEach([2, 1], id: \.self) { id in
+                    Text("\(id)")
+                        .onAppear {
+                            trace.record(.lifecycle("appear:\(id)"))
+                        }
+                        .onDisappear {
+                            trace.record(.lifecycle("disappear:\(id)"))
+                        }
+                }
+            }
+        }
+
+        #expect(trace.snapshot().filter { $0 == .lifecycle("appear:1") }.count == 1)
+        #expect(trace.snapshot().filter { $0 == .lifecycle("appear:2") }.count == 1)
+        #expect(trace.snapshot().contains(.lifecycle("disappear:1")) == false)
+        #expect(trace.snapshot().contains(.lifecycle("disappear:2")) == false)
+
+        _ = harness.render {
+            VStack {
+                ForEach([2], id: \.self) { id in
+                    Text("\(id)")
+                        .onAppear {
+                            trace.record(.lifecycle("appear:\(id)"))
+                        }
+                        .onDisappear {
+                            trace.record(.lifecycle("disappear:\(id)"))
+                        }
+                }
+            }
+        }
+
+        #expect(trace.snapshot().filter { $0 == .lifecycle("disappear:1") }.count == 1)
+        #expect(trace.snapshot().contains(.lifecycle("disappear:2")) == false)
+        #expect(harness.mountedLifecycleCallbackCount == 1)
+    }
+
+    @Test("ForEach focus follows IDs across reorder and removal")
+    func forEachFocusFollowsIDs() {
+        let harness = RuntimeCharacterizationHarness()
+        let trace = harness.trace
+
+        _ = harness.render {
+            HStack {
+                ForEach([1, 2], id: \.self) { id in
+                    Button("Item \(id)") {
+                        trace.record(.effect("activate:\(id)"))
+                    }
+                }
+            }
+        }
+        #expect(harness.dispatchFocusEvent(KeyEvent(key: .tab)))
+        let focusedItemTwo = harness.currentFocusedID
+        let initialStateIdentities = Set(harness.storedStateIdentityPaths)
+
+        _ = harness.render {
+            HStack {
+                ForEach([2, 1], id: \.self) { id in
+                    Button("Item \(id)") {
+                        trace.record(.effect("activate:\(id)"))
+                    }
+                }
+            }
+        }
+
+        #expect(focusedItemTwo != nil)
+        #expect(harness.currentFocusedID == focusedItemTwo)
+        #expect(Set(harness.storedStateIdentityPaths) == initialStateIdentities)
+        #expect(harness.dispatchFocusEvent(KeyEvent(key: .enter)))
+        #expect(trace.snapshot().contains(.effect("activate:2")))
+
+        _ = harness.render {
+            HStack {
+                ForEach([1], id: \.self) { id in
+                    Button("Item \(id)") {
+                        trace.record(.effect("activate:\(id)"))
+                    }
+                }
+            }
+        }
+
+        #expect(harness.currentFocusedID != focusedItemTwo)
+        #expect(harness.storedStateCount < initialStateIdentities.count)
+        #expect(Set(harness.storedStateIdentityPaths).isSubset(of: initialStateIdentities))
+    }
+
     @Test("List row State follows ForEach IDs")
     func listRowStateFollowsForEachIDs() {
         let harness = RuntimeCharacterizationHarness()
