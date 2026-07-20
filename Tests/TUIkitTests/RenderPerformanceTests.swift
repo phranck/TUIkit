@@ -310,10 +310,7 @@ struct RenderPerformanceTests {
 
     // MARK: - Comparative Tests
 
-    @Test(
-        "VStack vs LazyVStack performance comparison",
-        .disabled("Issue #12 must restore ForEach output before timing it")
-    )
+    @Test("VStack vs LazyVStack performance comparison")
     func vstackVsLazyVstackComparison() throws {
         let items = Array(0..<10)
         let regularStack = VStack {
@@ -329,12 +326,15 @@ struct RenderPerformanceTests {
         }
 
         let context = testContext(height: 5) // Only 5 lines visible
-        let expectedOutput = items.prefix(5).map { "Row \($0)" }
+        let lines = items.map { "Row \($0)" }
         try requireRenderedOutput(regularStack, context: context) {
-            $0.strippedLines == expectedOutput
+            $0.strippedLines == expectedCenteredLines(lines)
         }
         try requireRenderedOutput(lazyStack, context: context) {
-            $0.strippedLines == expectedOutput
+            $0.strippedLines == expectedCenteredLines(
+                lines,
+                visibleCount: context.availableHeight
+            )
         }
 
         let regularTime = measureRenderTime(regularStack, iterations: 500, context: context)

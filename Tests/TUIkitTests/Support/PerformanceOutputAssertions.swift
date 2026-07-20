@@ -29,3 +29,21 @@ func requireRenderedOutput<V: View>(
     )
     try #require(predicate(output))
 }
+
+/// Produces the exact centered line layout used by vertical stacks.
+func expectedCenteredLines(
+    _ lines: [String],
+    visibleCount: Int? = nil
+) -> [String] {
+    let width = lines.map(\.count).max() ?? 0
+    let visibleLines = visibleCount.map { Array(lines.prefix($0)) } ?? lines
+
+    return visibleLines.map { line in
+        let padding = width - line.count
+        let leftPadding = padding / 2
+        let rightPadding = padding - leftPadding
+        return String(repeating: " ", count: leftPadding)
+            + line
+            + String(repeating: " ", count: rightPadding)
+    }
+}
