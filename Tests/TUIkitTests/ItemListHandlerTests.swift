@@ -351,7 +351,7 @@ struct ItemListHandlerSelectionTests {
         #expect(handler.isFocused(at: 2) == false)
     }
 
-    @Test("Focus and selection follow item IDs across reorder")
+    @Test("Focus and selection follow item IDs across insertion and reorder")
     func focusAndSelectionFollowReorder() {
         var selectedID: String? = "b"
         let handler = ItemListHandler<String>(
@@ -367,11 +367,11 @@ struct ItemListHandlerSelectionTests {
         )
         handler.focusedIndex = 1
 
-        handler.itemIDs = ["c", "a", "b"]
+        handler.itemIDs = ["c", "d", "a", "b"]
 
-        #expect(handler.focusedIndex == 2)
-        #expect(handler.isFocused(at: 2))
-        #expect(handler.isSelected(at: 2))
+        #expect(handler.focusedIndex == 3)
+        #expect(handler.isFocused(at: 3))
+        #expect(handler.isSelected(at: 3))
 
         _ = handler.handleKeyEvent(KeyEvent(key: .enter))
 

@@ -27,13 +27,20 @@ struct KeyedCollectionRuntimeTests {
         #expect(actualLines == ["row:0", "row:1"])
     }
 
-    @Test("ForEach State follows IDs across reorder and removal")
+    @Test("ForEach State follows IDs across insertion, reorder, and removal")
     func forEachStateFollowsIDs() {
         let harness = RuntimeCharacterizationHarness()
 
         let initial = harness.render {
             VStack {
                 ForEach([1, 2], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }
+        let inserted = harness.render {
+            VStack {
+                ForEach([3, 1, 2], id: \.self) { id in
                     StatefulForEachRow(id: id)
                 }
             }
@@ -54,12 +61,13 @@ struct KeyedCollectionRuntimeTests {
         }
 
         #expect(initial.ansiStrippedLines == ["1:1", "2:2"])
+        #expect(inserted.ansiStrippedLines == ["3:3", "1:1", "2:2"])
         #expect(reordered.ansiStrippedLines == ["2:2", "1:1"])
         #expect(removed.ansiStrippedLines == ["2:2"])
         #expect(harness.storedStateCount == 1)
     }
 
-    @Test("ForEach lifecycle follows IDs across reorder and removal")
+    @Test("ForEach lifecycle follows IDs across insertion, reorder, and removal")
     func forEachLifecycleFollowsIDs() {
         let harness = RuntimeCharacterizationHarness()
         let trace = harness.trace
@@ -73,7 +81,7 @@ struct KeyedCollectionRuntimeTests {
         }
         _ = harness.render {
             VStack {
-                ForEach([2, 1], id: \.self) { id in
+                ForEach([3, 2, 1], id: \.self) { id in
                     KeyedLifecycleRow(id: id, trace: trace)
                 }
             }
@@ -81,8 +89,10 @@ struct KeyedCollectionRuntimeTests {
 
         #expect(trace.snapshot().filter { $0 == .lifecycle("appear:1") }.count == 1)
         #expect(trace.snapshot().filter { $0 == .lifecycle("appear:2") }.count == 1)
+        #expect(trace.snapshot().filter { $0 == .lifecycle("appear:3") }.count == 1)
         #expect(trace.snapshot().contains(.lifecycle("disappear:1")) == false)
         #expect(trace.snapshot().contains(.lifecycle("disappear:2")) == false)
+        #expect(trace.snapshot().contains(.lifecycle("disappear:3")) == false)
 
         _ = harness.render {
             VStack {
@@ -93,11 +103,12 @@ struct KeyedCollectionRuntimeTests {
         }
 
         #expect(trace.snapshot().filter { $0 == .lifecycle("disappear:1") }.count == 1)
+        #expect(trace.snapshot().filter { $0 == .lifecycle("disappear:3") }.count == 1)
         #expect(trace.snapshot().contains(.lifecycle("disappear:2")) == false)
         #expect(harness.mountedLifecycleCallbackCount == 1)
     }
 
-    @Test("ForEach focus follows IDs across reorder and removal")
+    @Test("ForEach focus follows IDs across insertion, reorder, and removal")
     func forEachFocusFollowsIDs() {
         let harness = RuntimeCharacterizationHarness()
         let trace = harness.trace
@@ -117,7 +128,7 @@ struct KeyedCollectionRuntimeTests {
 
         _ = harness.render {
             HStack {
-                ForEach([2, 1], id: \.self) { id in
+                ForEach([3, 2, 1], id: \.self) { id in
                     Button("Item \(id)") {
                         trace.record(.effect("activate:\(id)"))
                     }
@@ -127,7 +138,8 @@ struct KeyedCollectionRuntimeTests {
 
         #expect(focusedItemTwo != nil)
         #expect(harness.currentFocusedID == focusedItemTwo)
-        #expect(Set(harness.storedStateIdentityPaths) == initialStateIdentities)
+        let insertedStateIdentities = Set(harness.storedStateIdentityPaths)
+        #expect(initialStateIdentities.isSubset(of: insertedStateIdentities))
         #expect(harness.dispatchFocusEvent(KeyEvent(key: .enter)))
         #expect(trace.snapshot().contains(.effect("activate:2")))
 
@@ -142,16 +154,17 @@ struct KeyedCollectionRuntimeTests {
         }
 
         #expect(harness.currentFocusedID != focusedItemTwo)
-        #expect(harness.storedStateCount < initialStateIdentities.count)
-        #expect(Set(harness.storedStateIdentityPaths).isSubset(of: initialStateIdentities))
+        #expect(harness.storedStateCount < insertedStateIdentities.count)
+        #expect(Set(harness.storedStateIdentityPaths).isSubset(of: insertedStateIdentities))
     }
 
-    @Test("ForEach tasks follow IDs and cancel removed items", .timeLimit(.minutes(1)))
+    @Test("ForEach tasks follow inserted IDs and cancel removed items", .timeLimit(.minutes(1)))
     func forEachTasksFollowIDs() async {
         let harness = RuntimeCharacterizationHarness()
         let trace = harness.trace
         let first = KeyedTaskItem(id: 1)
         let second = KeyedTaskItem(id: 2)
+        let third = KeyedTaskItem(id: 3)
 
         _ = harness.render {
             VStack {
@@ -165,15 +178,17 @@ struct KeyedCollectionRuntimeTests {
 
         _ = harness.render {
             VStack {
-                ForEach([second, first]) { item in
+                ForEach([third, second, first]) { item in
                     KeyedTaskRow(item: item, trace: trace)
                 }
             }
         }
+        await third.started.wait()
 
         #expect(trace.snapshot().filter { $0 == .task("start:1") }.count == 1)
         #expect(trace.snapshot().filter { $0 == .task("start:2") }.count == 1)
-        #expect(harness.mountedTaskCount == 2)
+        #expect(trace.snapshot().filter { $0 == .task("start:3") }.count == 1)
+        #expect(harness.mountedTaskCount == 3)
 
         _ = harness.render {
             VStack {
@@ -183,8 +198,10 @@ struct KeyedCollectionRuntimeTests {
             }
         }
         await first.cancelled.wait()
+        await third.cancelled.wait()
 
         #expect(trace.snapshot().filter { $0 == .task("cancel:1") }.count == 1)
+        #expect(trace.snapshot().filter { $0 == .task("cancel:3") }.count == 1)
         #expect(trace.snapshot().contains(.task("cancel:2")) == false)
         #expect(harness.mountedTaskCount == 1)
 
@@ -194,11 +211,12 @@ struct KeyedCollectionRuntimeTests {
         #expect(harness.mountedTaskCount == 0)
     }
 
-    @Test("ForEach Observation follows IDs and releases removed items")
+    @Test("ForEach Observation follows inserted IDs and releases removed items")
     func forEachObservationFollowsIDs() {
         let harness = RuntimeCharacterizationHarness()
         let first = ObservedForEachItem(id: 1)
         let second = ObservedForEachItem(id: 2)
+        let third = ObservedForEachItem(id: 3)
 
         _ = harness.render {
             VStack {
@@ -215,7 +233,7 @@ struct KeyedCollectionRuntimeTests {
 
         _ = harness.render {
             VStack {
-                ForEach([second, first]) { item in
+                ForEach([third, second, first]) { item in
                     ObservedForEachRow(item: item)
                 }
             }
@@ -223,7 +241,7 @@ struct KeyedCollectionRuntimeTests {
         first.model.value = 2
         let reorderedInvalidations = harness.consumePendingSubtreeInvalidations()
 
-        #expect(harness.observationRegistrationCount == initialRegistrationCount)
+        #expect(harness.observationRegistrationCount == initialRegistrationCount + 1)
         #expect(reorderedInvalidations == initialInvalidations)
 
         _ = harness.render {
@@ -235,6 +253,7 @@ struct KeyedCollectionRuntimeTests {
         }
         let remainingRegistrationCount = harness.observationRegistrationCount
         first.model.value = 3
+        third.model.value = 1
 
         #expect(remainingRegistrationCount < initialRegistrationCount)
         #expect(harness.consumePendingSubtreeInvalidations().isEmpty)
