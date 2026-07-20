@@ -25041,6 +25041,11 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit7ForEachV4bodyQrvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit7ForEachVAA7Element_2IDQZRs_s12IdentifiableADRpzrlE_7contentACyxq_q0_Gx_q0_AHctcfc"
     },
     {
@@ -25076,7 +25081,7 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit7ForEachV10childViews7contextSay0A4View9ChildViewVGAF13RenderContextV_tF"
+      "symbolID": "s:6TUIkit7ForEachV10childViews7contextSay0A4View05ChildG0VGAF13RenderContextV_tF"
     },
 
     {
