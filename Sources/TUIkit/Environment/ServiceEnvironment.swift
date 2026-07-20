@@ -46,6 +46,13 @@ private struct PreferenceStorageKey: EnvironmentKey {
     static let defaultValue: PreferenceStorage? = nil
 }
 
+// MARK: - Runtime Diagnostics
+
+/// EnvironmentKey for diagnostics emitted during view traversal.
+private struct RuntimeDiagnosticsKey: EnvironmentKey {
+    static let defaultValue: RuntimeDiagnostics? = nil
+}
+
 // MARK: - Pulse Phase
 
 /// EnvironmentKey for the focus indicator breathing animation phase.
@@ -117,6 +124,12 @@ extension EnvironmentValues {
     var preferenceStorage: PreferenceStorage? {
         get { self[PreferenceStorageKey.self] }
         set { self[PreferenceStorageKey.self] = newValue }
+    }
+
+    /// Diagnostics emitted by the runtime that owns this render tree.
+    var runtimeDiagnostics: RuntimeDiagnostics? {
+        get { self[RuntimeDiagnosticsKey.self] }
+        set { self[RuntimeDiagnosticsKey.self] = newValue }
     }
 
     /// The current breathing animation phase (0-1) for the focus indicator.

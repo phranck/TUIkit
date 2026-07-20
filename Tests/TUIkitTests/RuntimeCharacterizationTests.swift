@@ -3,6 +3,7 @@
 //
 //  License: MIT
 
+import Foundation
 import Observation
 import Testing
 import TUIkitTestSupport
@@ -248,6 +249,34 @@ struct RuntimeCharacterizationTests {
         #expect(reordered.contains("1:1"))
     }
 
+    @Test("ForEach reports duplicate IDs deterministically")
+    func forEachReportsDuplicateIDs() {
+        let harness = RuntimeCharacterizationHarness()
+        let items = [
+            DuplicateForEachItem(id: "duplicate", label: "First"),
+            DuplicateForEachItem(id: "unique", label: "Second"),
+            DuplicateForEachItem(id: "duplicate", label: "Third"),
+        ]
+
+        let snapshot = harness.render {
+            VStack {
+                ForEach(items) { item in
+                    Text(item.label)
+                }
+            }
+        }
+
+        let renderedLines = snapshot.ansiStrippedLines.map {
+            $0.trimmingCharacters(in: .whitespaces)
+        }
+        #expect(renderedLines == ["First", "Second", "Third"])
+        let message = harness.currentDiagnosticMessages.first ?? ""
+        #expect(harness.currentDiagnosticMessages.count == 1)
+        #expect(message.contains("ForEach"))
+        #expect(message.contains("duplicate"))
+        #expect(message.contains("0, 2"))
+    }
+
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")
     func reconstructedLifecycleIdentity() {
         let harness = RuntimeCharacterizationHarness()
@@ -345,6 +374,11 @@ private struct StatefulForEachRow: View {
         }
         return Text("\(id):\(storedID)")
     }
+}
+
+private struct DuplicateForEachItem: Identifiable {
+    let id: String
+    let label: String
 }
 
 private struct TaskStateCharacterizationView: View {

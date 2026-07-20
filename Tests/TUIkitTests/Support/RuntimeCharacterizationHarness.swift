@@ -26,6 +26,10 @@ final class RuntimeCharacterizationHarness {
         stateStorage.count
     }
 
+    var currentDiagnosticMessages: [String] {
+        tuiContext.runtimeDiagnostics.messages
+    }
+
     private let availableWidth: Int
     private let availableHeight: Int
     private let rootIdentity = ViewIdentity(path: "RuntimeCharacterizationRoot")
@@ -67,6 +71,7 @@ final class RuntimeCharacterizationHarness {
     ) rethrows -> Result {
         keyEventDispatcher.clearHandlers()
         preferences.beginRenderPass()
+        tuiContext.runtimeDiagnostics.beginRenderPass()
         lifecycle.beginRenderPass()
         stateStorage.beginRenderPass()
         renderCache.beginRenderPass()

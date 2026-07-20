@@ -84,6 +84,14 @@ extension ForEach: ChildInfoProvider, ChildViewProvider {
     }
 }
 
+extension ForEach {
+    func keyedSnapshot(context: RenderContext) -> KeyedCollectionSnapshot<Data.Element, ID> {
+        let snapshot = KeyedCollectionSnapshot(data, id: idKeyPath)
+        snapshot.reportDuplicates(container: "ForEach", context: context)
+        return snapshot
+    }
+}
+
 // MARK: - ForEach with Identifiable
 
 extension ForEach where Data.Element: Identifiable, ID == Data.Element.ID {
@@ -143,21 +151,27 @@ private struct _ForEachCore<Data: RandomAccessCollection, ID: Hashable, Content:
     }
 
     func childInfos(context: RenderContext) -> [ChildInfo] {
-        data.map { element in
-            let view = content(element)
+        let snapshot = KeyedCollectionSnapshot(data, id: idKeyPath)
+        snapshot.reportDuplicates(container: "ForEach", context: context)
+
+        return snapshot.entries.map { entry in
+            let view = content(entry.element)
             return makeChildInfo(
                 for: view,
                 context: context.withKeyedChildIdentity(
                     type: Content.self,
-                    key: element[keyPath: idKeyPath]
+                    key: entry.identityKey
                 )
             )
         }
     }
 
     func childViews(context: RenderContext) -> [ChildView] {
-        data.map { element in
-            ChildView(content(element), key: element[keyPath: idKeyPath])
+        let snapshot = KeyedCollectionSnapshot(data, id: idKeyPath)
+        snapshot.reportDuplicates(container: "ForEach", context: context)
+
+        return snapshot.entries.map { entry in
+            ChildView(content(entry.element), key: entry.identityKey)
         }
     }
 }
