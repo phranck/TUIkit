@@ -23,6 +23,18 @@ public struct ChildView {
     /// The minimum length of this spacer (only relevant if isSpacer is true).
     public let spacerMinLength: Int?
 
+    private init(
+        isSpacer: Bool,
+        spacerMinLength: Int?,
+        measure: @escaping (ProposedSize, RenderContext) -> ViewSize,
+        render: @escaping (Int, Int, RenderContext) -> FrameBuffer
+    ) {
+        self.isSpacer = isSpacer
+        self.spacerMinLength = spacerMinLength
+        self._measure = measure
+        self._render = render
+    }
+
     public init<V: View>(_ view: V) {
         if let spacer = view as? SpacerProtocol {
             self.isSpacer = true
@@ -89,6 +101,24 @@ public struct ChildView {
             let childContext = context.withKeyedChildIdentity(type: V.self, key: key)
             return renderChild(view, width: width, height: height, context: childContext)
         }
+    }
+
+    /// Re-bases this type-erased child below a previously resolved identity.
+    package func scoped(to identity: ViewIdentity) -> Self {
+        Self(
+            isSpacer: isSpacer,
+            spacerMinLength: spacerMinLength,
+            measure: { proposal, context in
+                var scopedContext = context
+                scopedContext.identity = identity
+                return self.measure(proposal: proposal, context: scopedContext)
+            },
+            render: { width, height, context in
+                var scopedContext = context
+                scopedContext.identity = identity
+                return self.render(width: width, height: height, context: scopedContext)
+            }
+        )
     }
 
     /// Measures this child view without rendering.

@@ -198,11 +198,21 @@ struct ForEachTests {
         #expect(generatedTexts == ["Alpha", "Beta"])
     }
 
-    // NOTE: ForEach inside VStack/HStack cannot be tested via renderToBuffer
-    // directly. ForEach is flattened into ViewArray by @ViewBuilder.buildArray
-    // at compile time — not at render time. Direct construction in tests
-    // bypasses the builder, so ForEach remains unflattened and produces
-    // an empty buffer. This is expected behavior, matching SwiftUI's pattern.
+    @Test("ForEach expands between static HStack children")
+    func forEachExpandsInsideTupleContent() {
+        let items = [TestItem(id: "a", name: "Alpha"), TestItem(id: "b", name: "Beta")]
+        let stack = HStack(spacing: 1) {
+            Text("Before")
+            ForEach(items) { item in
+                Text(item.name)
+            }
+            Text("After")
+        }
+
+        let buffer = renderToBuffer(stack, context: testContext())
+
+        #expect(buffer.lines.map(\.stripped) == ["Before Alpha Beta After"])
+    }
 
     @Test("ForEach with empty array produces empty result")
     func forEachEmptyArray() {

@@ -52,12 +52,13 @@ extension TupleView: Renderable, ChildInfoProvider {
 
     public func childInfos(context: RenderContext) -> [ChildInfo] {
         var infos: [ChildInfo] = []
-        repeat infos.append(
-            makeChildInfo(
-                for: each children,
-                context: context.withChildIdentity(type: type(of: each children), index: infos.count)
-            )
-        )
+        var childIndex = 0
+        func append<Child: View>(_ child: Child) {
+            let childContext = context.withChildIdentity(type: Child.self, index: childIndex)
+            childIndex += 1
+            infos.append(contentsOf: resolveChildInfos(from: child, context: childContext))
+        }
+        repeat append(each children)
         return infos
     }
 }
@@ -67,9 +68,21 @@ extension TupleView: Renderable, ChildInfoProvider {
 extension TupleView: ChildViewProvider {
     public func childViews(context: RenderContext) -> [ChildView] {
         var views: [ChildView] = []
-        repeat views.append(
-            ChildView(each children, childIndex: views.count)
-        )
+        var childIndex = 0
+        func append<Child: View>(_ child: Child) {
+            let index = childIndex
+            childIndex += 1
+
+            if let provider = child as? ChildViewProvider {
+                let childContext = context.withChildIdentity(type: Child.self, index: index)
+                views.append(contentsOf: provider.childViews(context: childContext).map {
+                    $0.scoped(to: childContext.identity)
+                })
+            } else {
+                views.append(ChildView(child, childIndex: index))
+            }
+        }
+        repeat append(each children)
         return views
     }
 }
