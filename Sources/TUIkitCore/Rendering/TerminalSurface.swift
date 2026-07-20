@@ -90,6 +90,37 @@ extension TerminalSurface {
 // MARK: - Layout Operations
 
 extension TerminalSurface {
+    package func applyingBackground(_ background: TerminalColor) -> Self {
+        var styledRows = rows
+
+        for rowIndex in styledRows.indices {
+            Self.pad(&styledRows[rowIndex], to: width)
+
+            for column in styledRows[rowIndex].indices {
+                let cell = styledRows[rowIndex][column]
+                var style = cell.style
+                if style.background == nil {
+                    style.background = background
+                }
+
+                let content: TerminalCell.Content
+                if case .empty = cell.content {
+                    content = .grapheme(" ", width: 1)
+                } else {
+                    content = cell.content
+                }
+
+                styledRows[rowIndex][column] = TerminalCell(
+                    content: content,
+                    style: style,
+                    isTransparent: false
+                )
+            }
+        }
+
+        return Self(rows: styledRows, width: width)
+    }
+
     package init(verticallyStacking surfaces: [Self]) {
         rows = []
         rows.reserveCapacity(surfaces.reduce(into: 0) { $0 += $1.height })
