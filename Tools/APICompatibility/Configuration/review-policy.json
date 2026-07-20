@@ -25041,11 +25041,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit7ForEachV4bodys5NeverOvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit7ForEachVAA7Element_2IDQZRs_s12IdentifiableADRpzrlE_7contentACyxq_q0_Gx_q0_AHctcfc"
     },
     {
@@ -25058,6 +25053,32 @@
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit7ForEachV_2id7contentACyxq_q0_Gx_s7KeyPathCy7ElementQzq_Gq0_AJctcfc"
     },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView011ConditionalB0O10childInfos7contextSayAA9ChildInfoVGAA13RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView011ConditionalB0O10childViews7contextSayAA05ChildB0VGAA13RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B5ArrayV10childViews7contextSayAA05ChildB0VGAA13RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit7ForEachV10childInfos7contextSay0A4View9ChildInfoVGAF13RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit7ForEachV10childViews7contextSay0A4View9ChildViewVGAF13RenderContextV_tF"
+    },
+
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
