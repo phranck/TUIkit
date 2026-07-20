@@ -12,121 +12,129 @@
     import Darwin
 #endif
 
-// MARK: - Signal Flags
-
-/// Signal flags use `nonisolated(unsafe)` intentionally.
-///
-/// ## Why not use locks or atomics?
-///
-/// POSIX signal handlers have strict constraints: they may only call
-/// "async-signal-safe" functions. Lock acquisition (pthread_mutex_lock,
-/// os_unfair_lock_lock) and most Swift runtime functions are NOT safe.
-///
-/// Bool read/write on modern CPUs (arm64, x86_64) is effectively atomic
-/// for single-word aligned values. The worst case is a torn read, which
-/// for a Bool just means we might miss one signal or see it twice. Both
-/// are acceptable: re-rendering twice is harmless, and a missed signal
-/// will be caught on the next iteration.
-///
-/// ## Swift 6 Concurrency
-///
-/// `nonisolated(unsafe)` is the correct annotation here. These flags are
-/// genuinely unsafe in the general case, but safe in our specific usage
-/// pattern (single writer from signal handler, single reader from main loop).
-
-/// Flag set by the SIGWINCH signal handler to request a re-render.
-nonisolated(unsafe) private var signalNeedsRerender = false
-
-/// Flag set by the SIGWINCH signal handler to indicate a terminal resize.
-///
-/// Separate from `signalNeedsRerender` because resize requires additional
-/// work (invalidating the frame diff cache) beyond just re-rendering.
-nonisolated(unsafe) private var signalTerminalResized = false
-
-/// Flag set by the SIGINT signal handler to request a graceful shutdown.
-///
-/// The actual cleanup (disabling raw mode, restoring cursor, exiting
-/// alternate screen) happens in the main loop. Signal handlers must
-/// not call non-async-signal-safe functions like `write()` or `fflush()`.
-nonisolated(unsafe) private var signalNeedsShutdown = false
+import Dispatch
 
 // MARK: - Signal Manager
 
 /// Manages POSIX signal handlers for the application lifecycle.
 ///
-/// Encapsulates the global signal flags and handler installation.
-/// The flags remain file-private globals because C signal handlers
-/// cannot capture Swift object references.
-///
-/// ## Usage
-///
-/// ```swift
-/// let signals = SignalManager()
-/// signals.install()
-///
-/// while running {
-///     if signals.shouldShutdown { break }
-///     if signals.consumeRerenderFlag() { render() }
-/// }
-/// ```
-internal struct SignalManager {
-    /// Whether a graceful shutdown was requested (SIGINT).
-    var shouldShutdown: Bool {
-        signalNeedsShutdown
+/// Dispatch owns the low-level signal bridge, so no Swift state is read or
+/// mutated from a POSIX signal handler. The application runtime receives
+/// ordinary async events on its event channel.
+@MainActor
+internal final class SignalManager {
+    /// C-compatible signal disposition returned by `signal()`.
+    private typealias SignalDisposition = @convention(c) (Int32) -> Void
+
+    /// One installed dispatch source and the disposition it replaced.
+    private struct Registration {
+        let number: Int32
+        let previousDisposition: SignalDisposition?
+        let source: DispatchSourceSignal
+    }
+
+    /// Active registrations owned by this application runtime.
+    private var registrations: [Registration] = []
+
+    /// Creates an uninstalled signal manager.
+    init() {}
+}
+
+/// One-shot barrier for Dispatch source registration callbacks.
+private final class SignalRegistrationBarrier: Sendable {
+    /// Registration notifications consumed by the installer.
+    let events: AsyncStream<Void>
+
+    /// Thread-safe producer used by Dispatch callbacks.
+    private let continuation: AsyncStream<Void>.Continuation
+
+    /// Creates a barrier that preserves callbacks arriving before the wait.
+    init() {
+        let pair = AsyncStream.makeStream(
+            of: Void.self,
+            bufferingPolicy: .unbounded
+        )
+        self.events = pair.stream
+        self.continuation = pair.continuation
+    }
+
+    /// Creates a nonisolated Dispatch callback.
+    func callback() -> @Sendable () -> Void {
+        { [self] in
+            continuation.yield()
+        }
+    }
+
+    /// Finishes the registration stream.
+    func finish() {
+        continuation.finish()
     }
 }
 
 // MARK: - Internal API
 
 extension SignalManager {
-    /// Checks and resets the rerender flag (SIGWINCH or state change).
-    ///
-    /// Returns `true` if a re-render was requested since the last call,
-    /// then resets the flag. This consume-on-read pattern prevents
-    /// redundant renders.
-    ///
-    /// - Returns: `true` if a rerender was requested.
-    mutating func consumeRerenderFlag() -> Bool {
-        guard signalNeedsRerender else { return false }
-        signalNeedsRerender = false
-        return true
-    }
+    /// Installs dispatch-backed sources for resize and termination signals.
+    func install(sendingTo channel: RuntimeEventChannel) async {
+        guard registrations.isEmpty else { return }
 
-    /// Checks and resets the terminal resize flag (SIGWINCH).
-    ///
-    /// Returns `true` if the terminal was resized since the last call,
-    /// then resets the flag. Used by `AppRunner` to invalidate the
-    /// frame diff cache on resize.
-    ///
-    /// - Returns: `true` if a terminal resize occurred.
-    mutating func consumeResizeFlag() -> Bool {
-        guard signalTerminalResized else { return false }
-        signalTerminalResized = false
-        return true
-    }
+        let barrier = SignalRegistrationBarrier()
+        register(SIGWINCH, event: .terminalResized, sendingTo: channel, barrier: barrier)
+        register(SIGINT, event: .shutdownRequested, sendingTo: channel, barrier: barrier)
+        register(SIGTERM, event: .shutdownRequested, sendingTo: channel, barrier: barrier)
 
-    /// Requests a re-render programmatically.
-    ///
-    /// Called by the `AppState` observer to signal that application
-    /// state has changed and the UI needs updating.
-    func requestRerender() {
-        signalNeedsRerender = true
-    }
-
-    /// Installs POSIX signal handlers for SIGINT and SIGWINCH.
-    ///
-    /// - SIGINT (Ctrl+C): Sets the shutdown flag for graceful cleanup.
-    /// - SIGWINCH (terminal resize): Sets the rerender flag.
-    ///
-    /// Signal handlers only set boolean flags — all actual work
-    /// happens in the main loop, which is async-signal-safe.
-    func install() {
-        signal(SIGINT) { _ in
-            signalNeedsShutdown = true
+        var iterator = barrier.events.makeAsyncIterator()
+        for _ in registrations {
+            _ = await iterator.next()
         }
-        signal(SIGWINCH) { _ in
-            signalNeedsRerender = true
-            signalTerminalResized = true
+        barrier.finish()
+    }
+
+    /// Cancels all sources and restores the dispositions they replaced.
+    func stop() {
+        for registration in registrations {
+            registration.source.cancel()
+            #if !os(Linux)
+                signal(registration.number, registration.previousDisposition)
+            #endif
         }
+        registrations.removeAll()
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension SignalManager {
+    /// Registers one platform dispatch source for a POSIX signal.
+    func register(
+        _ number: Int32,
+        event: RuntimeEvent,
+        sendingTo channel: RuntimeEventChannel,
+        barrier: SignalRegistrationBarrier
+    ) {
+        #if os(Linux)
+            // swift-corelibs Dispatch installs and owns the sigaction used by
+            // its signalfd bridge. Replacing that disposition with SIG_IGN
+            // prevents delivery on Linux.
+            let previousDisposition: SignalDisposition? = nil
+        #else
+            // Darwin kqueue signal sources require the default disposition to
+            // be suppressed so termination work stays in the async runtime.
+            let previousDisposition = signal(number, SIG_IGN)
+        #endif
+        let source = DispatchSource.makeSignalSource(
+            signal: number,
+            queue: DispatchQueue.global(qos: .userInitiated)
+        )
+        source.setEventHandler(handler: channel.sender(for: event))
+        source.setRegistrationHandler(handler: barrier.callback())
+        source.resume()
+        registrations.append(
+            Registration(
+                number: number,
+                previousDisposition: previousDisposition,
+                source: source
+            )
+        )
     }
 }

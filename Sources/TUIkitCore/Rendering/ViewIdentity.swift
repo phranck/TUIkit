@@ -105,3 +105,39 @@ public extension ViewIdentity {
         descendant.path.hasPrefix(path + "/") || descendant.path.hasPrefix(path + "#")
     }
 }
+
+// MARK: - Runtime Identity Scopes
+
+package extension ViewIdentity {
+    /// Returns an identity for a stable runtime slot below this view.
+    ///
+    /// Modifier and effect implementations use scopes instead of allocation-time
+    /// tokens so reconstructed view values resolve to the same runtime record.
+    func scoped(_ scope: String) -> ViewIdentity {
+        ViewIdentity(path: "\(path)/@\(Self.encode(scope))")
+    }
+
+    /// Returns a child identity derived from an explicit collection key.
+    ///
+    /// Unlike positional child identities, keyed identities remain unchanged
+    /// when siblings are inserted, deleted, or reordered. The key's reflected
+    /// representation is encoded so separators cannot alias structural paths.
+    func keyedChild<V, ID: Hashable>(type: V.Type, key: ID) -> ViewIdentity {
+        let keyType = Self.encode(String(reflecting: ID.self))
+        let keyValue = Self.encode(String(reflecting: key))
+        return ViewIdentity(
+            path: "\(path)/\(String(describing: type))[@\(keyType):\(keyValue)]"
+        )
+    }
+}
+
+// MARK: - Private Helpers
+
+private extension ViewIdentity {
+    static func encode(_ value: String) -> String {
+        value.utf8.map { byte in
+            let encoded = String(byte, radix: 16, uppercase: true)
+            return encoded.count == 1 ? "0\(encoded)" : encoded
+        }.joined()
+    }
+}

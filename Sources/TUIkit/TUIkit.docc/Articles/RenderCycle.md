@@ -4,20 +4,24 @@ Understand how TUIkit turns your view tree into terminal output: one frame at a 
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. All terminal writes are collected and flushed as a **single `write()` syscall**.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. Those writes are collected in a frame buffer and normally flushed with one `write()` syscall.
 
 ## What Triggers a Frame
 
-Several sources cause `RenderLoop` to produce a new frame. They converge on two boolean checks in the main loop (`consumeRerenderFlag()` and `appState.needsRender`):
+Several sources cause `RenderLoop` to produce a new frame. They enter one
+`RuntimeEventChannel`, and `AppRunner` consumes them serially on the main actor:
 
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
-| Terminal resize | `SIGWINCH` signal | `SignalManager` sets `signalNeedsRerender` and `signalTerminalResized` |
-| State mutation | `@State` property change | The owning runtime's invalidation sink notifies `AppState` |
-| Animation timers | PulseTimer (100 ms) / CursorTimer (50 ms) | Calls `appState.setNeedsRender()` |
-| Focus change | `FocusManager.onFocusChange` | Resets pulse timer and calls `appState.setNeedsRender()` |
+| Terminal resize | `SIGWINCH` dispatch source | Sends `.terminalResized` and invalidates the diff cache |
+| State mutation | `@State` property change | `AppState` sends `.renderRequested` through its observer |
+| Focus animation | `RuntimeAnimationScheduler` | Sends `.animationDeadline` only while an animation is visible |
+| View animation | Spinner or notification task | Invalidates `AppState`, which sends `.renderRequested` |
+| Focus change | `FocusManager.onFocusChange` | Resets the pulse phase and invalidates `AppState` |
 
-All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread: signal handlers never render directly.
+The event loop suspends when no event or animation deadline is pending. Signal
+callbacks and background tasks only enqueue events or invalidations; rendering
+itself stays serialized on the main actor.
 
 ## The Render Pipeline
 
@@ -41,7 +45,7 @@ This ensures that views which disappeared between frames don't leave stale handl
 
 ### Step 2: Begin Lifecycle and State Tracking
 
-The `LifecycleManager` prepares for a new frame by clearing its `currentRenderTokens` set. The `StateStorage` clears its active identity set. The `RenderCache` begins a new render pass for cache hit/miss tracking. As views render, they add their tokens/identities to these sets. After rendering, the managers compare current and previous frames to detect which views appeared, disappeared, or had their state removed.
+The `LifecycleManager` prepares for a new frame by clearing the set of structural runtime slots seen in the current pass. The `StateStorage` and observation registry clear their active identity sets. The `RenderCache` begins a new render pass for cache hit/miss tracking. As views render, they mark their stable slots or identities active. After rendering, the managers compare current and previous frames to detect which views appeared, disappeared, stopped being observed, or had their state removed.
 
 ### Step 3: Build Environment
 
@@ -89,7 +93,7 @@ The context is passed down the view tree. Each view can create a modified copy f
 
 `app.body` is evaluated fresh each frame, producing a ``WindowGroup`` that wraps the root view. The `WindowGroup` implements `SceneRenderable` and bridges from the scene layer to the view layer.
 
-> Note: Views are fully reconstructed on every frame. `@State` values survive because `State.init` self-hydrates from `StateStorage`: looking up the persistent value by the view's structural identity.
+> Note: Views are fully reconstructed on every frame. `@State` values survive because the renderer binds each view's dynamic properties to `StateStorage` at the view's final structural identity before evaluating `body`.
 
 ### Step 6: Render View Tree
 
@@ -120,14 +124,18 @@ The status bar renders in a separate pass but writes into the **same frame buffe
 
 ### Step 11: Flush Frame
 
-`Terminal.endFrame()` writes the entire collected buffer to `STDOUT_FILENO` in a **single `write()` syscall**, then resets the buffer. This reduces per-frame syscalls from ~40+ to exactly 1.
+`Terminal.endFrame()` normally writes the entire collected buffer to
+`STDOUT_FILENO` in a **single `write()` syscall**, then resets the buffer.
+Interrupted calls and partial transfers are retried; permanent failures are
+propagated after terminal cleanup.
 
 ### Step 12: End Lifecycle and State Tracking
 
-Three managers finalize the frame:
+Four managers finalize the frame:
 
-- The **`LifecycleManager`** compares the current frame's tokens with the previous frame's. Disappeared views (tokens present last frame but absent now) fire their `onDisappear` callbacks; their tokens are removed from the appeared set, allowing future `onAppear` if they return.
+- The **`LifecycleManager`** compares the current frame's structural slots with the previous frame's. Disappeared views fire their `onDisappear` callbacks, cancel mounted tasks, and leave the appeared set so a future mount can trigger `onAppear` again.
 - The **`StateStorage`** performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
+- The **observation registry** removes identities that were not active in the completed render pass. Cache hits preserve existing registrations below skipped subtrees; callbacks from older generations and unmounted identities become inert.
 - The **`RenderCache`** removes inactive entries (subtrees no longer in the view tree) and optionally logs per-frame cache statistics.
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
@@ -178,13 +186,14 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
         return renderable.renderToBuffer(context: context)
     }
 
-    // Priority 2: Composite: set up hydration context and recurse into body.
-    // @State.init self-hydrates from StateStorage during body evaluation.
+    // Priority 2: Composite: bind dynamic properties and recurse into body.
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
-        // ... activate StateRegistration.activeContext ...
-        let body = view.body
-        // ... restore previous context, mark identity active ...
+        let body = StateRegistration.withHydration(of: view, context: context) {
+            // Observation is tracked for context.identity here.
+            view.body
+        }
+        // ... mark context.identity active ...
         return renderToBuffer(body, context: childContext)
     }
 
@@ -228,7 +237,7 @@ After the view tree produces a ``FrameBuffer``, the `FrameDiffWriter` prepares t
 2. Its rows are encoded into normalized SGR strings
 3. Each row is cleared and padded with the active background color
 
-The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and flushed as a single syscall.
+The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and normally flushed with one syscall.
 
 ## Environment Flow
 
@@ -295,14 +304,14 @@ More complex modifiers are full `View + Renderable` implementations that control
 
 ## Lifecycle Tracking
 
-The `LifecycleManager` tracks view visibility across frames using unique tokens (UUIDs):
+The `LifecycleManager` tracks view visibility across frames using stable slots derived from each modifier's structural identity. Reconstructing the same view hierarchy therefore addresses the same lifecycle state instead of creating a new token every frame.
 
 ### onAppear
 
-The `OnAppearModifier` calls `lifecycle.recordAppear(token, action)` during rendering:
+The `OnAppearModifier` calls `lifecycle.recordAppear(identity:action:)` during rendering:
 
-- The token is added to `currentRenderTokens` (always)
-- If the token has **never appeared before**: it's added to `appearedTokens` and the action fires
+- The structural slot is marked visible in the current render pass
+- If the slot has **never appeared before**: it is added to the appeared set and the action fires
 - If it **has** appeared before: the action does **not** fire (prevents repeated triggers)
 
 > Note: `onAppear` fires **synchronously** during the render traversal: not after the frame completes. This is because TUIkit uses single-pass rendering with no layout phase.
@@ -311,18 +320,18 @@ The `OnAppearModifier` calls `lifecycle.recordAppear(token, action)` during rend
 
 The `OnDisappearModifier` does two things during rendering:
 
-1. Registers its callback with `lifecycle.registerDisappear(token, action)`
-2. Marks itself as visible with `lifecycle.recordAppear(token, {})` (empty action)
+1. Registers its callback with `lifecycle.registerDisappear(identity:action:)`
+2. Marks its structural slot visible with `lifecycle.recordAppear(identity:action:)`
 
-The actual `onDisappear` callback fires in step 7 (end lifecycle tracking), **after** the entire view tree has rendered.
+The actual `onDisappear` callback fires in step 12 (end lifecycle tracking), **after** the entire view tree has rendered.
 
 ### Task Lifecycle
 
 The `TaskModifier` (created by `.task()`) combines appearance tracking with async tasks:
 
-1. On first appearance: starts a `Task` with the given priority and operation
-2. Registers a disappear callback that cancels the task
-3. If the view reappears, a new task starts
+1. The first render at a structural task slot starts one `Task` with the given priority and operation
+2. Unchanged reconstruction preserves the mounted task instead of restarting it
+3. Removing the slot cancels the task; mounting it again starts a new task
 
 ## Output Optimization
 
@@ -334,7 +343,10 @@ TUIkit uses three techniques to minimize terminal I/O:
 
 ### Frame Buffering
 
-All terminal writes during a frame are collected in an internal `[UInt8]` buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is flushed to `STDOUT_FILENO` in a **single `write()` syscall**, reducing per-frame syscalls from ~40+ to exactly 1.
+All terminal writes during a frame are collected in an internal `[UInt8]`
+buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is
+normally flushed to `STDOUT_FILENO` with one `write()` syscall. Interrupted and
+partial transfers are retried without truncating the frame.
 
 ### Cell-Based Layout
 
@@ -357,7 +369,7 @@ When a view is wrapped in `.equatable()`, the rendering system:
 1. Looks up the cached ``FrameBuffer`` for this view's `ViewIdentity`
 2. Compares the **current view value** with the cached snapshot via `Equatable.==`
 3. Checks that the available **width and height** haven't changed
-4. On **cache hit**: returns the cached buffer: the entire subtree is skipped
+4. On **cache hit**: returns the cached buffer and preserves the subtree's State and Observation liveness without evaluating its body
 5. On **cache miss**: renders normally and stores the result
 
 ```swift
@@ -387,7 +399,8 @@ The runtime applies pending cache invalidations before rendering:
 | Trigger | Mechanism |
 |---------|-----------|
 | `@State` or `@AppStorage` change | Invalidates the owning view subtree |
-| Observed model or language change | Requests a full runtime cache clear |
+| Observed model change | Invalidates the structural subtree that read the dependency |
+| Language change | Requests a full runtime cache clear |
 | Environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
 
 Each runtime owns its own `RenderCache`, so invalidation in one application cannot

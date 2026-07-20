@@ -14,6 +14,57 @@ import Foundation
     import Darwin
 #endif
 
+// MARK: - Terminal System Calls
+
+/// Injectable POSIX calls used by terminal input and output.
+internal struct TerminalSystemCalls: Sendable {
+    /// Reads bytes from a file descriptor.
+    let read: @Sendable (Int32, UnsafeMutableRawPointer?, Int) -> Int
+
+    /// Writes bytes to a file descriptor.
+    let write: @Sendable (Int32, UnsafeRawPointer?, Int) -> Int
+
+    /// Returns the current thread-local POSIX error code.
+    let errorCode: @Sendable () -> Int32
+
+    /// Production calls supplied by the active platform module.
+    static let system = Self(
+        read: platformRead,
+        write: platformWrite,
+        errorCode: { errno }
+    )
+}
+
+/// Calls the active platform's POSIX `read` function.
+private func platformRead(
+    _ fileDescriptor: Int32,
+    _ buffer: UnsafeMutableRawPointer?,
+    _ count: Int
+) -> Int {
+    #if canImport(Glibc)
+        Glibc.read(fileDescriptor, buffer, count)
+    #elseif canImport(Musl)
+        Musl.read(fileDescriptor, buffer, count)
+    #else
+        Darwin.read(fileDescriptor, buffer, count)
+    #endif
+}
+
+/// Calls the active platform's POSIX `write` function.
+private func platformWrite(
+    _ fileDescriptor: Int32,
+    _ buffer: UnsafeRawPointer?,
+    _ count: Int
+) -> Int {
+    #if canImport(Glibc)
+        Glibc.write(fileDescriptor, buffer, count)
+    #elseif canImport(Musl)
+        Musl.write(fileDescriptor, buffer, count)
+    #else
+        Darwin.write(fileDescriptor, buffer, count)
+    #endif
+}
+
 /// Platform-specific type for `termios` flag fields.
 ///
 /// Darwin uses `UInt` (64-bit), Linux uses `tcflag_t` (`UInt32`).
@@ -30,14 +81,15 @@ import Foundation
 /// - Terminal size queries
 /// - Raw mode configuration
 /// - Safe input and output
-/// - Frame-buffered output (all writes collected, flushed in one syscall)
+/// - Frame-buffered output (all writes collected, normally flushed in one syscall)
 ///
 /// ## Output Buffering
 ///
 /// During rendering, call ``beginFrame()`` before writing and ``endFrame()``
 /// after. All ``write(_:)`` calls between them are collected in an internal
-/// `[UInt8]` buffer and flushed as a single `write()` syscall, reducing
-/// per-frame syscalls from ~40+ to exactly 1.
+/// `[UInt8]` buffer and normally flushed as a single `write()` syscall, reducing
+/// per-frame syscalls from ~40+ to one in the normal case. Interrupted and
+/// partial writes are retried until the frame is complete or an error is surfaced.
 ///
 /// Outside of a frame (setup, teardown), ``write(_:)`` writes immediately
 /// as before — safe by default.
@@ -47,7 +99,19 @@ import Foundation
 /// `Terminal` is `@MainActor` isolated. All terminal operations must occur
 /// on the main thread, which is enforced by the Swift concurrency system.
 @MainActor
-final class Terminal: TerminalProtocol {
+final class Terminal: TerminalProtocol, TerminalFailureReporting {
+    /// File descriptor used for terminal input.
+    private let inputFileDescriptor: Int32
+
+    /// File descriptor used for terminal output.
+    private let outputFileDescriptor: Int32
+
+    /// POSIX calls used for input and output.
+    private let systemCalls: TerminalSystemCalls
+
+    /// The first terminal I/O failure not yet consumed by the runtime.
+    private var pendingIOFailure: TerminalIOFailure?
+
     /// Whether raw mode is active.
     private var isRawMode = false
 
@@ -67,7 +131,14 @@ final class Terminal: TerminalProtocol {
     private var frameBuffer: [UInt8] = []
 
     /// Creates a new terminal instance.
-    init() {
+    init(
+        inputFileDescriptor: Int32 = STDIN_FILENO,
+        outputFileDescriptor: Int32 = STDOUT_FILENO,
+        systemCalls: TerminalSystemCalls = .system
+    ) {
+        self.inputFileDescriptor = inputFileDescriptor
+        self.outputFileDescriptor = outputFileDescriptor
+        self.systemCalls = systemCalls
         frameBuffer.reserveCapacity(16_384)
     }
 
@@ -95,9 +166,9 @@ extension Terminal {
         var windowSize = winsize()
 
         #if canImport(Glibc) || canImport(Musl)
-            let result = ioctl(STDOUT_FILENO, UInt(TIOCGWINSZ), &windowSize)
+            let result = ioctl(outputFileDescriptor, UInt(TIOCGWINSZ), &windowSize)
         #else
-            let result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &windowSize)
+            let result = ioctl(outputFileDescriptor, TIOCGWINSZ, &windowSize)
         #endif
 
         if result == 0 && windowSize.ws_col > 0 && windowSize.ws_row > 0 {
@@ -121,7 +192,7 @@ extension Terminal {
         guard !isRawMode else { return }
 
         var raw = termios()
-        tcgetattr(STDIN_FILENO, &raw)
+        tcgetattr(inputFileDescriptor, &raw)
         originalTermios = raw
 
         raw.c_lflag &= ~TermFlag(ECHO | ICANON | ISIG | IEXTEN)
@@ -137,7 +208,7 @@ extension Terminal {
             }
         }
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw)
+        tcsetattr(inputFileDescriptor, TCSAFLUSH, &raw)
         isRawMode = true
 
         // Enable bracketed paste mode so that terminal paste operations
@@ -154,7 +225,7 @@ extension Terminal {
         // Disable bracketed paste mode before restoring terminal state.
         writeImmediate("\u{1B}[?2004l")
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &original)
+        tcsetattr(inputFileDescriptor, TCSAFLUSH, &original)
         isRawMode = false
     }
 
@@ -162,7 +233,7 @@ extension Terminal {
     ///
     /// After this call, all ``write(_:)`` calls append to an internal
     /// `[UInt8]` buffer instead of issuing syscalls. Call ``endFrame()``
-    /// to flush the collected output in a single `write()` syscall.
+    /// to flush the collected output, normally in a single `write()` syscall.
     func beginFrame() {
         guard !isBuffering else { return }
         isBuffering = true
@@ -221,6 +292,12 @@ extension Terminal {
         write(ANSIRenderer.exitAlternateScreen)
     }
 
+    /// Removes and returns the first pending terminal I/O failure.
+    func takeIOFailure() -> TerminalIOFailure? {
+        defer { pendingIOFailure = nil }
+        return pendingIOFailure
+    }
+
     /// Reads raw bytes from the terminal, handling escape sequences.
     ///
     /// Reads exactly one key event worth of bytes. For escape sequences,
@@ -230,48 +307,40 @@ extension Terminal {
     /// - Parameter maxBytes: Maximum bytes to read (default: 8).
     /// - Returns: The bytes read, or empty array on timeout/error.
     func readBytes(maxBytes: Int = 8) -> [UInt8] {
-        var buffer = [UInt8](repeating: 0, count: 1)
-        let bytesRead = read(STDIN_FILENO, &buffer, 1)
-
-        guard bytesRead > 0 else { return [] }
+        guard let firstByte = readByte() else { return [] }
 
         // Not an escape sequence - return single byte
-        guard buffer[0] == 0x1B else {
-            return [buffer[0]]
+        guard firstByte == 0x1B else {
+            return [firstByte]
         }
 
         // Read the next byte to determine sequence type
         var result: [UInt8] = [0x1B]
-        var nextByte = [UInt8](repeating: 0, count: 1)
-
-        let nextRead = read(STDIN_FILENO, &nextByte, 1)
-        guard nextRead > 0 else {
+        guard let nextByte = readByte() else {
             // Just ESC alone
             return result
         }
 
-        result.append(nextByte[0])
+        result.append(nextByte)
 
         // CSI sequence: ESC [
-        if nextByte[0] == 0x5B {  // '['
+        if nextByte == 0x5B {  // '['
             // Read until we find a CSI terminator (letter A-Za-z or ~)
             for _ in 0..<(maxBytes - 2) {
-                let paramRead = read(STDIN_FILENO, &nextByte, 1)
-                guard paramRead > 0 else { break }
+                guard let parameterByte = readByte() else { break }
 
-                result.append(nextByte[0])
+                result.append(parameterByte)
 
                 // CSI terminators: letters (0x40-0x7E) mark end of sequence
                 // Common: A-D (arrows), H/F (home/end), Z (shift-tab), ~ (extended)
-                if nextByte[0] >= 0x40 && nextByte[0] <= 0x7E {
+                if parameterByte >= 0x40 && parameterByte <= 0x7E {
                     break
                 }
             }
-        } else if nextByte[0] == 0x4F {  // SS3 sequence: ESC O
+        } else if nextByte == 0x4F {  // SS3 sequence: ESC O
             // Read one more byte for F1-F4 keys
-            let funcRead = read(STDIN_FILENO, &nextByte, 1)
-            if funcRead > 0 {
-                result.append(nextByte[0])
+            if let functionByte = readByte() {
+                result.append(functionByte)
             }
         }
         // Alt+key: ESC followed by single key - already have both bytes
@@ -316,9 +385,7 @@ extension Terminal {
         let maxPasteBytes = 65_536
 
         while content.count < maxPasteBytes {
-            var byte = [UInt8](repeating: 0, count: 1)
-            let bytesRead = read(STDIN_FILENO, &byte, 1)
-            guard bytesRead > 0 else {
+            guard let byte = readByte() else {
                 // No more data available right now. For non-blocking reads
                 // (VMIN=0, VTIME=0) this means the paste end marker has not
                 // yet arrived. Wait briefly and retry.
@@ -326,7 +393,7 @@ extension Terminal {
                 continue
             }
 
-            content.append(byte[0])
+            content.append(byte)
 
             // Check if content ends with the paste end marker.
             if content.count >= endMarker.count {
@@ -346,23 +413,57 @@ extension Terminal {
 // MARK: - Private Helpers
 
 private extension Terminal {
+    /// Reads one byte, retrying when the system call is interrupted.
+    func readByte() -> UInt8? {
+        var byte: UInt8 = 0
+
+        while true {
+            let result = withUnsafeMutableBytes(of: &byte) { buffer in
+                systemCalls.read(inputFileDescriptor, buffer.baseAddress, 1)
+            }
+
+            if result > 0 {
+                return byte
+            }
+            if result < 0, systemCalls.errorCode() == EINTR {
+                continue
+            }
+            if result < 0 {
+                recordIOFailure(
+                    operation: .read,
+                    errorCode: systemCalls.errorCode(),
+                    remainingByteCount: 1
+                )
+            }
+            return nil
+        }
+    }
+
+    /// Records the first terminal I/O failure until the runtime consumes it.
+    func recordIOFailure(
+        operation: TerminalIOFailure.Operation,
+        errorCode: Int32,
+        remainingByteCount: Int
+    ) {
+        guard pendingIOFailure == nil else { return }
+        pendingIOFailure = TerminalIOFailure(
+            operation: operation,
+            errorCode: errorCode,
+            remainingByteCount: remainingByteCount
+        )
+    }
+
     /// Appends a string's UTF-8 bytes to the frame buffer.
     func appendToBuffer(_ string: String) {
         frameBuffer.append(contentsOf: string.utf8)
     }
 
-    /// Writes all buffered bytes to `STDOUT_FILENO` in a single syscall.
+    /// Writes all buffered bytes, retrying interrupted or partial syscalls.
     func flushBuffer() {
         guard !frameBuffer.isEmpty else { return }
         frameBuffer.withUnsafeBufferPointer { buffer in
             guard let baseAddress = buffer.baseAddress else { return }
-            let count = buffer.count
-            var written = 0
-            while written < count {
-                let result = Foundation.write(STDOUT_FILENO, baseAddress + written, count - written)
-                if result <= 0 { break }
-                written += result
-            }
+            writeBytes(baseAddress, count: buffer.count)
         }
         frameBuffer.removeAll(keepingCapacity: true)
     }
@@ -374,12 +475,28 @@ private extension Terminal {
             let count = buffer.count - 1
             guard count >= 1, let baseAddress = buffer.baseAddress else { return }
             baseAddress.withMemoryRebound(to: UInt8.self, capacity: count) { pointer in
-                var written = 0
-                while written < count {
-                    let result = Foundation.write(STDOUT_FILENO, pointer + written, count - written)
-                    if result <= 0 { break }
-                    written += result
-                }
+                writeBytes(pointer, count: count)
+            }
+        }
+    }
+
+    /// Writes every byte, retrying interrupted and partial system calls.
+    func writeBytes(_ baseAddress: UnsafePointer<UInt8>, count: Int) {
+        var written = 0
+
+        while written < count {
+            let result = systemCalls.write(outputFileDescriptor, baseAddress + written, count - written)
+            if result > 0 {
+                written += result
+            } else if result < 0, systemCalls.errorCode() == EINTR {
+                continue
+            } else {
+                recordIOFailure(
+                    operation: .write,
+                    errorCode: result < 0 ? systemCalls.errorCode() : EIO,
+                    remainingByteCount: count - written
+                )
+                return
             }
         }
     }

@@ -8,24 +8,68 @@ import Foundation
 
 // MARK: - Runtime Clock
 
-/// Injectable wall clock used by time-based rendering services.
+/// Injectable monotonic clock used by time-based rendering services.
 struct RuntimeClock: Sendable {
-    /// System wall clock used by production runtimes.
-    static let system = Self {
-        Date().timeIntervalSinceReferenceDate
-    }
+    /// Continuous system clock used by production runtimes.
+    static let system: Self = {
+        let clock = ContinuousClock()
+        let origin = clock.now
+
+        return Self(
+            now: {
+                origin.duration(to: clock.now).timeInterval
+            },
+            sleepUntil: { deadline in
+                try await clock.sleep(
+                    until: origin.advanced(by: .seconds(deadline))
+                )
+            }
+        )
+    }()
 
     /// Provider returning seconds since the Foundation reference date.
     private let nowProvider: @Sendable () -> TimeInterval
 
+    /// Provider suspending until the supplied monotonic timestamp.
+    private let sleepUntilProvider: @Sendable (TimeInterval) async throws -> Void
+
     /// Creates a clock backed by the supplied provider.
     init(now: @escaping @Sendable () -> TimeInterval) {
         self.nowProvider = now
+        let clock = ContinuousClock()
+        self.sleepUntilProvider = { deadline in
+            let remaining = max(0, deadline - now())
+            try await clock.sleep(for: .seconds(remaining))
+        }
+    }
+
+    /// Creates a fully injectable clock for deterministic deadline tests.
+    init(
+        now: @escaping @Sendable () -> TimeInterval,
+        sleepUntil: @escaping @Sendable (TimeInterval) async throws -> Void
+    ) {
+        self.nowProvider = now
+        self.sleepUntilProvider = sleepUntil
     }
 
     /// Returns the current wall-clock value.
     func now() -> TimeInterval {
         nowProvider()
+    }
+
+    /// Suspends until the supplied monotonic timestamp.
+    func sleep(until deadline: TimeInterval) async throws {
+        try await sleepUntilProvider(deadline)
+    }
+}
+
+// MARK: - Duration Conversion
+
+private extension Duration {
+    /// Exact duration represented as fractional seconds.
+    var timeInterval: TimeInterval {
+        let components = self.components
+        return TimeInterval(components.seconds) + TimeInterval(components.attoseconds) / 1e18
     }
 }
 

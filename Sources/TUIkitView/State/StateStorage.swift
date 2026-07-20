@@ -80,6 +80,11 @@ public final class StateStorage: @unchecked Sendable {
 
     /// The number of stored state entries (for testing/debugging).
     public var count: Int { values.count }
+
+    /// Structural identities currently owning stored values.
+    package var storedIdentities: Set<ViewIdentity> {
+        Set(values.keys.map(\.identity))
+    }
 }
 
 // MARK: - Internal API
@@ -125,6 +130,18 @@ extension StateStorage {
     /// - Parameter identity: The view identity to mark as active.
     public func markActive(_ identity: ViewIdentity) {
         activeIdentities.insert(identity)
+    }
+
+    /// Keeps state records below a cached subtree active without traversing it.
+    package func markSubtreeActive(_ root: ViewIdentity) {
+        let storedIdentities = values.keys.lazy.map(\.identity)
+        let trackedIdentities = trackedValues.keys.lazy.map(\.identity)
+        activeIdentities.formUnion(storedIdentities.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
+        activeIdentities.formUnion(trackedIdentities.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
     }
 
     // MARK: - onChange Tracking

@@ -386,13 +386,13 @@ private extension AppStorageBox {
     }
 
     func bindToActiveRuntimeIfNeeded() {
-        guard let environment = StateRegistration.activeEnvironment else { return }
+        guard let environment = StateRegistration.currentEnvironment else { return }
 
         lock.lock()
         if runtimeStorage == nil {
             runtimeStorage = environment.storageBackend
             invalidationSink = environment.renderInvalidationSink
-            identity = StateRegistration.activeContext?.identity
+            identity = StateRegistration.currentContext?.identity
         }
         lock.unlock()
     }

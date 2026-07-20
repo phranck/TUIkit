@@ -93,3 +93,35 @@ public protocol TerminalProtocol: AnyObject, Sendable {
     /// Exits the alternate screen buffer.
     func exitAlternateScreen()
 }
+
+// MARK: - Terminal I/O Failure Reporting
+
+/// A terminal system call that failed permanently.
+internal struct TerminalIOFailure: Error, Equatable, Sendable, CustomStringConvertible {
+    /// The terminal operation that failed.
+    enum Operation: String, Equatable, Sendable {
+        case read
+        case write
+    }
+
+    /// The terminal operation that failed.
+    let operation: Operation
+
+    /// The POSIX error code returned by the platform.
+    let errorCode: Int32
+
+    /// Bytes that could not be transferred.
+    let remainingByteCount: Int
+
+    var description: String {
+        "Terminal \(operation.rawValue) failed with POSIX error \(errorCode); "
+            + "\(remainingByteCount) byte(s) remained."
+    }
+}
+
+/// Supplies terminal I/O failures to the application runtime.
+@MainActor
+internal protocol TerminalFailureReporting: AnyObject {
+    /// Removes and returns the first pending terminal I/O failure.
+    func takeIOFailure() -> TerminalIOFailure?
+}

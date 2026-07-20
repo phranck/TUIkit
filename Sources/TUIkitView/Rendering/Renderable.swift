@@ -165,26 +165,31 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
         return renderable.renderToBuffer(context: context)
     }
 
-    // Priority 2: Composite view — set up hydration context and recurse into body.
+    // Priority 2: Composite view — bind dynamic properties and recurse into body.
     //
-    // Before evaluating `body`, we activate the hydration context so that any
-    // @State properties created during body evaluation self-hydrate from StateStorage.
-    //
-    // For the view's OWN @State properties: these were already hydrated when the
-    // view was constructed (either via self-hydrating init if activeContext was set,
-    // or via the parent's body evaluation context). The context here is for CHILDREN
-    // that will be constructed inside this view's body.
+    // The owning view's dynamic properties bind at its final structural identity
+    // before body evaluation. Ambient environment context remains active while
+    // child values are constructed inside the body.
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
         let invalidationSink = context.environment.renderInvalidationSink
 
         // Wrap body evaluation in observation tracking so that any @Observable
         // property accessed during body triggers a re-render when mutated.
-        let body = StateRegistration.withHydration(context: context) {
-            withObservationTracking {
-                view.body
-            } onChange: {
-                invalidationSink?.invalidate(.all)
+        let body = StateRegistration.withHydration(of: view, context: context) {
+            if let observationRegistry = context.environment.observationRegistry {
+                observationRegistry.track(
+                    identity: context.identity,
+                    invalidationSink: invalidationSink
+                ) {
+                    view.body
+                }
+            } else {
+                withObservationTracking {
+                    view.body
+                } onChange: {
+                    invalidationSink?.invalidate(.all)
+                }
             }
         }
 

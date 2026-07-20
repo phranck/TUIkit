@@ -62,8 +62,8 @@ extension ViewRenderer {
 
     /// Builds and renders a view inside a complete runtime render pass.
     ///
-    /// Constructing the root while hydration is active lets root-level
-    /// property wrappers bind to the same runtime as nested views.
+    /// Constructing the root with ambient environment context lets construction
+    /// APIs use the runtime. Dynamic properties bind at their final render path.
     func render<V: View>(
         atRow row: Int = 1,
         column: Int = 1,

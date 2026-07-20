@@ -60,6 +60,8 @@ struct StateHydrationIntegrationTests {
         let lines = buffer.lines.joined()
         #expect(lines.contains("A:10"))
         #expect(lines.contains("B:20"))
+        #expect(tuiContext.stateStorage.storedIdentities.count == 2)
+        #expect(tuiContext.stateStorage.storedIdentities.contains(context.identity) == false)
     }
 }
 
