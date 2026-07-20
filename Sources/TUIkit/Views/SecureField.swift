@@ -284,7 +284,7 @@ private struct _SecureFieldCore: View, Renderable, Layoutable {
         let renderer = TextFieldContentRenderer(
             prompt: prompt,
             isDisabled: isDisabled,
-            displayCharacter: { _, _ in TerminalSymbols.maskBullet }
+            displayCharacter: { _ in TerminalSymbols.maskBullet }
         )
 
         let fieldContent = renderer.buildContent(

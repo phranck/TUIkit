@@ -293,9 +293,7 @@ private struct _TextFieldCore<Label: View>: View, Renderable, Layoutable {
         let renderer = TextFieldContentRenderer(
             prompt: prompt,
             isDisabled: isDisabled,
-            displayCharacter: { index, text in
-                text[text.index(text.startIndex, offsetBy: index)]
-            }
+            displayCharacter: { $0 }
         )
 
         let fieldContent = renderer.buildContent(

@@ -122,14 +122,16 @@ SettingsGroup("Network") {
 A ``ViewModifier`` transforms an already-rendered ``FrameBuffer``. Use this when your transformation operates on the output of any view:
 
 ```swift
-struct HighlightModifier: ViewModifier {
-    let color: Color
+struct IndentModifier: ViewModifier {
+    let columns: Int
 
     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
-        // Transform each line in the buffer
-        var result = FrameBuffer()
-        for line in buffer.lines {
-            result.appendLine(ANSIRenderer.applyPersistentBackground(to: line, color: color))
+        var result = FrameBuffer(
+            emptyWithWidth: max(0, columns),
+            height: buffer.height
+        )
+        if !buffer.isEmpty {
+            result.appendHorizontally(buffer)
         }
         return result
     }
@@ -139,8 +141,8 @@ struct HighlightModifier: ViewModifier {
 Apply it using `.modifier(_:)`:
 
 ```swift
-Text("Important!")
-    .modifier(HighlightModifier(color: .red))
+Text("Indented")
+    .modifier(IndentModifier(columns: 2))
 ```
 
 ### Convenience Extensions
@@ -149,13 +151,13 @@ For a cleaner API, add a `View` extension:
 
 ```swift
 extension View {
-    func highlighted(_ color: Color = .red) -> some View {
-        modifier(HighlightModifier(color: color))
+    func indented(_ columns: Int = 2) -> some View {
+        modifier(IndentModifier(columns: columns))
     }
 }
 
 // Usage
-Text("Important!").highlighted(.yellow)
+Text("Indented").indented(4)
 ```
 
 ### When to Use ViewModifier

@@ -43,7 +43,7 @@ This enables spacers, flexible text fields, and proportional sizing. See <doc:La
 
 ### 4. Modifier Layer
 
-View modifiers implement the ``ViewModifier`` protocol. They operate in two phases: `adjustContext(_:)` modifies the ``RenderContext`` before children render (e.g. setting environment values), and `apply(to:context:)` transforms the rendered ``FrameBuffer`` (e.g. adding padding, borders, backgrounds).
+View modifiers implement the ``ViewModifier`` protocol. They operate in two phases: `adjustContext(_:)` modifies the ``RenderContext`` before children render (e.g. setting environment values), and `modify(buffer:context:)` transforms the rendered ``FrameBuffer`` (e.g. adding padding, borders, backgrounds).
 
 ```swift
 Text("Hello")
@@ -63,10 +63,10 @@ Text("Hello")
 
 The rendering pipeline converts the view tree into terminal output:
 
-1. **View tree traversal**: Each view produces a ``FrameBuffer``
-2. **Modifier application**: Modifiers transform buffers
-3. **ANSI rendering**: The `ANSIRenderer` converts colors and styles to escape codes
-4. **Terminal output**: The ``FrameBuffer`` lines are written to the terminal
+1. **View tree traversal**: Each view produces a ``FrameBuffer`` backed by terminal cells
+2. **Modifier application**: Modifiers transform or style cell surfaces
+3. **Layout and compositing**: Containers position, clip, and layer complete grapheme cells
+4. **Terminal output**: Final rows are encoded into normalized ANSI SGR strings and diffed at the terminal boundary
 
 ## Package Boundaries
 

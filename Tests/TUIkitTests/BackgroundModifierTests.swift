@@ -71,4 +71,20 @@ struct BackgroundModifierTests {
         // Both lines should have the same visible width after padding
         #expect(result.lines[0].strippedLength == result.lines[1].strippedLength)
     }
+
+    @Test("Background remains opaque after nested style resets")
+    func backgroundPersistsAfterNestedReset() {
+        let modifier = BackgroundModifier(color: .red)
+        let styledLine = ANSIRenderer.colorize("Hi", foreground: .green)
+        let buffer = FrameBuffer(lines: [styledLine, "Wide"])
+
+        let result = modifier.modify(buffer: buffer, context: testContext())
+        let base = FrameBuffer(lines: ["ABCD"])
+        let composited = base.composited(
+            with: FrameBuffer(lines: [result.lines[0]]),
+            at: (x: 0, y: 0)
+        )
+
+        #expect(composited.lines[0].stripped == "Hi  ")
+    }
 }

@@ -67,8 +67,12 @@ extension FrameDiffWriter {
         bgCode: String,
         reset: String
     ) -> [String] {
+        let outputWidth = max(0, terminalWidth)
+        let outputHeight = max(0, terminalHeight)
+        let clippedBuffer = buffer.clipped(toWidth: outputWidth, height: outputHeight)
+        let clippedLines = clippedBuffer.lines
         var lines: [String] = []
-        lines.reserveCapacity(terminalHeight)
+        lines.reserveCapacity(outputHeight)
 
         // ESC[2K erases the entire line using the current background color.
         // Placed after bgCode so the erase uses the app background, not the
@@ -77,11 +81,10 @@ extension FrameDiffWriter {
         let eraseLine = "\u{1B}[2K"
         let emptyLine = bgCode + eraseLine + reset
 
-        for row in 0..<terminalHeight {
-            if row < buffer.height {
-                let line = buffer.lines[row]
-                let visibleWidth = line.strippedLength
-                let padding = max(0, terminalWidth - visibleWidth)
+        for row in 0..<outputHeight {
+            if row < clippedBuffer.height {
+                let line = clippedLines[row]
+                let padding = max(0, outputWidth - clippedBuffer.width)
                 let lineWithBg = line.replacingOccurrences(of: reset, with: reset + bgCode)
                 let paddedLine = bgCode + eraseLine + lineWithBg + String(repeating: " ", count: padding) + reset
                 lines.append(paddedLine)

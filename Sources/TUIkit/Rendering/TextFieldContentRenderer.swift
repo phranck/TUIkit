@@ -24,9 +24,9 @@ struct TextFieldContentRenderer {
     /// Whether the field is disabled.
     let isDisabled: Bool
 
-    /// Returns the display character for a given index in the text.
-    /// For TextField: the actual character. For SecureField: a bullet.
-    let displayCharacter: (_ index: Int, _ text: String) -> Character
+    /// Maps one source grapheme to its displayed grapheme.
+    /// For TextField: the original character. For SecureField: a bullet.
+    let displayCharacter: (_ character: Character) -> Character
 
     // MARK: - Content Building
 
@@ -41,14 +41,15 @@ struct TextFieldContentRenderer {
         cursorTimer: CursorTimer?,
         contentWidth: Int
     ) -> String {
-        let isEmpty = text.isEmpty
+        let sanitizedText = text.sanitizedForTerminal
+        let isEmpty = sanitizedText.isEmpty
         let backgroundColor = palette.accent.opacity(ViewConstants.focusBorderDim)
 
         if isEmpty && !isFocused && prompt != nil {
             return buildPromptContent(palette: palette, background: backgroundColor, width: contentWidth)
         } else if isFocused {
             return buildTextWithCursor(
-                text: text,
+                text: sanitizedText,
                 cursorPosition: cursorPosition,
                 selectionRange: selectionRange,
                 palette: palette,
@@ -59,7 +60,7 @@ struct TextFieldContentRenderer {
             )
         } else {
             return buildTextContent(
-                text: text,
+                text: sanitizedText,
                 palette: palette,
                 background: backgroundColor,
                 width: contentWidth
@@ -78,8 +79,8 @@ struct TextFieldContentRenderer {
         } else {
             promptText = ""
         }
-        let truncated = String(promptText.prefix(width))
-        let paddedPrompt = truncated.padding(toLength: width, withPad: " ", startingAt: 0)
+        let truncated = promptText.ansiAwarePrefix(visibleCount: width)
+        let paddedPrompt = truncated.padToVisibleWidth(width)
         return ANSIRenderer.colorize(paddedPrompt, foreground: palette.foregroundTertiary, background: background)
     }
 
@@ -87,12 +88,18 @@ struct TextFieldContentRenderer {
 
     /// Builds text content without cursor (unfocused state).
     private func buildTextContent(text: String, palette: any Palette, background: Color, width: Int) -> String {
-        let visibleCount = min(text.count, width)
+        let characters = displayCharacters(for: text)
         var displayText = ""
-        for characterIndex in 0..<visibleCount {
-            displayText.append(displayCharacter(characterIndex, text))
+        var displayWidth = 0
+
+        for character in characters {
+            let characterWidth = character.terminalWidth
+            guard displayWidth + characterWidth <= width else { break }
+            displayText.append(character)
+            displayWidth += characterWidth
         }
-        let paddedText = displayText.padding(toLength: width, withPad: " ", startingAt: 0)
+
+        let paddedText = displayText.padToVisibleWidth(width)
         let foreground = isDisabled ? palette.foregroundTertiary : palette.foreground
         return ANSIRenderer.colorize(paddedText, foreground: foreground, background: background)
     }
@@ -112,18 +119,19 @@ struct TextFieldContentRenderer {
         background: Color,
         width: Int
     ) -> String {
-        let clampedPosition = max(0, min(cursorPosition, text.count))
-
-        // Calculate scroll offset to keep cursor visible
-        let visibleTextWidth = width - 1  // Reserve 1 char for cursor
-        let scrollOffset: Int
-        if clampedPosition <= visibleTextWidth {
-            scrollOffset = 0
-        } else {
-            scrollOffset = clampedPosition - visibleTextWidth
-        }
-
-        let visibleStart = scrollOffset
+        let characters = displayCharacters(for: text)
+        let clampedPosition = max(0, min(cursorPosition, characters.count))
+        let cursorCharacter = cursorStyle.shape.character
+        let cursorCharacterWidth = max(1, cursorCharacter.terminalWidth)
+        let underlyingCursorWidth = clampedPosition < characters.count
+            ? max(1, characters[clampedPosition].terminalWidth)
+            : 1
+        let cursorSlotWidth = max(cursorCharacterWidth, underlyingCursorWidth)
+        let visibleStart = visibleStart(
+            characters: characters,
+            cursorPosition: clampedPosition,
+            availableWidth: max(0, width - min(max(0, width), cursorSlotWidth))
+        )
 
         // Compute cursor visibility and color based on animation style
         let (cursorVisible, cursorColor) = computeCursorState(
@@ -133,29 +141,34 @@ struct TextFieldContentRenderer {
             cursorTimer: cursorTimer
         )
 
-        // Build output character by character
+        // Build output one complete grapheme at a time.
         var result = ""
         var outputWidth = 0
+        var textIndex = visibleStart
+        var cursorRendered = false
 
-        for visibleIndex in 0..<width {
-            let textIndex = visibleStart + visibleIndex
-
-            if textIndex == clampedPosition {
-                if cursorVisible {
-                    let cursorChar = cursorStyle.shape.character
-                    result += ANSIRenderer.colorize(String(cursorChar), foreground: cursorColor, background: background)
-                } else {
-                    // Cursor hidden (blink off): show underlying character or space
-                    if textIndex < text.count {
-                        let char = displayCharacter(textIndex, text)
-                        result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
-                    } else {
-                        result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
-                    }
+        while outputWidth < width {
+            if !cursorRendered && textIndex == clampedPosition {
+                let renderedSlotWidth = min(cursorSlotWidth, width - outputWidth)
+                let underlyingCharacter = textIndex < characters.count ? characters[textIndex] : nil
+                result += renderCursorSlot(
+                    underlyingCharacter: underlyingCharacter,
+                    cursorCharacter: cursorCharacter,
+                    isVisible: cursorVisible,
+                    width: renderedSlotWidth,
+                    foreground: palette.foreground,
+                    cursorColor: cursorColor,
+                    background: background
+                )
+                outputWidth += renderedSlotWidth
+                cursorRendered = true
+                if textIndex < characters.count {
+                    textIndex += 1
                 }
-                outputWidth += 1
-            } else if textIndex < text.count && visibleIndex < width - (textIndex >= clampedPosition ? 0 : 1) {
-                let char = displayCharacter(textIndex, text)
+            } else if textIndex < characters.count {
+                let char = characters[textIndex]
+                let characterWidth = char.terminalWidth
+                guard outputWidth + characterWidth <= width else { break }
 
                 // Check if this character is in the selection
                 let isSelected = selectionRange.map { textIndex >= $0.lowerBound && textIndex < $0.upperBound } ?? false
@@ -169,18 +182,67 @@ struct TextFieldContentRenderer {
                 } else {
                     result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
                 }
-                outputWidth += 1
-            } else if outputWidth < width {
+                outputWidth += characterWidth
+                textIndex += 1
+            } else {
                 result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
                 outputWidth += 1
             }
+        }
 
-            if outputWidth >= width {
-                break
-            }
+        if outputWidth < width {
+            let padding = String(repeating: " ", count: width - outputWidth)
+            result += ANSIRenderer.colorize(padding, foreground: palette.foreground, background: background)
         }
 
         return result
+    }
+
+    private func renderCursorSlot(
+        underlyingCharacter: Character?,
+        cursorCharacter: Character,
+        isVisible: Bool,
+        width: Int,
+        foreground: Color,
+        cursorColor: Color,
+        background: Color
+    ) -> String {
+        let character = isVisible ? cursorCharacter : underlyingCharacter
+        let content = cellFittedText(character, width: width)
+        return ANSIRenderer.colorize(
+            content,
+            foreground: isVisible ? cursorColor : foreground,
+            background: background
+        )
+    }
+
+    private func cellFittedText(_ character: Character?, width: Int) -> String {
+        guard let character, character.terminalWidth <= width else {
+            return String(repeating: " ", count: width)
+        }
+        return String(character) + String(repeating: " ", count: width - character.terminalWidth)
+    }
+
+    private func displayCharacters(for text: String) -> [Character] {
+        text.map(displayCharacter)
+    }
+
+    private func visibleStart(
+        characters: [Character],
+        cursorPosition: Int,
+        availableWidth: Int
+    ) -> Int {
+        var start = cursorPosition
+        var usedWidth = 0
+
+        while start > 0 {
+            let characterWidth = characters[start - 1].terminalWidth
+            guard usedWidth + characterWidth <= availableWidth else { break }
+            usedWidth += characterWidth
+            start -= 1
+        }
+
+        return start
     }
 
     // MARK: - Cursor State

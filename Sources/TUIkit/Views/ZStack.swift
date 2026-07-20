@@ -56,14 +56,54 @@ private struct _ZStackCore<Content: View>: View, Renderable {
     }
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        let infos = resolveChildInfos(from: content, context: context)
-        var result = FrameBuffer()
-        for info in infos {
-            if let buffer = info.buffer {
-                result.overlay(buffer)
-            }
+        let buffers = resolveChildInfos(from: content, context: context).compactMap(\.buffer)
+        guard !buffers.isEmpty else { return FrameBuffer() }
+
+        let width = buffers.map(\.width).max() ?? 0
+        let height = buffers.map(\.height).max() ?? 0
+        var result = FrameBuffer(lines: Array(repeating: "", count: height), width: width)
+
+        for buffer in buffers where !buffer.isEmpty {
+            let horizontalOffset = offset(
+                available: width,
+                content: buffer.width,
+                alignment: alignment.horizontal
+            )
+            let verticalOffset = offset(
+                available: height,
+                content: buffer.height,
+                alignment: alignment.vertical
+            )
+            result = result.composited(
+                with: buffer,
+                at: (x: horizontalOffset, y: verticalOffset)
+            )
         }
         return result
+    }
+
+    private func offset(
+        available: Int,
+        content: Int,
+        alignment: HorizontalAlignment
+    ) -> Int {
+        switch alignment {
+        case .leading: return 0
+        case .center: return max(0, (available - content) / 2)
+        case .trailing: return max(0, available - content)
+        }
+    }
+
+    private func offset(
+        available: Int,
+        content: Int,
+        alignment: VerticalAlignment
+    ) -> Int {
+        switch alignment {
+        case .top: return 0
+        case .center: return max(0, (available - content) / 2)
+        case .bottom: return max(0, available - content)
+        }
     }
 }
 
