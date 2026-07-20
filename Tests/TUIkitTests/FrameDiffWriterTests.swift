@@ -71,8 +71,8 @@ struct BuildOutputLinesTests {
         #expect(lines[1] == expected)
     }
 
-    @Test("ANSI reset codes in content are replaced with reset+bg")
-    func resetCodesReplaced() {
+    @Test("Redundant reset codes are normalized before terminal output")
+    func resetCodesNormalized() {
         let writer = FrameDiffWriter()
         let reset = ANSIRenderer.reset
         let buffer = FrameBuffer(text: "A\(reset)B")
@@ -85,7 +85,9 @@ struct BuildOutputLinesTests {
             reset: reset
         )
 
-        #expect(lines[0].contains("\(reset)[BG]"))
+        #expect(!lines[0].contains("\(reset)[BG]"))
+        #expect(lines[0].stripped.contains("AB"))
+        #expect(lines[0].hasSuffix(reset))
     }
 
     @Test("Multiple content lines are all processed")
@@ -107,6 +109,40 @@ struct BuildOutputLinesTests {
         #expect(lines[0].contains("Line1"))
         #expect(lines[1].contains("Line2"))
         #expect(lines[2].contains("Line3"))
+    }
+
+    @Test("Wide graphemes are clipped only at complete cell boundaries")
+    func wideGraphemeClipping() {
+        let writer = FrameDiffWriter()
+        let buffer = FrameBuffer(text: "A界B")
+
+        let lines = writer.buildOutputLines(
+            buffer: buffer,
+            terminalWidth: 2,
+            terminalHeight: 1,
+            bgCode: "",
+            reset: ""
+        )
+
+        #expect(lines[0].stripped == "A ")
+        #expect(lines[0].strippedLength == 2)
+    }
+
+    @Test("Wide graphemes are retained when the full span fits")
+    func wideGraphemeExactFit() {
+        let writer = FrameDiffWriter()
+        let buffer = FrameBuffer(text: "A界B")
+
+        let lines = writer.buildOutputLines(
+            buffer: buffer,
+            terminalWidth: 3,
+            terminalHeight: 1,
+            bgCode: "",
+            reset: ""
+        )
+
+        #expect(lines[0].stripped == "A界")
+        #expect(lines[0].strippedLength == 3)
     }
 }
 
