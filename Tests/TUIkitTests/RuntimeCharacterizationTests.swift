@@ -277,6 +277,36 @@ struct RuntimeCharacterizationTests {
         #expect(message.contains("0, 2"))
     }
 
+    @Test("Table reports duplicate IDs deterministically")
+    func tableReportsDuplicateIDs() {
+        let harness = RuntimeCharacterizationHarness()
+        var selection: String?
+        let items = [
+            DuplicateForEachItem(id: "duplicate", label: "First"),
+            DuplicateForEachItem(id: "unique", label: "Second"),
+            DuplicateForEachItem(id: "duplicate", label: "Third"),
+        ]
+
+        let snapshot = harness.render {
+            Table(
+                items,
+                selection: Binding(get: { selection }, set: { selection = $0 })
+            ) {
+                TableColumn("Label", value: \DuplicateForEachItem.label)
+            }
+        }
+
+        let rendered = snapshot.ansiStrippedLines.joined(separator: "\n")
+        #expect(rendered.contains("First"))
+        #expect(rendered.contains("Second"))
+        #expect(rendered.contains("Third"))
+        let message = harness.currentDiagnosticMessages.first ?? ""
+        #expect(harness.currentDiagnosticMessages.count == 1)
+        #expect(message.contains("Table"))
+        #expect(message.contains("duplicate"))
+        #expect(message.contains("0, 2"))
+    }
+
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")
     func reconstructedLifecycleIdentity() {
         let harness = RuntimeCharacterizationHarness()
@@ -376,7 +406,7 @@ private struct StatefulForEachRow: View {
     }
 }
 
-private struct DuplicateForEachItem: Identifiable {
+private struct DuplicateForEachItem: Identifiable, Sendable {
     let id: String
     let label: String
 }

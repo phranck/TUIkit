@@ -191,6 +191,8 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let palette = context.environment.palette
         let stateStorage = context.environment.stateStorage!
+        let snapshot = KeyedCollectionSnapshot(data, id: \.id)
+        snapshot.reportDuplicates(container: "Table", context: context)
 
         // Calculate available width inside container (subtract border + padding)
         let innerWidth = max(0, context.availableWidth - 4)
@@ -207,7 +209,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         // Handle empty state
         let contentLines: [String]
 
-        if data.isEmpty {
+        if snapshot.entries.isEmpty {
             contentLines = [emptyPlaceholder]
         } else {
             // Calculate viewport height
@@ -228,7 +230,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
                 for: handlerKey,
                 default: ItemListHandler(
                     focusID: persistedFocusID,
-                    itemCount: data.count,
+                    itemCount: snapshot.entries.count,
                     viewportHeight: viewportHeight,
                     selectionMode: selectionMode,
                     canBeFocused: !isDisabled
@@ -237,10 +239,10 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             let handler = handlerBox.value
 
             // Update handler with current values
-            handler.itemCount = data.count
+            handler.itemCount = snapshot.entries.count
             handler.viewportHeight = viewportHeight
             handler.canBeFocused = !isDisabled
-            handler.itemIDs = data.map { $0.id }
+            handler.itemIDs = snapshot.entries.map(\.id)
 
             // Assign selection bindings directly (type-safe, no AnyHashable conversion)
             handler.singleSelection = singleSelection
@@ -263,7 +265,7 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
             // Data rows
             let visibleRange = handler.visibleRange
             for rowIndex in visibleRange {
-                let item = data[rowIndex]
+                let item = snapshot.entries[rowIndex].element
                 let isFocused = handler.isFocused(at: rowIndex) && tableHasFocus
                 let isSelected = handler.isSelected(at: rowIndex)
 
