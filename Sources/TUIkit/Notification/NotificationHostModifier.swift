@@ -51,7 +51,7 @@ extension NotificationHostModifier: Renderable {
             return baseBuffer
         }
 
-        // Start the animation timer if not already running.
+        // Start the animation invalidation task if not already running.
         startAnimationTask(
             entries: activeEntries,
             lifecycle: context.environment.lifecycle!,
@@ -166,7 +166,7 @@ private extension NotificationHostModifier {
             .max() ?? 0
 
         lifecycle.startTask(token: token, priority: .medium) { [lifecycle, invalidationSink] in
-            let triggerNanos: UInt64 = 23_800_000  // ~24ms (~42 FPS)
+            let triggerNanos: UInt64 = 23_800_000  // ~42 animation frames per second
 
             while !Task.isCancelled {
                 let now = clock.now()

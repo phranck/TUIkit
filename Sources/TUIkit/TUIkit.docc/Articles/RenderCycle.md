@@ -4,20 +4,24 @@ Understand how TUIkit turns your view tree into terminal output: one frame at a 
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written: and all writes are collected in a frame buffer and flushed as a **single `write()` syscall**.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. Those writes are collected in a frame buffer and normally flushed with one `write()` syscall.
 
 ## What Triggers a Frame
 
-Several sources cause `RenderLoop` to produce a new frame. They converge on two boolean checks in the main loop (`consumeRerenderFlag()` and `appState.needsRender`):
+Several sources cause `RenderLoop` to produce a new frame. They enter one
+`RuntimeEventChannel`, and `AppRunner` consumes them serially on the main actor:
 
 | Trigger | Source | Mechanism |
 |---------|--------|-----------|
-| Terminal resize | `SIGWINCH` signal | `SignalManager` sets `signalNeedsRerender` and `signalTerminalResized` |
-| State mutation | `@State` property change | The owning runtime's invalidation sink notifies `AppState` |
-| Animation timers | PulseTimer (100 ms) / CursorTimer (50 ms) | Calls `appState.setNeedsRender()` |
-| Focus change | `FocusManager.onFocusChange` | Resets pulse timer and calls `appState.setNeedsRender()` |
+| Terminal resize | `SIGWINCH` dispatch source | Sends `.terminalResized` and invalidates the diff cache |
+| State mutation | `@State` property change | `AppState` sends `.renderRequested` through its observer |
+| Focus animation | `RuntimeAnimationScheduler` | Sends `.animationDeadline` only while an animation is visible |
+| View animation | Spinner or notification task | Invalidates `AppState`, which sends `.renderRequested` |
+| Focus change | `FocusManager.onFocusChange` | Resets the pulse phase and invalidates `AppState` |
 
-All triggers converge on boolean flags that the main loop checks each iteration. The actual rendering always happens on the main thread: signal handlers never render directly.
+The event loop suspends when no event or animation deadline is pending. Signal
+callbacks and background tasks only enqueue events or invalidations; rendering
+itself stays serialized on the main actor.
 
 ## The Render Pipeline
 
@@ -120,7 +124,10 @@ The status bar renders in a separate pass but writes into the **same frame buffe
 
 ### Step 11: Flush Frame
 
-`Terminal.endFrame()` writes the entire collected buffer to `STDOUT_FILENO` in a **single `write()` syscall**, then resets the buffer. This reduces per-frame syscalls from ~40+ to exactly 1.
+`Terminal.endFrame()` normally writes the entire collected buffer to
+`STDOUT_FILENO` in a **single `write()` syscall**, then resets the buffer.
+Interrupted calls and partial transfers are retried; permanent failures are
+propagated after terminal cleanup.
 
 ### Step 12: End Lifecycle and State Tracking
 
@@ -230,7 +237,7 @@ After the view tree produces a ``FrameBuffer``, the `FrameDiffWriter` prepares t
 2. Each line is padded to full terminal width
 3. Empty lines are filled with the background color
 
-The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and flushed as a single syscall.
+The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and normally flushed with one syscall.
 
 ## Environment Flow
 
@@ -336,7 +343,10 @@ TUIkit uses three techniques to minimize terminal I/O:
 
 ### Frame Buffering
 
-All terminal writes during a frame are collected in an internal `[UInt8]` buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is flushed to `STDOUT_FILENO` in a **single `write()` syscall**, reducing per-frame syscalls from ~40+ to exactly 1.
+All terminal writes during a frame are collected in an internal `[UInt8]`
+buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is
+normally flushed to `STDOUT_FILENO` with one `write()` syscall. Interrupted and
+partial transfers are retried without truncating the frame.
 
 ### Width Caching
 

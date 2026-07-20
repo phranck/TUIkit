@@ -10,10 +10,10 @@ TUIkit is structured in six layers, each building on the one below. This clean s
 
 ### 1. App Layer
 
-The ``App`` protocol is the entry point. It defines one or more scenes that make up your application. The internal `AppRunner` manages the main run loop, terminal setup, signal handling, and event dispatching.
+The ``App`` protocol is the entry point. It defines one or more scenes that make up your application. The internal `AppRunner` manages the async event loop, terminal setup, signal handling, and event dispatching.
 
 ```
-@main → App → AppRunner → Main Loop
+@main → App → AppRunner → RuntimeEventChannel
 ```
 
 ### 2. View Layer
@@ -82,13 +82,23 @@ and URL loading feed data into that deterministic decoder rather than participat
 `AppRunner` owns the terminal session and signal manager plus one `TUIContext`.
 That context owns the application's render state, storage, caches, localization,
 notifications, focus, themes, image loading, and other view-facing services.
-`AppRunner` creates `InputHandler` and `RenderLoop`, installs POSIX signal handlers,
-sets up the terminal, starts `PulseTimer` and `CursorTimer`, registers state and
-focus observers, and performs an initial render before entering the main loop.
+`AppRunner` creates `InputHandler`, `RenderLoop`, and a
+`RuntimeAnimationScheduler`; installs dispatch-backed signal and terminal-input
+sources; registers state and focus observers; and performs an initial render.
+`PulseTimer` and `CursorTimer` are monotonic phase calculators rather than
+background timers.
 
-Each loop iteration checks `shouldShutdown` (set by SIGINT), consumes the resize flag to invalidate the diff cache if SIGWINCH fired, then renders when `consumeRerenderFlag()` or `appState.needsRender` is true. After rendering, it reads up to 128 non-blocking key events per frame and dispatches each through five handler layers. A `usleep(28_000)` throttles the loop to approximately 35 FPS. Asynchronous render triggers (timers, @State changes, SIGWINCH, focus changes) feed back into the render decision via `appState.needsRender` or `signals.requestRerender()`.
+The runner then awaits `RuntimeEventChannel`. State invalidations request a
+render, input readiness drains up to 128 key events, SIGWINCH invalidates the
+diff cache, animation deadlines advance visible focus effects, and termination
+events begin cleanup. These paths are serialized on the main actor. With no
+pending event or visible animation deadline, the runtime remains suspended and
+does no periodic work.
 
-@Image(source: "architecture-event-loop.png", alt: "Flowchart of the TUIkit event loop: @main entry initializes subsystems, sets up terminal, starts timers and observers, performs an initial render, then enters the main loop. The loop checks shouldShutdown, consumes the resize flag to invalidate the diff cache, checks rerenderFlag or needsRender to conditionally render, reads key events non-blocking up to 128 per frame, dispatches through 5 input layers, and sleeps 28ms. SIGINT exits to cleanup. Async render triggers from timers, state changes, SIGWINCH, and focus changes feed back into the needsRender check.")
+Signal and input callbacks only enqueue events. Shutdown stops every event
+source, finishes the channel, cancels view tasks through `TUIContext.reset()`,
+and restores raw mode, cursor visibility, and the alternate screen before an
+I/O failure is propagated.
 
 Input dispatch uses a first-consumer-wins model. Layer 0 and Layer 3 are mutually exclusive: when a text input element (TextField/SecureField) is focused, Layer 0 runs and Layer 3 is skipped; otherwise Layer 0 is skipped and Layer 3 runs. Both use `focusManager.dispatchKeyEvent()`, which first delegates to the focused element, then handles Tab/Shift+Tab navigation, then arrow key fallback.
 

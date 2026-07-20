@@ -103,8 +103,7 @@ struct _ImageCore: View, Renderable, Layoutable {
 
                     // Store the raw image; conversion happens per render pass.
                     // StateBox.didSet triggers setNeedsRender() automatically.
-                    // Do NOT use MainActor.run here: the render loop blocks the
-                    // main actor with usleep, so MainActor.run would deadlock.
+                    // The runtime delivers that invalidation to its async event loop.
                     phaseBox.value = .success(rawImage)
                 } catch let loadError as ImageLoadError {
                     phaseBox.value = .failure(loadError.description)

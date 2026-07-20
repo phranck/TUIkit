@@ -35,7 +35,7 @@
 /// }
 /// ```
 @MainActor
-final class MockTerminal: TerminalProtocol {
+final class MockTerminal: TerminalProtocol, TerminalFailureReporting {
     /// The simulated terminal size.
     var size: (width: Int, height: Int) = (80, 24)
 
@@ -61,6 +61,9 @@ final class MockTerminal: TerminalProtocol {
 
     /// Whether frame buffering is active.
     private var isBuffering = false
+
+    /// A terminal I/O failure waiting for the runtime to consume it.
+    var pendingIOFailure: TerminalIOFailure?
 
     /// Buffer for collecting writes during a frame.
     private var frameBuffer: [String] = []
@@ -134,6 +137,11 @@ extension MockTerminal {
         isInAlternateScreen = false
         write(ANSIRenderer.exitAlternateScreen)
     }
+
+    func takeIOFailure() -> TerminalIOFailure? {
+        defer { pendingIOFailure = nil }
+        return pendingIOFailure
+    }
 }
 
 // MARK: - Test Helpers
@@ -148,6 +156,7 @@ extension MockTerminal {
         isCursorHidden = false
         isInAlternateScreen = false
         isBuffering = false
+        pendingIOFailure = nil
         cursorPosition = (1, 1)
         size = (80, 24)
     }

@@ -11,9 +11,8 @@ import TUIkitCore
 
 /// Application state that triggers re-renders when modified.
 ///
-/// `AppState` is thread-safe: ``setNeedsRender()`` can be called from any thread
-/// (e.g., from `PulseTimer` on a background queue). Internal state is protected
-/// by an `NSLock`.
+/// `AppState` is thread-safe: ``setNeedsRender()`` can be called from any thread.
+/// Internal state is protected by an `NSLock`.
 ///
 /// The `AppRunner` subscribes to state changes and re-renders when notified.
 /// Property wrappers route changes to the runtime-owned instance through
