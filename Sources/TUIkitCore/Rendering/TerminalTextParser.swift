@@ -31,17 +31,12 @@ enum TerminalTextParser {
 
         while index < text.endIndex {
             let character = text[index]
-
-            if character.isLineBreakCluster {
-                if preservingLineBreaks {
-                    body(.lineBreak)
-                }
-                index = text.index(after: index)
-                continue
-            }
-
             guard let scalarValue = character.singleScalarValue else {
-                if !character.containsTerminalControl {
+                if character.isLineBreakCluster {
+                    if preservingLineBreaks {
+                        body(.lineBreak)
+                    }
+                } else if !character.containsTerminalControl {
                     body(.grapheme(character))
                 }
                 index = text.index(after: index)
@@ -49,6 +44,11 @@ enum TerminalTextParser {
             }
 
             switch scalarValue {
+            case 0x0A:
+                if preservingLineBreaks {
+                    body(.lineBreak)
+                }
+                index = text.index(after: index)
             case 0x1B:
                 let result = consumeEscape(in: text, from: index)
                 if let sgr = result.sgr {
@@ -213,8 +213,12 @@ private extension TerminalTextParser {
 
 private extension Character {
     var isLineBreakCluster: Bool {
-        let scalars = unicodeScalars.map(\.value)
-        return scalars.contains(0x0A) && scalars.allSatisfy { $0 == 0x0A || $0 == 0x0D }
+        var containsLineFeed = false
+        for scalar in unicodeScalars {
+            guard scalar.value == 0x0A || scalar.value == 0x0D else { return false }
+            containsLineFeed = containsLineFeed || scalar.value == 0x0A
+        }
+        return containsLineFeed
     }
 
     var containsTerminalControl: Bool {
