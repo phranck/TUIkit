@@ -16,6 +16,8 @@ struct ExampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .horizontalNavigationStyle(.tab, .vim)
+                .verticalNavigationStyle(.arrowKey, .vim)
         }
     }
 }

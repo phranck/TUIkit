@@ -69,6 +69,9 @@ final class ItemListHandler<SelectionValue: Hashable>: Focusable {
     /// Whether this element can currently receive focus.
     var canBeFocused: Bool
 
+    /// The active keyboard navigation styles.
+    var verticalNavigationStyles: Set<VerticalNavigationStyle> = [.arrowKey]
+
     /// The currently focused item index (keyboard cursor).
     var focusedIndex: Int = 0
 
@@ -152,43 +155,63 @@ extension ItemListHandler {
     func handleKeyEvent(_ event: KeyEvent) -> Bool {
         guard itemCount > 0 else { return false }
 
+        let hasArrow = verticalNavigationStyles.contains(.arrowKey)
+        let hasVim = verticalNavigationStyles.contains(.vim)
+
         switch event.key {
-        case .up:
+
+        // Arrow key navigation
+        case .up where hasArrow:
             moveFocus(by: -1, wrap: true)
             return true
 
-        case .down:
+        case .down where hasArrow:
             moveFocus(by: 1, wrap: true)
             return true
 
-        case .home:
-            if selectableIndices.isEmpty {
-                focusedIndex = 0
-            } else if let firstSelectable = selectableIndices.min() {
-                focusedIndex = firstSelectable
-            } else {
-                return false
-            }
-            ensureFocusedItemVisible()
-            return true
+        case .home where hasArrow:
+            return jumpToFirst()
 
-        case .end:
-            if selectableIndices.isEmpty {
-                focusedIndex = itemCount - 1
-            } else if let lastSelectable = selectableIndices.max() {
-                focusedIndex = lastSelectable
-            } else {
-                return false
-            }
-            ensureFocusedItemVisible()
-            return true
+        case .end where hasArrow:
+            return jumpToLast()
 
-        case .pageUp:
+        case .pageUp where hasArrow:
             moveFocus(by: -viewportHeight, wrap: false)
             return true
 
-        case .pageDown:
+        case .pageDown where hasArrow:
             moveFocus(by: viewportHeight, wrap: false)
+            return true
+
+        // Vim motions
+        case .character("j") where hasVim:
+            moveFocus(by: 1, wrap: true)
+            return true
+
+        case .character("k") where hasVim:
+            moveFocus(by: -1, wrap: true)
+            return true
+
+        case .character("g") where hasVim:
+            return jumpToFirst()
+
+        case .character("G") where hasVim:
+            return jumpToLast()
+
+        case .character("d") where event.ctrl && hasVim:
+            moveFocus(by: max(1, viewportHeight / 2), wrap: false)
+            return true
+
+        case .character("u") where event.ctrl && hasVim:
+            moveFocus(by: -max(1, viewportHeight / 2), wrap: false)
+            return true
+
+        case .character("f") where event.ctrl && hasVim:
+            moveFocus(by: viewportHeight, wrap: false)
+            return true
+
+        case .character("b") where event.ctrl && hasVim:
+            moveFocus(by: -viewportHeight, wrap: false)
             return true
 
         case .enter, .space:
@@ -198,6 +221,34 @@ extension ItemListHandler {
         default:
             return false
         }
+    }
+
+    // MARK: - Jump Helpers
+
+    @discardableResult
+    private func jumpToFirst() -> Bool {
+        if selectableIndices.isEmpty {
+            focusedIndex = 0
+        } else if let firstSelectable = selectableIndices.min() {
+            focusedIndex = firstSelectable
+        } else {
+            return false
+        }
+        ensureFocusedItemVisible()
+        return true
+    }
+
+    @discardableResult
+    private func jumpToLast() -> Bool {
+        if selectableIndices.isEmpty {
+            focusedIndex = itemCount - 1
+        } else if let lastSelectable = selectableIndices.max() {
+            focusedIndex = lastSelectable
+        } else {
+            return false
+        }
+        ensureFocusedItemVisible()
+        return true
     }
 }
 

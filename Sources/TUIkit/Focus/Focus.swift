@@ -60,6 +60,18 @@ public final class FocusManager: @unchecked Sendable {
     /// Callback triggered when focus changes (element or section).
     public var onFocusChange: (() -> Void)?
 
+    /// The active vertical (up/down) navigation styles for section-level navigation.
+    ///
+    /// Reset to `[.arrowKey]` each render pass, then updated by
+    /// `VerticalNavigationStyleModifier` during rendering.
+    var verticalNavigationStyles: Set<VerticalNavigationStyle> = [.arrowKey]
+
+    /// The active horizontal (Tab/section) navigation styles.
+    ///
+    /// Reset to `[.tab]` each render pass, then updated by
+    /// `HorizontalNavigationStyleModifier` during rendering.
+    var horizontalNavigationStyles: Set<HorizontalNavigationStyle> = [.tab]
+
     /// Creates a new focus manager instance.
     public init() {}
 
@@ -300,8 +312,11 @@ public extension FocusManager {
             }
         }
 
-        // Tab navigation: cycle sections (or elements within single section)
-        if event.key == .tab {
+        // Horizontal navigation: Tab/Shift+Tab and/or vim h/l cycle sections or elements.
+        let hasTab = horizontalNavigationStyles.contains(.tab)
+        let hasVimH = horizontalNavigationStyles.contains(.vim)
+
+        if event.key == .tab && hasTab {
             if event.shift {
                 focusPrevious()
             } else {
@@ -310,15 +325,23 @@ public extension FocusManager {
             return true
         }
 
-        // Arrow keys: navigate within the active section (fallback if element didn't handle)
-        // Up/Left go to previous, Down/Right go to next
+        // Vertical navigation: arrow keys and/or vim j/k navigate within the active section.
+        let hasArrow = verticalNavigationStyles.contains(.arrowKey)
+        let hasVimV = verticalNavigationStyles.contains(.vim)
+
         switch event.key {
         case .up, .left:
-            focusPreviousInSection()
-            return true
+            if hasArrow { focusPreviousInSection(); return true }
         case .down, .right:
-            focusNextInSection()
-            return true
+            if hasArrow { focusNextInSection(); return true }
+        case .character("k"):
+            if hasVimV { focusPreviousInSection(); return true }
+        case .character("j"):
+            if hasVimV { focusNextInSection(); return true }
+        case .character("h"):
+            if hasVimH { focusPrevious(); return true }
+        case .character("l"):
+            if hasVimH { focusNext(); return true }
         default:
             break
         }
@@ -407,6 +430,8 @@ extension FocusManager {
     /// Call this at the start of each render pass instead of ``clear()``.
     func beginRenderPass() {
         sections.removeAll()
+        verticalNavigationStyles = [.arrowKey]
+        horizontalNavigationStyles = [.tab]
         // activeSectionID and focusedID are intentionally preserved.
         // They will be validated after the render pass re-registers sections.
     }
