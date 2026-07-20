@@ -484,13 +484,35 @@ private struct KeyedTaskRow: View {
                 trace.record(.task("start:\(item.id)"))
                 item.started.signal()
 
-                await withTaskCancellationHandler {
-                    try? await Task.sleep(nanoseconds: UInt64.max)
-                } onCancel: {
-                    trace.record(.task("cancel:\(item.id)"))
-                    item.cancelled.signal()
-                }
+                // The .task closure inherits @MainActor from the render path.
+                // Task.sleep would suspend on the main actor, and under heavy
+                // main-actor load from parallel tests in CI the cancellation
+                // notification can be starved, causing the test to time out.
+                // Hopping to a nonisolated function moves the sleep to the
+                // global executor so cancellation is processed independently
+                // of main-actor scheduling.
+                await Self.awaitCancellation(
+                    id: item.id,
+                    trace: trace,
+                    signal: item.cancelled
+                )
             }
+    }
+
+    nonisolated private static func awaitCancellation(
+        id: Int,
+        trace: TraceRecorder<RuntimeTraceEvent>,
+        signal: AsyncSignal
+    ) async {
+        // 1e12 ns (1000 s) is well within Int64 and far exceeds the 60 s
+        // test time limit, so the sleep only returns via cancellation.
+        // Task.isCancelled checks the current task's flag, which is the
+        // same task even when executing a nonisolated function.
+        try? await Task.sleep(nanoseconds: 1_000_000_000_000)
+        if Task.isCancelled {
+            trace.record(.task("cancel:\(id)"))
+            signal.signal()
+        }
     }
 }
 
