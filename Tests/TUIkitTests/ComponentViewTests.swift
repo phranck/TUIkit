@@ -236,12 +236,8 @@ struct ForEachTests {
             Text(item.name)
         }
 
-        #expect(forEach.data.isEmpty)
+        let buffer = renderToBuffer(forEach, context: testContext())
 
-        // Also test via ViewArray (which is what @ViewBuilder produces)
-        let viewArray = ViewArray<Text>([])
-        let context = testContext()
-        let buffer = renderToBuffer(viewArray, context: context)
         #expect(buffer.isEmpty)
     }
 }
