@@ -222,6 +222,32 @@ struct RuntimeCharacterizationTests {
         #expect(harness.storedStateCount == 1)
     }
 
+    @Test("List row State follows ForEach IDs")
+    func listRowStateFollowsForEachIDs() {
+        let harness = RuntimeCharacterizationHarness()
+        var selection: Int?
+
+        let initial = harness.render {
+            List(selection: Binding(get: { selection }, set: { selection = $0 })) {
+                ForEach([1, 2], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }.ansiStrippedLines.joined(separator: "\n")
+        let reordered = harness.render {
+            List(selection: Binding(get: { selection }, set: { selection = $0 })) {
+                ForEach([2, 1], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }.ansiStrippedLines.joined(separator: "\n")
+
+        #expect(initial.contains("1:1"))
+        #expect(initial.contains("2:2"))
+        #expect(reordered.contains("2:2"))
+        #expect(reordered.contains("1:1"))
+    }
+
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")
     func reconstructedLifecycleIdentity() {
         let harness = RuntimeCharacterizationHarness()
