@@ -176,8 +176,8 @@ struct RuntimeCharacterizationTests {
         #expect(harness.trace.snapshot() == [.effect("preference committed")])
     }
 
-    @Test("ForEach output remains characterized for issue #12")
-    func knownForEachOutputDefect() {
+    @Test("ForEach renders each element inside a stack")
+    func forEachRendersEachElement() {
         let harness = RuntimeCharacterizationHarness()
         let actualLines = harness.render {
             VStack {
@@ -187,12 +187,7 @@ struct RuntimeCharacterizationTests {
             }
         }.ansiStrippedLines
 
-        withKnownIssue("Issue #12: ForEach is not rendered outside the List-specific path") {
-            #expect(actualLines == ["row:0", "row:1"])
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(actualLines == ["row:0", "row:1"])
     }
 
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")

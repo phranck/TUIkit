@@ -68,6 +68,29 @@ public struct ChildView {
         }
     }
 
+    /// Creates a child wrapper whose identity is derived from an explicit key.
+    ///
+    /// Keyed children keep the same runtime identity when their collection is
+    /// inserted into or reordered.
+    package init<V: View, ID: Hashable>(_ view: V, key: ID) {
+        if let spacer = view as? SpacerProtocol {
+            self.isSpacer = true
+            self.spacerMinLength = spacer.spacerMinLength
+        } else {
+            self.isSpacer = false
+            self.spacerMinLength = nil
+        }
+
+        self._measure = { proposal, context in
+            let childContext = context.withKeyedChildIdentity(type: V.self, key: key)
+            return measureChild(view, proposal: proposal, context: childContext)
+        }
+        self._render = { width, height, context in
+            let childContext = context.withKeyedChildIdentity(type: V.self, key: key)
+            return renderChild(view, width: width, height: height, context: childContext)
+        }
+    }
+
     /// Measures this child view without rendering.
     public func measure(proposal: ProposedSize, context: RenderContext) -> ViewSize {
         _measure(proposal, context)
