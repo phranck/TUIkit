@@ -235,7 +235,7 @@ extension Text: Renderable, Layoutable {
     ///
     /// - Parameters:
     ///   - text: The text to wrap.
-    ///   - maxWidth: Maximum characters per line.
+    ///   - maxWidth: Maximum terminal cells per line.
     /// - Returns: An array of wrapped lines (never empty).
     private func wordWrap(_ text: String, maxWidth: Int) -> [String] {
         let paragraphs = text.split(separator: "\n", omittingEmptySubsequences: false)

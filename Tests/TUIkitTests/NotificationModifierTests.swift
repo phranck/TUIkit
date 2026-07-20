@@ -94,7 +94,7 @@ struct NotificationTests {
         let lines = NotificationTiming.wordWrap(text, maxWidth: 20)
         #expect(lines.count > 1)
         for line in lines {
-            #expect(line.count <= 20)
+            #expect(line.strippedLength <= 20)
         }
     }
 
@@ -102,6 +102,12 @@ struct NotificationTests {
     func wordWrapLongWord() {
         let lines = NotificationTiming.wordWrap("Supercalifragilistic", maxWidth: 10)
         #expect(lines == ["Supercalifragilistic"])
+    }
+
+    @Test("Word wrap measures East Asian text in terminal cells")
+    func wordWrapEastAsianText() {
+        let lines = NotificationTiming.wordWrap("界 界", maxWidth: 4)
+        #expect(lines == ["界", "界"])
     }
 
     @Test("Empty text returns single empty line")
