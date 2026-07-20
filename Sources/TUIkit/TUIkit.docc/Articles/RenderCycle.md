@@ -4,7 +4,7 @@ Understand how TUIkit turns your view tree into terminal output: one frame at a 
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written: and all writes are collected in a frame buffer and flushed as a **single `write()` syscall**.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. All terminal writes are collected and flushed as a **single `write()` syscall**.
 
 ## What Triggers a Frame
 
@@ -101,10 +101,10 @@ This is where the dual rendering system kicks in. ``WindowGroup`` calls the free
 
 The ``FrameBuffer`` is converted into terminal-ready output lines by `FrameDiffWriter.buildOutputLines()`:
 
-1. Lines with content get their ANSI reset codes replaced with `reset + backgroundColor` (persistent background)
-2. Each line is padded to full terminal width
-3. Empty rows are filled with the background color
-4. The total output is exactly `terminalHeight` lines
+1. The cell surface is clipped to the terminal's cell width and height without splitting wide graphemes
+2. Clipped cells are encoded into normalized, terminal-safe SGR strings
+3. Each output row is cleared with the active background and padded to the terminal width
+4. Empty rows are filled so the output contains exactly `terminalHeight` lines
 
 ### Step 8: Begin Buffered Frame
 
@@ -199,14 +199,14 @@ func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameBuffer {
 
 ## FrameBuffer
 
-``FrameBuffer`` is the off-screen rendering primitive. It holds an array of strings (which may contain ANSI escape codes) representing terminal lines.
+``FrameBuffer`` is the off-screen rendering primitive. Internally it owns a terminal-cell surface whose cells store a grapheme, wide-cell continuation, normalized style, and transparency explicitly. Its public `lines` property remains a compatibility adapter for ANSI-styled input and terminal-safe encoded output.
 
 ### Creation
 
 Views create buffers in their `renderToBuffer(context:)`:
 
-- ``Text``: single line with ANSI style codes
-- ``Spacer``: empty lines
+- ``Text``: one or more styled cell rows
+- ``Spacer``: rows of blank cells
 - ``EmptyView``: empty buffer (no lines)
 
 ### Combination
@@ -215,18 +215,18 @@ Layout containers combine child buffers using `FrameBuffer` methods:
 
 | Method | Used by | What it does |
 |--------|---------|--------------|
-| `appendVertically(_:spacing:)` | `VStack` | Stacks buffers top to bottom |
-| `appendHorizontally(_:spacing:)` | `HStack` | Places buffers side by side, padding shorter sides |
-| `overlay(_:)` | `ZStack` | Line-by-line overlay, non-empty lines replace base |
-| `composited(with:at:)` | Overlay modifier | Character-level compositing at (x, y) position |
+| `appendVertically(_:spacing:)` | `VStack` | Stacks surfaces top to bottom in one pass |
+| `appendHorizontally(_:spacing:)` | `HStack` | Places surfaces side by side, padding shorter sides |
+| `overlay(_:)` | `ZStack` | Composites cells while preserving content below transparent cells |
+| `composited(with:at:)` | Overlay modifier | Composites at a cell position and replaces wide graphemes atomically |
 
 ### Diff-Based Output
 
 After the view tree produces a ``FrameBuffer``, the `FrameDiffWriter` prepares terminal-ready output:
 
-1. Lines with content get their ANSI reset codes replaced with `reset + backgroundColor` (persistent background)
-2. Each line is padded to full terminal width
-3. Empty lines are filled with the background color
+1. The cell surface is clipped to the terminal dimensions
+2. Its rows are encoded into normalized SGR strings
+3. Each row is cleared and padded with the active background color
 
 The diff writer then compares each output line with the previous frame. Only lines that actually changed are written to the terminal via `Terminal.moveCursor()` + `Terminal.write()`. All writes are collected in a frame buffer and flushed as a single syscall.
 
@@ -280,7 +280,7 @@ public protocol ViewModifier {
 `ModifiedView` wraps a view and a modifier. It first calls `adjustContext(_:)` to let the modifier reduce available space (e.g. padding), then renders the content, then calls `modify(buffer:context:)`. Examples:
 
 - **`PaddingModifier`**: Adds empty lines (top/bottom) and spaces (leading/trailing) around the buffer
-- **`BackgroundModifier`**: Wraps each line with background ANSI codes, padded to full width
+- **`BackgroundModifier`**: Paints the background style directly onto cells and fills each row to the surface width
 
 ### View-Level Modifiers (Renderable)
 
@@ -336,9 +336,9 @@ TUIkit uses three techniques to minimize terminal I/O:
 
 All terminal writes during a frame are collected in an internal `[UInt8]` buffer via `Terminal.beginFrame()` / `Terminal.endFrame()`. The entire frame is flushed to `STDOUT_FILENO` in a **single `write()` syscall**, reducing per-frame syscalls from ~40+ to exactly 1.
 
-### Width Caching
+### Cell-Based Layout
 
-``FrameBuffer`` caches its `width` as a stored property, recomputed only when `lines` is mutated. This eliminates hundreds of redundant ANSI-stripping regex runs per frame. The `strippedLength` property also avoids intermediate string allocations.
+``FrameBuffer`` stores its measured width with the cell surface. Layout, clipping, and compositing therefore operate directly on cell arrays without repeatedly stripping or reparsing ANSI strings. ANSI encoding happens only when compatibility lines are requested or the final surface crosses the terminal-output boundary.
 
 ### What Is NOT Diffed
 
