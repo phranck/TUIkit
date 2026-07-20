@@ -338,7 +338,7 @@ All terminal writes during a frame are collected in an internal `[UInt8]` buffer
 
 ### Cell-Based Layout
 
-``FrameBuffer`` stores its measured width with the cell surface. Layout, clipping, and compositing therefore operate directly on cell arrays without repeatedly stripping or reparsing ANSI strings. ANSI encoding happens only when compatibility lines are requested or the final surface crosses the terminal-output boundary.
+``FrameBuffer`` stores its measured width with the cell surface. Layout, clipping, and compositing therefore operate directly on cell arrays without repeatedly stripping or reparsing ANSI strings. The public compatibility lines are derived from that surface, and the terminal boundary consumes the same normalized encoding.
 
 ### What Is NOT Diffed
 
