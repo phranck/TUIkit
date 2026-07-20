@@ -13,61 +13,45 @@ extension Character {
     /// emoji) occupy 2 cells. Zero-width characters (combining marks,
     /// variation selectors, ZWJ) occupy 0 cells.
     public var terminalWidth: Int {
-        let scalars = unicodeScalars
-        guard let first = scalars.first else { return 0 }
-        let scalarValue = first.value
+        let visibleScalars = unicodeScalars.filter { !$0.isZeroWidthInTerminal }
+        guard !visibleScalars.isEmpty else { return 0 }
 
-        // Zero-width characters
-        if scalarValue == 0x200B || scalarValue == 0x200C || scalarValue == 0x200D || scalarValue == 0xFEFF { return 0 } // ZW space/NJ/J/BOM
-        if scalarValue == 0x00AD { return 0 } // soft hyphen
-        if (0xFE00...0xFE0F).contains(scalarValue) { return 0 } // variation selectors
-        if (0xE0100...0xE01EF).contains(scalarValue) { return 0 } // variation selectors supplement
-        if (0x0300...0x036F).contains(scalarValue) { return 0 } // combining diacritical marks
-        if (0x1AB0...0x1AFF).contains(scalarValue) { return 0 } // combining diacritical marks extended
-        if (0x1DC0...0x1DFF).contains(scalarValue) { return 0 } // combining diacritical marks supplement
-        if (0x20D0...0x20FF).contains(scalarValue) { return 0 } // combining marks for symbols
-        if (0xFE20...0xFE2F).contains(scalarValue) { return 0 } // combining half marks
-        if (0xE0000...0xE007F).contains(scalarValue) { return 0 } // tags block
+        return visibleScalars.contains(where: \.isWideInTerminal) ? 2 : 1
+    }
+}
 
-        // Multi-scalar grapheme clusters (emoji sequences with ZWJ, skin tones,
-        // flag sequences, keycap sequences) are typically 2 cells wide.
-        if scalars.count > 1 {
-            // If the only extra scalars are variation selectors (U+FE0F/U+FE0E),
-            // fall through to the base character width check. Many terminals
-            // don't widen characters just because of a presentation selector
-            // (e.g. ⚙️ = U+2699 + U+FE0F is still 1 cell in most terminals).
-            let hasNonVariationExtras = scalars.dropFirst().contains { scalar in
-                let sv = scalar.value
-                return !(0xFE00...0xFE0F).contains(sv) && !(0xE0100...0xE01EF).contains(sv)
-            }
-            if hasNonVariationExtras {
-                // True multi-character sequence (ZWJ, flags, keycaps, skin tones)
-                return 2
-            }
-            // Just base + variation selector(s): fall through to base char width
+private extension Unicode.Scalar {
+    var isZeroWidthInTerminal: Bool {
+        switch properties.generalCategory {
+        case .control, .format, .nonspacingMark, .spacingMark, .enclosingMark:
+            return true
+        default:
+            return value == 0x00AD ||
+                (0xFE00...0xFE0F).contains(value) ||
+                (0xE0100...0xE01EF).contains(value) ||
+                (0xE0000...0xE007F).contains(value)
         }
+    }
 
-        // East Asian Wide and Fullwidth characters (2 cells)
-        if (0x1100...0x115F).contains(scalarValue) { return 2 } // Hangul Jamo
-        if (0x2329...0x232A).contains(scalarValue) { return 2 } // angle brackets
-        if (0x2E80...0x303E).contains(scalarValue) { return 2 } // CJK radicals, Kangxi, ideographic
-        if (0x3041...0x33BF).contains(scalarValue) { return 2 } // Hiragana, Katakana, Bopomofo, Hangul compat, Kanbun, CJK
-        if (0x33D0...0x33FF).contains(scalarValue) { return 2 } // CJK compatibility
-        if (0x3400...0x4DBF).contains(scalarValue) { return 2 } // CJK unified ext A
-        if (0x4E00...0x9FFF).contains(scalarValue) { return 2 } // CJK unified
-        if (0xA000...0xA4CF).contains(scalarValue) { return 2 } // Yi
-        if (0xA960...0xA97F).contains(scalarValue) { return 2 } // Hangul Jamo extended A
-        if (0xAC00...0xD7AF).contains(scalarValue) { return 2 } // Hangul syllables
-        if (0xF900...0xFAFF).contains(scalarValue) { return 2 } // CJK compatibility ideographs
-        if (0xFE10...0xFE19).contains(scalarValue) { return 2 } // vertical forms
-        if (0xFE30...0xFE6F).contains(scalarValue) { return 2 } // CJK compatibility forms, small forms
-        if (0xFF01...0xFF60).contains(scalarValue) { return 2 } // fullwidth forms
-        if (0xFFE0...0xFFE6).contains(scalarValue) { return 2 } // fullwidth signs
-        if (0x1F000...0x1FBFF).contains(scalarValue) { return 2 } // emoji and symbols (Mahjong, Dominos, Playing Cards, Emoji, etc.)
-        if (0x20000...0x2FA1F).contains(scalarValue) { return 2 } // CJK unified extensions B-F, compatibility supplement
-        if (0x30000...0x3134F).contains(scalarValue) { return 2 } // CJK unified extension G
-
-        return 1
+    var isWideInTerminal: Bool {
+        (0x1100...0x115F).contains(value) ||
+            (0x2329...0x232A).contains(value) ||
+            (0x2E80...0x303E).contains(value) ||
+            (0x3041...0x33BF).contains(value) ||
+            (0x33D0...0x33FF).contains(value) ||
+            (0x3400...0x4DBF).contains(value) ||
+            (0x4E00...0x9FFF).contains(value) ||
+            (0xA000...0xA4CF).contains(value) ||
+            (0xA960...0xA97F).contains(value) ||
+            (0xAC00...0xD7AF).contains(value) ||
+            (0xF900...0xFAFF).contains(value) ||
+            (0xFE10...0xFE19).contains(value) ||
+            (0xFE30...0xFE6F).contains(value) ||
+            (0xFF01...0xFF60).contains(value) ||
+            (0xFFE0...0xFFE6).contains(value) ||
+            (0x1F000...0x1FBFF).contains(value) ||
+            (0x20000...0x2FA1F).contains(value) ||
+            (0x30000...0x3134F).contains(value)
     }
 }
 
@@ -79,58 +63,24 @@ extension String {
     /// Accounts for wide characters (emoji, CJK) that occupy 2 terminal cells
     /// and zero-width characters (combining marks, variation selectors).
     public var strippedLength: Int {
-        var count = 0
-        var index = startIndex
-
-        while index < endIndex {
-            if self[index] == "\u{1B}" {
-                // Skip ANSI sequence: ESC [ params letter
-                index = self.index(after: index)
-                if index < endIndex && self[index] == "[" {
-                    index = self.index(after: index)
-                    // Skip parameter bytes (digits, semicolons)
-                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
-                        index = self.index(after: index)
-                    }
-                    // Skip the final byte (letter)
-                    if index < endIndex && self[index].isLetter {
-                        index = self.index(after: index)
-                    }
-                }
-            } else {
-                count += self[index].terminalWidth
-                index = self.index(after: index)
+        var width = 0
+        TerminalTextParser.scan(self) { token in
+            if case .grapheme(let character) = token {
+                width += character.terminalWidth
             }
         }
-
-        return count
+        return width
     }
 
     /// The string with all ANSI escape codes removed.
     public var stripped: String {
         var result = ""
         result.reserveCapacity(count)
-        var index = startIndex
-
-        while index < endIndex {
-            if self[index] == "\u{1B}" {
-                // Skip ANSI sequence: ESC [ params letter
-                index = self.index(after: index)
-                if index < endIndex && self[index] == "[" {
-                    index = self.index(after: index)
-                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
-                        index = self.index(after: index)
-                    }
-                    if index < endIndex && self[index].isLetter {
-                        index = self.index(after: index)
-                    }
-                }
-            } else {
-                result.append(self[index])
-                index = self.index(after: index)
+        TerminalTextParser.scan(self) { token in
+            if case .grapheme(let character) = token {
+                result.append(character)
             }
         }
-
         return result
     }
 
@@ -175,35 +125,22 @@ extension String {
 
         var result = ""
         var visible = 0
-        var index = startIndex
-
-        while index < endIndex && visible < visibleCount {
-            // Check if we're at the start of an ANSI escape sequence
-            if self[index] == "\u{1B}" {
-                // Consume the entire ANSI sequence (ESC [ ... letter)
-                let seqStart = index
-                index = self.index(after: index)
-                if index < endIndex && self[index] == "[" {
-                    index = self.index(after: index)
-                    // Skip parameter bytes (digits, semicolons)
-                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
-                        index = self.index(after: index)
-                    }
-                    // Skip the final byte (letter)
-                    if index < endIndex && self[index].isLetter {
-                        index = self.index(after: index)
-                    }
+        var reachedBoundary = false
+        TerminalTextParser.scan(self) { token in
+            guard !reachedBoundary, visible < visibleCount else { return }
+            switch token {
+            case .sgr(_, let sequence):
+                result += sequence
+            case .grapheme(let character):
+                let charWidth = character.terminalWidth
+                guard visible + charWidth <= visibleCount else {
+                    reachedBoundary = true
+                    return
                 }
-                result += String(self[seqStart..<index])
-            } else {
-                let charWidth = self[index].terminalWidth
-                if visible + charWidth > visibleCount { break }
-                result.append(self[index])
+                result.append(character)
                 visible += charWidth
-                index = self.index(after: index)
             }
         }
-
         return result
     }
 
@@ -216,29 +153,21 @@ extension String {
     /// - Returns: The remainder of the string with ANSI codes intact.
     public func ansiAwareSuffix(droppingVisible dropCount: Int) -> String {
         var visible = 0
-        var index = startIndex
-
-        while index < endIndex && visible < dropCount {
-            if self[index] == "\u{1B}" {
-                // Skip the entire ANSI sequence
-                index = self.index(after: index)
-                if index < endIndex && self[index] == "[" {
-                    index = self.index(after: index)
-                    while index < endIndex && (self[index].isNumber || self[index] == ";") {
-                        index = self.index(after: index)
-                    }
-                    if index < endIndex && self[index].isLetter {
-                        index = self.index(after: index)
-                    }
+        var result = ""
+        TerminalTextParser.scan(self) { token in
+            switch token {
+            case .sgr(_, let sequence):
+                if visible >= dropCount {
+                    result += sequence
                 }
-            } else {
-                visible += self[index].terminalWidth
-                index = self.index(after: index)
+            case .grapheme(let character):
+                if visible >= dropCount {
+                    result.append(character)
+                }
+                visible += character.terminalWidth
             }
         }
-
-        guard index < endIndex else { return "" }
-        return String(self[index...])
+        return result
     }
 
     // MARK: - ANSI State Extraction
@@ -258,26 +187,16 @@ extension String {
     ///   if the line starts with a visible character.
     public func leadingANSISequences() -> String {
         var result = ""
-        var index = startIndex
-
-        while index < endIndex {
-            guard self[index] == "\u{1B}" else { break }
-
-            // Consume the ANSI sequence (ESC [ params letter)
-            let seqStart = index
-            index = self.index(after: index)
-            if index < endIndex && self[index] == "[" {
-                index = self.index(after: index)
-                while index < endIndex && (self[index].isNumber || self[index] == ";") {
-                    index = self.index(after: index)
-                }
-                if index < endIndex && self[index].isLetter {
-                    index = self.index(after: index)
-                }
+        var foundGrapheme = false
+        TerminalTextParser.scan(self) { token in
+            guard !foundGrapheme else { return }
+            switch token {
+            case .sgr(_, let sequence):
+                result += sequence
+            case .grapheme:
+                foundGrapheme = true
             }
-            result += String(self[seqStart..<index])
         }
-
         return result
     }
 }
