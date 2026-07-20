@@ -27,6 +27,30 @@ struct KeyedCollectionRuntimeTests {
         #expect(actualLines == ["row:0", "row:1"])
     }
 
+    @Test("ForEach nested inside ForEach flattens through stack builders")
+    func nestedForEachRendersAllElements() {
+        struct Group: Identifiable {
+            let id: String
+            let items: [String]
+        }
+        let groups = [
+            Group(id: "g1", items: ["a", "b"]),
+            Group(id: "g2", items: ["c"])
+        ]
+        let harness = RuntimeCharacterizationHarness()
+        let actualLines = harness.render {
+            VStack(spacing: 0) {
+                ForEach(groups) { group in
+                    ForEach(group.items, id: \.self) { item in
+                        Text("\(group.id):\(item)")
+                    }
+                }
+            }
+        }.ansiStrippedLines
+
+        #expect(actualLines == ["g1:a", "g1:b", "g2:c"])
+    }
+
     @Test("ForEach State follows IDs across insertion, reorder, and removal")
     func forEachStateFollowsIDs() {
         let harness = RuntimeCharacterizationHarness()
