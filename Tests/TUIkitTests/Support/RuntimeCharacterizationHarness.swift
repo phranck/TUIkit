@@ -135,8 +135,11 @@ final class RuntimeCharacterizationHarness {
         tuiContext.focusManager.dispatchKeyEvent(event)
     }
 
-    func consumePendingRenderInvalidations() -> [RenderInvalidation] {
-        tuiContext.appState.consumePendingCacheInvalidations()
+    func consumePendingSubtreeInvalidations() -> [ViewIdentity] {
+        tuiContext.appState.consumePendingCacheInvalidations().compactMap { invalidation in
+            guard case .subtree(let identity) = invalidation else { return nil }
+            return identity
+        }
     }
 
     func recordEffect(_ description: String) {
