@@ -190,6 +190,38 @@ struct RuntimeCharacterizationTests {
         #expect(actualLines == ["row:0", "row:1"])
     }
 
+    @Test("ForEach State follows IDs across reorder and removal")
+    func forEachStateFollowsIDs() {
+        let harness = RuntimeCharacterizationHarness()
+
+        let initial = harness.render {
+            VStack {
+                ForEach([1, 2], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }
+        let reordered = harness.render {
+            VStack {
+                ForEach([2, 1], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }
+        let removed = harness.render {
+            VStack {
+                ForEach([2], id: \.self) { id in
+                    StatefulForEachRow(id: id)
+                }
+            }
+        }
+
+        #expect(initial.ansiStrippedLines == ["1:1", "2:2"])
+        #expect(reordered.ansiStrippedLines == ["2:2", "1:1"])
+        #expect(removed.ansiStrippedLines == ["2:2"])
+        #expect(harness.storedStateCount == 1)
+    }
+
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")
     func reconstructedLifecycleIdentity() {
         let harness = RuntimeCharacterizationHarness()
@@ -273,6 +305,19 @@ private struct StatefulCharacterizationView: View {
 
     var body: some View {
         Text("value:\(value)")
+    }
+}
+
+private struct StatefulForEachRow: View {
+    @State private var storedID = 0
+
+    let id: Int
+
+    var body: some View {
+        if storedID == 0 {
+            storedID = id
+        }
+        return Text("\(id):\(storedID)")
     }
 }
 

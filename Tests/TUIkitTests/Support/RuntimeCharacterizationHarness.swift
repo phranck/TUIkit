@@ -22,6 +22,10 @@ enum RuntimeTraceEvent: Sendable, Equatable {
 final class RuntimeCharacterizationHarness {
     let trace = TraceRecorder<RuntimeTraceEvent>()
 
+    var storedStateCount: Int {
+        stateStorage.count
+    }
+
     private let availableWidth: Int
     private let availableHeight: Int
     private let rootIdentity = ViewIdentity(path: "RuntimeCharacterizationRoot")
