@@ -101,6 +101,26 @@ struct TextCellLayoutTests {
         #expect(output.strippedLength == 4)
     }
 
+    @Test("Focused text fields reserve every cell of a wide cursor grapheme")
+    func focusedFieldCursorCoversWideGrapheme() {
+        let context = RenderContext(availableWidth: 20, availableHeight: 1, tuiContext: TUIContext())
+        let renderer = makeRenderer()
+
+        let output = renderer.buildContent(
+            text: "界A",
+            cursorPosition: 0,
+            selectionRange: nil,
+            isFocused: true,
+            palette: context.environment.palette,
+            cursorStyle: TextCursorStyle(animation: .none),
+            cursorTimer: nil,
+            contentWidth: 3
+        )
+
+        #expect(output.stripped == "█ A")
+        #expect(output.strippedLength == 3)
+    }
+
     private func makeRenderer() -> TextFieldContentRenderer {
         TextFieldContentRenderer(
             prompt: nil,

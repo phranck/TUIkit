@@ -121,10 +121,16 @@ struct TextFieldContentRenderer {
     ) -> String {
         let characters = displayCharacters(for: text)
         let clampedPosition = max(0, min(cursorPosition, characters.count))
+        let cursorCharacter = cursorStyle.shape.character
+        let cursorCharacterWidth = max(1, cursorCharacter.terminalWidth)
+        let underlyingCursorWidth = clampedPosition < characters.count
+            ? max(1, characters[clampedPosition].terminalWidth)
+            : 1
+        let cursorSlotWidth = max(cursorCharacterWidth, underlyingCursorWidth)
         let visibleStart = visibleStart(
             characters: characters,
             cursorPosition: clampedPosition,
-            availableWidth: max(0, width - 1)
+            availableWidth: max(0, width - min(max(0, width), cursorSlotWidth))
         )
 
         // Compute cursor visibility and color based on animation style
@@ -143,19 +149,18 @@ struct TextFieldContentRenderer {
 
         while outputWidth < width {
             if !cursorRendered && textIndex == clampedPosition {
-                if cursorVisible {
-                    let cursorChar = cursorStyle.shape.character
-                    result += ANSIRenderer.colorize(String(cursorChar), foreground: cursorColor, background: background)
-                } else {
-                    // Cursor hidden (blink off): show underlying character or space
-                    if textIndex < characters.count {
-                        let char = characters[textIndex]
-                        result += ANSIRenderer.colorize(String(char), foreground: palette.foreground, background: background)
-                    } else {
-                        result += ANSIRenderer.colorize(" ", foreground: palette.foreground, background: background)
-                    }
-                }
-                outputWidth += 1
+                let renderedSlotWidth = min(cursorSlotWidth, width - outputWidth)
+                let underlyingCharacter = textIndex < characters.count ? characters[textIndex] : nil
+                result += renderCursorSlot(
+                    underlyingCharacter: underlyingCharacter,
+                    cursorCharacter: cursorCharacter,
+                    isVisible: cursorVisible,
+                    width: renderedSlotWidth,
+                    foreground: palette.foreground,
+                    cursorColor: cursorColor,
+                    background: background
+                )
+                outputWidth += renderedSlotWidth
                 cursorRendered = true
                 if textIndex < characters.count {
                     textIndex += 1
@@ -191,6 +196,31 @@ struct TextFieldContentRenderer {
         }
 
         return result
+    }
+
+    private func renderCursorSlot(
+        underlyingCharacter: Character?,
+        cursorCharacter: Character,
+        isVisible: Bool,
+        width: Int,
+        foreground: Color,
+        cursorColor: Color,
+        background: Color
+    ) -> String {
+        let character = isVisible ? cursorCharacter : underlyingCharacter
+        let content = cellFittedText(character, width: width)
+        return ANSIRenderer.colorize(
+            content,
+            foreground: isVisible ? cursorColor : foreground,
+            background: background
+        )
+    }
+
+    private func cellFittedText(_ character: Character?, width: Int) -> String {
+        guard let character, character.terminalWidth <= width else {
+            return String(repeating: " ", count: width)
+        }
+        return String(character) + String(repeating: " ", count: width - character.terminalWidth)
     }
 
     private func displayCharacters(for text: String) -> [Character] {
