@@ -79,4 +79,51 @@ struct FrameBufferTests {
         // "Hi" (styled) + " " (spacing) + "There"
         #expect(left.lines[0].stripped == "Hi There")
     }
+
+    @Test("Line mutation rebuilds cell width")
+    func lineMutationRebuildsSurface() {
+        var buffer = FrameBuffer(text: "A")
+
+        buffer.lines[0] = "e\u{301}界"
+
+        #expect(buffer.width == 3)
+        #expect(buffer.lines == ["e\u{301}界"])
+    }
+
+    @Test("FrameBuffer rejects embedded terminal commands")
+    func rejectsTerminalCommands() {
+        let buffer = FrameBuffer(text: "A\u{1B}]0;owned\u{07}B\u{1B}[2JC")
+
+        #expect(buffer.lines == ["ABC"])
+        #expect(buffer.width == 3)
+    }
+
+    @Test("Transparent overlay spaces preserve base cells")
+    func transparentOverlaySpaces() {
+        let base = FrameBuffer(text: "ABC")
+        let overlay = FrameBuffer(text: " X ")
+
+        let result = base.composited(with: overlay, at: (x: 0, y: 0))
+
+        #expect(result.lines == ["AXC"])
+    }
+
+    @Test("Overlay clears complete wide graphemes")
+    func overlayClearsWideGrapheme() {
+        let base = FrameBuffer(text: "A界B")
+        let overlay = FrameBuffer(text: "X")
+
+        let result = base.composited(with: overlay, at: (x: 2, y: 0))
+
+        #expect(result.lines == ["A XB"])
+        #expect(result.width == 4)
+    }
+
+    @Test("RGB-styled compatibility lines remain valid strings")
+    func rgbStyledLineLifetime() {
+        let styled = "\u{1B}[38;2;229;229;229mOver\u{1B}[0m"
+        let buffer = FrameBuffer(text: styled)
+
+        #expect(buffer.lines[0].stripped == "Over")
+    }
 }
