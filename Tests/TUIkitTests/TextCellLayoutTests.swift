@@ -46,6 +46,21 @@ struct TextCellLayoutTests {
         #expect(buffer.lines[0].stripped == "AB")
     }
 
+    @Test("Text consumes multiline terminal control payloads before wrapping")
+    func textSanitizesBeforeSplittingLines() {
+        let context = RenderContext(
+            availableWidth: 20,
+            availableHeight: 2,
+            tuiContext: TUIContext()
+        )
+        let text = Text("A\u{1B}]0;hidden\npayload\u{07}B")
+
+        let buffer = renderToBuffer(text, context: context)
+
+        #expect(buffer.height == 1)
+        #expect(buffer.lines[0].stripped == "AB")
+    }
+
     @Test("Unfocused text fields clip and pad in terminal cells")
     func unfocusedFieldUsesCellWidth() {
         let context = RenderContext(availableWidth: 20, availableHeight: 1, tuiContext: TUIContext())

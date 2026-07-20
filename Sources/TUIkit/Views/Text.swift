@@ -238,9 +238,8 @@ extension Text: Renderable, Layoutable {
     ///   - maxWidth: Maximum terminal cells per line.
     /// - Returns: An array of wrapped lines (never empty).
     private func wordWrap(_ text: String, maxWidth: Int) -> [String] {
-        let paragraphs = text.split(separator: "\n", omittingEmptySubsequences: false)
-        let lines = paragraphs.flatMap { paragraph in
-            wrapParagraph(String(paragraph).sanitizedForTerminal, maxWidth: maxWidth)
+        let lines = text.sanitizedTerminalLines.flatMap { paragraph in
+            wrapParagraph(paragraph, maxWidth: maxWidth)
         }
         return lines.isEmpty ? [""] : lines
     }

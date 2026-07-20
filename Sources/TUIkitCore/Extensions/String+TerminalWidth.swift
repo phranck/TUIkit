@@ -96,6 +96,22 @@ extension String {
         stripped
     }
 
+    /// Sanitized logical lines for multiline terminal text layout.
+    package var sanitizedTerminalLines: [String] {
+        var lines = [""]
+        TerminalTextParser.scan(self, preservingLineBreaks: true) { token in
+            switch token {
+            case .grapheme(let character):
+                lines[lines.count - 1].append(character)
+            case .lineBreak:
+                lines.append("")
+            case .sgr:
+                break
+            }
+        }
+        return lines
+    }
+
     /// Pads the string to the specified visible width using spaces.
     ///
     /// ANSI codes and wide characters are handled correctly.
@@ -139,6 +155,8 @@ extension String {
                 }
                 result.append(character)
                 visible += charWidth
+            case .lineBreak:
+                break
             }
         }
         return result
@@ -165,6 +183,8 @@ extension String {
                     result.append(character)
                 }
                 visible += character.terminalWidth
+            case .lineBreak:
+                break
             }
         }
         return result
@@ -195,6 +215,8 @@ extension String {
                 result += sequence
             case .grapheme:
                 foundGrapheme = true
+            case .lineBreak:
+                break
             }
         }
         return result

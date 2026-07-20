@@ -57,4 +57,9 @@ struct TerminalTextTests {
         #expect(input.stripped == "ABC")
         #expect(input.sanitizedForTerminal == "ABC")
     }
+
+    @Test("CRLF control clusters cannot survive sanitization")
+    func crlfControlsAreNeutralized() {
+        #expect("A\r\nB".sanitizedForTerminal == "AB")
+    }
 }

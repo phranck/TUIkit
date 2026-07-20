@@ -269,6 +269,8 @@ private extension TerminalSurface {
                         )
                     )
                 }
+            case .lineBreak:
+                break
             }
         }
 

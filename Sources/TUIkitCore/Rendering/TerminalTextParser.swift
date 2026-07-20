@@ -9,6 +9,9 @@ enum TerminalTextToken {
     /// A printable extended grapheme cluster.
     case grapheme(Character)
 
+    /// A line-feed boundary retained for multiline text layout.
+    case lineBreak
+
     /// A supported Select Graphic Rendition sequence.
     case sgr(parameters: [Int], sequence: String)
 }
@@ -19,13 +22,28 @@ enum TerminalTextToken {
 /// without becoming output. This keeps measurement and rendering on the same
 /// sanitized stream and prevents embedded terminal commands from surviving.
 enum TerminalTextParser {
-    static func scan(_ text: String, body: (TerminalTextToken) -> Void) {
+    static func scan(
+        _ text: String,
+        preservingLineBreaks: Bool = false,
+        body: (TerminalTextToken) -> Void
+    ) {
         var index = text.startIndex
 
         while index < text.endIndex {
             let character = text[index]
+
+            if character.isLineBreakCluster {
+                if preservingLineBreaks {
+                    body(.lineBreak)
+                }
+                index = text.index(after: index)
+                continue
+            }
+
             guard let scalarValue = character.singleScalarValue else {
-                body(.grapheme(character))
+                if !character.containsTerminalControl {
+                    body(.grapheme(character))
+                }
                 index = text.index(after: index)
                 continue
             }
@@ -194,6 +212,18 @@ private extension TerminalTextParser {
 }
 
 private extension Character {
+    var isLineBreakCluster: Bool {
+        let scalars = unicodeScalars.map(\.value)
+        return scalars.contains(0x0A) && scalars.allSatisfy { $0 == 0x0A || $0 == 0x0D }
+    }
+
+    var containsTerminalControl: Bool {
+        unicodeScalars.contains { scalar in
+            let value = scalar.value
+            return (0x00...0x1F).contains(value) || (0x7F...0x9F).contains(value)
+        }
+    }
+
     var singleScalarValue: UInt32? {
         guard unicodeScalars.count == 1 else { return nil }
         return unicodeScalars.first?.value
