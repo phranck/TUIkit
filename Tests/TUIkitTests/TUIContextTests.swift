@@ -115,8 +115,41 @@ struct TUIContextTests {
 
         firstContext.applyPendingRenderInvalidations()
 
-        #expect(firstContext.renderCache.stats.clears == 1)
+        #expect(firstContext.renderCache.stats.subtreeClears == 1)
         #expect(secondContext.renderCache.stats.clears == 0)
+    }
+
+    @Test("Observation registrations stay bounded and unmount with their identity")
+    func observationRegistrationLifecycle() {
+        let context = TUIContext()
+        let model = RuntimeObservationModel()
+        let renderContext = RenderContext(
+            availableWidth: 20,
+            availableHeight: 1,
+            tuiContext: context,
+            identity: ViewIdentity(path: "observed")
+        )
+
+        for _ in 0..<10 {
+            context.beginRenderPass()
+            _ = renderToBuffer(
+                RuntimeObservationView(model: model),
+                context: renderContext
+            )
+            context.endRenderPass()
+        }
+
+        #expect(context.observationRegistry.count == 1)
+
+        context.beginRenderPass()
+        context.endRenderPass()
+
+        #expect(context.observationRegistry.isEmpty)
+
+        context.appState.didRender()
+        model.value = 1
+
+        #expect(context.appState.needsRender == false)
     }
 
     @Test("Application services are isolated per runtime")
@@ -313,6 +346,7 @@ struct TUIContextTests {
         )
 
         #expect(renderContext.environment.stateStorage === tuiContext.stateStorage)
+        #expect(renderContext.environment.observationRegistry === tuiContext.observationRegistry)
         #expect(renderContext.environment.lifecycle === tuiContext.lifecycle)
         #expect(renderContext.environment.keyEventDispatcher === tuiContext.keyEventDispatcher)
         #expect(renderContext.environment.renderCache === tuiContext.renderCache)

@@ -95,8 +95,8 @@ extension EquatableView: Renderable {
             contextWidth: context.availableWidth,
             contextHeight: context.availableHeight
         ) {
-            // Still need to run hydration for @State properties inside
-            // the cached subtree, so they stay active for GC.
+            // Still need to keep runtime records inside the cached subtree
+            // active even though its body is not evaluated.
             // But we skip the actual rendering work.
             markSubtreeActive(context: context)
             return cached
@@ -120,13 +120,13 @@ extension EquatableView: Renderable {
 // MARK: - Private Helpers
 
 private extension EquatableView {
-    /// Marks the content's identity as active in StateStorage for GC.
+    /// Marks the content's runtime records as active for end-of-pass cleanup.
     ///
     /// When returning a cached buffer, the subtree's views aren't visited.
-    /// Their state identities must still be marked active to prevent
-    /// StateStorage from garbage-collecting them.
+    /// Their state and Observation identities must still be marked active.
     func markSubtreeActive(context: RenderContext) {
-        context.environment.stateStorage!.markActive(context.identity)
+        context.environment.stateStorage!.markSubtreeActive(context.identity)
+        context.environment.observationRegistry?.markSubtreeActive(context.identity)
     }
 }
 

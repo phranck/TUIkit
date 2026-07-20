@@ -22,35 +22,51 @@ struct StateStorageIdentityTests {
         StateStorage()
     }
 
-    // MARK: - Self-Hydrating State
+    // MARK: - Dynamic Property Binding
 
-    @Test("State self-hydrates from StateStorage when active context is set")
-    func selfHydrationFromStorage() {
+    @Test("State binds to storage at the committed identity")
+    func dynamicPropertyBinding() {
         let storage = testStorage()
         let identity = ViewIdentity(path: "TestView")
+        let context = HydrationContext(identity: identity, storage: storage)
 
-        // First construction: creates new entry in storage
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstState = State(wrappedValue: 42)
-        StateRegistration.activeContext = nil
+        let first = SingleStateOwner(defaultValue: 42)
+        StateRegistration.bindDynamicProperties(in: first, context: context)
+        first.value = 99
 
-        // Mutate value through the first state
-        firstState.wrappedValue = 99
+        let reconstructed = SingleStateOwner(defaultValue: 42)
+        StateRegistration.bindDynamicProperties(in: reconstructed, context: context)
 
-        // Second construction at same identity: should get the persisted value (99)
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let secondState = State(wrappedValue: 42)
-        StateRegistration.activeContext = nil
+        #expect(reconstructed.value == 99)
+    }
 
-        #expect(secondState.wrappedValue == 99)
+    @Test("State rebinding isolates identical paths across runtimes")
+    func runtimeStorageIsolation() {
+        let firstStorage = testStorage()
+        let secondStorage = testStorage()
+        let identity = ViewIdentity(path: "SharedPath")
+        let firstContext = HydrationContext(identity: identity, storage: firstStorage)
+        let secondContext = HydrationContext(identity: identity, storage: secondStorage)
+        let owner = SingleStateOwner(defaultValue: 1)
+
+        StateRegistration.bindDynamicProperties(in: owner, context: firstContext)
+        owner.value = 10
+
+        StateRegistration.bindDynamicProperties(in: owner, context: secondContext)
+        #expect(owner.value == 1)
+        owner.value = 20
+
+        let firstReconstruction = SingleStateOwner(defaultValue: 1)
+        StateRegistration.bindDynamicProperties(in: firstReconstruction, context: firstContext)
+        let secondReconstruction = SingleStateOwner(defaultValue: 1)
+        StateRegistration.bindDynamicProperties(in: secondReconstruction, context: secondContext)
+
+        #expect(firstReconstruction.value == 10)
+        #expect(secondReconstruction.value == 20)
     }
 
     @Test("State uses local box when no active context is set")
     func localBoxWithoutContext() {
-        StateRegistration.activeContext = nil
-
         let state = State(wrappedValue: "hello")
         #expect(state.wrappedValue == "hello")
 
@@ -62,26 +78,51 @@ struct StateStorageIdentityTests {
     func multipleStateDistinctIndices() {
         let storage = testStorage()
         let identity = ViewIdentity(path: "MultiStateView")
+        let context = HydrationContext(identity: identity, storage: storage)
 
-        // Simulate a view with two @State properties
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstState = State(wrappedValue: 10)
-        let secondState = State(wrappedValue: "hello")
-        StateRegistration.activeContext = nil
+        let first = MultipleStateOwner()
+        StateRegistration.bindDynamicProperties(in: first, context: context)
+        first.number = 20
+        first.text = "world"
 
-        firstState.wrappedValue = 20
-        secondState.wrappedValue = "world"
+        let reconstructed = MultipleStateOwner()
+        StateRegistration.bindDynamicProperties(in: reconstructed, context: context)
 
-        // Reconstruct: both should get their persisted values
-        StateRegistration.activeContext = HydrationContext(identity: identity, storage: storage)
-        StateRegistration.counter = 0
-        let firstReconstructed = State(wrappedValue: 10)
-        let secondReconstructed = State(wrappedValue: "hello")
-        StateRegistration.activeContext = nil
+        #expect(reconstructed.number == 20)
+        #expect(reconstructed.text == "world")
+    }
 
-        #expect(firstReconstructed.wrappedValue == 20)
-        #expect(secondReconstructed.wrappedValue == "world")
+    @Test("Hydration contexts restore through nested dynamic scopes")
+    func nestedHydrationScopes() {
+        let storage = testStorage()
+        var environment = EnvironmentValues()
+        environment.stateStorage = storage
+        let outerContext = RenderContext(
+            availableWidth: 10,
+            availableHeight: 1,
+            environment: environment,
+            identity: ViewIdentity(path: "Outer")
+        )
+        let innerContext = RenderContext(
+            availableWidth: 10,
+            availableHeight: 1,
+            environment: environment,
+            identity: ViewIdentity(path: "Inner")
+        )
+
+        #expect(StateRegistration.currentContext == nil)
+
+        StateRegistration.withHydration(context: outerContext) {
+            #expect(StateRegistration.currentContext?.identity == outerContext.identity)
+
+            StateRegistration.withHydration(context: innerContext) {
+                #expect(StateRegistration.currentContext?.identity == innerContext.identity)
+            }
+
+            #expect(StateRegistration.currentContext?.identity == outerContext.identity)
+        }
+
+        #expect(StateRegistration.currentContext == nil)
     }
 
     // MARK: - View Identity
@@ -98,6 +139,33 @@ struct StateStorageIdentityTests {
         let root = ViewIdentity(path: "Root")
         let branch = root.branch("true")
         #expect(branch.path == "Root#true")
+    }
+
+    @Test("Runtime scopes are stable and nested slots stay distinct")
+    func scopedIdentityPath() {
+        let root = ViewIdentity(path: "Root")
+
+        let firstPass = root.scoped("lifecycle.appear")
+        let secondPass = root.scoped("lifecycle.appear")
+        let nested = firstPass.scoped("lifecycle.appear")
+
+        #expect(firstPass == secondPass)
+        #expect(nested != firstPass)
+    }
+
+    @Test("Explicit keys preserve child identity independently of sibling order")
+    func keyedChildIdentity() {
+        let root = ViewIdentity(path: "Root")
+
+        let alphaBeforeReorder = root.keyedChild(type: String.self, key: "alpha")
+        let betaBeforeReorder = root.keyedChild(type: String.self, key: "beta")
+        let betaAfterReorder = root.keyedChild(type: String.self, key: "beta")
+        let alphaAfterReorder = root.keyedChild(type: String.self, key: "alpha")
+
+        #expect(alphaBeforeReorder == alphaAfterReorder)
+        #expect(betaBeforeReorder == betaAfterReorder)
+        #expect(alphaBeforeReorder != betaBeforeReorder)
+        #expect(root.keyedChild(type: String.self, key: "a/b") != root.keyedChild(type: String.self, key: "a#b"))
     }
 
     @Test("isAncestor detects path descendants")
@@ -201,4 +269,53 @@ struct StateStorageIdentityTests {
         #expect(newStaleBox !== staleBox)
         #expect(newStaleBox.value == 2)
     }
+
+    @Test("Keyed state follows reorder and removed keys are collected")
+    func keyedStateReorderAndRemoval() {
+        let storage = testStorage()
+        let root = ViewIdentity(path: "Root")
+        let firstIdentity = root.keyedChild(type: String.self, key: "first")
+        let secondIdentity = root.keyedChild(type: String.self, key: "second")
+        let firstKey = StateStorage.StateKey(identity: firstIdentity, propertyIndex: 0)
+        let secondKey = StateStorage.StateKey(identity: secondIdentity, propertyIndex: 0)
+        let firstBox: StateBox<Int> = storage.storage(for: firstKey, default: 1)
+        let secondBox: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        firstBox.value = 10
+        secondBox.value = 20
+
+        storage.beginRenderPass()
+        storage.markActive(secondIdentity)
+        storage.markActive(firstIdentity)
+        storage.endRenderPass()
+
+        let reorderedFirst: StateBox<Int> = storage.storage(for: firstKey, default: 1)
+        let reorderedSecond: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        #expect(reorderedFirst === firstBox)
+        #expect(reorderedSecond === secondBox)
+        #expect(reorderedFirst.value == 10)
+        #expect(reorderedSecond.value == 20)
+
+        storage.beginRenderPass()
+        storage.markActive(firstIdentity)
+        storage.endRenderPass()
+
+        let recreatedSecond: StateBox<Int> = storage.storage(for: secondKey, default: 2)
+        #expect(recreatedSecond !== secondBox)
+        #expect(recreatedSecond.value == 2)
+    }
+}
+
+// MARK: - Fixtures
+
+private struct SingleStateOwner {
+    @State var value: Int
+
+    init(defaultValue: Int) {
+        self._value = State(wrappedValue: defaultValue)
+    }
+}
+
+private struct MultipleStateOwner {
+    @State var number = 10
+    @State var text = "hello"
 }

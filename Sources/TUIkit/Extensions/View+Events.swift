@@ -4,8 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-import Foundation
-
 // MARK: - Key Press
 
 extension View {
@@ -181,7 +179,6 @@ extension View {
     public func onAppear(perform action: @escaping () -> Void) -> some View {
         OnAppearModifier(
             content: self,
-            token: UUID().uuidString,
             action: action
         )
     }
@@ -208,7 +205,6 @@ extension View {
     public func onDisappear(perform action: @escaping () -> Void) -> some View {
         OnDisappearModifier(
             content: self,
-            token: UUID().uuidString,
             action: action
         )
     }
@@ -236,11 +232,10 @@ extension View {
     /// - Returns: A view that starts the task on appearance.
     public func task(
         priority: TaskPriority = .userInitiated,
-        _ action: @escaping @Sendable () async -> Void
+        @_inheritActorContext _ action: @escaping @Sendable () async -> Void
     ) -> some View {
         TaskModifier(
             content: self,
-            token: UUID().uuidString,
             task: action,
             priority: priority
         )

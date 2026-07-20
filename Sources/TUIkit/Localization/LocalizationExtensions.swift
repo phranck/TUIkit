@@ -20,7 +20,7 @@ extension Text {
     ///
     /// - Parameter key: The dot-notation key for the localized string.
     public init(localized key: String) {
-        let localizationService = StateRegistration.activeEnvironment?.localizationService
+        let localizationService = StateRegistration.currentEnvironment?.localizationService
             ?? LocalizationService.transient()
         let localizedValue = localizationService.string(for: key)
         self.init(localizedValue)

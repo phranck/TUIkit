@@ -96,7 +96,7 @@ public struct Environment<Value> {
     /// Reads from the active render environment if available,
     /// otherwise returns the default value.
     public var wrappedValue: Value {
-        let env = StateRegistration.activeEnvironment ?? EnvironmentValues()
+        let env = StateRegistration.currentEnvironment ?? EnvironmentValues()
         switch strategy {
         case .keyPath(let keyPath):
             return env[keyPath: keyPath]

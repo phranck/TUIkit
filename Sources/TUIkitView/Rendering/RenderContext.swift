@@ -126,6 +126,31 @@ public struct RenderContext {
         return copy
     }
 
+    /// Creates a new context for a stable runtime slot below this view.
+    ///
+    /// - Parameter scope: Framework-defined modifier or effect scope.
+    /// - Returns: A new context with the scoped identity.
+    package func withIdentityScope(_ scope: String) -> Self {
+        var copy = self
+        copy.identity = identity.scoped(scope)
+        return copy
+    }
+
+    /// Creates a new context for a child identified by an explicit key.
+    ///
+    /// Keyed child paths do not depend on sibling position, allowing state and
+    /// runtime records to follow a child across collection reorder operations.
+    ///
+    /// - Parameters:
+    ///   - type: The child view's type.
+    ///   - key: The child's explicit collection key.
+    /// - Returns: A new context with the keyed child identity.
+    package func withKeyedChildIdentity<V, ID: Hashable>(type: V.Type, key: ID) -> Self {
+        var copy = self
+        copy.identity = identity.keyedChild(type: type, key: key)
+        return copy
+    }
+
     /// Creates a new context with a different available width.
     ///
     /// Used by layout containers (e.g., NavigationSplitView) to constrain

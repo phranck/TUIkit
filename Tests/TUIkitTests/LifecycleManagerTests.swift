@@ -194,6 +194,24 @@ struct LifecycleManagerDisappearTests {
         manager.endRenderPass()
         #expect(called == false) // Callback was unregistered
     }
+
+    @Test("Repeated registration replaces one callback and unmount releases it")
+    func repeatedRegistrationDoesNotGrow() {
+        let manager = LifecycleManager()
+
+        manager.beginRenderPass()
+        _ = manager.recordAppear(token: "view-1") {}
+        manager.registerDisappear(token: "view-1") {}
+        manager.registerDisappear(token: "view-1") {}
+        manager.endRenderPass()
+
+        #expect(manager.disappearCallbackCount == 1)
+
+        manager.beginRenderPass()
+        manager.endRenderPass()
+
+        #expect(manager.disappearCallbackCount == 0)
+    }
 }
 
 // MARK: - Task Storage Tests
@@ -201,6 +219,101 @@ struct LifecycleManagerDisappearTests {
 @MainActor
 @Suite("LifecycleManager Task Tests")
 struct LifecycleManagerTaskTests {
+
+    @Test("Unchanged structural task stays mounted and ID changes replace it", .timeLimit(.minutes(1)))
+    func structuralTaskIdentity() async {
+        let manager = LifecycleManager()
+        let identity = ViewIdentity(path: "Root/@task")
+        let events = TraceRecorder<String>()
+        let firstStarted = AsyncSignal()
+        let firstRelease = AsyncSignal()
+        let firstCompleted = AsyncSignal()
+        let replacementStarted = AsyncSignal()
+
+        manager.beginRenderPass()
+        let started = manager.updateTask(identity: identity, id: 1, priority: .medium) {
+            events.record("first-started")
+            firstStarted.signal()
+            await firstRelease.wait()
+            events.record("first-cancelled:\(Task.isCancelled)")
+            firstCompleted.signal()
+        }
+        manager.endRenderPass()
+        await firstStarted.wait()
+
+        manager.beginRenderPass()
+        let preserved = manager.updateTask(identity: identity, id: 1, priority: .medium) {
+            events.record("unexpected-restart")
+        }
+        manager.endRenderPass()
+
+        #expect(started)
+        #expect(preserved == false)
+        #expect(manager.taskCount == 1)
+
+        manager.beginRenderPass()
+        let replaced = manager.updateTask(identity: identity, id: 2, priority: .medium) {
+            events.record("replacement-started")
+            replacementStarted.signal()
+        }
+        manager.endRenderPass()
+
+        firstRelease.signal()
+        await firstCompleted.wait()
+        await replacementStarted.wait()
+
+        #expect(replaced)
+        #expect(events.snapshot().contains("unexpected-restart") == false)
+        #expect(events.snapshot().contains("first-cancelled:true"))
+        #expect(manager.taskCount == 1)
+    }
+
+    @Test("Unmount cancels and releases a structural task", .timeLimit(.minutes(1)))
+    func structuralTaskUnmount() async {
+        let manager = LifecycleManager()
+        let identity = ViewIdentity(path: "Root/@task")
+        let started = AsyncSignal()
+        let release = AsyncSignal()
+        let completed = AsyncSignal()
+        let events = TraceRecorder<String>()
+
+        manager.beginRenderPass()
+        manager.updateTask(identity: identity, id: 1, priority: .medium) {
+            started.signal()
+            await release.wait()
+            events.record("cancelled:\(Task.isCancelled)")
+            completed.signal()
+        }
+        manager.endRenderPass()
+        await started.wait()
+
+        manager.beginRenderPass()
+        manager.endRenderPass()
+        release.signal()
+        await completed.wait()
+
+        #expect(events.snapshot() == ["cancelled:true"])
+        #expect(manager.taskCount == 0)
+    }
+
+    @Test("Structural task preserves inherited MainActor isolation", .timeLimit(.minutes(1)))
+    func structuralTaskActorIsolation() async {
+        let manager = LifecycleManager()
+        let identity = ViewIdentity(path: "Root/@task")
+        let started = AsyncSignal()
+        let state = MainActorTaskState()
+
+        manager.beginRenderPass()
+        manager.updateTask(identity: identity, id: 1, priority: .medium) {
+            MainActor.preconditionIsolated()
+            state.value = 42
+            started.signal()
+        }
+        manager.endRenderPass()
+        await started.wait()
+
+        #expect(state.value == 42)
+    }
 
     @Test("startTask runs its operation", .timeLimit(.minutes(1)))
     func startTask() async {
@@ -332,4 +445,9 @@ struct LifecycleManagerTaskTests {
 private enum LifecycleTaskEvent: Hashable, Sendable {
     case started(String)
     case completed(String, wasCancelled: Bool)
+}
+
+@MainActor
+private final class MainActorTaskState {
+    var value = 0
 }
