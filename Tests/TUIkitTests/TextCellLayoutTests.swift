@@ -105,9 +105,7 @@ struct TextCellLayoutTests {
         TextFieldContentRenderer(
             prompt: nil,
             isDisabled: false,
-            displayCharacter: { index, text in
-                text[text.index(text.startIndex, offsetBy: index)]
-            }
+            displayCharacter: { $0 }
         )
     }
 }

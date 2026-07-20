@@ -24,9 +24,9 @@ struct TextFieldContentRenderer {
     /// Whether the field is disabled.
     let isDisabled: Bool
 
-    /// Returns the display character for a given index in the text.
-    /// For TextField: the actual character. For SecureField: a bullet.
-    let displayCharacter: (_ index: Int, _ text: String) -> Character
+    /// Maps one source grapheme to its displayed grapheme.
+    /// For TextField: the original character. For SecureField: a bullet.
+    let displayCharacter: (_ character: Character) -> Character
 
     // MARK: - Content Building
 
@@ -194,7 +194,7 @@ struct TextFieldContentRenderer {
     }
 
     private func displayCharacters(for text: String) -> [Character] {
-        (0..<text.count).map { displayCharacter($0, text) }
+        text.map(displayCharacter)
     }
 
     private func visibleStart(
