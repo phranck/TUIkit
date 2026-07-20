@@ -199,7 +199,7 @@ extension Text: Renderable, Layoutable {
         let maxWidth = proposal.width ?? context.availableWidth
         let wrappedLines = wordWrap(content, maxWidth: maxWidth)
 
-        let width = wrappedLines.map(\.count).max() ?? 0
+        let width = wrappedLines.map(\.strippedLength).max() ?? 0
         let height = wrappedLines.count
 
         // Text is never flexible - it has a fixed size
@@ -228,38 +228,88 @@ extension Text: Renderable, Layoutable {
         return FrameBuffer(lines: styledLines)
     }
 
-    /// Wraps text into lines that fit a maximum character width.
+    /// Wraps text into lines that fit a maximum terminal-cell width.
     ///
-    /// Splits on word boundaries (spaces). Words longer than `maxWidth`
-    /// are placed on their own line without further splitting.
+    /// Splits on word boundaries where possible and splits long words only
+    /// between complete grapheme clusters.
     ///
     /// - Parameters:
     ///   - text: The text to wrap.
     ///   - maxWidth: Maximum characters per line.
     /// - Returns: An array of wrapped lines (never empty).
     private func wordWrap(_ text: String, maxWidth: Int) -> [String] {
-        guard maxWidth > 0 else { return [text] }
+        let paragraphs = text.split(separator: "\n", omittingEmptySubsequences: false)
+        let lines = paragraphs.flatMap { paragraph in
+            wrapParagraph(String(paragraph).sanitizedForTerminal, maxWidth: maxWidth)
+        }
+        return lines.isEmpty ? [""] : lines
+    }
 
-        let words = text.split(separator: " ", omittingEmptySubsequences: false)
+    private func wrapParagraph(_ paragraph: String, maxWidth: Int) -> [String] {
+        guard maxWidth > 0 else { return [paragraph] }
+
+        let words = paragraph.split(separator: " ", omittingEmptySubsequences: false)
         var lines: [String] = []
         var currentLine = ""
 
-        for word in words {
+        for (wordIndex, word) in words.enumerated() {
             let wordStr = String(word)
-            if currentLine.isEmpty {
-                currentLine = wordStr
-            } else if currentLine.count + 1 + wordStr.count <= maxWidth {
-                currentLine += " " + wordStr
-            } else {
-                lines.append(currentLine)
-                currentLine = wordStr
+            let separator = wordIndex == 0 ? "" : " "
+            let candidate = currentLine + separator + wordStr
+
+            if candidate.strippedLength <= maxWidth {
+                currentLine = candidate
+                continue
             }
+
+            if !currentLine.isEmpty {
+                lines.append(currentLine)
+                currentLine = ""
+            }
+
+            let chunks = splitWord(wordStr, maxWidth: maxWidth)
+            if chunks.count > 1 {
+                lines.append(contentsOf: chunks.dropLast())
+            }
+            currentLine = chunks.last ?? ""
         }
 
-        if !currentLine.isEmpty {
+        if !currentLine.isEmpty || lines.isEmpty {
             lines.append(currentLine)
         }
 
-        return lines.isEmpty ? [""] : lines
+        return lines
+    }
+
+    private func splitWord(_ word: String, maxWidth: Int) -> [String] {
+        guard !word.isEmpty else { return [""] }
+
+        var chunks: [String] = []
+        var chunk = ""
+        var chunkWidth = 0
+
+        for character in word {
+            let characterWidth = character.terminalWidth
+            if !chunk.isEmpty && chunkWidth + characterWidth > maxWidth {
+                chunks.append(chunk)
+                chunk = ""
+                chunkWidth = 0
+            }
+
+            chunk.append(character)
+            chunkWidth += characterWidth
+
+            if chunkWidth > maxWidth {
+                chunks.append(chunk)
+                chunk = ""
+                chunkWidth = 0
+            }
+        }
+
+        if !chunk.isEmpty {
+            chunks.append(chunk)
+        }
+
+        return chunks.isEmpty ? [""] : chunks
     }
 }
