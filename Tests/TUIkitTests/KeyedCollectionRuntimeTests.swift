@@ -352,6 +352,65 @@ struct KeyedCollectionRuntimeTests {
         #expect(rendered.contains("Third"))
         expectDuplicateDiagnostic(in: harness, container: "Table")
     }
+
+    @Test("Table selection follows ForEach IDs across insert, delete, and reorder")
+    func tableSelectionFollowsForEachIDs() {
+        struct Row: Identifiable, Sendable {
+            let id: String
+            let label: String
+        }
+
+        let harness = RuntimeCharacterizationHarness()
+        var selection: String?
+
+        func renderTable(_ items: [Row]) -> [String] {
+            harness.render {
+                Table(
+                    items,
+                    selection: Binding(get: { selection }, set: { selection = $0 })
+                ) {
+                    TableColumn("Label", value: \Row.label)
+                }
+            }.ansiStrippedLines
+        }
+
+        // Pre-seed selection on ID "b" and verify the marker sits on its row.
+        selection = "b"
+        let initial = renderTable([
+            Row(id: "a", label: "Alpha"),
+            Row(id: "b", label: "Beta")
+        ])
+        #expect(initial.contains { $0.contains("Alpha") })
+        #expect(initial.contains { $0.contains("Beta") })
+        #expect(initial.first(where: { $0.contains("Beta") })?.contains("●") == true)
+        #expect(initial.first(where: { $0.contains("Alpha") })?.contains("●") == false)
+
+        // Insert before, reorder existing: "b" must remain the marked row.
+        let inserted = renderTable([
+            Row(id: "c", label: "Gamma"),
+            Row(id: "a", label: "Alpha"),
+            Row(id: "b", label: "Beta")
+        ])
+        #expect(inserted.first(where: { $0.contains("Beta") })?.contains("●") == true)
+        #expect(inserted.first(where: { $0.contains("Alpha") })?.contains("●") == false)
+        #expect(inserted.first(where: { $0.contains("Gamma") })?.contains("●") == false)
+        #expect(selection == "b")
+
+        // Delete the selected ID: marker disappears, binding is not cleared by the renderer.
+        let deleted = renderTable([
+            Row(id: "a", label: "Alpha")
+        ])
+        #expect(deleted.first(where: { $0.contains("Alpha") })?.contains("●") == false)
+        #expect(selection == "b")
+
+        // Re-add "b": marker returns on its row.
+        let restored = renderTable([
+            Row(id: "b", label: "Beta"),
+            Row(id: "a", label: "Alpha")
+        ])
+        #expect(restored.first(where: { $0.contains("Beta") })?.contains("●") == true)
+        #expect(restored.first(where: { $0.contains("Alpha") })?.contains("●") == false)
+    }
 }
 
 // MARK: - Helpers
