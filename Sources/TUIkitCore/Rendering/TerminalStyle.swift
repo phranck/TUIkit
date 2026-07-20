@@ -34,6 +34,10 @@ extension TerminalStyle {
         self == Self()
     }
 
+    var paintsBlankCell: Bool {
+        background != nil || isInverted || isUnderlined || isStrikethrough
+    }
+
     package var ansiSequence: String {
         let parameters = ansiParameters
         guard !parameters.isEmpty else { return "" }

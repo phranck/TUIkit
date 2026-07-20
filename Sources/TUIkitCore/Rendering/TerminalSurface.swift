@@ -222,7 +222,7 @@ private extension TerminalSurface {
                 let cellWidth = character.terminalWidth
                 guard cellWidth > 0 else { return }
                 let grapheme = String(character)
-                let isTransparent = grapheme == " " && style.isDefault
+                let isTransparent = grapheme == " " && !style.paintsBlankCell
                 row.append(
                     TerminalCell(
                         content: .grapheme(grapheme, width: cellWidth),

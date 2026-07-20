@@ -58,6 +58,16 @@ struct TerminalSurfaceTests {
         #expect(result.plainLines == ["AXC"])
     }
 
+    @Test("Foreground styling does not make blank overlay cells opaque")
+    func foregroundStyledBlankOverlay() {
+        let base = TerminalSurface(lines: ["ABC"])
+        let overlay = TerminalSurface(lines: ["\u{1B}[31m X \u{1B}[0m"])
+
+        let result = base.composited(with: overlay, atX: 0, y: 0)
+
+        #expect(result.plainLines == ["AXC"])
+    }
+
     @Test("Styled spaces are opaque overlay cells")
     func styledSpaceOverlay() {
         let base = TerminalSurface(lines: ["ABC"])
