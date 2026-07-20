@@ -85,14 +85,20 @@ struct SectionListIntegrationTests {
         }
 
         let buffer = renderToBuffer(list, context: context)
-        let content = buffer.lines.joined()
+        var headerCell: TerminalCell?
+        for row in 0..<buffer.height {
+            for column in 0..<buffer.width {
+                let cell = buffer.terminalSurface.cell(atX: column, y: row)
+                if cell?.grapheme == "H" {
+                    headerCell = cell
+                    break
+                }
+            }
+            if headerCell != nil { break }
+        }
 
-        // Header should contain ANSI dim code - may be combined as [1;2m or separate
-        let hasDimCode = content.contains("\u{1B}[2m") || content.contains(";2m")
-        #expect(hasDimCode)
-        // Header should contain ANSI bold code - may be combined as [1;2m or separate
-        let hasBoldCode = content.contains("\u{1B}[1m") || content.contains("[1;")
-        #expect(hasBoldCode)
+        #expect(headerCell?.style.isDim == true)
+        #expect(headerCell?.style.isBold == true)
     }
 
     @Test("Section footer renders in List")

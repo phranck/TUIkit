@@ -13,7 +13,7 @@ package struct TerminalCell: Sendable, Equatable {
     }
 
     let content: Content
-    let style: TerminalStyle
+    package let style: TerminalStyle
     let isTransparent: Bool
 
     package var grapheme: String? {
