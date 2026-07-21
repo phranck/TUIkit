@@ -35,6 +35,11 @@ extension KeyEventDispatcher {
         handlers.removeAll()
     }
 
+    /// Number of registered handlers for tests and diagnostics.
+    var handlerCount: Int {
+        handlers.count
+    }
+
     /// Dispatches a key event to handlers.
     ///
     /// - Parameter event: The key event to dispatch.
