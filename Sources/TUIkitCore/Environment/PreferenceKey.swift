@@ -179,6 +179,21 @@ public extension PreferenceStorage {
         callbacks.values.reduce(0) { $0 + $1.count }
     }
 
+    /// Replaces the collected values and change callbacks with the ones from
+    /// a per-pass scratch storage.
+    ///
+    /// Preference values and their change callbacks do not outlive the
+    /// frame: the tree re-declares them on every traversal. At frame commit
+    /// the live storage therefore adopts the FINAL pass's state wholesale;
+    /// storages of discarded passes are dropped, so their callbacks can
+    /// never accumulate on the live instance.
+    ///
+    /// - Parameter collector: The scratch storage of the frame's final pass.
+    func adopt(from collector: PreferenceStorage) {
+        stack = collector.stack
+        callbacks = collector.callbacks
+    }
+
     /// Prepares preference storage for a new render pass.
     ///
     /// Clears all accumulated callbacks and resets the value stack

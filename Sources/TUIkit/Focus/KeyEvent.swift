@@ -40,6 +40,20 @@ extension KeyEventDispatcher {
         handlers.count
     }
 
+    /// Replaces all handlers with the ones collected by a per-pass scratch
+    /// dispatcher.
+    ///
+    /// Key handlers do not outlive the frame: views re-register them on
+    /// every traversal. At frame commit the live dispatcher therefore adopts
+    /// the FINAL pass's handler list wholesale; handler lists from discarded
+    /// passes (measurement, superseded main pass) are simply dropped with
+    /// their collector.
+    ///
+    /// - Parameter collector: The scratch dispatcher of the frame's final pass.
+    func adopt(from collector: KeyEventDispatcher) {
+        handlers = collector.handlers
+    }
+
     /// Dispatches a key event to handlers.
     ///
     /// - Parameter event: The key event to dispatch.

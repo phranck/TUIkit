@@ -60,6 +60,27 @@ public final class StatusBarState: @unchecked Sendable {
     /// Rebuilt every render pass by ``StatusBarItemsModifier``.
     private var sectionItems: [(sectionID: String, items: [any StatusBarItemProtocol], composition: StatusBarItemComposition)] = []
 
+    /// One declarative status-bar registration made by a view during a
+    /// render pass.
+    ///
+    /// Status-bar declarations do not outlive the frame: modifiers re-issue
+    /// them on every traversal. Each silent registration method records what
+    /// the pass declared so that ``adoptPassRegistrations(from:)`` can
+    /// replay exactly the FINAL pass's declarations onto the live state.
+    enum PassRegistration {
+        /// `.statusBarItems { … }` without a focus section (global items).
+        case globalItems([any StatusBarItemProtocol])
+
+        /// Legacy `.statusBarItems(context:…)` push.
+        case pushContext(String, [any StatusBarItemProtocol])
+
+        /// `.statusBarItems { … }` inside a focus section.
+        case sectionItems(String, [any StatusBarItemProtocol], StatusBarItemComposition)
+    }
+
+    /// Declarative registrations collected during the current render pass.
+    private(set) var passRegistrations: [PassRegistration] = []
+
     /// The focus manager used to determine the active section.
     ///
     /// Set by `RenderLoop` at the start of each render pass.
@@ -274,6 +295,7 @@ public extension StatusBarState {
 extension StatusBarState {
     /// Sets the global user items without triggering a re-render.
     func setItemsSilently(_ items: [any StatusBarItemProtocol]) {
+        passRegistrations.append(.globalItems(items))
         userGlobalItems = items
     }
 
@@ -283,6 +305,7 @@ extension StatusBarState {
         items: [any StatusBarItemProtocol],
         composition: StatusBarItemComposition
     ) {
+        passRegistrations.append(.sectionItems(sectionID, items, composition))
         sectionItems.removeAll { $0.sectionID == sectionID }
         sectionItems.append((sectionID, items, composition))
     }
@@ -290,12 +313,49 @@ extension StatusBarState {
     /// Clears all section items at the start of a render pass.
     func clearSectionItems() {
         sectionItems.removeAll()
+        passRegistrations.removeAll()
     }
 
     /// Pushes a new user context without triggering a re-render.
     func pushSilently(context: String, items: [any StatusBarItemProtocol]) {
+        passRegistrations.append(.pushContext(context, items))
         userContextStack.removeAll { $0.context == context }
         userContextStack.append((context, items))
+    }
+
+    /// Replays the declarative registrations of a per-pass scratch instance
+    /// onto this (live) state.
+    ///
+    /// Declarative state is replaced wholesale by the FINAL pass:
+    /// - Section items become exactly the final pass's section declarations.
+    /// - Global user items become the final pass's `.statusBarItems`
+    ///   declaration, or empty when the final tree declares none. Items set
+    ///   imperatively via ``setItems(_:)-1qhcp`` are therefore superseded by
+    ///   the next committed frame — the tree owns the status bar.
+    /// - Legacy push contexts are re-applied with push semantics; contexts
+    ///   removed only via ``pop(context:)`` keep their imperative lifecycle.
+    ///
+    /// Registrations from discarded passes (measurement, superseded main
+    /// pass) are dropped with their collector and can never reach this
+    /// state.
+    ///
+    /// - Parameter collector: The scratch state of the frame's final pass.
+    func adoptPassRegistrations(from collector: StatusBarState) {
+        sectionItems.removeAll()
+        userGlobalItems = []
+
+        for registration in collector.passRegistrations {
+            switch registration {
+            case .globalItems(let items):
+                userGlobalItems = items
+            case .pushContext(let name, let items):
+                userContextStack.removeAll { $0.context == name }
+                userContextStack.append((name, items))
+            case .sectionItems(let sectionID, let items, let composition):
+                sectionItems.removeAll { $0.sectionID == sectionID }
+                sectionItems.append((sectionID, items, composition))
+            }
+        }
     }
 }
 
