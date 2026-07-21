@@ -84,6 +84,24 @@ extension AppHeaderState {
         previousHeight = height
         contentBuffer = nil
     }
+
+    /// Replaces the content buffer with the one collected by a per-pass
+    /// scratch instance.
+    ///
+    /// The header buffer does not outlive the frame: `AppHeaderModifier`
+    /// re-renders it on every traversal. At frame commit the live state
+    /// therefore adopts the FINAL pass's buffer (which may be `nil` when the
+    /// final tree declares no header); buffers written by discarded passes —
+    /// including the first-frame measurement pass, whose buffer only exists
+    /// to size the header — are dropped with their collector.
+    ///
+    /// The ``estimatedHeight`` bookkeeping stays on the live instance, so
+    /// the estimate always reflects the last COMMITTED frame.
+    ///
+    /// - Parameter collector: The scratch state of the frame's final pass.
+    func adopt(from collector: AppHeaderState) {
+        contentBuffer = collector.contentBuffer
+    }
 }
 
 // MARK: - Environment Key

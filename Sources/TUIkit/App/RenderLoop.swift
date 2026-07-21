@@ -79,22 +79,29 @@ internal struct RenderBackgroundCodes: Equatable {
 ///  12. End lifecycle tracking (fires onDisappear for removed views)
 /// ```
 ///
-/// ## Render phases
+/// ## Render phases and per-pass collectors
 ///
 /// A frame can traverse the view tree up to three times. Each traversal
-/// carries a ``RenderPhase`` on its `RenderContext`:
+/// carries a ``RenderPhase`` on its `RenderContext` and writes its
+/// frame-scoped effects into fresh ``RenderPassCollectors``:
 ///
 /// - **First-frame header sizing** runs in `.measure`: it only discovers the
-///   app header height, so phase-guarded effect sites (lifecycle, task,
-///   focus registration) stay inert. `AppHeaderModifier` intentionally
-///   remains unguarded — the header buffer IS the measured output.
+///   app header height. Phase-guarded effect sites (lifecycle, task, focus
+///   registration) stay inert, and the header buffer it renders lives in a
+///   scratch collector that is dropped right after the height is read.
 /// - **Main pass** and, when the header height changed, the **correction
 ///   pass** run in `.render` and produce the frame's candidate buffers.
+///   A superseded main pass is discarded together with its collectors and
+///   staged focus registrations.
+/// - **Commit**: the FINAL pass's collectors are adopted into the live
+///   managers (key handlers, preferences, status bar, header) and the
+///   staged focus registrations are committed — the only point in a frame
+///   where per-frame effect state reaches the live runtime.
 ///
-/// Not yet guaranteed (tracked by issues #56/#57): the correction pass still
-/// re-registers per-frame effects (e.g. key handlers) on top of the main
-/// pass, and lifetime effects still apply during traversal instead of at a
-/// single commit point. See ``RenderPhase`` for the target model.
+/// Not yet guaranteed (tracked by issue #57): lifetime effects (`onAppear`,
+/// `.task`, `onChange`, `onPreferenceChange` actions, GC liveness) still
+/// apply during traversal instead of at the commit point. See
+/// ``RenderPhase`` for the target model.
 ///
 /// ## Diff-Based Rendering
 ///
@@ -225,20 +232,21 @@ extension RenderLoop {
         // This prevents visible content jumping.
         let appHeaderHeight: Int
         if isFirstFrame {
+            // This traversal only exists to size the app header — it runs in
+            // the measure phase (guarded effect sites stay inert) and writes
+            // into its own collectors, which are dropped right after the
+            // height is read. Live state is never touched.
+            let measureCollectors = RenderPassCollectors(appState: tuiContext.appState)
             var measureContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: terminalHeight - statusBarHeight,
-                environment: environment
+                environment: passEnvironment(environment, collectors: measureCollectors)
             )
-            // This traversal only exists to size the app header — run it in
-            // the measure phase so guarded effect sites (lifecycle, task,
-            // focus) stay inert. Deliberate exception: AppHeaderModifier is
-            // NOT phase-guarded, because writing the header buffer is the
-            // very output this pass measures. Isolating that write into a
-            // discardable per-pass collector is issue #56.
             measureContext.phase = .measure
+            focusManager.beginPass()
             _ = renderScene(scene, context: measureContext.withChildIdentity(type: type(of: scene)))
-            appHeaderHeight = appHeader.height
+            focusManager.discardPass()
+            appHeaderHeight = measureCollectors.appHeader.height
             isFirstFrame = false
         } else {
             appHeaderHeight = appHeader.estimatedHeight
@@ -246,33 +254,47 @@ extension RenderLoop {
 
         let contentHeight = terminalHeight - statusBarHeight - appHeaderHeight
 
+        // Main pass: evaluate the frame's candidate tree into fresh
+        // collectors. Nothing reaches live state until the commit below.
+        var collectors = RenderPassCollectors(appState: tuiContext.appState)
         var context = RenderContext(
             availableWidth: terminalWidth,
             availableHeight: contentHeight,
-            environment: environment
+            environment: passEnvironment(environment, collectors: collectors)
         )
         context.hasExplicitWidth = true
         context.hasExplicitHeight = true
 
+        focusManager.beginPass()
         var buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
 
         // If the header height changed after rendering, re-render with the
-        // correct height so centering is accurate.
-        let actualHeaderHeight = appHeader.height
+        // correct height so centering is accurate. The superseded main
+        // pass's collectors and staged focus registrations are discarded;
+        // the correction pass starts from clean scratch state.
+        let actualHeaderHeight = collectors.appHeader.height
         if actualHeaderHeight != appHeaderHeight {
             diffWriter.invalidate()
+            focusManager.discardPass()
+            collectors = RenderPassCollectors(appState: tuiContext.appState)
             let actualContentHeight = terminalHeight - statusBarHeight - actualHeaderHeight
             var correctedContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: actualContentHeight,
-                environment: environment
+                environment: passEnvironment(environment, collectors: collectors)
             )
             correctedContext.hasExplicitWidth = true
             correctedContext.hasExplicitHeight = true
+            focusManager.beginPass()
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
 
-        focusManager.endRenderPass()
+        // COMMIT (step 6a): the single point where per-frame effect state
+        // reaches the live runtime — the FINAL pass's collectors replace the
+        // live managers' state, and the staged focus registrations are
+        // committed with their deferred side effects.
+        collectors.adoptIntoLiveManagers(of: tuiContext)
+        focusManager.commitPass()
 
         writeFrame(
             buffer: buffer,
@@ -298,6 +320,30 @@ extension RenderLoop {
     /// - Returns: A fully populated environment.
     func buildEnvironment() -> EnvironmentValues {
         tuiContext.environmentValues()
+    }
+
+    /// Derives a per-pass environment that routes frame-scoped effect sinks
+    /// into the pass's scratch collectors.
+    ///
+    /// Effect sites keep writing to `context.environment.keyEventDispatcher`
+    /// and friends; only the instance behind those keys changes per pass.
+    /// All other services (state storage, lifecycle, focus queries, palette,
+    /// …) stay on the live runtime.
+    ///
+    /// - Parameters:
+    ///   - base: The frame's live environment.
+    ///   - collectors: The scratch collectors of the current pass.
+    /// - Returns: The environment to render this pass with.
+    private func passEnvironment(
+        _ base: EnvironmentValues,
+        collectors: RenderPassCollectors
+    ) -> EnvironmentValues {
+        var environment = base
+        environment.keyEventDispatcher = collectors.keyEventDispatcher
+        environment.preferenceStorage = collectors.preferences
+        environment.statusBar = collectors.statusBar
+        environment.appHeader = collectors.appHeader
+        return environment
     }
 }
 

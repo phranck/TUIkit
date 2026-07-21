@@ -51,12 +51,7 @@ struct RenderPhaseCharacterizationTests {
         harness.app.model.lineCount = 3
         harness.renderFrame()
 
-        withKnownIssue("Issue #56: main and correction pass both register handlers") {
-            #expect(harness.tuiContext.keyEventDispatcher.handlerCount == 1)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.keyEventDispatcher.handlerCount == 1)
     }
 
     @Test("onChange(initial:) fires exactly once in the first frame")
@@ -71,48 +66,6 @@ struct RenderPhaseCharacterizationTests {
             guard case .expectationFailed = issue.kind else { return false }
             return true
         }
-    }
-}
-
-// MARK: - Frame Harness
-
-/// Drives a `RenderLoop` against a `MockTerminal` for one app instance.
-///
-/// Unlike `RuntimeCharacterizationHarness` (which renders single views via
-/// `renderToBuffer`), this harness exercises the full frame pipeline —
-/// including the first-frame header measurement and the header-correction
-/// pass — which is exactly where phase separation matters.
-@MainActor
-private final class FrameHarness<A: App> {
-    let app: A
-    let tuiContext: TUIContext
-    let terminal: MockTerminal
-
-    private let renderLoop: RenderLoop<A>
-
-    init(app: A, width: Int = 40, height: Int = 24) {
-        let tuiContext = TUIContext()
-        let terminal = MockTerminal()
-        terminal.size = (width, height)
-        tuiContext.statusBar.showSystemItems = false
-
-        self.app = app
-        self.tuiContext = tuiContext
-        self.terminal = terminal
-        self.renderLoop = RenderLoop(
-            app: app,
-            terminal: terminal,
-            statusBar: tuiContext.statusBar,
-            appHeader: tuiContext.appHeader,
-            focusManager: tuiContext.focusManager,
-            paletteManager: tuiContext.paletteManager,
-            appearanceManager: tuiContext.appearanceManager,
-            tuiContext: tuiContext
-        )
-    }
-
-    func renderFrame() {
-        renderLoop.render()
     }
 }
 
