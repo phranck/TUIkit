@@ -15,7 +15,9 @@ import TUIkitTestSupport
 /// current misbehavior where effects escape from passes whose trees are
 /// discarded. Tests that assert the DESIRED behavior are wrapped in
 /// `withKnownIssue` until the corresponding fix lands (issue #13, sub-issues
-/// #55/#56/#57); once fixed, the marker must be removed.
+/// #56/#57); once fixed, the marker must be removed. The measure-pass tests
+/// are already hard expectations since the first-frame sizing traversal runs
+/// in `RenderPhase.measure` (#55).
 @MainActor
 @Suite("Render Phase Characterization", .serialized)
 struct RenderPhaseCharacterizationTests {
@@ -26,12 +28,7 @@ struct RenderPhaseCharacterizationTests {
 
         harness.renderFrame()
 
-        withKnownIssue("Issue #55: first-frame measurement commits onAppear effects") {
-            #expect(!harness.app.trace.snapshot().contains("appear:measure-only"))
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(!harness.app.trace.snapshot().contains("appear:measure-only"))
     }
 
     @Test("Measure pass does not mount tasks for views absent from the final tree")
@@ -40,12 +37,7 @@ struct RenderPhaseCharacterizationTests {
 
         harness.renderFrame()
 
-        withKnownIssue("Issue #55: first-frame measurement mounts .task effects") {
-            #expect(harness.tuiContext.lifecycle.taskCount == 0)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.lifecycle.taskCount == 0)
     }
 
     @Test("A frame with a correction pass registers key handlers exactly once")
