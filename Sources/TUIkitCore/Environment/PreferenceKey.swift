@@ -174,6 +174,28 @@ public extension PreferenceStorage {
         callbacks[keyId]?.append(wrappedCallback)
     }
 
+    /// Prepares preference storage for a new render pass.
+    ///
+    /// Clears all accumulated callbacks and resets the value stack
+    /// to a single empty context. Called at the start of each frame
+    /// by `RenderLoop.render()` to prevent callback accumulation.
+    func beginRenderPass() {
+        callbacks.removeAll()
+        stack = [PreferenceValues()]
+    }
+
+    /// Resets all preference state.
+    ///
+    /// Called once during app shutdown by `TUIContext.reset()`.
+    func reset() {
+        stack = [PreferenceValues()]
+        callbacks.removeAll()
+    }
+}
+
+// MARK: - Per-Pass Adoption
+
+package extension PreferenceStorage {
     /// Number of registered change callbacks for tests and diagnostics.
     var callbackCount: Int {
         callbacks.values.reduce(0) { $0 + $1.count }
@@ -192,23 +214,5 @@ public extension PreferenceStorage {
     func adopt(from collector: PreferenceStorage) {
         stack = collector.stack
         callbacks = collector.callbacks
-    }
-
-    /// Prepares preference storage for a new render pass.
-    ///
-    /// Clears all accumulated callbacks and resets the value stack
-    /// to a single empty context. Called at the start of each frame
-    /// by `RenderLoop.render()` to prevent callback accumulation.
-    func beginRenderPass() {
-        callbacks.removeAll()
-        stack = [PreferenceValues()]
-    }
-
-    /// Resets all preference state.
-    ///
-    /// Called once during app shutdown by `TUIContext.reset()`.
-    func reset() {
-        stack = [PreferenceValues()]
-        callbacks.removeAll()
     }
 }
