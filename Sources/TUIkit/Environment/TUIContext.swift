@@ -392,6 +392,23 @@ final class TUIContext {
             invalidationSink: appState
         )
         stateStorage.setInvalidationSink(appState)
+        // Main-thread invalidations raised while the render loop traverses
+        // the view tree are unsupported user side effects inside `body`.
+        // The framework cannot prevent them, but it diagnoses them once per
+        // frame (RuntimeDiagnostics deduplicates per render pass).
+        appState.setTraversalViolationHandler { [runtimeDiagnostics] invalidation in
+            let identity: ViewIdentity
+            switch invalidation {
+            case .subtree(let subtreeIdentity):
+                identity = subtreeIdentity
+            case .renderOnly, .all:
+                identity = ViewIdentity(path: "runtime")
+            }
+            runtimeDiagnostics.emit(RuntimeDiagnostic(
+                identity: identity,
+                message: "State mutated during view body evaluation; move the mutation into an event handler, task, or lifecycle action"
+            ))
+        }
         let existingFocusChangeHandler = focusManager.onFocusChange
         focusManager.onFocusChange = { [appState] in
             existingFocusChangeHandler?()
