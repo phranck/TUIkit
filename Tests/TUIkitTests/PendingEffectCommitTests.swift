@@ -38,13 +38,8 @@ struct PendingEffectCommitTests {
         harness.app.gateGeneration.value += 1
         harness.renderFrame()
 
-        withKnownIssue("Issue #57: lifetime effects apply during traversal") {
-            #expect(!harness.app.trace.snapshot().contains("appear:superseded"))
-            #expect(harness.tuiContext.lifecycle.taskCount == 0)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(!harness.app.trace.snapshot().contains("appear:superseded"))
+        #expect(harness.tuiContext.lifecycle.taskCount == 0)
     }
 
     @Test("onAppear fires after the frame is written to the terminal")
@@ -59,12 +54,9 @@ struct PendingEffectCommitTests {
 
         // The appear action must observe a non-empty terminal output:
         // commit order is collectors → writeFrame → lifetime effects.
-        withKnownIssue("Issue #57: onAppear fires during traversal, before writeFrame") {
-            #expect(terminalWrites.snapshot().allSatisfy { $0 > 0 })
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        let writeCounts = terminalWrites.snapshot()
+        #expect(!writeCounts.isEmpty)
+        #expect(writeCounts.allSatisfy { $0 > 0 })
     }
 
     @Test("Observation trackings from the measure pass do not survive the frame")

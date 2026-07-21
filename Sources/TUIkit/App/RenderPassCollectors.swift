@@ -60,6 +60,12 @@ struct RenderPassCollectors {
     /// Scratch sink for the app-header buffer.
     let appHeader = AppHeaderState()
 
+    /// Records for effects that OUTLIVE the frame (lifecycle, tasks,
+    /// deferred actions, GC liveness). Collected per pass like the scratch
+    /// sinks above, but committed by replay after terminal output instead
+    /// of by adoption — see ``PendingFrameEffects``.
+    let pendingEffects = PendingFrameEffects()
+
     /// Creates fresh collectors for one render pass.
     ///
     /// - Parameter appState: The runtime's render-state sink; required by
