@@ -60,6 +60,33 @@ public final class FocusManager: @unchecked Sendable {
     /// Callback triggered when focus changes (element or section).
     public var onFocusChange: (() -> Void)?
 
+    // MARK: Per-Pass Staging
+    //
+    // Focus registrations do not outlive the frame, but unlike other
+    // per-frame effects they cannot use a scratch manager instance: focus
+    // QUERIES (`isFocused`, `isActiveSection`) must keep reading the live
+    // state of the last committed frame while the tree renders. The manager
+    // therefore stages registrations internally: between `beginPass()` and
+    // `commitPass()`/`discardPass()` all registrations and section
+    // activations go into the staging area, and only `commitPass()` replaces
+    // the committed sections and runs focus side effects (auto-focus,
+    // `onFocusReceived`, `onFocusChange`). A discarded pass leaves no trace.
+
+    /// Sections registered by the current render pass, not yet committed.
+    private var stagedSections: [FocusSection] = []
+
+    /// Section activation requested by the current pass (e.g. by an alert),
+    /// applied at commit. The last request of the final pass wins.
+    private var stagedActivationID: String?
+
+    /// Whether registrations are currently routed into the staging area.
+    ///
+    /// `true` between ``beginPass()`` and ``commitPass()`` /
+    /// ``discardPass()``. Outside a collecting pass (imperative use,
+    /// `ViewRenderer`, tests) registrations keep their immediate live
+    /// semantics.
+    private var isCollectingPass = false
+
     /// Creates a new focus manager instance.
     public init() {}
 
@@ -131,6 +158,16 @@ public extension FocusManager {
     func register(_ element: Focusable, inSection sectionID: String? = nil) {
         let targetID = sectionID ?? activeSectionID ?? Self.defaultSectionID
 
+        // During a collecting pass, registrations only reach the staging
+        // area. Focus side effects (auto-activation, auto-focus,
+        // onFocusChange) are deferred to commitPass() so a discarded pass
+        // can never mutate live focus state.
+        if isCollectingPass {
+            let section = stagedSection(id: targetID)
+            section.register(element)
+            return
+        }
+
         // Ensure section exists
         if !sections.contains(where: { $0.id == targetID }) {
             registerSection(id: targetID)
@@ -179,6 +216,9 @@ public extension FocusManager {
     /// section and focused element, use `beginRenderPass()` instead.
     func clear() {
         sections.removeAll()
+        stagedSections.removeAll()
+        stagedActivationID = nil
+        isCollectingPass = false
         activeSectionID = nil
         focusedID = nil
     }
@@ -337,6 +377,13 @@ extension FocusManager {
     ///
     /// - Parameter id: The unique section identifier.
     func registerSection(id: String) {
+        // Collecting pass: sections are staged; activation is deferred to
+        // commitPass() so a discarded pass leaves no trace.
+        if isCollectingPass {
+            _ = stagedSection(id: id)
+            return
+        }
+
         guard !sections.contains(where: { $0.id == id }) else { return }
         let section = FocusSection(id: id)
         sections.append(section)
@@ -375,8 +422,17 @@ extension FocusManager {
     ///
     /// The first focusable element in the section receives focus.
     ///
+    /// During a collecting pass (e.g. an alert or modal activating its own
+    /// section while the tree renders) the activation is staged and applied
+    /// at ``commitPass()``; a discarded pass never changes the live section.
+    ///
     /// - Parameter id: The section identifier to activate.
     func activateSection(id: String) {
+        if isCollectingPass {
+            stagedActivationID = id
+            return
+        }
+
         guard sections.contains(where: { $0.id == id }) else { return }
 
         // Notify current focused element
@@ -417,28 +473,57 @@ extension FocusManager {
     /// registered section is activated. If the previously focused element
     /// no longer exists, the first focusable in the active section is focused.
     func endRenderPass() {
-        // Validate active section
-        if let activeID = activeSectionID,
-            !sections.contains(where: { $0.id == activeID })
-        {
-            activeSectionID = sections.first?.id
+        validateCommittedFocus()
+    }
+
+    // MARK: - Per-Pass Staging API
+
+    /// Starts collecting focus registrations for one render pass.
+    ///
+    /// Until ``commitPass()`` or ``discardPass()``, all registrations and
+    /// section activations go into the staging area while queries keep
+    /// reading the last committed state. `RenderLoop` calls this before
+    /// every traversal (measurement, main, correction).
+    func beginPass() {
+        stagedSections.removeAll()
+        stagedActivationID = nil
+        isCollectingPass = true
+    }
+
+    /// Drops everything the current pass registered.
+    ///
+    /// Called for traversals whose tree never becomes the frame's output
+    /// (the measurement pass, or a main pass superseded by a header
+    /// correction). Because nothing live was touched, discarding is free.
+    func discardPass() {
+        stagedSections.removeAll()
+        stagedActivationID = nil
+        isCollectingPass = false
+    }
+
+    /// Replaces the committed sections with the staged ones and runs the
+    /// deferred focus side effects.
+    ///
+    /// This is the focus part of the frame commit: the FINAL pass's
+    /// registrations become the live sections, a staged section activation
+    /// (alert/modal) is applied, and the auto-focus validation runs —
+    /// firing `onFocusReceived`/`onFocusChange` at most once per frame,
+    /// never during traversal.
+    func commitPass() {
+        sections = stagedSections
+        stagedSections = []
+        isCollectingPass = false
+
+        if let requestedID = stagedActivationID {
+            stagedActivationID = nil
+            activateSection(id: requestedID)
+            return
         }
 
-        // Validate focused element
-        if let focusID = focusedID, let section = activeSection {
-            if !section.focusables.contains(where: { $0.focusID == focusID }) {
-                // Previously focused element is gone — auto-focus first available
-                self.focusedID = nil
-                if let firstFocusable = section.focusables.first(where: { $0.canBeFocused }) {
-                    self.focusedID = firstFocusable.focusID
-                    firstFocusable.onFocusReceived()
-                }
-            }
-        } else if focusedID == nil, let section = activeSection,
-            let firstFocusable = section.focusables.first(where: { $0.canBeFocused })
-        {
-            self.focusedID = firstFocusable.focusID
-            firstFocusable.onFocusReceived()
+        let previousFocusedID = focusedID
+        validateCommittedFocus()
+        if focusedID != previousFocusedID {
+            onFocusChange?()
         }
     }
 }
@@ -525,6 +610,50 @@ private extension FocusManager {
                 current.onFocusLost()
                 return
             }
+        }
+    }
+
+    /// Returns the staged section with the given ID, creating it if needed.
+    func stagedSection(id: String) -> FocusSection {
+        if let existing = stagedSections.first(where: { $0.id == id }) {
+            return existing
+        }
+        let section = FocusSection(id: id)
+        stagedSections.append(section)
+        return section
+    }
+
+    /// Repairs the committed focus state after sections were replaced.
+    ///
+    /// Shared by ``endRenderPass()`` (live path: `ViewRenderer`, tests) and
+    /// ``commitPass()``: reactivates a surviving section when the active one
+    /// disappeared, and auto-focuses the first available element when the
+    /// focused one is gone. `onFocusChange` is intentionally NOT fired here;
+    /// `commitPass()` detects focus changes itself so the live path keeps
+    /// its historical semantics.
+    func validateCommittedFocus() {
+        // Validate active section
+        if let activeID = activeSectionID,
+            !sections.contains(where: { $0.id == activeID })
+        {
+            activeSectionID = sections.first?.id
+        }
+
+        // Validate focused element
+        if let focusID = focusedID, let section = activeSection {
+            if !section.focusables.contains(where: { $0.focusID == focusID }) {
+                // Previously focused element is gone — auto-focus first available
+                self.focusedID = nil
+                if let firstFocusable = section.focusables.first(where: { $0.canBeFocused }) {
+                    self.focusedID = firstFocusable.focusID
+                    firstFocusable.onFocusReceived()
+                }
+            }
+        } else if focusedID == nil, let section = activeSection,
+            let firstFocusable = section.focusables.first(where: { $0.canBeFocused })
+        {
+            self.focusedID = firstFocusable.focusID
+            firstFocusable.onFocusReceived()
         }
     }
 }
