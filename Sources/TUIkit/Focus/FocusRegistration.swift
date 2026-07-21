@@ -106,7 +106,13 @@ struct FocusRegistration {
     static func register(context: RenderContext, handler: Focusable) {
         guard context.phase == .render else { return }
         context.environment.focusManager.register(handler, inSection: context.environment.activeFocusSectionID)
-        context.environment.stateStorage!.markActive(context.identity)
+        // Keep the persisted focusID alive through GC (per pass in a
+        // RenderLoop frame, directly on the live path).
+        if let pendingEffects = context.environment.pendingFrameEffects {
+            pendingEffects.markActive(context.identity)
+        } else {
+            context.environment.stateStorage!.markActive(context.identity)
+        }
     }
 
     /// Determines whether the given focusID currently has focus.

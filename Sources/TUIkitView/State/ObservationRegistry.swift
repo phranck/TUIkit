@@ -46,6 +46,19 @@ package extension ObservationRegistry {
         }
     }
 
+    /// Keeps an identity's registration alive through the end-of-frame GC.
+    ///
+    /// Liveness is decoupled from ``track(identity:invalidationSink:_:)``:
+    /// inside a `RenderLoop` frame only the FINAL pass's identities are
+    /// marked (via the pending-effects liveness sets), so a registration
+    /// made by a discarded pass is collected by ``endRenderPass()`` and its
+    /// callback turns inert.
+    func markActive(_ identity: ViewIdentity) {
+        state.withLock { registry in
+            _ = registry.activeIdentities.insert(identity)
+        }
+    }
+
     /// Keeps existing registrations below a cached subtree mounted.
     func markSubtreeActive(_ root: ViewIdentity) {
         state.withLock { registry in
@@ -80,8 +93,11 @@ package extension ObservationRegistry {
 package extension ObservationRegistry {
     /// Evaluates a view body while tracking its observable dependencies.
     ///
-    /// A newer evaluation at the same identity supersedes the previous callback.
-    /// Only the current generation may invalidate the owning runtime.
+    /// A newer evaluation at the same identity supersedes the previous
+    /// callback. Only the current generation may invalidate the owning
+    /// runtime. Tracking does NOT mark the identity alive — callers route
+    /// liveness through ``markActive(_:)`` (directly on the live path, via
+    /// the pending-effects sets inside a `RenderLoop` frame).
     @MainActor
     func track<Result>(
         identity: ViewIdentity,
@@ -92,7 +108,6 @@ package extension ObservationRegistry {
             registry.nextGeneration &+= 1
             let generation = registry.nextGeneration
             registry.generations[identity] = generation
-            registry.activeIdentities.insert(identity)
             return generation
         }
         let weakSink = WeakInvalidationSink(invalidationSink)

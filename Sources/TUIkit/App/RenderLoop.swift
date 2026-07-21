@@ -312,6 +312,10 @@ extension RenderLoop {
         // dropped with their collectors and never run.
         collectors.pendingEffects.commitDeferredEffects()
 
+        // COMMIT (step 6d): GC on the committed tree only — the final
+        // pass's liveness sets reach the managers, then endRenderPass
+        // sweeps everything that only discarded passes touched.
+        tuiContext.applyFrameLiveness(from: collectors.pendingEffects)
         endRenderPass()
     }
 

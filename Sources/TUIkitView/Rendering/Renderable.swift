@@ -173,11 +173,17 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
     if V.Body.self != Never.self {
         let childContext = context.withChildIdentity(type: V.Body.self)
         let invalidationSink = context.environment.renderInvalidationSink
+        let pendingEffects = context.environment.pendingFrameEffects
 
         // Wrap body evaluation in observation tracking so that any @Observable
         // property accessed during body triggers a re-render when mutated.
+        // Sizing traversals evaluate the body plainly: a measure pass must
+        // not register invalidation callbacks for trees that may never
+        // become visible.
         let body = StateRegistration.withHydration(of: view, context: context) {
-            if let observationRegistry = context.environment.observationRegistry {
+            if context.phase == .measure {
+                view.body
+            } else if let observationRegistry = context.environment.observationRegistry {
                 observationRegistry.track(
                     identity: context.identity,
                     invalidationSink: invalidationSink
@@ -193,7 +199,15 @@ public func renderToBuffer<V: View>(_ view: V, context: RenderContext) -> FrameB
             }
         }
 
-        context.environment.stateStorage?.markActive(context.identity)
+        // GC liveness is a lifetime effect: inside a RenderLoop pass it is
+        // collected per pass and only the FINAL pass's set reaches the
+        // managers at frame commit. The live path marks directly.
+        if let pendingEffects {
+            pendingEffects.markActive(context.identity)
+        } else {
+            context.environment.stateStorage?.markActive(context.identity)
+            context.environment.observationRegistry?.markActive(context.identity)
+        }
 
         return renderToBuffer(body, context: childContext)
     }

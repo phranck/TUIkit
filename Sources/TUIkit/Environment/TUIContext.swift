@@ -535,6 +535,30 @@ extension TUIContext {
         renderCache.logFrameStats()
     }
 
+    /// Applies the committed frame's GC liveness to the identity-based
+    /// managers.
+    ///
+    /// This is commit step "6d preparation" of the frame choreography: the
+    /// FINAL pass's liveness sets (collected in ``PendingFrameEffects``)
+    /// mark state, cache, and observation records alive, so the subsequent
+    /// ``endRenderPass()`` sweeps everything that only discarded passes
+    /// touched. Runs after the deferred-effect replay, which may add its own
+    /// direct markings (e.g. preference change tracking).
+    ///
+    /// - Parameter pendingEffects: The final pass's pending records.
+    func applyFrameLiveness(from pendingEffects: PendingFrameEffects) {
+        for identity in pendingEffects.activeIdentities {
+            stateStorage.markActive(identity)
+            renderCache.markActive(identity)
+            observationRegistry.markActive(identity)
+        }
+        for root in pendingEffects.activeSubtreeRoots {
+            stateStorage.markSubtreeActive(root)
+            observationRegistry.markSubtreeActive(root)
+            renderCache.markActive(root)
+        }
+    }
+
     /// Builds complete environment values for this runtime.
     func environmentValues(
         extending base: EnvironmentValues = EnvironmentValues()

@@ -70,12 +70,7 @@ struct PendingEffectCommitTests {
         // not invalidate the committed frame.
         harness.app.model.value += 1
 
-        withKnownIssue("Issue #57: measure-pass observation trackings stay current") {
-            #expect(harness.tuiContext.appState.needsRender == false)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.appState.needsRender == false)
     }
 
     @Test("State storage keeps records for the committed tree only")
@@ -88,12 +83,7 @@ struct PendingEffectCommitTests {
             .map(\.path)
             .filter { $0.contains("MeasureOnlyStatefulLeaf") }
 
-        withKnownIssue("Issue #57: GC liveness is the union of all passes") {
-            #expect(ghostPaths.isEmpty)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(ghostPaths.isEmpty)
     }
 
     @Test("onPreferenceChange fires once per change, even across a correction frame")

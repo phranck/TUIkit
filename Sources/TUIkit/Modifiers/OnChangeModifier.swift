@@ -63,8 +63,13 @@ extension OnChangeModifier: Renderable {
             storage.setTrackedValue(value, for: key)
         }
 
-        // Keep tracked values alive through GC
-        storage.markActive(context.identity)
+        // Keep tracked values alive through GC (per pass in a RenderLoop
+        // frame, directly on the live path).
+        if let pendingEffects {
+            pendingEffects.markActive(context.identity)
+        } else {
+            storage.markActive(context.identity)
+        }
 
         return TUIkitView.renderToBuffer(content, context: context)
     }

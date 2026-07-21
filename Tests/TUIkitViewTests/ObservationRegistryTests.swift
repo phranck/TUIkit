@@ -24,12 +24,14 @@ struct ObservationRegistryTests {
         registry.track(identity: identity, invalidationSink: sink) {
             _ = model.value
         }
+        registry.markActive(identity)
         registry.endRenderPass()
 
         registry.beginRenderPass()
         registry.track(identity: identity, invalidationSink: sink) {
             _ = model.value
         }
+        registry.markActive(identity)
         registry.endRenderPass()
 
         #expect(registry.count == 1)
@@ -52,9 +54,11 @@ struct ObservationRegistryTests {
         registry.track(identity: descendant, invalidationSink: sink) {
             _ = model.value
         }
+        registry.markActive(descendant)
         registry.track(identity: sibling, invalidationSink: sink) {
             _ = model.value
         }
+        registry.markActive(sibling)
         registry.endRenderPass()
 
         registry.beginRenderPass()
@@ -79,6 +83,7 @@ struct ObservationRegistryTests {
         registry.track(identity: identity, invalidationSink: sink) {
             _ = model.value
         }
+        registry.markActive(identity)
         registry.endRenderPass()
 
         registry.beginRenderPass()
@@ -99,12 +104,11 @@ struct ObservationRegistryTests {
 
         registry.beginRenderPass()
         for index in 0..<3 {
-            registry.track(
-                identity: ViewIdentity(path: "Root/\(index)"),
-                invalidationSink: sink
-            ) {
+            let identity = ViewIdentity(path: "Root/\(index)")
+            registry.track(identity: identity, invalidationSink: sink) {
                 _ = model.value
             }
+            registry.markActive(identity)
         }
         registry.endRenderPass()
 
