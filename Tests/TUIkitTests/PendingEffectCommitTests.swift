@@ -96,6 +96,27 @@ struct PendingEffectCommitTests {
         }
     }
 
+    @Test("onPreferenceChange fires once per change, even across a correction frame")
+    func onPreferenceChangeFiresOncePerChange() {
+        let harness = FrameHarness(app: PreferenceActionApp())
+
+        // First frame: the value appears → exactly one initial fire.
+        harness.renderFrame()
+        #expect(harness.app.trace.snapshot() == ["preference:one"])
+
+        // Unchanged value → no fire, regardless of re-rendering.
+        harness.app.trace.reset()
+        harness.renderFrame()
+        #expect(harness.app.trace.snapshot() == [])
+
+        // Changed value in a frame that traverses twice (main + correction):
+        // the action fires exactly once, for the committed tree.
+        harness.app.title.value = "two"
+        harness.app.model.lineCount = 3
+        harness.renderFrame()
+        #expect(harness.app.trace.snapshot() == ["preference:two"])
+    }
+
     @Test("A stable subtree fires appear exactly once across a correction frame")
     func stableSubtreeAppearsOnceAcrossCorrection() {
         let harness = FrameHarness(app: StableAcrossCorrectionApp())
@@ -241,6 +262,34 @@ private struct MeasureOnlyStatefulLeaf: View {
 
     var body: some View {
         Text("counter: \(counter)")
+    }
+}
+
+/// Mutable string cell shared between a test and its app fixture.
+@MainActor
+private final class StringCell {
+    var value = "one"
+}
+
+/// Declares a preference and observes it; the change action must fire once
+/// per VALUE CHANGE (SwiftUI semantics), regardless of how many passes a
+/// frame needed.
+private struct PreferenceActionApp: App {
+    let model = GrowableHeaderModel()
+    let title = StringCell()
+    let trace = TraceRecorder<String>()
+
+    init() {}
+
+    var body: some Scene {
+        WindowGroup {
+            Text("body")
+                .preference(key: NavigationTitleKey.self, value: title.value)
+                .onPreferenceChange(NavigationTitleKey.self) { value in
+                    trace.record("preference:\(value)")
+                }
+                .appHeader { GrowingHeader(model: model) }
+        }
     }
 }
 

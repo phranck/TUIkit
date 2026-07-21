@@ -28,19 +28,6 @@ struct RenderPassCollectorTests {
         #expect(harness.tuiContext.appHeader.height == 0)
     }
 
-    @Test("Preference callbacks do not accumulate across passes of one frame")
-    func preferenceCallbacksDoNotAccumulateAcrossPasses() {
-        let harness = FrameHarness(app: CorrectionPreferenceApp())
-
-        // Frame 1 establishes the header height estimate; growing the header
-        // forces frame 2 through the correction pass.
-        harness.renderFrame()
-        harness.app.model.lineCount = 3
-        harness.renderFrame()
-
-        #expect(harness.tuiContext.preferences.callbackCount == 1)
-    }
-
     @Test("Status-bar items from a superseded pass do not persist")
     func statusBarItemsFromSupersededPassDoNotPersist() {
         let harness = FrameHarness(app: CorrectionGatedStatusBarApp())
@@ -123,21 +110,6 @@ private struct MeasurePhaseOnlyHeaderView: View, Renderable {
             Text("body").appHeader { Text("ghost header") },
             context: context
         )
-    }
-}
-
-private struct CorrectionPreferenceApp: App {
-    let model = GrowableHeaderModel()
-
-    init() {}
-
-    var body: some Scene {
-        WindowGroup {
-            Text("body")
-                .preference(key: NavigationTitleKey.self, value: "title")
-                .onPreferenceChange(NavigationTitleKey.self) { _ in }
-                .appHeader { GrowingHeader(model: model) }
-        }
     }
 }
 

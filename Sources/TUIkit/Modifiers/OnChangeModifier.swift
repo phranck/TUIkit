@@ -38,26 +38,51 @@ struct OnChangeModifier<Content: View, V: Equatable>: View {
 extension OnChangeModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let storage = context.environment.stateStorage!
+        let pendingEffects = context.environment.pendingFrameEffects
 
-        // Claim unique index for this onChange at this identity
-        let index = storage.nextOnChangeIndex(for: context.identity)
+        // Claim a unique index for this onChange at this identity. Inside a
+        // RenderLoop pass the counter is pass-scoped, so main and correction
+        // pass claim identical indices and tracked values stay stable.
+        let index = pendingEffects?.nextOnChangeIndex(for: context.identity)
+            ?? storage.nextOnChangeIndex(for: context.identity)
         let key = StateStorage.StateKey(identity: context.identity, propertyIndex: index)
 
-        // Compare with previous value
-        if let oldValue: V = storage.trackedValue(for: key) {
-            if oldValue != value {
-                action(oldValue, value)
+        // Compare against the last COMMITTED frame's value. Writing the new
+        // value back is a lifetime effect: it must happen exactly once at
+        // frame commit, or a correction pass would see its own sibling
+        // pass's value instead of the previous frame's.
+        let oldValue: V? = storage.trackedValue(for: key)
+        if let pendingEffects {
+            pendingEffects.recordEffect { [value, initial, action] in
+                fireIfChanged(oldValue: oldValue, newValue: value, initial: initial, action: action)
+                storage.setTrackedValue(value, for: key)
             }
-        } else if initial {
-            action(value, value)
+        } else {
+            // Live path (ViewRenderer, harnesses): immediate semantics.
+            fireIfChanged(oldValue: oldValue, newValue: value, initial: initial, action: action)
+            storage.setTrackedValue(value, for: key)
         }
-
-        // Store current value for next render pass
-        storage.setTrackedValue(value, for: key)
 
         // Keep tracked values alive through GC
         storage.markActive(context.identity)
 
         return TUIkitView.renderToBuffer(content, context: context)
+    }
+}
+
+/// Runs an `onChange` action when the tracked value changed, or on the
+/// first observation when `initial` is set.
+private func fireIfChanged<V: Equatable>(
+    oldValue: V?,
+    newValue: V,
+    initial: Bool,
+    action: (V, V) -> Void
+) {
+    if let oldValue {
+        if oldValue != newValue {
+            action(oldValue, newValue)
+        }
+    } else if initial {
+        action(newValue, newValue)
     }
 }

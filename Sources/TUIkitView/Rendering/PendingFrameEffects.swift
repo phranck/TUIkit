@@ -45,8 +45,14 @@ import TUIkitCore
 /// runs without a `PendingFrameEffects` instance in the environment; effect
 /// sites fall back to their immediate live semantics there. See
 /// ``TUIkitCore/EnvironmentValues/pendingFrameEffects``.
-@MainActor
-package final class PendingFrameEffects {
+///
+/// ## Thread Safety
+///
+/// Like `StateStorage` and `PreferenceStorage`, this type is accessed only
+/// from the main thread (TUIkit's single-threaded render loop): records are
+/// written during traversal and replayed at commit, both on the main actor.
+/// No locking is required.
+package final class PendingFrameEffects: @unchecked Sendable {
     /// Identities the current pass keeps alive for identity-based GC.
     package private(set) var activeIdentities: Set<ViewIdentity> = []
 
@@ -55,7 +61,17 @@ package final class PendingFrameEffects {
     package private(set) var activeSubtreeRoots: Set<ViewIdentity> = []
 
     /// Ordered command log of lifetime effects, replayed at frame commit.
+    ///
+    /// Plain (non-Sendable) closures: recording and replay both happen on
+    /// the main actor, so captures never cross an isolation boundary.
     private var deferredEffects: [() -> Void] = []
+
+    /// Per-identity counters disambiguating chained `onChange` modifiers.
+    ///
+    /// Scoped to this pass (unlike the frame-scoped fallback in
+    /// `StateStorage`), so a correction pass claims the same indices as the
+    /// superseded main pass and tracked values stay stable across passes.
+    private var onChangeCounters: [ViewIdentity: Int] = [:]
 
     /// Creates an empty record set for one render pass.
     package init() {}
@@ -80,13 +96,25 @@ package final class PendingFrameEffects {
         activeSubtreeRoots.insert(root)
     }
 
+    /// Claims the next `onChange` slot index for an identity in this pass.
+    ///
+    /// - Parameter identity: The view identity requesting an index.
+    /// - Returns: The next available index (starting at 0 per pass).
+    package func nextOnChangeIndex(for identity: ViewIdentity) -> Int {
+        let index = onChangeCounters[identity, default: 0]
+        onChangeCounters[identity] = index + 1
+        return index
+    }
+
     /// Appends a lifetime effect to the command log.
     ///
     /// The closure runs at frame commit (after terminal output), in
     /// traversal order, exactly once — and only if this pass becomes the
     /// frame's final pass.
     ///
-    /// - Parameter effect: The deferred manager call.
+    /// - Parameter effect: The deferred manager call. Callers capture their
+    ///   values explicitly (capture list) so non-Sendable generics copy into
+    ///   the record without region-crossing diagnostics.
     package func recordEffect(_ effect: @escaping () -> Void) {
         deferredEffects.append(effect)
     }
