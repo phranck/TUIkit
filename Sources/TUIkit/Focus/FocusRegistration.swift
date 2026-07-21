@@ -64,7 +64,7 @@ struct FocusRegistration {
 
         register(context: context, handler: handler)
 
-        let isFocused = context.isMeasuring ? false : context.environment.focusManager.isFocused(id: persistedFocusID)
+        let isFocused = context.phase == .render && context.environment.focusManager.isFocused(id: persistedFocusID)
 
         return Self(persistedFocusID: persistedFocusID, isFocused: isFocused)
     }
@@ -104,7 +104,7 @@ struct FocusRegistration {
     ///   - context: The current render context.
     ///   - handler: The focusable handler to register.
     static func register(context: RenderContext, handler: Focusable) {
-        guard !context.isMeasuring else { return }
+        guard context.phase == .render else { return }
         context.environment.focusManager.register(handler, inSection: context.environment.activeFocusSectionID)
         context.environment.stateStorage!.markActive(context.identity)
     }
@@ -118,6 +118,6 @@ struct FocusRegistration {
     ///   - focusID: The focusID to check.
     /// - Returns: `true` if the view is focused.
     static func isFocused(context: RenderContext, focusID: String) -> Bool {
-        context.isMeasuring ? false : context.environment.focusManager.isFocused(id: focusID)
+        context.phase == .render && context.environment.focusManager.isFocused(id: focusID)
     }
 }

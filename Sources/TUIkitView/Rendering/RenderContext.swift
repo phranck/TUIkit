@@ -51,11 +51,13 @@ public struct RenderContext {
     /// the available height or shrink to fit their content.
     public var hasExplicitHeight: Bool = false
 
-    /// Whether this is a measurement pass (no side-effects should occur).
+    /// The evaluation phase of the current render pass.
     ///
-    /// Set to true during two-pass layout when measuring non-Layoutable views.
-    /// Views should skip side-effects like focus registration when this is true.
-    public var isMeasuring: Bool = false
+    /// Defaults to ``RenderPhase/render``. Layout code switches to
+    /// ``RenderPhase/measure`` before sizing traversals so that effect sites
+    /// can tell sizing work apart from output work. See ``RenderPhase`` for
+    /// the invariants of each phase and the effect classification rule.
+    public var phase: RenderPhase = .render
 
     /// Creates a new RenderContext.
     ///
