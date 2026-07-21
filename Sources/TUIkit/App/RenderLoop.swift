@@ -79,6 +79,23 @@ internal struct RenderBackgroundCodes: Equatable {
 ///  12. End lifecycle tracking (fires onDisappear for removed views)
 /// ```
 ///
+/// ## Render phases
+///
+/// A frame can traverse the view tree up to three times. Each traversal
+/// carries a ``RenderPhase`` on its `RenderContext`:
+///
+/// - **First-frame header sizing** runs in `.measure`: it only discovers the
+///   app header height, so phase-guarded effect sites (lifecycle, task,
+///   focus registration) stay inert. `AppHeaderModifier` intentionally
+///   remains unguarded — the header buffer IS the measured output.
+/// - **Main pass** and, when the header height changed, the **correction
+///   pass** run in `.render` and produce the frame's candidate buffers.
+///
+/// Not yet guaranteed (tracked by issues #56/#57): the correction pass still
+/// re-registers per-frame effects (e.g. key handlers) on top of the main
+/// pass, and lifetime effects still apply during traversal instead of at a
+/// single commit point. See ``RenderPhase`` for the target model.
+///
 /// ## Diff-Based Rendering
 ///
 /// `RenderLoop` uses a `FrameDiffWriter` to compare each frame's output
@@ -208,11 +225,18 @@ extension RenderLoop {
         // This prevents visible content jumping.
         let appHeaderHeight: Int
         if isFirstFrame {
-            let measureContext = RenderContext(
+            var measureContext = RenderContext(
                 availableWidth: terminalWidth,
                 availableHeight: terminalHeight - statusBarHeight,
                 environment: environment
             )
+            // This traversal only exists to size the app header — run it in
+            // the measure phase so guarded effect sites (lifecycle, task,
+            // focus) stay inert. Deliberate exception: AppHeaderModifier is
+            // NOT phase-guarded, because writing the header buffer is the
+            // very output this pass measures. Isolating that write into a
+            // discardable per-pass collector is issue #56.
+            measureContext.phase = .measure
             _ = renderScene(scene, context: measureContext.withChildIdentity(type: type(of: scene)))
             appHeaderHeight = appHeader.height
             isFirstFrame = false

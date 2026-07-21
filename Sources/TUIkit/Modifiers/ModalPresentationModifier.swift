@@ -65,7 +65,7 @@ extension ModalPresentationModifier: Renderable {
         // The modal section becomes the active section, so Tab/arrows
         // only navigate within the modal's focusable elements.
         let sectionID = Self.modalSectionID
-        if !context.isMeasuring {
+        if context.phase == .render {
             focusManager.registerSection(id: sectionID)
             focusManager.activateSection(id: sectionID)
         }

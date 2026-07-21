@@ -226,10 +226,10 @@ public func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: Re
         return ViewSize(width: min, height: min, isWidthFlexible: true, isHeightFlexible: true)
     }
 
-    // Use Layoutable if available (mark as measuring to suppress side-effects)
+    // Use Layoutable if available (switch to the measure phase to suppress side-effects)
     if let layoutable = view as? Layoutable {
         var measureContext = context
-        measureContext.isMeasuring = true
+        measureContext.phase = .measure
         return layoutable.sizeThatFits(proposal: proposal, context: measureContext)
     }
 
@@ -249,7 +249,7 @@ public func measureChild<V: View>(_ view: V, proposal: ProposedSize, context: Re
 
     // Fallback: render to measure (without side-effects)
     var measureContext = context
-    measureContext.isMeasuring = true
+    measureContext.phase = .measure
     // Clear hasExplicitWidth so views report their natural (minimum) size
     // instead of expanding to fill the full available width.
     let wasExplicitWidth = measureContext.hasExplicitWidth

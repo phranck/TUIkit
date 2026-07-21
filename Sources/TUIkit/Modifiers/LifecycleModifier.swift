@@ -22,7 +22,7 @@ struct OnAppearModifier<Content: View>: View {
 extension OnAppearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.appear")
-        if !context.isMeasuring {
+        if context.phase == .render {
             _ = context.environment.lifecycle!.recordAppear(
                 identity: scopedContext.identity,
                 action: action
@@ -51,7 +51,7 @@ struct OnDisappearModifier<Content: View>: View {
 extension OnDisappearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.disappear")
-        if !context.isMeasuring {
+        if context.phase == .render {
             let lifecycle = context.environment.lifecycle!
             lifecycle.registerDisappear(identity: scopedContext.identity, action: action)
             _ = lifecycle.recordAppear(identity: scopedContext.identity, action: {})
@@ -84,7 +84,7 @@ struct TaskModifier<Content: View>: View {
 extension TaskModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.task")
-        if !context.isMeasuring {
+        if context.phase == .render {
             context.environment.lifecycle!.updateTask(
                 identity: scopedContext.identity,
                 id: MountedTaskID.value,
