@@ -163,10 +163,7 @@ struct RenderBottleneckTests {
 
     // MARK: - ForEach Analysis
 
-    @Test(
-        "Analyze ForEach iteration count impact",
-        .disabled("Issue #12 must restore ForEach output before timing it")
-    )
+    @Test("Analyze ForEach iteration count impact")
     func analyzeForEachIterations() throws {
         let context = testContext()
         let iterations = 200
@@ -202,16 +199,16 @@ struct RenderBottleneckTests {
         }
 
         try requireRenderedOutput(forEach5, context: context) {
-            $0.strippedLines == items5.map { "Row \($0)" }
+            $0.strippedLines == expectedCenteredLines(items5.map { "Row \($0)" })
         }
         try requireRenderedOutput(forEach20, context: context) {
-            $0.strippedLines == items20.map { "Row \($0)" }
+            $0.strippedLines == expectedCenteredLines(items20.map { "Row \($0)" })
         }
         try requireRenderedOutput(forEach50, context: context) {
-            $0.strippedLines == items50.prefix(context.availableHeight).map { "Row \($0)" }
+            $0.strippedLines == expectedCenteredLines(items50.map { "Row \($0)" })
         }
         try requireRenderedOutput(forEach100, context: context) {
-            $0.strippedLines == items100.prefix(context.availableHeight).map { "Row \($0)" }
+            $0.strippedLines == expectedCenteredLines(items100.map { "Row \($0)" })
         }
 
         _ = measure("5 items", iterations: iterations) {
@@ -437,10 +434,7 @@ struct RenderBottleneckTests {
 
     // MARK: - LazyStack vs Regular Stack
 
-    @Test(
-        "Compare LazyStack vs regular Stack performance",
-        .disabled("Issue #12 must restore ForEach output before timing it")
-    )
+    @Test("Compare LazyStack vs regular Stack performance")
     func compareLazyVsRegular() throws {
         let iterations = 300
 
@@ -461,12 +455,15 @@ struct RenderBottleneckTests {
             }
         }
 
-        let expectedOutput = items.prefix(smallContext.availableHeight).map { "Row \($0)" }
+        let lines = items.map { "Row \($0)" }
         try requireRenderedOutput(regularStack, context: smallContext) {
-            $0.strippedLines == expectedOutput
+            $0.strippedLines == expectedCenteredLines(lines)
         }
         try requireRenderedOutput(lazyStack, context: smallContext) {
-            $0.strippedLines == expectedOutput
+            $0.strippedLines == expectedCenteredLines(
+                lines,
+                visibleCount: smallContext.availableHeight
+            )
         }
 
         let regularTime = measure("VStack (100 items, 10 visible)", iterations: iterations) {

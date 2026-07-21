@@ -22,10 +22,12 @@ struct OnAppearModifier<Content: View>: View {
 extension OnAppearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.appear")
-        _ = context.environment.lifecycle!.recordAppear(
-            identity: scopedContext.identity,
-            action: action
-        )
+        if !context.isMeasuring {
+            _ = context.environment.lifecycle!.recordAppear(
+                identity: scopedContext.identity,
+                action: action
+            )
+        }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
     }
@@ -49,10 +51,11 @@ struct OnDisappearModifier<Content: View>: View {
 extension OnDisappearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.disappear")
-        let lifecycle = context.environment.lifecycle!
-
-        lifecycle.registerDisappear(identity: scopedContext.identity, action: action)
-        _ = lifecycle.recordAppear(identity: scopedContext.identity, action: {})
+        if !context.isMeasuring {
+            let lifecycle = context.environment.lifecycle!
+            lifecycle.registerDisappear(identity: scopedContext.identity, action: action)
+            _ = lifecycle.recordAppear(identity: scopedContext.identity, action: {})
+        }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
     }
@@ -81,14 +84,14 @@ struct TaskModifier<Content: View>: View {
 extension TaskModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.task")
-        let lifecycle = context.environment.lifecycle!
-
-        lifecycle.updateTask(
-            identity: scopedContext.identity,
-            id: MountedTaskID.value,
-            priority: priority,
-            operation: task
-        )
+        if !context.isMeasuring {
+            context.environment.lifecycle!.updateTask(
+                identity: scopedContext.identity,
+                id: MountedTaskID.value,
+                priority: priority,
+                operation: task
+            )
+        }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
     }

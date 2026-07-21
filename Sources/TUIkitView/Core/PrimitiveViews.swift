@@ -55,7 +55,7 @@ public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
 /// This type is used internally by `ViewBuilder` for for-in loops.
 ///
 /// ```swift
-/// ForEach(items) { item in
+/// for item in items {
 ///     Text(item.name)
 /// }
 /// ```
@@ -143,19 +143,71 @@ extension ConditionalView: Renderable {
     }
 }
 
+// MARK: - ConditionalView Child Traversal
+
+extension ConditionalView: ChildInfoProvider, ChildViewProvider {
+    public func childInfos(context: RenderContext) -> [ChildInfo] {
+        switch self {
+        case .trueContent(let content):
+            invalidateInactiveBranch("false", context: context)
+            return resolveChildInfos(from: content, context: context.withBranchIdentity("true"))
+        case .falseContent(let content):
+            invalidateInactiveBranch("true", context: context)
+            return resolveChildInfos(from: content, context: context.withBranchIdentity("false"))
+        }
+    }
+
+    public func childViews(context: RenderContext) -> [ChildView] {
+        switch self {
+        case .trueContent(let content):
+            invalidateInactiveBranch("false", context: context)
+            return scopedChildViews(from: content, branch: "true", context: context)
+        case .falseContent(let content):
+            invalidateInactiveBranch("true", context: context)
+            return scopedChildViews(from: content, branch: "false", context: context)
+        }
+    }
+
+    private func invalidateInactiveBranch(_ branch: String, context: RenderContext) {
+        context.environment.stateStorage?.invalidateDescendants(of: context.identity.branch(branch))
+    }
+
+    private func scopedChildViews<Content: View>(
+        from content: Content,
+        branch: String,
+        context: RenderContext
+    ) -> [ChildView] {
+        let branchContext = context.withBranchIdentity(branch)
+        return resolveChildViews(from: content, context: branchContext).map {
+            $0.scoped(to: branchContext.identity)
+        }
+    }
+}
+
 // MARK: - ViewArray Rendering
 
-extension ViewArray: Renderable, ChildInfoProvider {
+extension ViewArray: Renderable, ChildInfoProvider, ChildViewProvider {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         FrameBuffer(verticallyStacking: childInfos(context: context).compactMap(\.buffer))
     }
 
     public func childInfos(context: RenderContext) -> [ChildInfo] {
-        elements.enumerated().map { index, element in
-            makeChildInfo(
-                for: element,
-                context: context.withChildIdentity(type: type(of: element), index: index)
-            )
+        elements.enumerated().flatMap { index, element in
+            let childContext = context.withChildIdentity(type: Element.self, index: index)
+            return resolveChildInfos(from: element, context: childContext)
+        }
+    }
+
+    public func childViews(context: RenderContext) -> [ChildView] {
+        elements.enumerated().flatMap { index, element in
+            guard let provider = element as? ChildViewProvider else {
+                return [ChildView(element, childIndex: index)]
+            }
+
+            let childContext = context.withChildIdentity(type: Element.self, index: index)
+            return provider.childViews(context: childContext).map {
+                $0.scoped(to: childContext.identity)
+            }
         }
     }
 }

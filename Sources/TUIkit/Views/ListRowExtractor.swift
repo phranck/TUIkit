@@ -37,17 +37,18 @@ protocol ListRowExtractor {
 
 extension ForEach: ListRowExtractor {
     func extractListRows<RowID: Hashable>(context: RenderContext) -> [ListRow<RowID>] {
-        data.compactMap { element -> ListRow<RowID>? in
-            let elementID = element[keyPath: idKeyPath]
-            let view = content(element)
+        keyedSnapshot(context: context).entries.compactMap { entry -> ListRow<RowID>? in
+            let view = content(entry.element)
 
             // Extract badge if the view is wrapped in a BadgeModifier
             let badge = extractBadgeValue(from: view)
 
-            // Render the view
-            let buffer = TUIkit.renderToBuffer(view, context: context)
+            // Render each row below its explicit collection identity so state,
+            // lifecycle, and other runtime records follow the row across reorder.
+            let rowContext = context.withKeyedChildIdentity(type: Content.self, key: entry.identityKey)
+            let buffer = TUIkit.renderToBuffer(view, context: rowContext)
 
-            guard let rowID = elementID as? RowID else { return nil }
+            guard let rowID = entry.id as? RowID else { return nil }
             return ListRow(id: rowID, buffer: buffer, badge: badge)
         }
     }

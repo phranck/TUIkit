@@ -3,6 +3,7 @@
 //
 //  License: MIT
 
+import Foundation
 import Observation
 import Testing
 import TUIkitTestSupport
@@ -174,25 +175,6 @@ struct RuntimeCharacterizationTests {
         harness.recordEffect("preference committed")
 
         #expect(harness.trace.snapshot() == [.effect("preference committed")])
-    }
-
-    @Test("ForEach output remains characterized for issue #12")
-    func knownForEachOutputDefect() {
-        let harness = RuntimeCharacterizationHarness()
-        let actualLines = harness.render {
-            VStack {
-                ForEach(0..<2) { index in
-                    Text("row:\(index)")
-                }
-            }
-        }.ansiStrippedLines
-
-        withKnownIssue("Issue #12: ForEach is not rendered outside the List-specific path") {
-            #expect(actualLines == ["row:0", "row:1"])
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
     }
 
     @Test("Reconstructed lifecycle modifier keeps one mounted identity")

@@ -110,6 +110,30 @@ struct LazyVStackTests {
 
         #expect(buffer.isEmpty)
     }
+
+    @Test("LazyVStack expands conditional ForEach children with stack spacing")
+    func expandsConditionalForEach() {
+        let includeItems = true
+        let stack = LazyVStack(spacing: 1) {
+            Text("Before")
+            if includeItems {
+                ForEach(["Alpha", "Beta"], id: \.self) { item in
+                    Text(item)
+                }
+            } else {
+                EmptyView()
+            }
+            Text("After")
+        }
+
+        let buffer = renderToBuffer(stack, context: testContext())
+
+        #expect(buffer.height == 7)
+        #expect(buffer.lines.contains { $0.contains("Before") })
+        #expect(buffer.lines.contains { $0.contains("Alpha") })
+        #expect(buffer.lines.contains { $0.contains("Beta") })
+        #expect(buffer.lines.contains { $0.contains("After") })
+    }
 }
 
 // MARK: - LazyHStack Tests
@@ -186,6 +210,26 @@ struct LazyHStackTests {
         let buffer = renderToBuffer(stack, context: context)
 
         #expect(buffer.isEmpty)
+    }
+
+    @Test("LazyHStack expands conditional ForEach children horizontally")
+    func expandsConditionalForEach() {
+        let includeItems = true
+        let stack = LazyHStack(spacing: 1) {
+            Text("Before")
+            if includeItems {
+                ForEach(["Alpha", "Beta"], id: \.self) { item in
+                    Text(item)
+                }
+            } else {
+                EmptyView()
+            }
+            Text("After")
+        }
+
+        let buffer = renderToBuffer(stack, context: testContext())
+
+        #expect(buffer.lines.map(\.stripped) == ["Before Alpha Beta After"])
     }
 }
 

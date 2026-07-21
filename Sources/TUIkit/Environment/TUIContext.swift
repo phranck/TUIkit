@@ -366,6 +366,9 @@ final class TUIContext {
     /// Preference value collection during rendering.
     let preferences: PreferenceStorage
 
+    /// Diagnostics emitted while traversing this runtime's view tree.
+    let runtimeDiagnostics: RuntimeDiagnostics
+
     /// Persistent `@State` value storage indexed by `ViewIdentity`.
     let stateStorage: StateStorage
 
@@ -422,6 +425,7 @@ final class TUIContext {
     ///   - lifecycle: The lifecycle manager to use.
     ///   - keyEventDispatcher: The key event dispatcher to use.
     ///   - preferences: The preference storage to use.
+    ///   - runtimeDiagnostics: The diagnostic collector to use.
     ///   - stateStorage: The state storage to use.
     ///   - observationRegistry: The Observation registry to use.
     ///   - renderCache: The render cache to use.
@@ -438,6 +442,7 @@ final class TUIContext {
         lifecycle: LifecycleManager = LifecycleManager(),
         keyEventDispatcher: KeyEventDispatcher = KeyEventDispatcher(),
         preferences: PreferenceStorage = PreferenceStorage(),
+        runtimeDiagnostics: RuntimeDiagnostics = RuntimeDiagnostics(),
         stateStorage: StateStorage = StateStorage(),
         observationRegistry: ObservationRegistry = ObservationRegistry(),
         renderCache: RenderCache = RenderCache(),
@@ -469,6 +474,7 @@ final class TUIContext {
         self.lifecycle = lifecycle
         self.keyEventDispatcher = keyEventDispatcher
         self.preferences = preferences
+        self.runtimeDiagnostics = runtimeDiagnostics
         self.stateStorage = stateStorage
         self.observationRegistry = observationRegistry
         self.renderCache = renderCache
@@ -498,6 +504,7 @@ extension TUIContext {
     /// Creates a runtime backed by the user's persistent configuration.
     static func production() -> TUIContext {
         TUIContext(
+            runtimeDiagnostics: .standardError(),
             storageBackend: StorageDefaults.runtimeBackend,
             localizationService: LocalizationService()
         )
@@ -507,6 +514,7 @@ extension TUIContext {
     func beginRenderPass() {
         keyEventDispatcher.clearHandlers()
         preferences.beginRenderPass()
+        runtimeDiagnostics.beginRenderPass()
         focusManager.beginRenderPass()
         statusBar.clearSectionItems()
         appHeader.beginRenderPass()
@@ -539,6 +547,7 @@ extension TUIContext {
         environment.renderCache = renderCache
         environment.renderInvalidationSink = appState
         environment.preferenceStorage = preferences
+        environment.runtimeDiagnostics = runtimeDiagnostics
         environment.localizationService = localizationService
         environment.notificationService = notificationService
         environment.storageBackend = storageBackend
@@ -583,6 +592,7 @@ extension TUIContext {
         lifecycle.reset()
         keyEventDispatcher.clearHandlers()
         preferences.reset()
+        runtimeDiagnostics.reset()
         stateStorage.reset()
         observationRegistry.reset()
         renderCache.reset()

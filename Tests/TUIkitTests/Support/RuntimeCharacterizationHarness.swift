@@ -22,15 +22,40 @@ enum RuntimeTraceEvent: Sendable, Equatable {
 final class RuntimeCharacterizationHarness {
     let trace = TraceRecorder<RuntimeTraceEvent>()
 
+    var storedStateCount: Int {
+        stateStorage.count
+    }
+
+    var storedStateIdentityPaths: [String] {
+        stateStorage.storedIdentities.map(\.path).sorted()
+    }
+
+    var currentDiagnosticMessages: [String] {
+        tuiContext.runtimeDiagnostics.messages
+    }
+
+    var mountedLifecycleCallbackCount: Int {
+        lifecycle.disappearCallbackCount
+    }
+
+    var mountedTaskCount: Int {
+        lifecycle.taskCount
+    }
+
+    var observationRegistrationCount: Int {
+        tuiContext.observationRegistry.count
+    }
+
+    var currentFocusedID: String? {
+        tuiContext.focusManager.currentFocusedID
+    }
+
     private let availableWidth: Int
     private let availableHeight: Int
     private let rootIdentity = ViewIdentity(path: "RuntimeCharacterizationRoot")
 
     private let lifecycle: LifecycleManager
-    private let keyEventDispatcher: KeyEventDispatcher
-    private let preferences: PreferenceStorage
     private let stateStorage: StateStorage
-    private let renderCache: RenderCache
     private let tuiContext: TUIContext
 
     init(availableWidth: Int = 80, availableHeight: Int = 24) {
@@ -38,22 +63,13 @@ final class RuntimeCharacterizationHarness {
         self.availableHeight = availableHeight
 
         let lifecycle = LifecycleManager()
-        let keyEventDispatcher = KeyEventDispatcher()
-        let preferences = PreferenceStorage()
         let stateStorage = StateStorage()
-        let renderCache = RenderCache()
 
         self.lifecycle = lifecycle
-        self.keyEventDispatcher = keyEventDispatcher
-        self.preferences = preferences
         self.stateStorage = stateStorage
-        self.renderCache = renderCache
         self.tuiContext = TUIContext(
             lifecycle: lifecycle,
-            keyEventDispatcher: keyEventDispatcher,
-            preferences: preferences,
-            stateStorage: stateStorage,
-            renderCache: renderCache
+            stateStorage: stateStorage
         )
     }
 
@@ -61,16 +77,11 @@ final class RuntimeCharacterizationHarness {
     func withRenderPass<Result>(
         _ operation: (RenderContext) throws -> Result
     ) rethrows -> Result {
-        keyEventDispatcher.clearHandlers()
-        preferences.beginRenderPass()
-        lifecycle.beginRenderPass()
-        stateStorage.beginRenderPass()
-        renderCache.beginRenderPass()
+        tuiContext.beginRenderPass()
 
         defer {
-            lifecycle.endRenderPass()
-            stateStorage.endRenderPass()
-            renderCache.removeInactive()
+            tuiContext.focusManager.endRenderPass()
+            tuiContext.endRenderPass()
         }
 
         let context = RenderContext(
@@ -117,6 +128,18 @@ final class RuntimeCharacterizationHarness {
 
     func unmount() {
         pass()
+    }
+
+    @discardableResult
+    func dispatchFocusEvent(_ event: KeyEvent) -> Bool {
+        tuiContext.focusManager.dispatchKeyEvent(event)
+    }
+
+    func consumePendingSubtreeInvalidations() -> [ViewIdentity] {
+        tuiContext.appState.consumePendingCacheInvalidations().compactMap { invalidation in
+            guard case .subtree(let identity) = invalidation else { return nil }
+            return identity
+        }
     }
 
     func recordEffect(_ description: String) {
