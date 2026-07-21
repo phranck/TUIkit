@@ -51,12 +51,7 @@ struct RenderPhaseCharacterizationTests {
         harness.app.model.lineCount = 3
         harness.renderFrame()
 
-        withKnownIssue("Issue #56: main and correction pass both register handlers") {
-            #expect(harness.tuiContext.keyEventDispatcher.handlerCount == 1)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.keyEventDispatcher.handlerCount == 1)
     }
 
     @Test("onChange(initial:) fires exactly once in the first frame")

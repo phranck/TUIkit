@@ -14,9 +14,6 @@ import TUIkitTestSupport
 /// runtime state exclusively from the frame's FINAL pass. Discarded passes
 /// (first-frame measurement, superseded main pass before a header
 /// correction) leave no trace.
-///
-/// Tests assert the DESIRED behavior and carry `withKnownIssue` markers
-/// until the collectors land (#56 Tasks 2-4); then the markers drop.
 @MainActor
 @Suite("Render Pass Collectors", .serialized)
 struct RenderPassCollectorTests {
@@ -27,13 +24,8 @@ struct RenderPassCollectorTests {
 
         harness.renderFrame()
 
-        withKnownIssue("Issue #56: the measure pass writes the live header buffer") {
-            #expect(harness.tuiContext.appHeader.hasContent == false)
-            #expect(harness.tuiContext.appHeader.height == 0)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.appHeader.hasContent == false)
+        #expect(harness.tuiContext.appHeader.height == 0)
     }
 
     @Test("Preference callbacks do not accumulate across passes of one frame")
@@ -46,12 +38,7 @@ struct RenderPassCollectorTests {
         harness.app.model.lineCount = 3
         harness.renderFrame()
 
-        withKnownIssue("Issue #56: each pass appends its callbacks to the live storage") {
-            #expect(harness.tuiContext.preferences.callbackCount == 1)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.preferences.callbackCount == 1)
     }
 
     @Test("Status-bar items from a superseded pass do not persist")
@@ -65,12 +52,7 @@ struct RenderPassCollectorTests {
         // The gated declaration exists at content height 22 (main pass of
         // frame 2) but not at 20 (correction pass) — the final tree has no
         // user items.
-        withKnownIssue("Issue #56: the superseded main pass writes live status-bar items") {
-            #expect(harness.tuiContext.statusBar.hasUserItems == false)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.statusBar.hasUserItems == false)
     }
 
     @Test("Focus registrations come from the final pass only")
@@ -83,12 +65,7 @@ struct RenderPassCollectorTests {
 
         // The button exists in the superseded main pass (height 22) but not
         // in the corrected final tree (height 20): nothing may stay focused.
-        withKnownIssue("Issue #56: focusables from the superseded pass stay registered") {
-            #expect(harness.tuiContext.focusManager.currentFocusedID == nil)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.focusManager.currentFocusedID == nil)
     }
 
     @Test("Focus changes fire after traversal, not during it")
@@ -107,13 +84,9 @@ struct RenderPassCollectorTests {
         let lastRenderIndex = events.lastIndex { $0.hasPrefix("render:") }
         let firstFocusChangeIndex = events.firstIndex(of: "focusChange")
 
-        withKnownIssue("Issue #56: auto-focus fires onFocusChange during traversal") {
-            if let lastRenderIndex, let firstFocusChangeIndex {
-                #expect(lastRenderIndex < firstFocusChangeIndex)
-            }
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
+        #expect(firstFocusChangeIndex != nil)
+        if let lastRenderIndex, let firstFocusChangeIndex {
+            #expect(lastRenderIndex < firstFocusChangeIndex)
         }
     }
 }
@@ -163,15 +136,33 @@ private struct GrowingHeader: View {
 
 // MARK: - Per-Test Apps
 
-/// Declares an app header ONLY in the measure pass (full 24 rows); the
-/// visible tree at 22 rows has no header at all.
+/// Declares an app header ONLY during the measurement phase; no output
+/// pass of any frame ever declares one. A height-based gate would re-open
+/// in the correction pass (which runs at full height once the header is
+/// gone), so this fixture gates on ``RenderPhase`` directly.
 private struct MeasureOnlyHeaderApp: App {
     init() {}
 
     var body: some Scene {
         WindowGroup {
-            HeightGate(threshold: 23, content: Text("body").appHeader { Text("ghost header") })
+            MeasurePhaseOnlyHeaderView()
         }
+    }
+}
+
+private struct MeasurePhaseOnlyHeaderView: View, Renderable {
+    var body: Never {
+        fatalError("MeasurePhaseOnlyHeaderView renders via Renderable")
+    }
+
+    func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        guard context.phase == .measure else {
+            return FrameBuffer(text: "body")
+        }
+        return TUIkit.renderToBuffer(
+            Text("body").appHeader { Text("ghost header") },
+            context: context
+        )
     }
 }
 

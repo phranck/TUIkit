@@ -79,6 +79,11 @@ struct ViewRendererTests {
         firstContext.paletteManager.cycleNext()
         firstContext.focusManager.register(MockFocusable(id: "first-focus"))
 
+        // Focus is per-runtime: the imperative registration reaches only the
+        // first context.
+        #expect(firstContext.focusManager.currentFocusedID == "first-focus")
+        #expect(secondContext.focusManager.currentFocusedID == nil)
+
         let firstRenderer = ViewRenderer(terminal: firstTerminal, tuiContext: firstContext)
         let secondRenderer = ViewRenderer(terminal: secondTerminal, tuiContext: secondContext)
 
@@ -90,7 +95,9 @@ struct ViewRendererTests {
         #expect(firstContext.notificationService.activeEntries().map(\.message) == ["first notification"])
         #expect(secondContext.notificationService.activeEntries().map(\.message) == ["second notification"])
         #expect(firstContext.paletteManager.current.id != secondContext.paletteManager.current.id)
-        #expect(firstContext.focusManager.currentFocusedID == "first-focus")
+        // The rendered tree declares no focusables, so the committed frame
+        // clears the stale imperative focus in both runtimes.
+        #expect(firstContext.focusManager.currentFocusedID == nil)
         #expect(secondContext.focusManager.currentFocusedID == nil)
 
         let stateKey = StateStorage.StateKey(

@@ -632,11 +632,23 @@ private extension FocusManager {
     /// `commitPass()` detects focus changes itself so the live path keeps
     /// its historical semantics.
     func validateCommittedFocus() {
+        // Activate the first section when none is active yet. On the live
+        // path register() already did this; on the staged path activation is
+        // deferred to the commit, so it happens here.
+        if activeSectionID == nil {
+            activeSectionID = sections.first?.id
+        }
+
         // Validate active section
         if let activeID = activeSectionID,
             !sections.contains(where: { $0.id == activeID })
         {
             activeSectionID = sections.first?.id
+        }
+
+        // No sections at all: nothing can be focused.
+        if activeSectionID == nil {
+            focusedID = nil
         }
 
         // Validate focused element
