@@ -28,7 +28,7 @@ public final class AppState: Sendable {
         var invalidatesAllCachedOutput = false
         var invalidatedSubtrees: Set<ViewIdentity> = []
         var observers: [@Sendable () -> Void] = []
-        var isTraversalActive = false
+        var traversalThreadID: ObjectIdentifier?
         var traversalViolationHandler: (@Sendable (RenderInvalidation) -> Void)?
     }
 
@@ -138,7 +138,7 @@ extension AppState {
             state.invalidatesAllCachedOutput = false
             state.invalidatedSubtrees.removeAll()
             state.observers.removeAll()
-            state.isTraversalActive = false
+            state.traversalThreadID = nil
         }
     }
 
@@ -147,22 +147,27 @@ extension AppState {
     /// Marks the start of a view-tree traversal window.
     ///
     /// Between ``beginTraversal()`` and ``endTraversal()``, invalidations
-    /// arriving **from the main thread** are unsupported user side effects
-    /// (state mutated while a body evaluates or a view renders) and are
-    /// reported through the traversal-violation handler. Invalidations from
-    /// background tasks remain legitimate and stay silent, as do all
-    /// invalidations outside the window (input handlers, committed effect
-    /// actions, timers).
+    /// arriving **from the traversing thread itself** are unsupported user
+    /// side effects (state mutated while a body evaluates or a view renders)
+    /// and are reported through the traversal-violation handler.
+    /// Invalidations from background tasks remain legitimate and stay
+    /// silent, as do all invalidations outside the window (input handlers,
+    /// committed effect actions, timers).
+    ///
+    /// The window is keyed to the calling thread's identity instead of
+    /// `Thread.isMainThread`, which is not reliable under the Swift
+    /// concurrency runtime on Linux.
     package func beginTraversal() {
+        let threadID = ObjectIdentifier(Thread.current)
         lock.withLock { state in
-            state.isTraversalActive = true
+            state.traversalThreadID = threadID
         }
     }
 
     /// Marks the end of a view-tree traversal window.
     package func endTraversal() {
         lock.withLock { state in
-            state.isTraversalActive = false
+            state.traversalThreadID = nil
         }
     }
 
@@ -186,7 +191,7 @@ extension AppState {
 
 extension AppState: RenderInvalidationSink {
     public func invalidate(_ invalidation: RenderInvalidation) {
-        let isMainThread = Thread.isMainThread
+        let currentThreadID = ObjectIdentifier(Thread.current)
 
         let (observers, violationHandler) = lock.withLock { state -> ([@Sendable () -> Void], (@Sendable (RenderInvalidation) -> Void)?) in
             state.needsRender = true
@@ -203,7 +208,7 @@ extension AppState: RenderInvalidationSink {
                 state.invalidatedSubtrees.removeAll(keepingCapacity: true)
             }
 
-            let handler = (state.isTraversalActive && isMainThread)
+            let handler = (state.traversalThreadID == currentThreadID)
                 ? state.traversalViolationHandler
                 : nil
             return (state.observers, handler)
