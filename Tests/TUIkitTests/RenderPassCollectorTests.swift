@@ -91,50 +91,10 @@ struct RenderPassCollectorTests {
     }
 }
 
-// MARK: - Shared Fixtures
-
-/// Mutable header size shared between the test and the app fixtures.
-@MainActor
-final class GrowableHeaderModel {
-    var lineCount = 1
-}
-
-/// Renders `content` only when the available height is at least `threshold`.
-///
-/// Records nothing and has no effects of its own; used to make a subtree
-/// exist in one pass of a frame but not in another (measure vs. main, or
-/// main vs. correction).
-private struct HeightGate<Content: View>: View, Renderable {
-    let threshold: Int
-    let content: Content
-
-    var body: Never {
-        fatalError("HeightGate renders via Renderable")
-    }
-
-    func renderToBuffer(context: RenderContext) -> FrameBuffer {
-        guard context.availableHeight >= threshold else {
-            return FrameBuffer(text: "below-gate")
-        }
-        return TUIkit.renderToBuffer(content, context: context)
-    }
-}
-
-/// Grows the app header via `GrowableHeaderModel` so frame 2 runs through
-/// the header-correction pass (estimate 2, actual 4 → content 22 → 20).
-private struct GrowingHeader: View {
-    let model: GrowableHeaderModel
-
-    var body: some View {
-        VStack {
-            ForEach(Array(0..<model.lineCount), id: \.self) { line in
-                Text("Header line \(line)")
-            }
-        }
-    }
-}
-
 // MARK: - Per-Test Apps
+//
+// GrowableHeaderModel, GrowingHeader, and HeightGate live in
+// Support/FrameFixtures.swift (shared with PendingEffectCommitTests).
 
 /// Declares an app header ONLY during the measurement phase; no output
 /// pass of any frame ever declares one. A height-based gate would re-open
