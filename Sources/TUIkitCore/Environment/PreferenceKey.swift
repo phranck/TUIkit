@@ -174,6 +174,11 @@ public extension PreferenceStorage {
         callbacks[keyId]?.append(wrappedCallback)
     }
 
+    /// Number of registered change callbacks for tests and diagnostics.
+    var callbackCount: Int {
+        callbacks.values.reduce(0) { $0 + $1.count }
+    }
+
     /// Prepares preference storage for a new render pass.
     ///
     /// Clears all accumulated callbacks and resets the value stack
