@@ -49,7 +49,6 @@ struct _ImageCore: View, Renderable, Layoutable {
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let stateStorage = context.environment.stateStorage!
-        let lifecycle = context.environment.lifecycle!
         let identity = context.identity
 
         let width = context.availableWidth
@@ -67,10 +66,6 @@ struct _ImageCore: View, Renderable, Layoutable {
         let aspectRatioOverride = context.environment.imageAspectRatio
         let placeholderText = context.environment.imagePlaceholderText
         let showSpinner = context.environment.imagePlaceholderSpinner
-        let maxPixelCount = context.environment.imageMaxPixelCount
-        let urlTimeout = context.environment.imageURLTimeout
-        let imageLoader = context.environment.imageLoader
-        let imageCache = context.environment.imageCache
 
         // Retrieve or create persistent phase state
         let phaseKey = StateStorage.StateKey(identity: identity, propertyIndex: StateIndex.phase)
@@ -104,13 +99,7 @@ struct _ImageCore: View, Renderable, Layoutable {
             mountLoadingTask(
                 phaseBox: phaseBox,
                 lastSourceBox: lastSourceBox,
-                identity: identity,
-                context: context,
-                lifecycle: lifecycle,
-                imageLoader: imageLoader,
-                imageCache: imageCache,
-                urlTimeout: urlTimeout,
-                maxPixelCount: maxPixelCount
+                context: context
             )
         }
 
@@ -153,19 +142,19 @@ extension _ImageCore {
     ///
     /// The task is the only writer of `phaseBox` and `lastSourceBox`; it
     /// commits them together once the load finishes, from outside the
-    /// traversal window.
+    /// traversal window. Loader, cache, and limits are read from the
+    /// render context's environment.
     private func mountLoadingTask(
         phaseBox: StateBox<ImageLoadingPhase>,
         lastSourceBox: StateBox<ImageSource?>,
-        identity: ViewIdentity,
-        context: RenderContext,
-        lifecycle: LifecycleManager,
-        imageLoader: any ImageLoader,
-        imageCache: URLImageCache,
-        urlTimeout: TimeInterval,
-        maxPixelCount: Int?
+        context: RenderContext
     ) {
-        let taskIdentity = identity.scoped("image.load")
+        let lifecycle = context.environment.lifecycle!
+        let imageLoader = context.environment.imageLoader
+        let imageCache = context.environment.imageCache
+        let urlTimeout = context.environment.imageURLTimeout
+        let maxPixelCount = context.environment.imageMaxPixelCount
+        let taskIdentity = context.identity.scoped("image.load")
         let src = source
         let mount = { [imageLoader, imageCache] in
             _ = lifecycle.updateTask(
