@@ -19,22 +19,24 @@ struct TUIContextTests {
     func independentServices() {
         let contextA = TUIContext()
         let contextB = TUIContext()
+        let slot = ViewIdentity(path: "a")
         // Each context has its own lifecycle manager
-        contextA.lifecycle.recordAppear(token: "a") {}
-        #expect(contextA.lifecycle.hasAppeared(token: "a") == true)
-        #expect(contextB.lifecycle.hasAppeared(token: "a") == false)
+        contextA.lifecycle.recordAppear(identity: slot) {}
+        #expect(contextA.lifecycle.hasAppeared(identity: slot) == true)
+        #expect(contextB.lifecycle.hasAppeared(identity: slot) == false)
     }
 
     @Test("reset clears all services")
     func resetClears() {
         let context = TUIContext()
-        context.lifecycle.recordAppear(token: "test") {}
+        let slot = ViewIdentity(path: "test")
+        context.lifecycle.recordAppear(identity: slot) {}
         context.preferences.setValue("value", forKey: TestContextStringKey.self)
         context.keyEventDispatcher.addHandler { _ in true }
 
         context.reset()
 
-        #expect(context.lifecycle.hasAppeared(token: "test") == false)
+        #expect(context.lifecycle.hasAppeared(identity: slot) == false)
         #expect(context.preferences.current[TestContextStringKey.self] == "default")
     }
 

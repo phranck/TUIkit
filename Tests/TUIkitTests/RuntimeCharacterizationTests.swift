@@ -303,10 +303,11 @@ private struct FixedLifecycleView: View, Renderable, Equatable {
 
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let lifecycle = context.environment.lifecycle!
-        _ = lifecycle.recordAppear(token: token) {
+        let slotIdentity = ViewIdentity(path: token)
+        _ = lifecycle.recordAppear(identity: slotIdentity) {
             trace.record(.lifecycle("appear:\(token)"))
         }
-        lifecycle.registerDisappear(token: token) {
+        lifecycle.registerDisappear(identity: slotIdentity) {
             trace.record(.lifecycle("disappear:\(token)"))
         }
         return FrameBuffer(text: token)

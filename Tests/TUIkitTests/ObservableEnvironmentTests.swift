@@ -6,6 +6,7 @@
 
 import Observation
 import Testing
+import TUIkitView
 
 @testable import TUIkit
 
@@ -50,20 +51,18 @@ struct ObservableEnvironmentTests {
         #expect(retrieved == nil)
     }
 
-    @Test("@Environment reads observable from active environment")
+    @Test("@Environment reads observable from the scoped runtime environment")
     func environmentReadsObservable() {
         var env = EnvironmentValues()
         let model = CounterModel()
         model.count = 99
         env[observable: CounterModel.self] = model
 
-        StateRegistration.activeEnvironment = env
-
         let wrapper = Environment(CounterModel.self)
-        #expect(wrapper.wrappedValue.count == 99)
-        #expect(wrapper.wrappedValue === model)
-
-        StateRegistration.activeEnvironment = nil
+        StateRegistration.$runtimeEnvironment.withValue(env) {
+            #expect(wrapper.wrappedValue.count == 99)
+            #expect(wrapper.wrappedValue === model)
+        }
     }
 
     @Test("Inner .environment overrides outer for same type")
@@ -82,13 +81,13 @@ struct ObservableEnvironmentTests {
 
         let wrapper = Environment(CounterModel.self)
 
-        StateRegistration.activeEnvironment = outerEnv
-        #expect(wrapper.wrappedValue.count == 1)
+        StateRegistration.$runtimeEnvironment.withValue(outerEnv) {
+            #expect(wrapper.wrappedValue.count == 1)
 
-        StateRegistration.activeEnvironment = innerEnv
-        #expect(wrapper.wrappedValue.count == 2)
-
-        StateRegistration.activeEnvironment = nil
+            StateRegistration.$runtimeEnvironment.withValue(innerEnv) {
+                #expect(wrapper.wrappedValue.count == 2)
+            }
+        }
     }
 
     @Test("Different types coexist in environment")
@@ -102,15 +101,13 @@ struct ObservableEnvironmentTests {
         env[observable: CounterModel.self] = counter
         env[observable: NameModel.self] = name
 
-        StateRegistration.activeEnvironment = env
-
         let counterWrapper = Environment(CounterModel.self)
         let nameWrapper = Environment(NameModel.self)
 
-        #expect(counterWrapper.wrappedValue.count == 10)
-        #expect(nameWrapper.wrappedValue.name == "hello")
-
-        StateRegistration.activeEnvironment = nil
+        StateRegistration.$runtimeEnvironment.withValue(env) {
+            #expect(counterWrapper.wrappedValue.count == 10)
+            #expect(nameWrapper.wrappedValue.name == "hello")
+        }
     }
 
     @Test("Observable propagates through render pipeline")

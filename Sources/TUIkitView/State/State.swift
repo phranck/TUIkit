@@ -220,33 +220,14 @@ public enum StateRegistration {
     /// Dynamically scoped environment used by production rendering.
     @TaskLocal package static var runtimeEnvironment: EnvironmentValues?
 
-    /// The active hydration context, set during composite view body evaluation.
-    ///
-    /// Legacy mutable fallback retained for source compatibility. Production
-    /// rendering uses `runtimeContext` instead.
-    nonisolated(unsafe) public static var activeContext: HydrationContext?
-
-    /// Legacy ambient property counter retained for source compatibility.
-    ///
-    /// Runtime `State` binding derives indices from reflected property order and
-    /// does not use this value.
-    nonisolated(unsafe) public static var counter: Int = 0
-
-    /// The active environment values, set during composite view body evaluation.
-    ///
-    /// Used by `@Environment` to read environment values during `body` evaluation.
-    /// Legacy mutable fallback retained for source compatibility. Production
-    /// rendering uses `runtimeEnvironment` instead.
-    nonisolated(unsafe) public static var activeEnvironment: EnvironmentValues?
-
-    /// Current dynamically scoped context, including the compatibility fallback.
+    /// Current dynamically scoped context.
     package static var currentContext: HydrationContext? {
-        runtimeContext ?? activeContext
+        runtimeContext
     }
 
-    /// Current dynamically scoped environment, including the compatibility fallback.
+    /// Current dynamically scoped environment.
     package static var currentEnvironment: EnvironmentValues? {
-        runtimeEnvironment ?? activeEnvironment
+        runtimeEnvironment
     }
 
     /// Evaluates a closure with a hydration context active.

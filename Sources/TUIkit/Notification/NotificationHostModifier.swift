@@ -51,13 +51,25 @@ extension NotificationHostModifier: Renderable {
             return baseBuffer
         }
 
-        // Start the animation invalidation task if not already running.
-        startAnimationTask(
-            entries: activeEntries,
-            lifecycle: context.environment.lifecycle!,
-            clock: context.environment.runtimeClock,
-            invalidationSink: context.environment.renderInvalidationSink
-        )
+        // Mount the animation invalidation task (lifetime effect: recorded
+        // for the frame commit inside RenderLoop passes, immediate on the
+        // live path; sizing passes mount nothing).
+        if context.phase == .render {
+            let mountTask = {
+                mountAnimationTask(
+                    entries: activeEntries,
+                    taskIdentity: context.identity.scoped("notification.animation"),
+                    lifecycle: context.environment.lifecycle!,
+                    clock: context.environment.runtimeClock,
+                    invalidationSink: context.environment.renderInvalidationSink
+                )
+            }
+            if let pendingEffects = context.environment.pendingFrameEffects {
+                pendingEffects.recordEffect(mountTask)
+            } else {
+                mountTask()
+            }
+        }
 
         let now = context.environment.runtimeClock.now()
         let palette = context.environment.palette
@@ -144,28 +156,31 @@ private extension NotificationHostModifier {
         return (xPosition, 1)
     }
 
-    /// Starts a background task that triggers re-renders for fade animations
-    /// and cleans up expired notifications.
+    /// Mounts the background task that triggers re-renders for fade
+    /// animations and cleans up expired notifications.
     ///
-    /// Uses a single shared token so only one animation task runs at a time.
-    /// The task stops automatically when no notifications are active.
-    func startAnimationTask(
+    /// The latest expiration time doubles as the task's restart identity:
+    /// posting a new notification extends the deadline and restarts the
+    /// task, while re-rendering with an unchanged entry set keeps the
+    /// mounted task running. When all notifications expired, the host stops
+    /// mounting and the end-of-frame sweep cancels the slot.
+    func mountAnimationTask(
         entries: [NotificationEntry],
+        taskIdentity: ViewIdentity,
         lifecycle: LifecycleManager,
         clock: RuntimeClock,
         invalidationSink: (any RenderInvalidationSink)?
     ) {
-        let token = "notification-host-animation"
-
-        guard !lifecycle.hasAppeared(token: token) else { return }
-        _ = lifecycle.recordAppear(token: token) {}
-
         // Calculate the latest expiration time across all entries.
         let totalOverhead = NotificationTiming.fadeInDuration + NotificationTiming.fadeOutDuration
         let latestExpiry = entries.map { $0.postedAt + $0.duration + totalOverhead }
             .max() ?? 0
 
-        lifecycle.startTask(token: token, priority: .medium) { [lifecycle, invalidationSink] in
+        lifecycle.updateTask(
+            identity: taskIdentity,
+            id: latestExpiry,
+            priority: .medium
+        ) { [invalidationSink] in
             let triggerNanos: UInt64 = 23_800_000  // ~42 animation frames per second
 
             while !Task.isCancelled {
@@ -179,7 +194,6 @@ private extension NotificationHostModifier {
             }
 
             // Final render to clear expired notifications.
-            lifecycle.resetAppearance(token: token)
             invalidationSink?.invalidate(.renderOnly)
         }
     }

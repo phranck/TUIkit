@@ -97,7 +97,7 @@ struct PendingEffectCommitTests {
         // Unchanged value → no fire, regardless of re-rendering.
         harness.app.trace.reset()
         harness.renderFrame()
-        #expect(harness.app.trace.snapshot() == [])
+        #expect(harness.app.trace.snapshot().isEmpty)
 
         // Changed value in a frame that traverses twice (main + correction):
         // the action fires exactly once, for the committed tree.
