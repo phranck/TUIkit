@@ -20,7 +20,7 @@ struct LifecycleManagerAppearTests {
     func firstAppearance() {
         let manager = LifecycleManager()
         nonisolated(unsafe) var actionCalled = false
-        let result = manager.recordAppear(token: "view-1") {
+        let result = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {
             actionCalled = true
         }
         #expect(result == true)
@@ -30,9 +30,9 @@ struct LifecycleManagerAppearTests {
     @Test("recordAppear returns false on repeated appearance")
     func repeatedAppearance() {
         let manager = LifecycleManager()
-        _ = manager.recordAppear(token: "view-1") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
         nonisolated(unsafe) var secondCalled = false
-        let result = manager.recordAppear(token: "view-1") {
+        let result = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {
             secondCalled = true
         }
         #expect(result == false)
@@ -42,34 +42,34 @@ struct LifecycleManagerAppearTests {
     @Test("hasAppeared returns false for unseen token")
     func hasNotAppeared() {
         let manager = LifecycleManager()
-        #expect(manager.hasAppeared(token: "never-seen") == false)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "never-seen")) == false)
     }
 
     @Test("hasAppeared returns true after recordAppear")
     func hasAppearedAfterRecord() {
         let manager = LifecycleManager()
-        _ = manager.recordAppear(token: "view-1") {}
-        #expect(manager.hasAppeared(token: "view-1") == true)
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "view-1")) == true)
     }
 
     @Test("Multiple tokens are tracked independently")
     func independentTokens() {
         let manager = LifecycleManager()
-        _ = manager.recordAppear(token: "a") {}
-        _ = manager.recordAppear(token: "b") {}
-        #expect(manager.hasAppeared(token: "a") == true)
-        #expect(manager.hasAppeared(token: "b") == true)
-        #expect(manager.hasAppeared(token: "c") == false)
+        _ = manager.recordAppear(identity: ViewIdentity(path: "a")) {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "b")) {}
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "a")) == true)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "b")) == true)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "c")) == false)
     }
 
     @Test("reset clears all appeared tokens")
     func resetClears() {
         let manager = LifecycleManager()
-        _ = manager.recordAppear(token: "view-1") {}
-        _ = manager.recordAppear(token: "view-2") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-2")) {}
         manager.reset()
-        #expect(manager.hasAppeared(token: "view-1") == false)
-        #expect(manager.hasAppeared(token: "view-2") == false)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "view-1")) == false)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "view-2")) == false)
     }
 }
 
@@ -84,14 +84,14 @@ struct LifecycleManagerRenderPassTests {
         let manager = LifecycleManager()
         // Pass 1: view appears
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
         manager.endRenderPass() // sets visibleTokens = {"view-1"}
 
         // Pass 2: view does NOT appear
         manager.beginRenderPass() // clears currentRenderTokens
         manager.endRenderPass() // disappeared = {"view-1"}, removes from appearedTokens
 
-        #expect(manager.hasAppeared(token: "view-1") == false)
+        #expect(manager.hasAppeared(identity: ViewIdentity(path: "view-1")) == false)
     }
 
     @Test("endRenderPass triggers disappear for removed views")
@@ -101,8 +101,8 @@ struct LifecycleManagerRenderPassTests {
 
         // Render pass 1: view appears
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
-        manager.registerDisappear(token: "view-1") {
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {
             disappeared = true
         }
         manager.endRenderPass()
@@ -122,15 +122,15 @@ struct LifecycleManagerRenderPassTests {
 
         // Render pass 1
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
-        manager.registerDisappear(token: "view-1") {
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {
             disappeared = true
         }
         manager.endRenderPass()
 
         // Render pass 2: view still rendered
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
         manager.endRenderPass()
         #expect(disappeared == false) // Still visible, no disappear
     }
@@ -142,7 +142,7 @@ struct LifecycleManagerRenderPassTests {
 
         // Pass 1: appear
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") { appearCount += 1 }
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) { appearCount += 1 }
         manager.endRenderPass()
         #expect(appearCount == 1)
 
@@ -152,7 +152,7 @@ struct LifecycleManagerRenderPassTests {
 
         // Pass 3: reappear — action should fire again
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") { appearCount += 1 }
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) { appearCount += 1 }
         manager.endRenderPass()
         #expect(appearCount == 2)
     }
@@ -168,7 +168,7 @@ struct LifecycleManagerDisappearTests {
     func registerStoresCallback() {
         let manager = LifecycleManager()
         nonisolated(unsafe) var called = false
-        manager.registerDisappear(token: "view-1") {
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {
             called = true
         }
         // Callback is stored but not called yet
@@ -179,14 +179,14 @@ struct LifecycleManagerDisappearTests {
     func unregisterRemoves() {
         let manager = LifecycleManager()
         nonisolated(unsafe) var called = false
-        manager.registerDisappear(token: "view-1") {
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {
             called = true
         }
-        manager.unregisterDisappear(token: "view-1")
+        manager.unregisterDisappear(identity: ViewIdentity(path: "view-1"))
 
         // Simulate disappear — callback should NOT fire
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
         manager.endRenderPass()
 
         manager.beginRenderPass()
@@ -200,9 +200,9 @@ struct LifecycleManagerDisappearTests {
         let manager = LifecycleManager()
 
         manager.beginRenderPass()
-        _ = manager.recordAppear(token: "view-1") {}
-        manager.registerDisappear(token: "view-1") {}
-        manager.registerDisappear(token: "view-1") {}
+        _ = manager.recordAppear(identity: ViewIdentity(path: "view-1")) {}
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {}
+        manager.registerDisappear(identity: ViewIdentity(path: "view-1")) {}
         manager.endRenderPass()
 
         #expect(manager.disappearCallbackCount == 1)
@@ -315,13 +315,13 @@ struct LifecycleManagerTaskTests {
         #expect(state.value == 42)
     }
 
-    @Test("startTask runs its operation", .timeLimit(.minutes(1)))
-    func startTask() async {
+    @Test("updateTask runs its operation", .timeLimit(.minutes(1)))
+    func updateTaskRuns() async {
         let manager = LifecycleManager()
         let events = TraceRecorder<LifecycleTaskEvent>()
         let started = AsyncSignal()
 
-        manager.startTask(token: "task-1", priority: .medium) {
+        manager.updateTask(identity: ViewIdentity(path: "task-1"), id: 1, priority: .medium) {
             events.record(.started("task-1"))
             started.signal()
         }
@@ -339,7 +339,7 @@ struct LifecycleManagerTaskTests {
         let release = AsyncSignal()
         let completed = AsyncSignal()
 
-        manager.startTask(token: "task-1", priority: .medium) {
+        manager.updateTask(identity: ViewIdentity(path: "task-1"), id: 1, priority: .medium) {
             events.record(.started("task-1"))
             started.signal()
             await release.wait()
@@ -349,50 +349,13 @@ struct LifecycleManagerTaskTests {
 
         await started.wait()
 
-        manager.cancelTask(token: "task-1")
+        manager.cancelTask(identity: ViewIdentity(path: "task-1"))
         release.signal()
         await completed.wait()
 
         #expect(events.snapshot() == [
             .started("task-1"),
             .completed("task-1", wasCancelled: true)
-        ])
-    }
-
-    @Test("startTask cancels the existing task and runs its replacement", .timeLimit(.minutes(1)))
-    func replaceTask() async {
-        let manager = LifecycleManager()
-        let events = TraceRecorder<LifecycleTaskEvent>()
-        let firstStarted = AsyncSignal()
-        let firstRelease = AsyncSignal()
-        let firstCompleted = AsyncSignal()
-        let replacementStarted = AsyncSignal()
-
-        manager.startTask(token: "task-1", priority: .medium) {
-            events.record(.started("first"))
-            firstStarted.signal()
-            await firstRelease.wait()
-            events.record(.completed("first", wasCancelled: Task.isCancelled))
-            firstCompleted.signal()
-        }
-
-        await firstStarted.wait()
-
-        manager.startTask(token: "task-1", priority: .medium) {
-            events.record(.started("replacement"))
-            replacementStarted.signal()
-        }
-
-        firstRelease.signal()
-        await firstCompleted.wait()
-        await replacementStarted.wait()
-
-        let snapshot = events.snapshot()
-        #expect(snapshot.count == 3)
-        #expect(Set(snapshot) == [
-            .started("first"),
-            .completed("first", wasCancelled: true),
-            .started("replacement")
         ])
     }
 
@@ -407,14 +370,14 @@ struct LifecycleManagerTaskTests {
         let secondRelease = AsyncSignal()
         let secondCompleted = AsyncSignal()
 
-        manager.startTask(token: "task-1", priority: .medium) {
+        manager.updateTask(identity: ViewIdentity(path: "task-1"), id: 1, priority: .medium) {
             events.record(.started("task-1"))
             firstStarted.signal()
             await firstRelease.wait()
             events.record(.completed("task-1", wasCancelled: Task.isCancelled))
             firstCompleted.signal()
         }
-        manager.startTask(token: "task-2", priority: .medium) {
+        manager.updateTask(identity: ViewIdentity(path: "task-2"), id: 1, priority: .medium) {
             events.record(.started("task-2"))
             secondStarted.signal()
             await secondRelease.wait()

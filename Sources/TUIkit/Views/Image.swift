@@ -9,7 +9,10 @@ import Foundation
 // MARK: - Image Source
 
 /// Describes where to load an image from.
-public enum ImageSource: Sendable, Equatable {
+///
+/// Hashable so it can serve as the restart identity of the loading task:
+/// an unchanged source keeps the mounted task, a changed source restarts it.
+public enum ImageSource: Sendable, Hashable {
     /// Load from a local file path.
     case file(String)
 

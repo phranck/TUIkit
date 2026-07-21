@@ -19,10 +19,6 @@ final class LifecycleManager: @unchecked Sendable {
     private struct Slot: Hashable, Sendable {
         let value: String
 
-        init(token: String) {
-            self.value = "token:\(token)"
-        }
-
         init(identity: ViewIdentity) {
             self.value = "identity:\(identity.path)"
         }
@@ -102,18 +98,12 @@ extension LifecycleManager {
         }
     }
 
-    /// Records that a view with the given token appeared.
+    /// Records an appearance for a structurally derived runtime slot.
     ///
     /// - Parameters:
-    ///   - token: Unique identifier for the view.
+    ///   - identity: The runtime slot's structural identity.
     ///   - action: The onAppear action to execute.
     /// - Returns: True if this is the first appearance (action was executed).
-    @discardableResult
-    func recordAppear(token: String, action: () -> Void) -> Bool {
-        recordAppear(slot: Slot(token: token), action: action)
-    }
-
-    /// Records an appearance for a structurally derived runtime slot.
     @discardableResult
     func recordAppear(identity: ViewIdentity, action: () -> Void) -> Bool {
         recordAppear(slot: Slot(identity: identity), action: action)
@@ -133,11 +123,6 @@ extension LifecycleManager {
         return false
     }
 
-    /// Checks if a view has appeared before.
-    func hasAppeared(token: String) -> Bool {
-        hasAppeared(slot: Slot(token: token))
-    }
-
     /// Checks whether a structural runtime slot has appeared.
     func hasAppeared(identity: ViewIdentity) -> Bool {
         hasAppeared(slot: Slot(identity: identity))
@@ -149,13 +134,8 @@ extension LifecycleManager {
         return appearedSlots.contains(slot)
     }
 
-    /// Removes the appeared state for a token so the next `recordAppear`
-    /// treats it as a fresh first appearance.
-    func resetAppearance(token: String) {
-        resetAppearance(slot: Slot(token: token))
-    }
-
-    /// Resets appearance state for a structural runtime slot.
+    /// Resets appearance state for a structural runtime slot so the next
+    /// `recordAppear` treats it as a fresh first appearance.
     func resetAppearance(identity: ViewIdentity) {
         resetAppearance(slot: Slot(identity: identity))
     }
@@ -166,16 +146,12 @@ extension LifecycleManager {
         lock.unlock()
     }
 
-    /// Registers a callback for when a view with the given token disappears.
+    /// Registers a callback for when a structurally derived runtime slot
+    /// disappears.
     ///
     /// - Parameters:
-    ///   - token: Unique identifier for the view.
+    ///   - identity: The runtime slot's structural identity.
     ///   - action: The onDisappear action to execute.
-    func registerDisappear(token: String, action: @escaping () -> Void) {
-        registerDisappear(slot: Slot(token: token), action: action)
-    }
-
-    /// Registers a callback for a structurally derived runtime slot.
     func registerDisappear(identity: ViewIdentity, action: @escaping () -> Void) {
         registerDisappear(slot: Slot(identity: identity), action: action)
     }
@@ -184,11 +160,6 @@ extension LifecycleManager {
         lock.lock()
         defer { lock.unlock() }
         disappearCallbacks[slot] = action
-    }
-
-    /// Unregisters the disappear callback for the given token.
-    func unregisterDisappear(token: String) {
-        unregisterDisappear(slot: Slot(token: token))
     }
 
     /// Unregisters a callback for a structurally derived runtime slot.
@@ -200,27 +171,6 @@ extension LifecycleManager {
         lock.lock()
         defer { lock.unlock() }
         disappearCallbacks.removeValue(forKey: slot)
-    }
-
-    /// Starts an async task associated with a lifecycle token.
-    ///
-    /// If a task already exists for the token, it is cancelled first.
-    ///
-    /// - Parameters:
-    ///   - token: Unique identifier for the view.
-    ///   - priority: The task priority.
-    ///   - operation: The async operation to execute.
-    func startTask(
-        token: String,
-        priority: TaskPriority,
-        @_inheritActorContext operation: @escaping @isolated(any) @Sendable () async -> Void
-    ) {
-        replaceTask(
-            slot: Slot(token: token),
-            id: nil,
-            priority: priority,
-            operation: operation
-        )
     }
 
     /// Starts or preserves a task at a structural slot.
@@ -253,11 +203,6 @@ extension LifecycleManager {
         lock.unlock()
 
         return true
-    }
-
-    /// Cancels and removes the task associated with the given token.
-    func cancelTask(token: String) {
-        cancelTask(slot: Slot(token: token))
     }
 
     /// Cancels and removes a task at a structural runtime slot.
@@ -302,23 +247,6 @@ extension LifecycleManager {
         for task in runningTasks {
             task.cancel()
         }
-    }
-
-    private func replaceTask(
-        slot: Slot,
-        id: TaskID?,
-        priority: TaskPriority,
-        operation: @escaping @isolated(any) @Sendable () async -> Void
-    ) {
-        lock.lock()
-        currentRenderSlots.insert(slot)
-        let previousTask = tasks.removeValue(forKey: slot)?.task
-        previousTask?.cancel()
-        let task = Task(priority: priority) {
-            await operation()
-        }
-        tasks[slot] = TaskRecord(id: id, task: task)
-        lock.unlock()
     }
 }
 
@@ -533,6 +461,30 @@ extension TUIContext {
         observationRegistry.endRenderPass()
         renderCache.removeInactive()
         renderCache.logFrameStats()
+    }
+
+    /// Applies the committed frame's GC liveness to the identity-based
+    /// managers.
+    ///
+    /// This is commit step "6d preparation" of the frame choreography: the
+    /// FINAL pass's liveness sets (collected in ``PendingFrameEffects``)
+    /// mark state, cache, and observation records alive, so the subsequent
+    /// ``endRenderPass()`` sweeps everything that only discarded passes
+    /// touched. Runs after the deferred-effect replay, which may add its own
+    /// direct markings (e.g. preference change tracking).
+    ///
+    /// - Parameter pendingEffects: The final pass's pending records.
+    func applyFrameLiveness(from pendingEffects: PendingFrameEffects) {
+        for identity in pendingEffects.activeIdentities {
+            stateStorage.markActive(identity)
+            renderCache.markActive(identity)
+            observationRegistry.markActive(identity)
+        }
+        for root in pendingEffects.activeSubtreeRoots {
+            stateStorage.markSubtreeActive(root)
+            observationRegistry.markSubtreeActive(root)
+            renderCache.markActive(root)
+        }
     }
 
     /// Builds complete environment values for this runtime.

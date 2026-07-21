@@ -86,7 +86,13 @@ extension EquatableView: Renderable {
         let cache = context.environment.renderCache!
         let identity = context.identity
 
-        cache.markActive(identity)
+        // Cache liveness is a lifetime effect: collected per pass, applied
+        // from the FINAL pass at frame commit; the live path marks directly.
+        if let pendingEffects = context.environment.pendingFrameEffects {
+            pendingEffects.markActive(identity)
+        } else {
+            cache.markActive(identity)
+        }
 
         // Cache hit: view unchanged and context size matches
         if let cached = cache.lookup(
@@ -123,10 +129,15 @@ private extension EquatableView {
     /// Marks the content's runtime records as active for end-of-pass cleanup.
     ///
     /// When returning a cached buffer, the subtree's views aren't visited.
-    /// Their state and Observation identities must still be marked active.
+    /// Their state and Observation identities must still be marked active —
+    /// per pass inside a RenderLoop frame, directly on the live path.
     func markSubtreeActive(context: RenderContext) {
-        context.environment.stateStorage!.markSubtreeActive(context.identity)
-        context.environment.observationRegistry?.markSubtreeActive(context.identity)
+        if let pendingEffects = context.environment.pendingFrameEffects {
+            pendingEffects.markSubtreeActive(context.identity)
+        } else {
+            context.environment.stateStorage!.markSubtreeActive(context.identity)
+            context.environment.observationRegistry?.markSubtreeActive(context.identity)
+        }
     }
 }
 

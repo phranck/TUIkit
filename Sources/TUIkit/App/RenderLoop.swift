@@ -305,6 +305,17 @@ extension RenderLoop {
             headerHeight: appHeader.height
         )
 
+        // COMMIT (step 6c): replay the final pass's lifetime effects
+        // (onAppear, onDisappear registration, task mounts, deferred
+        // actions) against the live managers — after terminal output, in
+        // traversal order, exactly once. Records of discarded passes were
+        // dropped with their collectors and never run.
+        collectors.pendingEffects.commitDeferredEffects()
+
+        // COMMIT (step 6d): GC on the committed tree only — the final
+        // pass's liveness sets reach the managers, then endRenderPass
+        // sweeps everything that only discarded passes touched.
+        tuiContext.applyFrameLiveness(from: collectors.pendingEffects)
         endRenderPass()
     }
 
@@ -343,6 +354,7 @@ extension RenderLoop {
         environment.preferenceStorage = collectors.preferences
         environment.statusBar = collectors.statusBar
         environment.appHeader = collectors.appHeader
+        environment.pendingFrameEffects = collectors.pendingEffects
         return environment
     }
 }

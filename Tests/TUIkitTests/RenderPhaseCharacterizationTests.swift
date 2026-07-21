@@ -60,12 +60,7 @@ struct RenderPhaseCharacterizationTests {
 
         harness.renderFrame()
 
-        withKnownIssue("Issue #57: each pass claims a fresh onChange index and re-fires") {
-            #expect(harness.app.counter.value == 1)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.app.counter.value == 1)
     }
 }
 

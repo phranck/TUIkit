@@ -50,9 +50,9 @@ import TUIkitCore
 ///
 /// # How It Works
 ///
-/// The rendering pipeline sets ``StateRegistration/activeEnvironment``
-/// before evaluating each view's `body`. When your code accesses
-/// `wrappedValue`, it reads from the active environment. This ensures
+/// The rendering pipeline scopes `StateRegistration.runtimeEnvironment`
+/// around each view's `body` evaluation. When your code accesses
+/// `wrappedValue`, it reads from that scoped environment. This ensures
 /// that `.environment()` modifiers applied by parent views are visible.
 ///
 /// Outside the render tree (e.g., in tests without a render context),

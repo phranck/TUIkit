@@ -5,6 +5,7 @@
 //  License: MIT
 
 import Testing
+import TUIkitView
 
 @testable import TUIkit
 
@@ -38,31 +39,25 @@ struct EnvironmentPropertyTests {
 
     @Test("Reads default value outside render context")
     func readsDefaultOutsideRenderContext() {
-        // Ensure no active environment
-        StateRegistration.activeEnvironment = nil
-
         let wrapper = Environment(\.testColor)
         #expect(wrapper.wrappedValue == "blue")
     }
 
     @Test("Reads default int value outside render context")
     func readsDefaultIntOutsideRenderContext() {
-        StateRegistration.activeEnvironment = nil
-
         let wrapper = Environment(\.testSize)
         #expect(wrapper.wrappedValue == 42)
     }
 
-    @Test("Reads value from active environment")
-    func readsFromActiveEnvironment() {
+    @Test("Reads value from the scoped runtime environment")
+    func readsFromRuntimeEnvironment() {
         var env = EnvironmentValues()
         env.testColor = "red"
-        StateRegistration.activeEnvironment = env
 
         let wrapper = Environment(\.testColor)
-        #expect(wrapper.wrappedValue == "red")
-
-        StateRegistration.activeEnvironment = nil
+        StateRegistration.$runtimeEnvironment.withValue(env) {
+            #expect(wrapper.wrappedValue == "red")
+        }
     }
 
     @Test("Multiple @Environment properties read independently")
@@ -70,17 +65,16 @@ struct EnvironmentPropertyTests {
         var env = EnvironmentValues()
         env.testColor = "green"
         env.testSize = 100
-        StateRegistration.activeEnvironment = env
 
         let colorWrapper = Environment(\.testColor)
         let sizeWrapper = Environment(\.testSize)
-        #expect(colorWrapper.wrappedValue == "green")
-        #expect(sizeWrapper.wrappedValue == 100)
-
-        StateRegistration.activeEnvironment = nil
+        StateRegistration.$runtimeEnvironment.withValue(env) {
+            #expect(colorWrapper.wrappedValue == "green")
+            #expect(sizeWrapper.wrappedValue == 100)
+        }
     }
 
-    @Test("Reads dynamically from current active environment")
+    @Test("Reads dynamically from the current scoped environment")
     func readsDynamically() {
         var env1 = EnvironmentValues()
         env1.testColor = "red"
@@ -90,14 +84,13 @@ struct EnvironmentPropertyTests {
 
         let wrapper = Environment(\.testColor)
 
-        StateRegistration.activeEnvironment = env1
-        #expect(wrapper.wrappedValue == "red")
-
-        StateRegistration.activeEnvironment = env2
-        #expect(wrapper.wrappedValue == "yellow")
-
-        StateRegistration.activeEnvironment = nil
-        #expect(wrapper.wrappedValue == "blue")  // default
+        StateRegistration.$runtimeEnvironment.withValue(env1) {
+            #expect(wrapper.wrappedValue == "red")
+        }
+        StateRegistration.$runtimeEnvironment.withValue(env2) {
+            #expect(wrapper.wrappedValue == "yellow")
+        }
+        #expect(wrapper.wrappedValue == "blue")  // default outside any scope
     }
 
     @Test("Environment propagates through render pipeline")
@@ -118,7 +111,7 @@ struct EnvironmentPropertyTests {
         #expect(!buffer.isEmpty)
     }
 
-    @Test("Nested environment overrides resolve correctly")
+    @Test("Nested environment scopes resolve correctly")
     func nestedOverrides() {
         var outerEnv = EnvironmentValues()
         outerEnv.testColor = "outer"
@@ -128,18 +121,15 @@ struct EnvironmentPropertyTests {
 
         let wrapper = Environment(\.testColor)
 
-        // Simulate nested render: outer sets env, inner overrides
-        StateRegistration.activeEnvironment = outerEnv
-        #expect(wrapper.wrappedValue == "outer")
+        StateRegistration.$runtimeEnvironment.withValue(outerEnv) {
+            #expect(wrapper.wrappedValue == "outer")
 
-        // Inner override
-        StateRegistration.activeEnvironment = innerEnv
-        #expect(wrapper.wrappedValue == "inner")
+            StateRegistration.$runtimeEnvironment.withValue(innerEnv) {
+                #expect(wrapper.wrappedValue == "inner")
+            }
 
-        // Restore outer (like render pipeline does)
-        StateRegistration.activeEnvironment = outerEnv
-        #expect(wrapper.wrappedValue == "outer")
-
-        StateRegistration.activeEnvironment = nil
+            // The outer scope is restored automatically.
+            #expect(wrapper.wrappedValue == "outer")
+        }
     }
 }

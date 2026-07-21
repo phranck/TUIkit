@@ -18111,11 +18111,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitCore17PreferenceStorageC02onC6Change_8callbackyxm_y5ValueQzctAA0C3KeyRzlF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:10TUIkitCore17PreferenceStorageC15beginRenderPassyyF"
     },
     {
@@ -19481,22 +19476,7 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView17StateRegistrationO13activeContextAA09HydrationF0VSgvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:10TUIkitView17StateRegistrationO13withHydration7context_xAA13RenderContextV_xyXEtlFZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView17StateRegistrationO17activeEnvironment0A4Core0F6ValuesVSgvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView17StateRegistrationO7counterSivpZ"
     },
     {
       "action": "implementationLeak",

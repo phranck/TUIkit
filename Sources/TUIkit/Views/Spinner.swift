@@ -226,9 +226,6 @@ public struct Spinner: View {
     /// The spinner color (uses theme accent if nil).
     let color: Color?
 
-    /// Unique lifecycle token for this spinner instance.
-    let token: String
-
     /// Creates a spinner with an optional label.
     ///
     /// - Parameters:
@@ -243,27 +240,35 @@ public struct Spinner: View {
         self.label = label
         self.style = style
         self.color = color
-        self.token = "spinner-\(UUID().uuidString)"
     }
 
     public var body: some View {
         _SpinnerCore(
             label: label,
             style: style,
-            color: color,
-            token: token
+            color: color
         )
     }
 }
 
 // MARK: - Internal Core View
 
+/// Named property indices for `_SpinnerCore` state storage.
+private enum StateIndex {
+    /// Stores the animation start time (`Double`).
+    static let startTime = 0
+}
+
+/// Stable restart identity for the spinner's animation task.
+private enum SpinnerTaskID: Hashable {
+    case animation
+}
+
 /// Internal view that handles the actual rendering and animation of Spinner.
 private struct _SpinnerCore: View, Renderable {
     let label: String?
     let style: SpinnerStyle
     let color: Color?
-    let token: String
 
     var body: Never {
         fatalError("_SpinnerCore renders via Renderable")
@@ -274,31 +279,43 @@ private struct _SpinnerCore: View, Renderable {
         let stateStorage = context.environment.stateStorage!
         let clock = context.environment.runtimeClock
         let invalidationSink = context.environment.renderInvalidationSink
+        let pendingEffects = context.environment.pendingFrameEffects
 
         // Retrieve or create persistent start time for this spinner.
-        let timeKey = StateStorage.StateKey(identity: context.identity, propertyIndex: 0)
+        let timeKey = StateStorage.StateKey(identity: context.identity, propertyIndex: StateIndex.startTime)
         let startTimeBox: StateBox<Double> = stateStorage.storage(for: timeKey, default: clock.now())
-        stateStorage.markActive(context.identity)
-
-        // Start render-trigger task on first appearance.
-        if !lifecycle.hasAppeared(token: token) {
-            _ = lifecycle.recordAppear(token: token) {}
-
-            let triggerNanos: UInt64 = 23_800_000  // ~42 animation frames per second
-            lifecycle.startTask(token: token, priority: .medium) { [invalidationSink] in
-                while !Task.isCancelled {
-                    try? await Task.sleep(nanoseconds: triggerNanos)
-                    guard !Task.isCancelled else { break }
-                    invalidationSink?.invalidate(.renderOnly)
-                }
-            }
+        if let pendingEffects {
+            pendingEffects.markActive(context.identity)
         } else {
-            _ = lifecycle.recordAppear(token: token) {}
+            stateStorage.markActive(context.identity)
         }
 
-        // Register disappear callback to cancel the animation task.
-        lifecycle.registerDisappear(token: token) { [lifecycle] in
-            lifecycle.cancelTask(token: token)
+        // The render-trigger task is a lifetime effect bound to this
+        // spinner's structural identity: mounted once, kept alive across
+        // frames by the stable restart ID, cancelled by the end-of-frame
+        // sweep when the spinner leaves the tree. Recorded for the frame
+        // commit inside RenderLoop passes; immediate on the live path.
+        if context.phase == .render {
+            let taskIdentity = context.identity.scoped("spinner.animation")
+            let mountAnimationTask = { [invalidationSink] in
+                _ = lifecycle.updateTask(
+                    identity: taskIdentity,
+                    id: SpinnerTaskID.animation,
+                    priority: .medium
+                ) {
+                    let triggerNanos: UInt64 = 23_800_000  // ~42 animation frames per second
+                    while !Task.isCancelled {
+                        try? await Task.sleep(nanoseconds: triggerNanos)
+                        guard !Task.isCancelled else { break }
+                        invalidationSink?.invalidate(.renderOnly)
+                    }
+                }
+            }
+            if let pendingEffects {
+                pendingEffects.recordEffect(mountAnimationTask)
+            } else {
+                mountAnimationTask()
+            }
         }
 
         // Calculate frame index from elapsed time.

@@ -22,11 +22,18 @@ struct OnAppearModifier<Content: View>: View {
 extension OnAppearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.appear")
+        // Lifetime effect (outlives the frame): recorded for the frame
+        // commit; the live path (no pending records) applies it directly.
         if context.phase == .render {
-            _ = context.environment.lifecycle!.recordAppear(
-                identity: scopedContext.identity,
-                action: action
-            )
+            let lifecycle = context.environment.lifecycle!
+            let identity = scopedContext.identity
+            if let pendingEffects = context.environment.pendingFrameEffects {
+                pendingEffects.recordEffect { [action] in
+                    _ = lifecycle.recordAppear(identity: identity, action: action)
+                }
+            } else {
+                _ = lifecycle.recordAppear(identity: identity, action: action)
+            }
         }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
@@ -51,10 +58,20 @@ struct OnDisappearModifier<Content: View>: View {
 extension OnDisappearModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.disappear")
+        // Lifetime effect (outlives the frame): recorded for the frame
+        // commit; the live path (no pending records) applies it directly.
         if context.phase == .render {
             let lifecycle = context.environment.lifecycle!
-            lifecycle.registerDisappear(identity: scopedContext.identity, action: action)
-            _ = lifecycle.recordAppear(identity: scopedContext.identity, action: {})
+            let identity = scopedContext.identity
+            if let pendingEffects = context.environment.pendingFrameEffects {
+                pendingEffects.recordEffect { [action] in
+                    lifecycle.registerDisappear(identity: identity, action: action)
+                    _ = lifecycle.recordAppear(identity: identity, action: {})
+                }
+            } else {
+                lifecycle.registerDisappear(identity: identity, action: action)
+                _ = lifecycle.recordAppear(identity: identity, action: {})
+            }
         }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
@@ -84,13 +101,29 @@ struct TaskModifier<Content: View>: View {
 extension TaskModifier: Renderable {
     func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let scopedContext = context.withIdentityScope("lifecycle.task")
+        // Lifetime effect (outlives the frame): recorded for the frame
+        // commit; the live path (no pending records) applies it directly.
+        // A task from a discarded pass is therefore never even started.
         if context.phase == .render {
-            context.environment.lifecycle!.updateTask(
-                identity: scopedContext.identity,
-                id: MountedTaskID.value,
-                priority: priority,
-                operation: task
-            )
+            let lifecycle = context.environment.lifecycle!
+            let identity = scopedContext.identity
+            if let pendingEffects = context.environment.pendingFrameEffects {
+                pendingEffects.recordEffect { [task, priority] in
+                    lifecycle.updateTask(
+                        identity: identity,
+                        id: MountedTaskID.value,
+                        priority: priority,
+                        operation: task
+                    )
+                }
+            } else {
+                lifecycle.updateTask(
+                    identity: identity,
+                    id: MountedTaskID.value,
+                    priority: priority,
+                    operation: task
+                )
+            }
         }
 
         return TUIkit.renderToBuffer(content, context: scopedContext)
