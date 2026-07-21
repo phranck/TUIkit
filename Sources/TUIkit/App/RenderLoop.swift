@@ -220,6 +220,12 @@ extension RenderLoop {
         environment.pulsePhase = pulsePhase
         environment.cursorTimer = cursorTimer
 
+        // Traversal window: main-thread invalidations from here until the
+        // last pass finished are unsupported body side effects and get
+        // diagnosed (see AppState.beginTraversal). Committed effect actions
+        // replay after the window and stay legitimate.
+        tuiContext.appState.beginTraversal()
+
         let scene = evaluateAppBody(environment: environment)
         if let paletteOverrideScene = scene as? any RootPaletteOverrideProvidingScene,
            let paletteOverride = paletteOverrideScene.rootPaletteOverride() {
@@ -288,6 +294,8 @@ extension RenderLoop {
             focusManager.beginPass()
             buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
         }
+
+        tuiContext.appState.endTraversal()
 
         // COMMIT (step 6a): the single point where per-frame effect state
         // reaches the live runtime — the FINAL pass's collectors replace the

@@ -28,6 +28,8 @@ public final class AppState: Sendable {
         var invalidatesAllCachedOutput = false
         var invalidatedSubtrees: Set<ViewIdentity> = []
         var observers: [@Sendable () -> Void] = []
+        var traversalThreadID: ObjectIdentifier?
+        var traversalViolationHandler: (@Sendable (RenderInvalidation) -> Void)?
     }
 
     /// Lock protecting all mutable state.
@@ -136,6 +138,51 @@ extension AppState {
             state.invalidatesAllCachedOutput = false
             state.invalidatedSubtrees.removeAll()
             state.observers.removeAll()
+            state.traversalThreadID = nil
+        }
+    }
+
+    // MARK: - Traversal Diagnostics
+
+    /// Marks the start of a view-tree traversal window.
+    ///
+    /// Between ``beginTraversal()`` and ``endTraversal()``, invalidations
+    /// arriving **from the traversing thread itself** are unsupported user
+    /// side effects (state mutated while a body evaluates or a view renders)
+    /// and are reported through the traversal-violation handler.
+    /// Invalidations from background tasks remain legitimate and stay
+    /// silent, as do all invalidations outside the window (input handlers,
+    /// committed effect actions, timers).
+    ///
+    /// The window is keyed to the calling thread's identity instead of
+    /// `Thread.isMainThread`, which is not reliable under the Swift
+    /// concurrency runtime on Linux.
+    package func beginTraversal() {
+        let threadID = ObjectIdentifier(Thread.current)
+        lock.withLock { state in
+            state.traversalThreadID = threadID
+        }
+    }
+
+    /// Marks the end of a view-tree traversal window.
+    package func endTraversal() {
+        lock.withLock { state in
+            state.traversalThreadID = nil
+        }
+    }
+
+    /// Installs the handler that reports main-thread invalidations raised
+    /// during a traversal window.
+    ///
+    /// Set once by the owning runtime (`TUIContext`), which routes the
+    /// report into its diagnostics collector.
+    ///
+    /// - Parameter handler: The violation reporter, or `nil` to disable.
+    package func setTraversalViolationHandler(
+        _ handler: (@Sendable (RenderInvalidation) -> Void)?
+    ) {
+        lock.withLock { state in
+            state.traversalViolationHandler = handler
         }
     }
 }
@@ -144,7 +191,9 @@ extension AppState {
 
 extension AppState: RenderInvalidationSink {
     public func invalidate(_ invalidation: RenderInvalidation) {
-        let observers = lock.withLock { state -> [@Sendable () -> Void] in
+        let currentThreadID = ObjectIdentifier(Thread.current)
+
+        let (observers, violationHandler) = lock.withLock { state -> ([@Sendable () -> Void], (@Sendable (RenderInvalidation) -> Void)?) in
             state.needsRender = true
 
             switch invalidation {
@@ -159,10 +208,17 @@ extension AppState: RenderInvalidationSink {
                 state.invalidatedSubtrees.removeAll(keepingCapacity: true)
             }
 
-            return state.observers
+            let handler = (state.traversalThreadID == currentThreadID)
+                ? state.traversalViolationHandler
+                : nil
+            return (state.observers, handler)
         }
 
-        // Call observers outside the lock to avoid potential deadlocks.
+        // Report and notify outside the lock to avoid potential deadlocks.
+        // A main-thread invalidation inside a traversal window is an
+        // unsupported user side effect; the invalidation itself is still
+        // honored so rendering stays consistent.
+        violationHandler?(invalidation)
         for observer in observers {
             observer()
         }

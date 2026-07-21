@@ -2,7 +2,7 @@
 
 **Change ID**: render-phase-effect-commit
 **Date**: 2026-07-21
-**Status**: Approved design (brainstormed 2026-07-21)
+**Status**: Implemented (2026-07-22, issues #55/#56/#57/#58 — PRs #59/#60/#61 + docs PR)
 **GitHub Issue**: #13 ([P0-08])
 **Depends on**: #10 (stable identity, merged), #12 (keyed traversal, merged)
 

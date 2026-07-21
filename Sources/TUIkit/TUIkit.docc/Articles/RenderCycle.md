@@ -4,7 +4,9 @@ Understand how TUIkit turns your view tree into terminal output: one frame at a 
 
 ## Overview
 
-Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → render the view tree → diff against previous frame → flush to terminal → track lifecycle**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. Those writes are collected in a frame buffer and normally flushed with one `write()` syscall.
+Every frame in TUIkit follows the same synchronous pipeline: **clear per-frame state → build environment → traverse the view tree (one or more passes) → commit → flush to terminal**. The view tree is fully re-evaluated each frame, but only **changed terminal lines** are written. Those writes are collected in a frame buffer and normally flushed with one `write()` syscall.
+
+A single frame may traverse the tree more than once (first-frame header sizing, header correction). Effects therefore never reach live runtime state during traversal: each pass records into scratch collectors, and a single **frame commit** applies only the final pass's results. See <doc:RenderCycle#Render-Phases-and-the-Frame-Commit>.
 
 ## What Triggers a Frame
 
@@ -33,10 +35,10 @@ Each call to `RenderLoop.render()` executes these steps in order:
 
 Five subsystems are reset at the start of every frame:
 
-- **`KeyEventDispatcher`**: All key handlers are removed. Views re-register them during rendering via `onKeyPress()` modifiers.
-- **`PreferenceStorage`**: All preference callbacks are cleared and the stack is reset to a single empty `PreferenceValues`.
-- **`FocusManager`**: All focus registrations are cleared. Focusable views re-register during rendering.
-- **`StatusBarState`**: Section items are cleared. Views re-register them via `.statusBarItems()` modifiers.
+- **`KeyEventDispatcher`**: All key handlers are removed. Views re-declare them during traversal; the frame commit adopts the final pass's handler list.
+- **`PreferenceStorage`**: The value stack is reset to a single empty `PreferenceValues`.
+- **`FocusManager`**: Focus registrations are collected per pass in a staging area; the last committed sections stay queryable while the tree renders.
+- **`StatusBarState`**: Declarative registrations are cleared. Views re-declare them via `.statusBarItems()` modifiers.
 - **`AppHeaderState`**: Header content is cleared. The `.appHeader()` modifier repopulates it during rendering.
 
 Additionally, the `StatusBarState` receives a reference to the current `FocusManager` for section resolution.
@@ -99,6 +101,10 @@ The context is passed down the view tree. Each view can create a modified copy f
 
 This is where the dual rendering system kicks in. ``WindowGroup`` calls the free function `renderToBuffer()` on its content, which recursively traverses the entire view tree and produces a ``FrameBuffer``.
 
+A frame can perform this traversal up to three times — a first-frame sizing pass, the main pass, and a header-correction pass — and only one of them produces the frame's output. Every traversal writes its effects (handlers, preferences, status-bar items, header buffer, lifecycle records) into fresh per-pass collectors; discarded passes are simply dropped. See <doc:RenderCycle#Render-Phases-and-the-Frame-Commit>.
+
+> Important: Mutating state from inside a view's `body` (or a `Renderable` implementation) during this traversal is unsupported. The framework cannot prevent it, but it diagnoses it: a main-thread invalidation raised inside the traversal window is reported through `RuntimeDiagnostics` once per frame, and the invalidation is still honored so rendering stays consistent. Move such mutations into event handlers, `.task`, or lifecycle actions.
+
 > See <doc:RenderCycle#The-Dual-Rendering-System> below for details on how views are dispatched.
 
 ### Step 7: Build Output Lines
@@ -129,13 +135,16 @@ The status bar renders in a separate pass but writes into the **same frame buffe
 Interrupted calls and partial transfers are retried; permanent failures are
 propagated after terminal cleanup.
 
-### Step 12: End Lifecycle and State Tracking
+### Step 12: Commit Lifetime Effects and Finalize Tracking
 
-Four managers finalize the frame:
+After terminal output, the frame commit replays the final pass's lifetime
+effect records (`onAppear` actions, `onDisappear` registrations, `.task`
+mounts, deferred `onChange`/`onPreferenceChange` actions) in traversal order,
+then four managers finalize the frame:
 
-- The **`LifecycleManager`** compares the current frame's structural slots with the previous frame's. Disappeared views fire their `onDisappear` callbacks, cancel mounted tasks, and leave the appeared set so a future mount can trigger `onAppear` again.
-- The **`StateStorage`** performs garbage collection: any state whose view identity was not marked active during this render pass is removed. This prevents memory leaks from views that have been permanently removed.
-- The **observation registry** removes identities that were not active in the completed render pass. Cache hits preserve existing registrations below skipped subtrees; callbacks from older generations and unmounted identities become inert.
+- The **`LifecycleManager`** compares the committed frame's structural slots with the previous frame's. Disappeared views fire their `onDisappear` callbacks, cancel mounted tasks, and leave the appeared set so a future mount can trigger `onAppear` again.
+- The **`StateStorage`** performs garbage collection on the committed tree's liveness set: any state whose view identity the final pass did not keep alive is removed.
+- The **observation registry** removes identities absent from the committed tree. Cache hits preserve existing registrations below skipped subtrees; callbacks from older generations and unmounted identities become inert.
 - The **`RenderCache`** removes inactive entries (subtrees no longer in the view tree) and optionally logs per-frame cache statistics.
 
 All state changes inside the lifecycle manager are `NSLock`-protected. Callbacks execute **outside** the lock to prevent deadlocks.
@@ -151,6 +160,57 @@ The status bar renders in a separate pass but within the same buffered frame:
 5. Changed lines are written into the same frame buffer as the content
 
 The status bar is **never affected** by view dimming or overlays. It always renders at the bottom of the terminal.
+
+## Render Phases and the Frame Commit
+
+A frame is not a single walk over the view tree. Layout sizing evaluates
+subtrees speculatively, the first frame measures the app header before any
+output exists, and a header-height correction re-evaluates the whole tree.
+TUIkit therefore separates **evaluating** a tree from **committing** its
+effects — the same conceptual split SwiftUI uses.
+
+### Phases
+
+Every traversal carries a `RenderPhase` on its `RenderContext`:
+
+| Phase | Meaning | Guarantees |
+|-------|---------|------------|
+| `.measure` | Layout sizing (per-child `sizeThatFits`, first-frame header sizing) | Bodies may be evaluated arbitrarily often; no effect reaches live runtime state, no observation callbacks are registered |
+| `.render` | Candidate-tree evaluation for the frame's output | Effects are recorded per pass, never applied directly — the candidate may still be discarded |
+
+Committing is **not** a phase a view can observe: no body evaluates while the
+frame commits. The commit is an explicit step in the render loop after the
+final candidate is known.
+
+### Two effect patterns, one question
+
+Every effect site classifies itself with one question: **does the effect
+outlive the frame?**
+
+- **No → pass collector.** Key handlers, preference values, status-bar
+  declarations, the header buffer, and focus registrations are per-frame
+  values: the tree re-declares them on every traversal. Each pass writes them
+  into fresh scratch collectors, and the commit adopts the FINAL pass's
+  collectors into the live managers wholesale. This mirrors SwiftUI's model
+  where per-update values are recomputed and the last committed tree simply
+  replaces the previous one.
+- **Yes → pending record.** `onAppear`/`onDisappear` actions, `.task` mounts,
+  `onChange`/`onPreferenceChange` actions, and GC liveness derive from the
+  identity diff between committed trees. Traversal only records them; the
+  commit replays the final pass's records — after terminal output, in
+  traversal order, exactly once.
+
+### What a discarded pass guarantees
+
+The first-frame sizing pass and a superseded main pass are dropped together
+with their collectors and records. They start no tasks, fire no actions,
+register no handlers or focusables, keep no state alive, and register no
+observation callbacks. Only the commit changes terminal output and visible
+runtime records.
+
+Implementation details live in the doc comments of `RenderPhase`,
+`RenderPassCollectors`, `PendingFrameEffects`, and the frame choreography
+comment on `RenderLoop`.
 
 ## The Dual Rendering System
 
@@ -267,9 +327,14 @@ Preferences flow **bottom-up**: the reverse of environment values. Child views s
 
 1. `OnPreferenceChangeModifier` calls `push()`: creates a new collection scope
 2. Its child tree renders, and `PreferenceModifier` calls `setValue()` on the current scope
-3. `OnPreferenceChangeModifier` calls `pop()`: merges collected values into the parent scope and fires the callback
+3. `OnPreferenceChangeModifier` calls `pop()`: merges collected values into the parent scope
 
 The `reduce(value:nextValue:)` function on ``PreferenceKey`` controls how multiple values from different children are combined. The default behavior: last value wins.
+
+The `onPreferenceChange` action follows SwiftUI semantics: it fires at the
+frame commit when the subtree's reduced value **changed** against the last
+committed frame (and once when the subtree first appears) — never during
+traversal, and never for unchanged values.
 
 ## ViewModifier Pipeline
 
@@ -308,20 +373,24 @@ The `LifecycleManager` tracks view visibility across frames using stable slots d
 
 ### onAppear
 
-The `OnAppearModifier` calls `lifecycle.recordAppear(identity:action:)` during rendering:
+The `OnAppearModifier` records its appearance during traversal; the record is
+applied at the **frame commit**, after the frame reached the terminal:
 
-- The structural slot is marked visible in the current render pass
+- The structural slot is marked visible in the committed frame
 - If the slot has **never appeared before**: it is added to the appeared set and the action fires
 - If it **has** appeared before: the action does **not** fire (prevents repeated triggers)
 
-> Note: `onAppear` fires **synchronously** during the render traversal: not after the frame completes. This is because TUIkit uses single-pass rendering with no layout phase.
+> Note: `onAppear` fires at the frame commit — after terminal output, never
+> during traversal. A view that only existed in a discarded pass (sizing or
+> superseded by a correction) never fires its action, matching SwiftUI's
+> model where effects follow the committed tree.
 
 ### onDisappear
 
-The `OnDisappearModifier` does two things during rendering:
+The `OnDisappearModifier` records two things during traversal, applied at commit:
 
-1. Registers its callback with `lifecycle.registerDisappear(identity:action:)`
-2. Marks its structural slot visible with `lifecycle.recordAppear(identity:action:)`
+1. Its callback registration for `lifecycle.registerDisappear(identity:action:)`
+2. Its structural slot's visibility in the committed frame
 
 The actual `onDisappear` callback fires in step 12 (end lifecycle tracking), **after** the entire view tree has rendered.
 
@@ -329,9 +398,10 @@ The actual `onDisappear` callback fires in step 12 (end lifecycle tracking), **a
 
 The `TaskModifier` (created by `.task()`) combines appearance tracking with async tasks:
 
-1. The first render at a structural task slot starts one `Task` with the given priority and operation
+1. The first committed frame containing a structural task slot starts one `Task` with the given priority and operation
 2. Unchanged reconstruction preserves the mounted task instead of restarting it
 3. Removing the slot cancels the task; mounting it again starts a new task
+4. A task recorded by a discarded pass is never even started
 
 ## Output Optimization
 
