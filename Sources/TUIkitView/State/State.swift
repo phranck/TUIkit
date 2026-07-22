@@ -526,6 +526,24 @@ public struct State<Value> {
         self.defaultValue = wrappedValue
         self.location = StateLocation(defaultValue: wrappedValue)
     }
+
+    /// Creates a state with an initial value.
+    ///
+    /// SwiftUI-compatible spelling of ``init(wrappedValue:)``.
+    ///
+    /// - Parameter value: The initial/default value.
+    public init(initialValue value: Value) {
+        self.init(wrappedValue: value)
+    }
+}
+
+extension State where Value: ExpressibleByNilLiteral {
+    /// Creates state without an initial value, starting at `nil`.
+    ///
+    /// Matches SwiftUI's empty initializer for optional state values.
+    public init() {
+        self.init(wrappedValue: nil)
+    }
 }
 
 // MARK: - Dynamic Property Conformance
