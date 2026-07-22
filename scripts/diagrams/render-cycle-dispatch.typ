@@ -49,7 +49,7 @@
     [],
     [Text · VStack · HStack],
     [Button · Panel · Card],
-    [ModifiedView · ContainerView],
+    [ModifiedContent · ContainerView],
   ), fill: colors.slate, name: <ex-direct>),
 
   node((2, 3), box-label(
