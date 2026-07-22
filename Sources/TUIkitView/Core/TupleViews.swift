@@ -5,26 +5,50 @@
 //  License: MIT
 
 import TUIkitCore
-/// A view that contains multiple child views packed via a parameter pack.
+
+/// A view that contains multiple child views packed into a tuple.
 ///
-/// `TupleView` replaces the previous `TupleView2` through `TupleView10`
-/// types with a single generic struct using Swift Parameter Packs (SE-0393).
-/// This removes the 10-child limit and eliminates ~400 lines of boilerplate.
+/// `TupleView` matches SwiftUI's public shape: it is generic over one tuple
+/// type `T` and exposes the packed children through ``value``. It is created
+/// automatically by `ViewBuilder` when multiple views appear in a
+/// `@ViewBuilder` closure.
 ///
-/// `TupleView` is created automatically by `ViewBuilder` when multiple
-/// views appear in a `@ViewBuilder` closure.
+/// ## Child resolution
+///
+/// Rendering needs the individual children, not the tuple. Builder-created
+/// instances capture the children directly from the parameter pack (no
+/// reflection cost). Instances created through the public initializer resolve
+/// children by reflecting over the tuple at render time.
 ///
 /// - Important: This is framework infrastructure. Created automatically by
 ///   `@ViewBuilder`. Do not instantiate directly.
-public struct TupleView<each V: View>: View {
+public struct TupleView<T>: View {
     /// The packed child views.
-    public let children: (repeat each V)
+    public var value: T
 
-    /// Creates a tuple view from a parameter pack of child views.
+    /// Children captured from the builder's parameter pack.
     ///
-    /// - Parameter children: The child views.
-    init(_ children: repeat each V) {
-        self.children = (repeat each children)
+    /// `nil` for publicly constructed instances, which resolve children by
+    /// reflection instead. Builder instances are recreated every frame, so
+    /// the captured array cannot go stale.
+    private let packedChildren: [any View]?
+
+    /// Creates a tuple view from a tuple of child views.
+    ///
+    /// - Parameter value: The tuple containing the child views.
+    public init(_ value: T) {
+        self.value = value
+        self.packedChildren = nil
+    }
+
+    /// Builder fast path carrying the statically known children.
+    ///
+    /// - Parameters:
+    ///   - value: The tuple containing the child views.
+    ///   - children: The children in declaration order.
+    init(value: T, children: [any View]) {
+        self.value = value
+        self.packedChildren = children
     }
 
     public var body: Never {
@@ -32,14 +56,56 @@ public struct TupleView<each V: View>: View {
     }
 }
 
+// MARK: - Child Resolution
+
+extension TupleView {
+    /// Returns the child views in declaration order.
+    ///
+    /// Uses the builder-captured children when available and falls back to
+    /// reflecting over the tuple for publicly constructed instances. Non-view
+    /// tuple elements are ignored.
+    package func resolvedChildren() -> [any View] {
+        if let packedChildren {
+            return packedChildren
+        }
+        if let single = value as? any View {
+            return [single]
+        }
+        return Mirror(reflecting: value).children.compactMap { $0.value as? any View }
+    }
+}
+
 // MARK: - Equatable Conformance
 
-extension TupleView: @preconcurrency Equatable where repeat each V: Equatable {
+/// Compares two type-erased views for equality.
+///
+/// Views that do not conform to `Equatable` never compare as equal. This is
+/// the safe direction for subtree memoization: an unequal comparison causes a
+/// cache miss and a fresh render instead of stale output.
+private func anyViewsEqual(_ lhs: any View, _ rhs: any View) -> Bool {
+    guard let comparable = lhs as? any Equatable else { return false }
+    return openedEqual(comparable, rhs)
+}
+
+/// Opens the `Equatable` existential and compares both values as `E`.
+private func openedEqual<E: Equatable>(_ lhs: E, _ rhs: Any) -> Bool {
+    guard let typed = rhs as? E else { return false }
+    return lhs == typed
+}
+
+extension TupleView: @preconcurrency Equatable {
+    /// Element-wise best-effort equality over the packed children.
+    ///
+    /// SwiftUI's `TupleView` declares no `Equatable` conformance; TUIkit adds
+    /// this one so `.equatable()` keeps working on multi-child containers
+    /// (Swift 6.0 cannot express conditional conformance over tuple
+    /// elements). Children without `Equatable` conformance make the whole
+    /// comparison unequal, which safely degrades to a cache miss.
     public static func == (lhs: TupleView, rhs: TupleView) -> Bool {
-        func isEqual<T: Equatable>(_ left: T, _ right: T) -> Bool { left == right }
-        var result = true
-        repeat result = result && isEqual(each lhs.children, each rhs.children)
-        return result
+        let leftChildren = lhs.resolvedChildren()
+        let rightChildren = rhs.resolvedChildren()
+        guard leftChildren.count == rightChildren.count else { return false }
+        return zip(leftChildren, rightChildren).allSatisfy(anyViewsEqual)
     }
 }
 
@@ -52,14 +118,20 @@ extension TupleView: Renderable, ChildInfoProvider {
 
     public func childInfos(context: RenderContext) -> [ChildInfo] {
         var infos: [ChildInfo] = []
-        var childIndex = 0
-        func append<Child: View>(_ child: Child) {
-            let childContext = context.withChildIdentity(type: Child.self, index: childIndex)
-            childIndex += 1
-            infos.append(contentsOf: resolveChildInfos(from: child, context: childContext))
+        for (index, child) in resolvedChildren().enumerated() {
+            infos.append(contentsOf: childInfos(for: child, index: index, context: context))
         }
-        repeat append(each children)
         return infos
+    }
+
+    /// Resolves one child's infos with its opened concrete type.
+    private func childInfos<Child: View>(
+        for child: Child,
+        index: Int,
+        context: RenderContext
+    ) -> [ChildInfo] {
+        let childContext = context.withChildIdentity(type: Child.self, index: index)
+        return resolveChildInfos(from: child, context: childContext)
     }
 }
 
@@ -68,21 +140,24 @@ extension TupleView: Renderable, ChildInfoProvider {
 extension TupleView: ChildViewProvider {
     public func childViews(context: RenderContext) -> [ChildView] {
         var views: [ChildView] = []
-        var childIndex = 0
-        func append<Child: View>(_ child: Child) {
-            let index = childIndex
-            childIndex += 1
+        for (index, child) in resolvedChildren().enumerated() {
+            views.append(contentsOf: childViews(for: child, index: index, context: context))
+        }
+        return views
+    }
 
-            if let provider = child as? ChildViewProvider {
-                let childContext = context.withChildIdentity(type: Child.self, index: index)
-                views.append(contentsOf: provider.childViews(context: childContext).map {
-                    $0.scoped(to: childContext.identity)
-                })
-            } else {
-                views.append(ChildView(child, childIndex: index))
+    /// Resolves one child's layout views with its opened concrete type.
+    private func childViews<Child: View>(
+        for child: Child,
+        index: Int,
+        context: RenderContext
+    ) -> [ChildView] {
+        if let provider = child as? ChildViewProvider {
+            let childContext = context.withChildIdentity(type: Child.self, index: index)
+            return provider.childViews(context: childContext).map {
+                $0.scoped(to: childContext.identity)
             }
         }
-        repeat append(each children)
-        return views
+        return [ChildView(child, childIndex: index)]
     }
 }

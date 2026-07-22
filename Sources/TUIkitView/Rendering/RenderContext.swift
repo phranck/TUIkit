@@ -18,7 +18,7 @@ import TUIkitCore
 /// view tree has been rendered into a ``FrameBuffer``.
 ///
 /// - Important: This is framework infrastructure passed to
-///   ``ViewModifier/modify(buffer:context:)``. Most developers only need
+///   the internal buffer-modifier layer. Most developers only need
 ///   ``availableWidth``, ``availableHeight``, and ``environment``.
 public struct RenderContext {
     /// The available width in characters.
@@ -118,7 +118,7 @@ public struct RenderContext {
 
     /// Creates a new context with a branch identity.
     ///
-    /// Used by `ConditionalView` to distinguish between if/else branches.
+    /// Used by `_ConditionalContent` to distinguish between if/else branches.
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).
     /// - Returns: A new RenderContext with the branch identity.

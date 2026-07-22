@@ -16,7 +16,7 @@
 /// normalized style state, and transparency explicitly.
 ///
 /// - Important: This is framework infrastructure used as the rendering primitive in
-///   ``ViewModifier/modify(buffer:context:)``. Most developers don't need to interact
+///   the internal buffer-modifier layer. Most developers don't need to interact
 ///   with this type directly.
 public struct FrameBuffer: Sendable, Equatable {
     private var surface: TerminalSurface

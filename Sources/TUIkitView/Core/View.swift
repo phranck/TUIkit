@@ -54,6 +54,10 @@ import TUIkitCore
 ///
 /// Like SwiftUI, all view operations are confined to the main actor.
 /// This ensures thread-safe access to state, environment, and rendering.
+/// The `@preconcurrency` isolation matches SwiftUI's Swift 6.0 contract:
+/// conformances written for pre-concurrency code keep compiling while new
+/// code gets full main-actor checking.
+@preconcurrency
 @MainActor
 public protocol View {
     /// The type of the body view.

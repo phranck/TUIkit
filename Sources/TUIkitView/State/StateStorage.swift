@@ -202,7 +202,7 @@ extension StateStorage {
 
     /// Removes all state for descendants of the given identity.
     ///
-    /// Called by ``ConditionalView`` when switching branches to clean up
+    /// Called by `_ConditionalContent` when switching branches to clean up
     /// state from the now-inactive branch.
     ///
     /// - Parameter ancestor: The branch identity whose descendants should be removed.

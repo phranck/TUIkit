@@ -25,9 +25,21 @@ import TUIkitCore
 /// - Conditionals (`if`, `if-else`)
 /// - Optional views (`if let`)
 /// - Arrays of views (`for-in`)
+///
+/// SwiftUI's builder is nonisolated; TUIkit keeps `@MainActor` because Swift
+/// 6.0 infers main-actor isolation from the `View` protocol onto every
+/// conforming type's initializers, which the builder must call. Documented as
+/// a compiler-floor exception in the compatibility manifest.
 @MainActor
 @resultBuilder
 public struct ViewBuilder {
+
+    // MARK: - Empty Block
+
+    /// Builds an empty block into an EmptyView, matching SwiftUI.
+    public static func buildBlock() -> EmptyView {
+        EmptyView()
+    }
 
     // MARK: - Single View
 
@@ -38,14 +50,17 @@ public struct ViewBuilder {
 
     // MARK: - Multiple Views (Parameter Pack)
 
-    /// Builds multiple views into a TupleView using Swift Parameter Packs.
+    /// Builds multiple views into a tuple-typed TupleView, matching SwiftUI's
+    /// `TupleView<(repeat each Content)>` result shape.
     ///
-    /// This single overload replaces the previous 9 arity-specific `buildBlock`
-    /// overloads (`TupleView2` through `TupleView10`), removing the 10-child limit.
-    public static func buildBlock<each C: View>(
-        _ content: repeat each C
-    ) -> TupleView<repeat each C> {
-        TupleView(repeat each content)
+    /// The children are captured alongside the tuple so rendering does not
+    /// need to reflect over the tuple value.
+    public static func buildBlock<each Content: View>(
+        _ content: repeat each Content
+    ) -> TupleView<(repeat each Content)> {
+        var children: [any View] = []
+        repeat children.append(each content)
+        return TupleView(value: (repeat each content), children: children)
     }
 
     // MARK: - Conditionals
@@ -53,30 +68,38 @@ public struct ViewBuilder {
     /// Supports the true branch of an if-else.
     public static func buildEither<TrueContent: View, FalseContent: View>(
         first content: TrueContent
-    ) -> ConditionalView<TrueContent, FalseContent> {
+    ) -> _ConditionalContent<TrueContent, FalseContent> {
         .trueContent(content)
     }
 
     /// Supports the false branch of an if-else.
     public static func buildEither<TrueContent: View, FalseContent: View>(
         second content: FalseContent
-    ) -> ConditionalView<TrueContent, FalseContent> {
+    ) -> _ConditionalContent<TrueContent, FalseContent> {
         .falseContent(content)
     }
 
-    /// Supports optional views (if let, if without else).
-    public static func buildOptional<Content: View>(_ content: Content?) -> Content? {
+    /// Supports optional views (if let, if without else), matching SwiftUI's
+    /// `buildIf` spelling.
+    public static func buildIf<Content: View>(_ content: Content?) -> Content? {
         content
     }
 
     /// Supports availability limiting.
-    public static func buildLimitedAvailability<Content: View>(_ content: Content) -> Content {
-        content
+    ///
+    /// The branch content is erased to ``AnyView`` because the enclosing
+    /// builder block cannot name types that are only available inside the
+    /// `#available` branch. This matches SwiftUI's result shape.
+    public static func buildLimitedAvailability<Content: View>(_ content: Content) -> AnyView {
+        AnyView(content)
     }
 
     // MARK: - Arrays
 
     /// Supports for-in loops.
+    ///
+    /// SwiftUI's `ViewBuilder` has no array support (`ForEach` covers
+    /// iteration); TUIkit keeps this as a documented additive convenience.
     public static func buildArray<Content: View>(_ components: [Content]) -> ViewArray<Content> {
         ViewArray(components)
     }
@@ -85,11 +108,6 @@ public struct ViewBuilder {
 
     /// Converts a single expression into a view.
     public static func buildExpression<Content: View>(_ expression: Content) -> Content {
-        expression
-    }
-
-    /// Supports optional expressions.
-    public static func buildExpression<Content: View>(_ expression: Content?) -> Content? {
         expression
     }
 }

@@ -379,13 +379,8 @@ extension EmptyView: ButtonProvider {
 
 extension TupleView: ButtonProvider {
     func extractButtons() -> [Button] {
-        var buttons: [Button] = []
-        func collect<T: View>(_ view: T) {
-            if let provider = view as? ButtonProvider {
-                buttons.append(contentsOf: provider.extractButtons())
-            }
+        resolvedChildren().flatMap { child in
+            (child as? ButtonProvider)?.extractButtons() ?? []
         }
-        repeat collect(each children)
-        return buttons
     }
 }

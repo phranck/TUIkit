@@ -225,7 +225,7 @@ This path is used by:
 - **Layout containers**: `VStack`, `HStack`, `ZStack`
 - **Interactive views**: ``Button``, ``ButtonRow``, ``Menu``
 - **Container views**: ``Panel``, ``Card``, ``Alert``, ``Dialog``
-- **Modifier wrappers**: `ModifiedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
+- **Modifier wrappers**: ``ModifiedContent``, `BufferModifiedView`, `DimmedModifier`, `OverlayModifier`, `EnvironmentModifier`, ``EquatableView``, and all lifecycle modifiers
 
 ### Path 2: Composition (body)
 
@@ -338,20 +338,33 @@ traversal, and never for unchanged values.
 
 ## ViewModifier Pipeline
 
-TUIkit has two modifier architectures:
+TUIkit has three modifier architectures:
 
-### Buffer Modifiers (ViewModifier protocol)
+### Public ViewModifier (body composition)
 
-These transform a ``FrameBuffer`` after the content has rendered:
+The public ``ViewModifier`` protocol follows SwiftUI's contract: the modifier
+composes a replacement view around a placeholder for the modified content.
 
 ```swift
 public protocol ViewModifier {
-    func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer
-    func adjustContext(_ context: RenderContext) -> RenderContext  // default: returns context unchanged
+    associatedtype Body: View
+    typealias Content = _ViewModifier_Content<Self>
+    @ViewBuilder func body(content: Self.Content) -> Self.Body
 }
 ```
 
-`ModifiedView` wraps a view and a modifier. It first calls `adjustContext(_:)` to let the modifier reduce available space (e.g. padding), then renders the content, then calls `modify(buffer:context:)`. Examples:
+`.modifier(_:)` wraps the view and the modifier in a ``ModifiedContent``
+value. Rendering evaluates `body(content:)` with a placeholder that resolves
+to the wrapped view at its position in the modifier body — with the
+environment and layout constraints active there, exactly as if the content
+had been written inline.
+
+### Buffer Modifiers (internal)
+
+Terminal-specific transformations that cannot be expressed as composition
+run behind the internal `BufferViewModifier` layer. `BufferModifiedView`
+first lets the modifier adjust the context (e.g. padding reduces available
+space), then renders the content, then transforms the rendered buffer:
 
 - **`PaddingModifier`**: Adds empty lines (top/bottom) and spaces (leading/trailing) around the buffer
 - **`BackgroundModifier`**: Paints the background style directly onto cells and fills each row to the surface width
