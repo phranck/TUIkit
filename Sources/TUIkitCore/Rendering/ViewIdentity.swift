@@ -85,7 +85,7 @@ public extension ViewIdentity {
 
     /// Returns a child identity by appending a branch label.
     ///
-    /// Used by ``_ConditionalContent`` to distinguish between the
+    /// Used by `_ConditionalContent` to distinguish between the
     /// `true` and `false` branches of an `if-else`.
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).

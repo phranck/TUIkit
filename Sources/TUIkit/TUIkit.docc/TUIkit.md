@@ -188,7 +188,7 @@ struct MyApp: App {
 
 - ``ViewBuilder``
 - ``ViewModifier``
-- ``ModifiedView``
+- ``ModifiedContent``
 - ``EquatableView``
 
 ### Focus System
