@@ -56,7 +56,8 @@ struct CustomLayoutTests {
 
     @Test("A custom layout places children at its computed positions")
     func customLayoutPlacesChildren() {
-        let view = DiagonalLayout() {
+        let layout = DiagonalLayout()
+        let view = layout {
             Text("a")
             Text("b")
             Text("c")

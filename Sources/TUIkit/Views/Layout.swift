@@ -152,7 +152,7 @@ public protocol Layout {
 
 extension Layout where Cache == Void {
     /// Default: layouts without shared state need no cache.
-    public func makeCache(subviews: Subviews) -> Void {
+    public func makeCache(subviews: Subviews) {
         ()
     }
 }
