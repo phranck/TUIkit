@@ -39,8 +39,21 @@
 ///
 /// ### Built-in Scenes
 /// - ``WindowGroup``
+@preconcurrency
 @MainActor
-public protocol Scene {}
+public protocol Scene {
+    /// The type of scene produced by the body.
+    associatedtype Body: Scene
+
+    /// The content and behavior of the scene.
+    ///
+    /// Primitive scenes (``WindowGroup``, modifier wrappers) declare
+    /// `Never` and render through the internal scene pipeline instead.
+    @SceneBuilder
+    var body: Self.Body { get }
+}
+
+extension Never: Scene {}
 
 // MARK: - WindowGroup
 
@@ -64,6 +77,11 @@ public struct WindowGroup<Content: View>: Scene {
     /// - Parameter content: A ViewBuilder that defines the content.
     public init(@ViewBuilder content: () -> Content) {
         self.content = content()
+    }
+
+    /// Never called — rendering runs through the internal scene pipeline.
+    public var body: Never {
+        fatalError("WindowGroup renders via SceneRenderable")
     }
 }
 
@@ -99,6 +117,11 @@ public struct SceneBuilder {
     /// - Parameter content: The scene to build.
     /// - Returns: The same scene, unchanged.
     public static func buildBlock<Content: Scene>(_ content: Content) -> Content {
+        content
+    }
+
+    /// Converts a single scene expression into a scene component.
+    public static func buildExpression<Content: Scene>(_ content: Content) -> Content {
         content
     }
 }
