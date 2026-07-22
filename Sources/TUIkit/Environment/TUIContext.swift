@@ -447,10 +447,14 @@ final class TUIContext {
 
 extension TUIContext {
     /// Creates a runtime backed by the user's persistent configuration.
+    ///
+    /// Each production runtime owns its own ``JSONFileStorage`` instance, so
+    /// two runtimes never share a storage backend unless one is injected
+    /// explicitly.
     static func production() -> TUIContext {
         TUIContext(
             runtimeDiagnostics: .standardError(),
-            storageBackend: StorageDefaults.runtimeBackend,
+            storageBackend: JSONFileStorage(),
             localizationService: LocalizationService()
         )
     }

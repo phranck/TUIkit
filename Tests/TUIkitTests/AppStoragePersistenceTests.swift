@@ -150,6 +150,21 @@ struct AppStoragePersistenceTests {
         #expect(failures.first?.operation == .encode)
     }
 
+    // MARK: - Unbound Fallback
+
+    @Test("AppStorage outside a runtime falls back to volatile process storage")
+    func unboundAppStorageUsesVolatileFallback() {
+        #expect(UnboundAppStorage.fallback is VolatileStorageBackend)
+
+        let key = "unbound-\(UUID().uuidString)"
+        let first = AppStorage(wrappedValue: "default", key)
+        let second = AppStorage(wrappedValue: "default", key)
+
+        first.wrappedValue = "shared"
+
+        #expect(second.wrappedValue == "shared")
+    }
+
     // MARK: - Concurrency Stress
 
     @Test("Concurrent mutations never lose the final value per key", .timeLimit(.minutes(1)))

@@ -288,35 +288,25 @@ private extension JSONFileStorage {
     }
 }
 
-// MARK: - Storage Defaults
+// MARK: - Unbound Fallback
 
-/// Provides the default storage backend for ``AppStorage``.
+/// Process-local fallback for ``AppStorage`` properties accessed outside a
+/// runtime.
 ///
-/// This global compatibility hook is deprecated. `@AppStorage` properties
-/// rendered inside an app bind to that app's runtime backend. Pass an explicit
-/// backend to the property wrapper when code outside a runtime needs one.
+/// Persistent storage is always owned by an app runtime (injected through
+/// `TUIContext`) or passed explicitly to the property wrapper:
 ///
 /// ```swift
 /// @AppStorage("token", storage: MyCustomBackend()) var token = ""
 /// ```
-public enum StorageDefaults {
-    /// Backing storage retained until issue #15 removes the global fallback.
-    nonisolated(unsafe) private static var configuredBackend: StorageBackend = JSONFileStorage()
-
-    /// The default storage backend used by ``AppStorage``.
-    ///
-    /// Defaults to a ``JSONFileStorage`` instance that persists to
-    /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
-    @available(*, deprecated, message: "Pass a StorageBackend to the AppStorage initializer instead")
-    public static var backend: StorageBackend {
-        get { configuredBackend }
-        set { configuredBackend = newValue }
-    }
-
-    /// Legacy fallback used only when AppStorage is accessed outside a runtime.
-    static var runtimeBackend: StorageBackend {
-        configuredBackend
-    }
+///
+/// Code that touches an `@AppStorage` property before any runtime hydrates it
+/// therefore gets deliberately volatile in-memory semantics: nothing reaches
+/// the file system, and no global mutable backend exists that two runtimes
+/// could accidentally share.
+enum UnboundAppStorage {
+    /// Shared volatile backend for unbound property access.
+    static let fallback: StorageBackend = VolatileStorageBackend()
 }
 
 // MARK: - AppStorage Property Wrapper
@@ -475,7 +465,7 @@ private extension AppStorageBox {
         bindToActiveRuntimeIfNeeded()
 
         lock.lock()
-        let storage = explicitStorage ?? runtimeStorage ?? StorageDefaults.runtimeBackend
+        let storage = explicitStorage ?? runtimeStorage ?? UnboundAppStorage.fallback
         let invalidationSink = invalidationSink
         let identity = identity
         lock.unlock()
