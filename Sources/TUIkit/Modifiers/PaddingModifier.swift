@@ -85,20 +85,20 @@ public struct Edge: OptionSet, Sendable {
 
 /// A modifier that adds padding around a view.
 ///
-/// - Important: This is framework infrastructure. Use `.padding()` on any
-///   ``View`` instead of instantiating this type directly.
-public struct PaddingModifier: ViewModifier {
+/// Framework infrastructure behind `.padding()`; operates on rendered
+/// buffers through the internal buffer-modifier layer.
+struct PaddingModifier: BufferViewModifier {
     /// The padding insets.
     let insets: EdgeInsets
 
-    public func adjustContext(_ context: RenderContext) -> RenderContext {
+    func adjustContext(_ context: RenderContext) -> RenderContext {
         var adjusted = context
         adjusted.availableWidth = max(0, context.availableWidth - insets.leading - insets.trailing)
         adjusted.availableHeight = max(0, context.availableHeight - insets.top - insets.bottom)
         return adjusted
     }
 
-    public func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
+    func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
         var result: [String] = []
 
         let leadingPad = String(repeating: " ", count: insets.leading)

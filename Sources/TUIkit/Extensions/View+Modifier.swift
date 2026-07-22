@@ -7,11 +7,11 @@
 // MARK: - View Modifier Extension
 
 extension View {
-    /// Applies a modifier to this view.
+    /// Applies a modifier to this view and returns a new view.
     ///
-    /// - Parameter modifier: The modifier to apply.
-    /// - Returns: A modified view.
-    public func modifier<M: ViewModifier>(_ modifier: M) -> ModifiedView<Self, M> {
-        ModifiedView(content: self, modifier: modifier)
+    /// - Parameter modifier: The modifier to apply to this view.
+    /// - Returns: A new view with the modifier applied.
+    public func modifier<M>(_ modifier: M) -> ModifiedContent<Self, M> {
+        ModifiedContent(content: self, modifier: modifier)
     }
 }

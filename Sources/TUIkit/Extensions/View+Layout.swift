@@ -95,7 +95,7 @@ extension View {
     /// - Parameter color: The background color.
     /// - Returns: A view with the background color applied.
     public func background(_ color: Color) -> some View {
-        modifier(BackgroundModifier(color: color))
+        BufferModifiedView(content: self, modifier: BackgroundModifier(color: color))
     }
 }
 
@@ -235,7 +235,7 @@ extension View {
     /// - Parameter amount: The padding amount on all sides (default: 1).
     /// - Returns: A padded view.
     public func padding(_ amount: Int = 1) -> some View {
-        modifier(PaddingModifier(insets: EdgeInsets(all: amount)))
+        BufferModifiedView(content: self, modifier: PaddingModifier(insets: EdgeInsets(all: amount)))
     }
 
     /// Adds padding on specific edges.
@@ -261,7 +261,7 @@ extension View {
             bottom: edges.contains(.bottom) ? amount : 0,
             trailing: edges.contains(.trailing) ? amount : 0
         )
-        return modifier(PaddingModifier(insets: insets))
+        return BufferModifiedView(content: self, modifier: PaddingModifier(insets: insets))
     }
 
     /// Adds padding with explicit edge insets.
@@ -274,6 +274,6 @@ extension View {
     /// - Parameter insets: The edge insets.
     /// - Returns: A padded view.
     public func padding(_ insets: EdgeInsets) -> some View {
-        modifier(PaddingModifier(insets: insets))
+        BufferModifiedView(content: self, modifier: PaddingModifier(insets: insets))
     }
 }

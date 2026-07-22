@@ -5,93 +5,150 @@
 //  License: MIT
 
 import TUIkitCore
-/// A modifier that transforms a view's rendered output.
+
+// MARK: - ViewModifier
+
+/// A modifier that you apply to a view, producing a different version of it.
 ///
-/// `ViewModifier` works on the `FrameBuffer` level: it takes a rendered
-/// buffer and returns a transformed buffer. This allows modifiers like
-/// `.padding()` and `.frame()` to manipulate layout after rendering.
-///
-/// # Example
+/// `ViewModifier` follows SwiftUI's contract: implement ``body(content:)``
+/// and compose the received `content` placeholder with other views:
 ///
 /// ```swift
-/// struct MyModifier: ViewModifier {
-///     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer {
-///         // transform the buffer
-///         return buffer
+/// struct Framed: ViewModifier {
+///     func body(content: Content) -> some View {
+///         VStack {
+///             Divider()
+///             content
+///             Divider()
+///         }
 ///     }
 /// }
+///
+/// Text("Hello").modifier(Framed())
 /// ```
+///
+/// Apply a modifier with ``View/modifier(_:)``, which wraps the view and the
+/// modifier in a ``ModifiedContent`` value.
+///
+/// Terminal-specific buffer transformations (padding, background fills) are
+/// framework infrastructure and live behind the internal buffer-modifier
+/// layer, not behind this public protocol.
 @MainActor
 public protocol ViewModifier {
+    /// The type of view produced by ``body(content:)``.
+    associatedtype Body: View
+
+    /// The view content placeholder passed to ``body(content:)``.
+    typealias Content = _ViewModifier_Content<Self>
+
+    /// Returns the current body of `self`, wrapping the given content.
+    ///
+    /// - Parameter content: A placeholder view standing in for the view this
+    ///   modifier was applied to. Place it wherever the modified content
+    ///   should appear.
+    /// - Returns: The composed replacement view.
+    @ViewBuilder
+    func body(content: Self.Content) -> Self.Body
+}
+
+// MARK: - Modifier Content Placeholder
+
+/// The placeholder view a ``ViewModifier`` receives in `body(content:)`.
+///
+/// Matches SwiftUI's `_ViewModifier_Content`: an opaque stand-in for the view
+/// the modifier was applied to. Rendering resolves the placeholder to the
+/// wrapped view captured by ``ModifiedContent``, with the environment and
+/// layout constraints active at the placeholder's position in the modifier
+/// body.
+public struct _ViewModifier_Content<Modifier: ViewModifier>: View {
+    /// Renders the wrapped content at the placeholder's tree position.
+    let renderContent: (RenderContext) -> FrameBuffer
+
+    /// Creates a placeholder resolving to the given render step.
+    init(renderContent: @escaping (RenderContext) -> FrameBuffer) {
+        self.renderContent = renderContent
+    }
+
+    public var body: Never {
+        fatalError("_ViewModifier_Content renders via Renderable")
+    }
+}
+
+extension _ViewModifier_Content: Renderable {
+    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+        renderContent(context)
+    }
+}
+
+// MARK: - Buffer Modifier Layer
+
+/// A procedural modifier operating directly on rendered terminal buffers.
+///
+/// This is the internal layer for terminal-specific transformations that
+/// cannot be expressed as view composition (padding rows, background fills).
+/// Public API never exposes this protocol; user-facing modifiers go through
+/// ``ViewModifier`` and ``View/modifier(_:)``.
+package protocol BufferViewModifier {
     /// Transforms a rendered buffer.
     ///
     /// - Parameters:
     ///   - buffer: The rendered content of the wrapped view.
     ///   - context: The rendering context.
     /// - Returns: The modified buffer.
+    @MainActor
     func modify(buffer: FrameBuffer, context: RenderContext) -> FrameBuffer
 
     /// Adjusts the rendering context before the wrapped content is rendered.
     ///
-    /// Override this method in modifiers that consume space (like padding)
-    /// to reduce `availableWidth` or `availableHeight` so that flexible
-    /// child views size themselves correctly.
-    ///
-    /// The default implementation returns the context unchanged.
+    /// Modifiers that consume space (like padding) reduce `availableWidth`
+    /// or `availableHeight` here so flexible child views size themselves
+    /// correctly. The default implementation returns the context unchanged.
     ///
     /// - Parameter context: The current rendering context.
     /// - Returns: The adjusted context for content rendering.
+    @MainActor
     func adjustContext(_ context: RenderContext) -> RenderContext
 }
 
-extension ViewModifier {
-    public func adjustContext(_ context: RenderContext) -> RenderContext {
+extension BufferViewModifier {
+    package func adjustContext(_ context: RenderContext) -> RenderContext {
         context
     }
 }
 
-// MARK: - ModifiedView
+// MARK: - BufferModifiedView
 
-/// A view that wraps another view with a modifier.
+/// A view that applies a buffer modifier to its wrapped content.
 ///
-/// This is the return type of modifier methods like `.frame()` and `.padding()`.
-/// It is created automatically — users don't instantiate this directly.
-///
-/// `ModifiedView` is a **primitive view**: it declares `body: Never`
-/// and conforms to `Renderable`. The rendering system calls
-/// `renderToBuffer(context:)` which first renders the
-/// wrapped `content`, then applies the modifier's transformation.
-/// The `body` property is never called.
-///
-/// - Important: This is framework infrastructure. Created automatically by
-///   `.modifier()`. Do not instantiate directly.
-public struct ModifiedView<Content: View, Modifier: ViewModifier>: View {
+/// `BufferModifiedView` is internal framework infrastructure: it renders its
+/// content with the modifier-adjusted context, then applies the buffer
+/// transformation. Public modifier chains produce ``ModifiedContent`` values
+/// instead.
+package struct BufferModifiedView<Content: View, Modifier: BufferViewModifier>: View {
     /// The original view.
-    public let content: Content
+    package let content: Content
 
-    /// The modifier to apply.
-    public let modifier: Modifier
+    /// The buffer modifier to apply.
+    package let modifier: Modifier
 
-    /// Creates a modified view.
+    /// Creates a buffer-modified view.
     ///
     /// - Parameters:
     ///   - content: The original view.
-    ///   - modifier: The modifier to apply.
-    public init(content: Content, modifier: Modifier) {
+    ///   - modifier: The buffer modifier to apply.
+    package init(content: Content, modifier: Modifier) {
         self.content = content
         self.modifier = modifier
     }
 
     /// Never called — rendering is handled by `Renderable` conformance.
-    public var body: Never {
-        fatalError("ModifiedView renders via Renderable")
+    package var body: Never {
+        fatalError("BufferModifiedView renders via Renderable")
     }
 }
 
-// MARK: - ModifiedView Rendering
-
-extension ModifiedView: Renderable {
-    public func renderToBuffer(context: RenderContext) -> FrameBuffer {
+extension BufferModifiedView: Renderable {
+    package func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let adjustedContext = modifier.adjustContext(context)
         let childBuffer = TUIkitView.renderToBuffer(content, context: adjustedContext)
         return modifier.modify(buffer: childBuffer, context: context)

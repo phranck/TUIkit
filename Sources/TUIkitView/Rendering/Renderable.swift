@@ -31,7 +31,7 @@ import TUIkitCore
 /// - **ViewBuilder glue**: `TupleView`, `_ConditionalContent`, `ViewArray`
 /// - **Interactive views**: `Button`, `ButtonRow`, `Menu`, `StatusBar`
 /// - **Containers**: `Panel`, `ContainerView`, `Alert`, `Dialog`, `Card`
-/// - **Modifiers**: `ModifiedView`, `DimmedModifier`, etc.
+/// - **Modifiers**: `BufferModifiedView`, `DimmedModifier`, etc.
 ///
 /// All of these declare `body: Never` (which `fatalError`s) because
 /// their rendering is fully handled by `Renderable`.
