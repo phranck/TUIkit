@@ -25,13 +25,13 @@
 /// ```
 ///
 /// Container views (`VStack`, `HStack`, `TupleView`, `ViewArray`) append
-/// their child index. Leaf views append their type name. `ConditionalView`
+/// their child index. Leaf views append their type name. `_ConditionalContent`
 /// appends a branch label (`"true"` or `"false"`).
 ///
 /// ## Stability
 ///
 /// The identity is **stable across render passes** as long as the view tree
-/// structure does not change. If a `ConditionalView` switches branches, the
+/// structure does not change. If a `_ConditionalContent` switches branches, the
 /// old branch's state is invalidated.
 public struct ViewIdentity: Hashable, CustomStringConvertible, Sendable {
     /// The structural path from root to this view.
@@ -85,7 +85,7 @@ public extension ViewIdentity {
 
     /// Returns a child identity by appending a branch label.
     ///
-    /// Used by ``ConditionalView`` to distinguish between the
+    /// Used by ``_ConditionalContent`` to distinguish between the
     /// `true` and `false` branches of an `if-else`.
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).
@@ -97,7 +97,7 @@ public extension ViewIdentity {
     /// Whether the given path is a descendant of this identity.
     ///
     /// Used by `StateStorage` to invalidate all state under a branch
-    /// when a `ConditionalView` switches.
+    /// when a `_ConditionalContent` switches.
     ///
     /// - Parameter descendant: The path to check.
     /// - Returns: `true` if `descendant` starts with this identity's path.

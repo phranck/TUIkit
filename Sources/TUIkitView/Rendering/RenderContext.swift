@@ -118,7 +118,7 @@ public struct RenderContext {
 
     /// Creates a new context with a branch identity.
     ///
-    /// Used by `ConditionalView` to distinguish between if/else branches.
+    /// Used by `_ConditionalContent` to distinguish between if/else branches.
     ///
     /// - Parameter label: The branch label (`"true"` or `"false"`).
     /// - Returns: A new RenderContext with the branch identity.

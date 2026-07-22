@@ -28,7 +28,7 @@ import TUIkitCore
 ///
 /// - **Leaf views**: `Text`, `EmptyView`, `Spacer`, `Divider`
 /// - **Layout containers**: `VStack`, `HStack`, `ZStack`
-/// - **ViewBuilder glue**: `TupleView`, `ConditionalView`, `ViewArray`
+/// - **ViewBuilder glue**: `TupleView`, `_ConditionalContent`, `ViewArray`
 /// - **Interactive views**: `Button`, `ButtonRow`, `Menu`, `StatusBar`
 /// - **Containers**: `Panel`, `ContainerView`, `Alert`, `Dialog`, `Card`
 /// - **Modifiers**: `ModifiedView`, `DimmedModifier`, etc.

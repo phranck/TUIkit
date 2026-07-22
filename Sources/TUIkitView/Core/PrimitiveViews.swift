@@ -28,7 +28,7 @@ public struct EmptyView: View, Equatable {
     }
 }
 
-// MARK: - ConditionalView
+// MARK: - _ConditionalContent
 
 /// A view that represents either the true or false branch of a conditional.
 ///
@@ -36,7 +36,7 @@ public struct EmptyView: View, Equatable {
 ///
 /// - Important: This is framework infrastructure. Created automatically by
 ///   `@ViewBuilder` for `if`/`else` branches. Do not instantiate directly.
-public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
+public enum _ConditionalContent<TrueContent: View, FalseContent: View>: View {
     /// The true branch was executed.
     case trueContent(TrueContent)
 
@@ -44,7 +44,7 @@ public enum ConditionalView<TrueContent: View, FalseContent: View>: View {
     case falseContent(FalseContent)
 
     public var body: Never {
-        fatalError("ConditionalView renders its children directly")
+        fatalError("_ConditionalContent renders its children directly")
     }
 }
 
@@ -106,6 +106,14 @@ public struct AnyView: View {
         }
     }
 
+    /// Creates an AnyView wrapping the given view, matching SwiftUI's
+    /// labeled erasure initializer.
+    ///
+    /// - Parameter view: The view to type-erase.
+    public init<V: View>(erasing view: V) {
+        self.init(view)
+    }
+
     public var body: Never {
         fatalError("AnyView renders via Renderable")
     }
@@ -127,9 +135,9 @@ extension EmptyView: Renderable {
     }
 }
 
-// MARK: - ConditionalView Rendering
+// MARK: - _ConditionalContent Rendering
 
-extension ConditionalView: Renderable {
+extension _ConditionalContent: Renderable {
     public func renderToBuffer(context: RenderContext) -> FrameBuffer {
         let stateStorage = context.environment.stateStorage!
         switch self {
@@ -143,9 +151,9 @@ extension ConditionalView: Renderable {
     }
 }
 
-// MARK: - ConditionalView Child Traversal
+// MARK: - _ConditionalContent Child Traversal
 
-extension ConditionalView: ChildInfoProvider, ChildViewProvider {
+extension _ConditionalContent: ChildInfoProvider, ChildViewProvider {
     public func childInfos(context: RenderContext) -> [ChildInfo] {
         switch self {
         case .trueContent(let content):
