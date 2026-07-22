@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - Container Config
 
 /// Shared visual configuration for container-type views.
@@ -366,7 +368,8 @@ private struct _ContainerViewCore<Content: View, Footer: View>: View, Renderable
         let footerBuffer: FrameBuffer?
         if let footerView = footer {
             var footerContext = innerContext
-            footerContext.availableWidth = innerWidth - footerPadding.leading - footerPadding.trailing
+            let footerCells = footerPadding.cellInsets
+            footerContext.availableWidth = innerWidth - footerCells.leading - footerCells.trailing
             let paddedFooter = footerView.padding(footerPadding)
             footerBuffer = TUIkit.renderToBuffer(paddedFooter, context: footerContext)
         } else {

@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - Border
 
 extension View {
@@ -232,29 +234,32 @@ extension View {
     ///     .padding(2)   // 2 lines top/bottom, 2 chars left/right
     /// ```
     ///
-    /// - Parameter amount: The padding amount on all sides (default: 1).
+    /// - Parameter length: The padding amount on all sides.
     /// - Returns: A padded view.
-    public func padding(_ amount: Int = 1) -> some View {
-        BufferModifiedView(content: self, modifier: PaddingModifier(insets: EdgeInsets(all: amount)))
+    public func padding(_ length: CGFloat) -> some View {
+        padding(.all, length)
     }
 
     /// Adds padding on specific edges.
     ///
-    /// In a terminal context, 1 unit of padding means:
-    /// - **Vertical (top/bottom):** 1 line
-    /// - **Horizontal (leading/trailing):** 1 character
+    /// Matches SwiftUI's signature. In a terminal context, 1 unit of
+    /// padding means one line vertically and one character horizontally;
+    /// `nil` uses the terminal default of one cell. Fractional lengths
+    /// quantize through ``TerminalGeometry``.
     ///
     /// ```swift
     /// Text("Hello")
+    ///     .padding()                // 1 cell on all edges
     ///     .padding(.horizontal, 4)  // 4 chars left and right
     ///     .padding(.vertical, 2)    // 2 lines top and bottom
     /// ```
     ///
     /// - Parameters:
-    ///   - edges: The edges to pad.
-    ///   - amount: The padding amount (default: 1).
+    ///   - edges: The set of edges to pad (default: all).
+    ///   - length: The padding amount, or `nil` for the default cell.
     /// - Returns: A padded view.
-    public func padding(_ edges: Edge, _ amount: Int = 1) -> some View {
+    public func padding(_ edges: Edge.Set = .all, _ length: CGFloat? = nil) -> some View {
+        let amount = CGFloat(TerminalGeometry.spacing(length, default: 1))
         let insets = EdgeInsets(
             top: edges.contains(.top) ? amount : 0,
             leading: edges.contains(.leading) ? amount : 0,
