@@ -60,6 +60,16 @@ struct EquatableEffectTests {
         #expect(harness.tuiContext.focusManager.currentFocusedID != nil)
     }
 
+    @Test("Cache hits keep declared focus sections registered")
+    func cacheHitKeepsFocusSections() {
+        let harness = FrameHarness(app: CachedSectionApp())
+
+        harness.renderFrame()
+        harness.renderFrame()
+
+        #expect(harness.tuiContext.focusManager.sectionIDs.contains("cached-section"))
+    }
+
     @Test("Outer cache hits keep nested cache entries alive")
     func cacheHitKeepsNestedEntries() {
         let harness = FrameHarness(app: NestedCacheApp())
@@ -140,6 +150,25 @@ private struct CachedFocusApp: App {
     var body: some Scene {
         WindowGroup {
             CachedFocusContent().equatable()
+        }
+    }
+}
+
+/// Declares a focus section (without focusables) inside cacheable content.
+private struct CachedSectionContent: View, Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool { true }
+
+    var body: some View {
+        Text("sectioned").focusSection("cached-section")
+    }
+}
+
+private struct CachedSectionApp: App {
+    init() {}
+
+    var body: some Scene {
+        WindowGroup {
+            CachedSectionContent().equatable()
         }
     }
 }
