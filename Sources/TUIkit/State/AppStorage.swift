@@ -101,8 +101,16 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
     /// Writes one serialized payload to disk.
     private let persist: PersistHandler
 
+    /// Receives every persistence failure this storage encounters.
+    private let onPersistenceFailure: @Sendable (StoragePersistenceError) -> Void
+
     /// Creates a JSON file storage with default location.
-    public init() {
+    ///
+    /// - Parameter onPersistenceFailure: Optional handler receiving sanitized
+    ///   persistence failures. Defaults to logging one line to standard error.
+    public init(
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
         let configDir = appConfigDirectory()
 
         // Create directory if needed
@@ -110,13 +118,23 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
 
         self.fileURL = configDir.appendingPathComponent("settings.json")
         self.persist = Self.atomicWrite
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
         loadFromDisk()
     }
 
     /// Creates a JSON file storage with a custom file URL.
-    public init(fileURL: URL) {
+    ///
+    /// - Parameters:
+    ///   - fileURL: The destination file for persisted values.
+    ///   - onPersistenceFailure: Optional handler receiving sanitized
+    ///     persistence failures. Defaults to logging one line to standard error.
+    public init(
+        fileURL: URL,
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
         self.fileURL = fileURL
         self.persist = Self.atomicWrite
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
         loadFromDisk()
     }
 
@@ -126,9 +144,16 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
     ///   - fileURL: The destination passed to every persist invocation.
     ///   - persist: Handler receiving each serialized snapshot payload in
     ///     mutation order on the storage's writer queue.
-    init(fileURL: URL, persist: @escaping PersistHandler) {
+    ///   - onPersistenceFailure: Optional handler receiving sanitized
+    ///     persistence failures. Defaults to logging one line to standard error.
+    init(
+        fileURL: URL,
+        persist: @escaping PersistHandler,
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
         self.fileURL = fileURL
         self.persist = persist
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
         loadFromDisk()
     }
 }
@@ -154,7 +179,7 @@ public extension JSONFileStorage {
             let data = try JSONEncoder().encode(value)
             applyAndEnqueueSnapshot { cache in cache[key] = data }
         } catch {
-            // Encoding failed - ignore silently
+            onPersistenceFailure(StoragePersistenceError(operation: .encode, underlying: error))
         }
     }
 
@@ -205,8 +230,13 @@ private extension JSONFileStorage {
         let snapshot = cache
         lock.unlock()
 
-        writeQueue.async { [persist, fileURL] in
-            Self.persistSnapshot(snapshot, to: fileURL, using: persist)
+        writeQueue.async { [persist, fileURL, onPersistenceFailure] in
+            Self.persistSnapshot(
+                snapshot,
+                to: fileURL,
+                using: persist,
+                reportingTo: onPersistenceFailure
+            )
         }
     }
 
@@ -219,10 +249,12 @@ private extension JSONFileStorage {
     ///   - snapshot: The cache state to persist.
     ///   - fileURL: The destination file.
     ///   - persist: The handler performing the actual write.
+    ///   - report: Receiver for sanitized serialization and write failures.
     static func persistSnapshot(
         _ snapshot: [String: Data],
         to fileURL: URL,
-        using persist: PersistHandler
+        using persist: PersistHandler,
+        reportingTo report: @Sendable (StoragePersistenceError) -> Void
     ) {
         // Convert Data values to base64 strings for JSON compatibility
         var serializable: [String: String] = [:]
@@ -230,17 +262,29 @@ private extension JSONFileStorage {
             serializable[key] = data.base64EncodedString()
         }
 
+        let payload: Data
         do {
-            let payload = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
+            payload = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
+        } catch {
+            report(StoragePersistenceError(operation: .serialize, underlying: error))
+            return
+        }
+
+        do {
             try persist(payload, fileURL)
         } catch {
-            // Failed to save - ignore silently
+            report(StoragePersistenceError(operation: .write, underlying: error))
         }
     }
 
     /// Default persistence: atomic replacement of the destination file.
     static let atomicWrite: PersistHandler = { payload, destination in
         try payload.write(to: destination, options: .atomic)
+    }
+
+    /// Default failure handling: one sanitized line on standard error.
+    static let logFailureToStandardError: @Sendable (StoragePersistenceError) -> Void = { failure in
+        FileHandle.standardError.write(Data("TUIkit: \(failure.description)\n".utf8))
     }
 }
 

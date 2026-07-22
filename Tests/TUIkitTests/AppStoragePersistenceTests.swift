@@ -90,6 +90,66 @@ struct AppStoragePersistenceTests {
         #expect(value == "recovered")
     }
 
+    // MARK: - Failure Reporting
+
+    @Test("A failing write reports a sanitized persistence failure")
+    func failingWriteReportsPersistenceFailure() {
+        let fileURL = temporaryStorageURL()
+        let reported = ReportedFailures()
+        let storage = JSONFileStorage(
+            fileURL: fileURL,
+            persist: { _, _ in throw CocoaError(.fileWriteNoPermission) },
+            onPersistenceFailure: { reported.append($0) }
+        )
+
+        storage.setValue("value", forKey: "key")
+        storage.synchronize()
+
+        let failures = reported.all()
+        #expect(failures.count == 1)
+        #expect(failures.first?.operation == .write)
+        #expect(failures.first?.description.contains(fileURL.path) == false)
+    }
+
+    @Test("The default persistence step reports unwritable destinations without leaking the path")
+    func unwritableDestinationReportsFailure() {
+        let missingDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tuikit-missing-\(UUID().uuidString)")
+        let fileURL = missingDirectory.appendingPathComponent("settings.json")
+        let reported = ReportedFailures()
+        let storage = JSONFileStorage(
+            fileURL: fileURL,
+            onPersistenceFailure: { reported.append($0) }
+        )
+
+        storage.setValue("value", forKey: "key")
+        storage.synchronize()
+
+        let failures = reported.all()
+        #expect(failures.isEmpty == false)
+        #expect(failures.allSatisfy { failure in
+            !failure.description.contains(missingDirectory.path)
+                && !failure.reason.contains(missingDirectory.path)
+        })
+    }
+
+    @Test("An encoding failure is reported instead of silently dropped")
+    func encodingFailureIsReported() {
+        let reported = ReportedFailures()
+        let storage = JSONFileStorage(
+            fileURL: temporaryStorageURL(),
+            persist: { _, _ in },
+            onPersistenceFailure: { reported.append($0) }
+        )
+
+        storage.setValue(FailingEncodable(), forKey: "key")
+        storage.synchronize()
+
+        let failures = reported.all()
+        #expect(failures.count == 1)
+        #expect(failures.first?.operation == .encode)
+    }
+
     // MARK: - Concurrency Stress
 
     @Test("Concurrent mutations never lose the final value per key", .timeLimit(.minutes(1)))
@@ -123,6 +183,45 @@ struct AppStoragePersistenceTests {
 }
 
 // MARK: - Test Support
+
+/// Collects persistence failures reported by a storage under test.
+private final class ReportedFailures: @unchecked Sendable {
+    /// Reported failures in delivery order.
+    private var failures: [StoragePersistenceError] = []
+
+    /// Lock protecting the failure list.
+    private let lock = NSLock()
+
+    /// Records one reported failure.
+    func append(_ failure: StoragePersistenceError) {
+        lock.lock()
+        failures.append(failure)
+        lock.unlock()
+    }
+
+    /// Returns every failure reported so far.
+    func all() -> [StoragePersistenceError] {
+        lock.lock()
+        defer { lock.unlock() }
+        return failures
+    }
+}
+
+/// A Codable value whose encoding always fails.
+private struct FailingEncodable: Codable {
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        self.init()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        throw EncodingError.invalidValue(
+            self,
+            EncodingError.Context(codingPath: [], debugDescription: "always fails")
+        )
+    }
+}
 
 /// Records every payload handed to the storage's persist step.
 ///
