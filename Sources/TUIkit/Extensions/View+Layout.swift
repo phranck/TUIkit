@@ -116,23 +116,26 @@ extension View {
     /// ```
     ///
     /// - Parameters:
-    ///   - width: The desired width in characters (nil preserves intrinsic width).
-    ///   - height: The desired height in lines (nil preserves intrinsic height).
-    ///   - alignment: The alignment within the frame (default: .topLeading).
+    ///   - width: The desired width (nil preserves intrinsic width).
+    ///   - height: The desired height (nil preserves intrinsic height).
+    ///   - alignment: The alignment within the frame (default: .center,
+    ///     matching SwiftUI).
     /// - Returns: A view constrained to the specified frame.
     public func frame(
-        width: Int? = nil,
-        height: Int? = nil,
-        alignment: Alignment = .topLeading
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
+        alignment: Alignment = .center
     ) -> some View {
-        FlexibleFrameView(
+        let cellWidth = width.map { max(0, TerminalGeometry.cells($0)) }
+        let cellHeight = height.map { max(0, TerminalGeometry.cells($0)) }
+        return FlexibleFrameView(
             content: self,
-            minWidth: width,
-            idealWidth: width,
-            maxWidth: width.map { .fixed($0) },
-            minHeight: height,
-            idealHeight: height,
-            maxHeight: height.map { .fixed($0) },
+            minWidth: cellWidth,
+            idealWidth: cellWidth,
+            maxWidth: cellWidth,
+            minHeight: cellHeight,
+            idealHeight: cellHeight,
+            maxHeight: cellHeight,
             alignment: alignment
         )
     }
@@ -158,31 +161,31 @@ extension View {
     /// ```
     ///
     /// - Parameters:
-    ///   - minWidth: Minimum width in characters.
+    ///   - minWidth: Minimum width.
     ///   - idealWidth: Preferred width (used when no max is set).
     ///   - maxWidth: Maximum width, or `.infinity` to fill available space.
-    ///   - minHeight: Minimum height in lines.
+    ///   - minHeight: Minimum height.
     ///   - idealHeight: Preferred height (used when no max is set).
     ///   - maxHeight: Maximum height, or `.infinity` to fill available space.
     ///   - alignment: The alignment within the frame (default: .center).
     /// - Returns: A view with flexible frame constraints.
     public func frame(
-        minWidth: Int? = nil,
-        idealWidth: Int? = nil,
-        maxWidth: FrameDimension? = nil,
-        minHeight: Int? = nil,
-        idealHeight: Int? = nil,
-        maxHeight: FrameDimension? = nil,
+        minWidth: CGFloat? = nil,
+        idealWidth: CGFloat? = nil,
+        maxWidth: CGFloat? = nil,
+        minHeight: CGFloat? = nil,
+        idealHeight: CGFloat? = nil,
+        maxHeight: CGFloat? = nil,
         alignment: Alignment = .center
     ) -> some View {
         FlexibleFrameView(
             content: self,
-            minWidth: minWidth,
-            idealWidth: idealWidth,
-            maxWidth: maxWidth,
-            minHeight: minHeight,
-            idealHeight: idealHeight,
-            maxHeight: maxHeight,
+            minWidth: minWidth.map { max(0, TerminalGeometry.cells($0)) },
+            idealWidth: idealWidth.map { max(0, TerminalGeometry.cells($0)) },
+            maxWidth: maxWidth.map { max(0, TerminalGeometry.cells($0)) },
+            minHeight: minHeight.map { max(0, TerminalGeometry.cells($0)) },
+            idealHeight: idealHeight.map { max(0, TerminalGeometry.cells($0)) },
+            maxHeight: maxHeight.map { max(0, TerminalGeometry.cells($0)) },
             alignment: alignment
         )
     }
