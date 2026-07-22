@@ -89,9 +89,9 @@ public enum Edge: Int8, CaseIterable, Sendable {
             self.rawValue = rawValue
         }
 
+        // swiftlint:disable identifier_name
         /// Creates a set containing only the given edge.
         ///
-        // swiftlint:disable identifier_name
         /// The parameter name matches SwiftUI's exact signature.
         ///
         /// - Parameter e: The edge to contain.
