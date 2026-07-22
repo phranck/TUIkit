@@ -5,7 +5,7 @@
     <img alt="i18n" src="https://img.shields.io/badge/i18n-5%20Languages-00d900">
     <img alt="License" src="https://img.shields.io/badge/License-MIT-00b300?style=flat">
     <a href="https://github.com/phranck/TUIkit/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/phranck/TUIkit/ci.yml?branch=main&label=CI&color=009900"></a>
-    <img alt="Tests" src="https://img.shields.io/badge/Tests-1322_passing-005c00">
+    <img alt="Tests" src="https://img.shields.io/badge/Tests-1331_passing-005c00">
 </p>
 
 <img width="1200" height="630" alt="og-image@1x" src="https://github.com/user-attachments/assets/8bf99da8-e87c-4447-b3cb-a6f3f52c6d18" />
@@ -245,7 +245,7 @@ Tests/
 └── TUIkitTests/          Public API and runtime integration
 ```
 
-Test discovery covers 1322 tests across all isolated targets.
+Test discovery covers 1331 tests across all isolated targets.
 
 ## Requirements
 
@@ -260,7 +260,7 @@ sources are vendored as namespaced Swift targets; the package graph contains no 
 - Tests use Swift Testing (`@Test`, `#expect`): run with `swift test`
 - Run the complete local macOS/Linux quality gate with `./scripts/test-linux.sh`
 - Generate the deployable DocC archive with `./scripts/generate-documentation.sh`
-- All 1322 tests run through Swift Testing; suites that isolate shared state run serially
+- All 1331 tests run through Swift Testing; suites that isolate shared state run serially
 - The `Terminal` class handles raw mode and cursor control via POSIX `termios`
 
 ## License
