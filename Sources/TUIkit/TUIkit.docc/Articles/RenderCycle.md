@@ -436,11 +436,40 @@ While the view tree is reconstructed each frame, ``EquatableView`` allows **indi
 
 When a view is wrapped in `.equatable()`, the rendering system:
 
-1. Looks up the cached ``FrameBuffer`` for this view's `ViewIdentity`
-2. Compares the **current view value** with the cached snapshot via `Equatable.==`
-3. Checks that the available **width and height** haven't changed
-4. On **cache hit**: returns the cached buffer and preserves the subtree's State and Observation liveness without evaluating its body
-5. On **cache miss**: renders normally and stores the result
+1. Skips the cache entirely in `.measure` traversals: effect sites are inert during sizing, so a buffer stored there could let the same frame's output pass hit a subtree whose effects never mounted
+2. Looks up the cached ``FrameBuffer`` for this view's `ViewIdentity` — identities classified as **effect-bearing** always miss (see below)
+3. Compares the **current view value** with the cached snapshot via `Equatable.==`
+4. Checks that the available **width and height** and the **environment fingerprint** (foreground style, focus indicator color) haven't changed
+5. On **cache hit**: returns the cached buffer and preserves the subtree's State, Observation, and nested cache-entry liveness without evaluating its body
+6. On **cache miss**: renders normally, classifies the content via the pass's effect-registration probe, and stores the result only when the rendering registered no effects
+
+### Effect-Bearing Subtrees
+
+Content that registers per-pass effects while rendering — key handlers,
+focus registrations (`Button`, `Toggle`, …), focus sections, status-bar
+declarations, preference writes, or lifetime-effect records (`onAppear`,
+`.task`, …) — must reach the frame's collectors on **every** frame; a
+cached buffer would silently drop those registrations at the frame commit.
+
+`EquatableView` therefore snapshots the pass's effect-registration probe
+around every cache-miss rendering. Any delta flags the identity in the
+`RenderCache`: flagged identities never produce hits, so the subtree
+renders each frame and behaves exactly as if it were unwrapped (including
+pulse-animated focus indicators). The classification refreshes on every
+miss, so content that becomes effect-free re-enables caching automatically.
+
+This makes `.equatable()` **safe to apply anywhere**: only provably
+effect-free output is ever served from the cache. On effect-bearing
+subtrees the wrapper simply has no effect.
+
+### Liveness Guarantees
+
+A cache hit keeps every runtime record below the cached root alive without
+traversing the subtree: `@State` boxes, Observation registrations, and
+nested cache entries survive via subtree marking at the frame commit.
+Effect-bearing records (lifecycle slots, tasks, handlers, status-bar items,
+focus registrations) need no such marking — subtrees owning them never hit
+the cache and re-register on every frame.
 
 ```swift
 // A static info box: title and subtitle are the only inputs.
@@ -471,7 +500,8 @@ The runtime applies pending cache invalidations before rendering:
 | `@State` or `@AppStorage` change | Invalidates the owning view subtree |
 | Observed model change | Invalidates the structural subtree that read the dependency |
 | Language change | Requests a full runtime cache clear |
-| Environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
+| Global environment change | `RenderLoop` compares an `EnvironmentSnapshot` (palette ID + appearance ID) each frame and clears on mismatch |
+| Style environment change | Entries store an environment fingerprint (foreground style, focus indicator color) captured at their tree position; a lookup with a differing fingerprint misses and re-renders |
 
 Each runtime owns its own `RenderCache`, so invalidation in one application cannot
 evict another application's cached output. Between invalidations, for example
@@ -485,11 +515,12 @@ during Spinner animation frames, static subtrees are reused across frames.
 | Complex container hierarchies | Many nested views that produce the same output |
 | Views next to animated siblings | Spinner/Pulse re-renders the whole tree; static siblings benefit from caching |
 
-| Bad candidates | Why |
-|---------------|-----|
+| Pointless candidates | Why |
+|---------------------|-----|
 | Views that read `@State` directly | State lives in a reference-type box: the view struct compares as equal even when state changed |
 | Views that change every frame | Cache overhead with no benefit |
 | Tiny views (single `Text`) | Rendering cost is already minimal |
+| Effect-bearing subtrees (interactive controls, lifecycle modifiers, status-bar declarations) | Automatically detected and bypassed — safe, but the wrapper adds nothing |
 
 ### Which Types Support `.equatable()`
 
@@ -503,7 +534,7 @@ The following types have `Equatable` conformance, enabling `.equatable()` on vie
 
 **Supporting types:** `TextStyle`, `Alignment`, `ContainerConfig`, `ContainerStyle`
 
-> Note: `Button` cannot be `Equatable` because it stores a closure (`action: () -> Void`). Views containing buttons are not candidates for `.equatable()`.
+> Note: `Button` cannot be `Equatable` because it stores a closure (`action: () -> Void`). A custom `Equatable` view may still contain buttons — its focus registrations then classify the subtree as effect-bearing, and the cache is bypassed instead of dropping the button's interactivity.
 
 ### Debug Logging
 

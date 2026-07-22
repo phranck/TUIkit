@@ -50,17 +50,39 @@ import TUIkitCore
 ///   so the view struct compares as equal even when state changed)
 /// - Views that change every frame (the cache overhead adds no value)
 /// - Views that depend on environment values that change frequently
-/// - **Views containing focused interactive elements** (Button, Toggle, Slider,
-///   etc.) whose focus indicator animates via pulse phase. The cached buffer
-///   would show a frozen pulse animation.
+///
+/// ## Effect Bypass
+///
+/// Content that registers per-pass effects while rendering — key handlers,
+/// focus registrations (Button, Toggle, …), status-bar declarations,
+/// preference writes, or lifetime-effect records (`onAppear`, `.task`, …) —
+/// must reach the frame's collectors on EVERY frame; serving it from a
+/// cache would silently drop those registrations at the frame commit.
+///
+/// Inside `RenderLoop` frames the wrapper therefore classifies its content
+/// on every cache miss: it snapshots the pass's effect-registration probe
+/// around the rendering, and any delta flags the identity as effect-bearing
+/// in the ``RenderCache``. Flagged identities never produce hits, so the
+/// subtree renders each frame and behaves exactly as if it were unwrapped
+/// (including pulse-animated focus indicators). Only provably effect-free
+/// output is ever served from the cache, making `.equatable()` safe to
+/// apply anywhere — on effect-bearing subtrees it simply has no effect.
+///
+/// Measurement passes (`RenderPhase.measure`) stay out of the cache
+/// entirely: effect sites are inert there, so a buffer stored during
+/// sizing would let the same frame's output pass hit a subtree whose
+/// effects were never recorded, and any classification would measure an
+/// inert traversal.
+///
+/// On the live path (no `RenderLoop`, e.g. `ViewRenderer` or test
+/// harnesses) caching keeps its historical semantics without
+/// classification.
 ///
 /// ## Cache Invalidation
 ///
 /// The render cache is selectively cleared when `@State` values change:
 /// only cache entries in the ancestor/descendant path of the changed state
 /// are invalidated. Sibling subtrees retain their cached buffers.
-/// Pulse animation changes do **not** invalidate the cache, which is why
-/// subtrees containing focused interactive views should not be wrapped.
 ///
 /// - SeeAlso: ``View/equatable()``
 public struct EquatableView<Content: View & Equatable>: View {
@@ -94,12 +116,30 @@ extension EquatableView: Renderable {
             cache.markActive(identity)
         }
 
-        // Cache hit: view unchanged and context size matches
+        // Measurement passes stay out of the cache entirely: effect sites
+        // are inert in `.measure`, so a buffer stored here would let the
+        // same frame's output pass hit a subtree whose effects were never
+        // recorded, and the delta classification below would measure an
+        // inert traversal.
+        if context.phase == .measure {
+            return TUIkitView.renderToBuffer(content, context: context)
+        }
+
+        // Fingerprint of the render-affecting environment at this position
+        // (foreground style, focus indicator, …). Part of the cache key so
+        // an environment change above the wrapper can never serve a stale
+        // buffer. `nil` on the live path.
+        let environmentFingerprint = context.environment.environmentFingerprintProbe?(context.environment)
+
+        // Cache hit: view unchanged, size and environment match, and the
+        // identity is classified effect-free (effect-bearing identities
+        // never hit).
         if let cached = cache.lookup(
             identity: identity,
             view: content,
             contextWidth: context.availableWidth,
-            contextHeight: context.availableHeight
+            contextHeight: context.availableHeight,
+            environmentFingerprint: environmentFingerprint
         ) {
             // Still need to keep runtime records inside the cached subtree
             // active even though its body is not evaluated.
@@ -108,16 +148,27 @@ extension EquatableView: Renderable {
             return cached
         }
 
-        // Cache miss: render normally and store result
+        // Cache miss: render and classify. Any effect registration during
+        // this rendering flags the identity — an effect-bearing subtree
+        // must render every frame so its registrations reach the frame's
+        // collectors. Only provably effect-free output is stored. Without
+        // a probe (live path) the historical semantics apply: always store.
+        let probe = context.environment.effectRegistrationProbe
+        let registrationsBeforeRender = probe?() ?? 0
         let buffer = TUIkitView.renderToBuffer(content, context: context)
+        let carriesEffects = probe.map { $0() != registrationsBeforeRender } ?? false
 
-        cache.store(
-            identity: identity,
-            view: content,
-            buffer: buffer,
-            contextWidth: context.availableWidth,
-            contextHeight: context.availableHeight
-        )
+        cache.setCarriesEffects(carriesEffects, for: identity)
+        if !carriesEffects {
+            cache.store(
+                identity: identity,
+                view: content,
+                buffer: buffer,
+                contextWidth: context.availableWidth,
+                contextHeight: context.availableHeight,
+                environmentFingerprint: environmentFingerprint
+            )
+        }
 
         return buffer
     }
@@ -129,14 +180,16 @@ private extension EquatableView {
     /// Marks the content's runtime records as active for end-of-pass cleanup.
     ///
     /// When returning a cached buffer, the subtree's views aren't visited.
-    /// Their state and Observation identities must still be marked active —
-    /// per pass inside a RenderLoop frame, directly on the live path.
+    /// Their state, Observation, and nested cache identities must still be
+    /// marked active — per pass inside a RenderLoop frame, directly on the
+    /// live path.
     func markSubtreeActive(context: RenderContext) {
         if let pendingEffects = context.environment.pendingFrameEffects {
             pendingEffects.markSubtreeActive(context.identity)
         } else {
             context.environment.stateStorage!.markSubtreeActive(context.identity)
             context.environment.observationRegistry?.markSubtreeActive(context.identity)
+            context.environment.renderCache!.markSubtreeActive(context.identity)
         }
     }
 }

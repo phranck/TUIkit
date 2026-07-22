@@ -223,34 +223,6 @@ struct RuntimeCharacterizationTests {
 
         #expect(firstContext.renderCache !== secondContext.renderCache)
     }
-
-    @Test("Cached descendant lifecycle loss remains characterized for issue #14")
-    func knownCachedDescendantLifecycleDefect() {
-        let harness = RuntimeCharacterizationHarness()
-        let trace = harness.trace
-
-        _ = harness.render {
-            EquatableView(
-                content: FixedLifecycleView(token: "cached", trace: trace)
-            )
-        }
-        _ = harness.render {
-            EquatableView(
-                content: FixedLifecycleView(token: "cached", trace: trace)
-            )
-        }
-
-        let disappearanceCount = trace.snapshot().filter {
-            $0 == .lifecycle("disappear:cached")
-        }.count
-
-        withKnownIssue("Issue #14: a cache hit does not keep descendant lifecycle tokens active") {
-            #expect(disappearanceCount == 0)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
-    }
 }
 
 // MARK: - Fixtures

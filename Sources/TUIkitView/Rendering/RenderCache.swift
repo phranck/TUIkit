@@ -124,17 +124,51 @@ public final class RenderCache: @unchecked Sendable {
         /// The available height when this entry was cached.
         public let contextHeight: Int
 
-        /// Creates a new cache entry.
+        /// The environment fingerprint captured at store time.
+        ///
+        /// Part of the cache key: a lookup with a differing fingerprint
+        /// misses so environment-driven output changes (foreground style,
+        /// focus indicator) never serve a stale buffer. `nil` for entries
+        /// stored on the live path, which only match `nil` lookups.
+        package let environmentFingerprint: EnvironmentFingerprint?
+
+        /// Creates a new cache entry without an environment fingerprint.
         public init(viewSnapshot: Any, buffer: FrameBuffer, contextWidth: Int, contextHeight: Int) {
+            self.init(
+                viewSnapshot: viewSnapshot,
+                buffer: buffer,
+                contextWidth: contextWidth,
+                contextHeight: contextHeight,
+                environmentFingerprint: nil
+            )
+        }
+
+        /// Creates a new cache entry with an environment fingerprint.
+        package init(
+            viewSnapshot: Any,
+            buffer: FrameBuffer,
+            contextWidth: Int,
+            contextHeight: Int,
+            environmentFingerprint: EnvironmentFingerprint?
+        ) {
             self.viewSnapshot = viewSnapshot
             self.buffer = buffer
             self.contextWidth = contextWidth
             self.contextHeight = contextHeight
+            self.environmentFingerprint = environmentFingerprint
         }
     }
 
     /// Cached entries keyed by view identity.
     private var entries: [ViewIdentity: CacheEntry] = [:]
+
+    /// Identities whose content registered per-pass effects while rendering.
+    ///
+    /// Flagged identities never produce cache hits: their subtree must
+    /// render every frame so its effect registrations reach the frame's
+    /// collectors. The classification refreshes on every miss rendering
+    /// and is garbage-collected with the identity.
+    private var effectBearingIdentities: Set<ViewIdentity> = []
 
     /// Identities seen during the current render pass (for garbage collection).
     private var activeIdentities: Set<ViewIdentity> = []
@@ -181,6 +215,38 @@ extension RenderCache {
         contextWidth: Int,
         contextHeight: Int
     ) -> FrameBuffer? {
+        lookup(
+            identity: identity,
+            view: view,
+            contextWidth: contextWidth,
+            contextHeight: contextHeight,
+            environmentFingerprint: nil
+        )
+    }
+
+    /// Looks up a cached buffer, additionally matching the environment
+    /// fingerprint captured when the entry was stored.
+    ///
+    /// - Parameters:
+    ///   - identity: The view's structural identity.
+    ///   - view: The current view value to compare against the snapshot.
+    ///   - contextWidth: The current available width.
+    ///   - contextHeight: The current available height.
+    ///   - environmentFingerprint: The current position's environment
+    ///     fingerprint; must equal the stored one for a hit.
+    /// - Returns: The cached ``FrameBuffer`` if valid, or `nil` on miss.
+    package func lookup<V: Equatable>(
+        identity: ViewIdentity,
+        view: V,
+        contextWidth: Int,
+        contextHeight: Int,
+        environmentFingerprint: EnvironmentFingerprint?
+    ) -> FrameBuffer? {
+        guard !effectBearingIdentities.contains(identity) else {
+            stats.misses += 1
+            logDebug("MISS (carries effects) \(identity.path)")
+            return nil
+        }
         guard let entry = entries[identity] else {
             stats.misses += 1
             logDebug("MISS (no entry) \(identity.path)")
@@ -195,6 +261,11 @@ extension RenderCache {
               entry.contextHeight == contextHeight else {
             stats.misses += 1
             logDebug("MISS (size changed) \(identity.path)")
+            return nil
+        }
+        guard entry.environmentFingerprint == environmentFingerprint else {
+            stats.misses += 1
+            logDebug("MISS (environment changed) \(identity.path)")
             return nil
         }
         guard oldView == view else {
@@ -224,12 +295,42 @@ extension RenderCache {
         contextWidth: Int,
         contextHeight: Int
     ) {
+        store(
+            identity: identity,
+            view: view,
+            buffer: buffer,
+            contextWidth: contextWidth,
+            contextHeight: contextHeight,
+            environmentFingerprint: nil
+        )
+    }
+
+    /// Stores a rendered buffer together with the environment fingerprint
+    /// of the rendering position.
+    ///
+    /// - Parameters:
+    ///   - identity: The view's structural identity.
+    ///   - view: The view value to snapshot for future comparisons.
+    ///   - buffer: The rendered output to cache.
+    ///   - contextWidth: The available width during rendering.
+    ///   - contextHeight: The available height during rendering.
+    ///   - environmentFingerprint: The environment fingerprint to require
+    ///     on future lookups.
+    package func store<V: Equatable>(
+        identity: ViewIdentity,
+        view: V,
+        buffer: FrameBuffer,
+        contextWidth: Int,
+        contextHeight: Int,
+        environmentFingerprint: EnvironmentFingerprint?
+    ) {
         stats.stores += 1
         entries[identity] = CacheEntry(
             viewSnapshot: view,
             buffer: buffer,
             contextWidth: contextWidth,
-            contextHeight: contextHeight
+            contextHeight: contextHeight,
+            environmentFingerprint: environmentFingerprint
         )
         logDebug("STORE \(identity.path)")
     }
@@ -242,6 +343,51 @@ extension RenderCache {
     /// - Parameter identity: The view identity to mark as active.
     public func markActive(_ identity: ViewIdentity) {
         activeIdentities.insert(identity)
+    }
+
+    /// Keeps cache entries below a cached subtree root active without
+    /// traversing the subtree.
+    ///
+    /// On an `EquatableView` cache hit the subtree is skipped, so nested
+    /// entries never mark themselves active and would be swept by
+    /// ``removeInactive()``. Mirrors `StateStorage.markSubtreeActive`:
+    /// every entry at or below the root survives the frame's GC.
+    ///
+    /// - Parameter root: The cached subtree's root identity.
+    package func markSubtreeActive(_ root: ViewIdentity) {
+        activeIdentities.formUnion(entries.keys.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
+    }
+
+    /// Classifies whether an identity's content registered per-pass effects
+    /// while rendering.
+    ///
+    /// Flagging drops any stored buffer and makes every future ``lookup``
+    /// miss, so the subtree renders each frame and its registrations reach
+    /// the frame's collectors. Unflagging (content re-classified as
+    /// effect-free) re-enables normal caching; the caller stores the fresh
+    /// buffer in the same rendering.
+    ///
+    /// - Parameters:
+    ///   - carriesEffects: Whether the content registered effects during
+    ///     its most recent miss rendering.
+    ///   - identity: The view's structural identity.
+    package func setCarriesEffects(_ carriesEffects: Bool, for identity: ViewIdentity) {
+        if carriesEffects {
+            effectBearingIdentities.insert(identity)
+            entries.removeValue(forKey: identity)
+        } else {
+            effectBearingIdentities.remove(identity)
+        }
+    }
+
+    /// Whether the identity is currently classified as effect-bearing.
+    ///
+    /// - Parameter identity: The view's structural identity.
+    /// - Returns: True when ``lookup`` bypasses the cache for this identity.
+    package func carriesEffects(_ identity: ViewIdentity) -> Bool {
+        effectBearingIdentities.contains(identity)
     }
 
     /// Begins a new render pass by clearing the active identity set
@@ -259,6 +405,9 @@ extension RenderCache {
         let staleKeys = entries.keys.filter { !activeIdentities.contains($0) }
         for key in staleKeys {
             entries.removeValue(forKey: key)
+        }
+        effectBearingIdentities = effectBearingIdentities.filter {
+            activeIdentities.contains($0)
         }
     }
 
@@ -297,6 +446,7 @@ extension RenderCache {
     /// Removes all cached entries, resets GC state, and clears statistics.
     public func reset() {
         entries.removeAll()
+        effectBearingIdentities.removeAll()
         activeIdentities.removeAll()
         stats = Stats()
         statsAtFrameStart = Stats()

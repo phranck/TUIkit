@@ -81,6 +81,12 @@ public final class StatusBarState: @unchecked Sendable {
     /// Declarative registrations collected during the current render pass.
     private(set) var passRegistrations: [PassRegistration] = []
 
+    /// Number of declarative registrations recorded by the current pass.
+    ///
+    /// Snapshot around a subtree rendering to detect status-bar
+    /// declarations (see `EnvironmentValues.effectRegistrationProbe`).
+    var passRegistrationCount: Int { passRegistrations.count }
+
     /// The focus manager used to determine the active section.
     ///
     /// Set by `RenderLoop` at the start of each render pass.

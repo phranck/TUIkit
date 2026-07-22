@@ -500,7 +500,7 @@ extension TUIContext {
         for root in pendingEffects.activeSubtreeRoots {
             stateStorage.markSubtreeActive(root)
             observationRegistry.markSubtreeActive(root)
-            renderCache.markActive(root)
+            renderCache.markSubtreeActive(root)
         }
     }
 
