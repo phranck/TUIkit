@@ -257,6 +257,21 @@ extension RenderCache {
         activeIdentities.insert(identity)
     }
 
+    /// Keeps cache entries below a cached subtree root active without
+    /// traversing the subtree.
+    ///
+    /// On an `EquatableView` cache hit the subtree is skipped, so nested
+    /// entries never mark themselves active and would be swept by
+    /// ``removeInactive()``. Mirrors `StateStorage.markSubtreeActive`:
+    /// every entry at or below the root survives the frame's GC.
+    ///
+    /// - Parameter root: The cached subtree's root identity.
+    package func markSubtreeActive(_ root: ViewIdentity) {
+        activeIdentities.formUnion(entries.keys.filter { identity in
+            identity == root || root.isAncestor(of: identity)
+        })
+    }
+
     /// Classifies whether an identity's content registered per-pass effects
     /// while rendering.
     ///

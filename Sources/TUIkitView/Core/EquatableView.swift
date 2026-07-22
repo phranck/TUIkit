@@ -171,14 +171,16 @@ private extension EquatableView {
     /// Marks the content's runtime records as active for end-of-pass cleanup.
     ///
     /// When returning a cached buffer, the subtree's views aren't visited.
-    /// Their state and Observation identities must still be marked active —
-    /// per pass inside a RenderLoop frame, directly on the live path.
+    /// Their state, Observation, and nested cache identities must still be
+    /// marked active — per pass inside a RenderLoop frame, directly on the
+    /// live path.
     func markSubtreeActive(context: RenderContext) {
         if let pendingEffects = context.environment.pendingFrameEffects {
             pendingEffects.markSubtreeActive(context.identity)
         } else {
             context.environment.stateStorage!.markSubtreeActive(context.identity)
             context.environment.observationRegistry?.markSubtreeActive(context.identity)
+            context.environment.renderCache!.markSubtreeActive(context.identity)
         }
     }
 }

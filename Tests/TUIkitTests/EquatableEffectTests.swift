@@ -16,12 +16,9 @@ import TUIkitTestSupport
 /// slots, tasks, key handlers, status-bar items, and focus registrations
 /// reach the frame's collectors on every frame. Measurement passes stay
 /// out of the cache so classification never measures an inert traversal
-/// and the first frame's output pass cannot hit a sizing buffer.
-///
-/// Remaining known issue (Task 3 of issue #14): nested cache entries below
-/// an effect-free cached root are still garbage-collected on the outer
-/// hit; that test keeps its `withKnownIssue` marker until the subtree
-/// liveness lands.
+/// and the first frame's output pass cannot hit a sizing buffer. Nested
+/// cache entries below an effect-free cached root survive outer hits via
+/// `RenderCache.markSubtreeActive`.
 @MainActor
 @Suite("EquatableView Effect Characterization", .serialized)
 struct EquatableEffectTests {
@@ -70,12 +67,7 @@ struct EquatableEffectTests {
         harness.renderFrame()
         harness.renderFrame()
 
-        withKnownIssue("Issue #14: nested cache entries are garbage-collected on the outer hit") {
-            #expect(harness.tuiContext.renderCache.count == 2)
-        } matching: { issue in
-            guard case .expectationFailed = issue.kind else { return false }
-            return true
-        }
+        #expect(harness.tuiContext.renderCache.count == 2)
     }
 }
 
