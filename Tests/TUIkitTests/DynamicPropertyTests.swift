@@ -28,12 +28,19 @@ struct DynamicPropertyTests {
 
     // MARK: - Conformances
 
+    /// Compile-time proof that a type conforms to DynamicProperty.
+    private func requireDynamicProperty<P: DynamicProperty>(_: P.Type) {}
+
     @Test("The built-in property wrappers are DynamicProperty types")
     func builtInWrappersAreDynamicProperties() {
-        #expect(State<Int>.self is any DynamicProperty.Type)
-        #expect(Binding<Int>.self is any DynamicProperty.Type)
-        #expect(Environment<Palette>.self is any DynamicProperty.Type)
-        #expect(AppStorage<Int>.self is any DynamicProperty.Type)
+        // The generic requirements below only compile when each wrapper
+        // conforms; an `is` check would trip the warning-fatal gate with
+        // "'is' test is always true".
+        requireDynamicProperty(State<Int>.self)
+        requireDynamicProperty(Binding<Int>.self)
+        requireDynamicProperty(Environment<Palette>.self)
+        requireDynamicProperty(AppStorage<Int>.self)
+        requireDynamicProperty(Bindable<DynamicPropertyTests>.self)
     }
 
     // MARK: - Nested Hydration
