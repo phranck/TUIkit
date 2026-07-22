@@ -113,8 +113,9 @@ type_name:
   excluded:
     - ID
     # Internal _Core views follow SwiftUI pattern (e.g. _AlertCore, _DialogCore)
-    # _ConditionalContent matches SwiftUI's public builder result type name
+    # _ConditionalContent and _ViewModifier_Content match SwiftUI's public type names
     - _ConditionalContent
+    - _ViewModifier_Content
     - _AlertCore
     - _DialogCore
     - _PanelCore
