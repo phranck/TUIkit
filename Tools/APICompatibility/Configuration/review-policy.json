@@ -26147,6 +26147,66 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit10AppStorageV_5storeACyqd__SgGSS_AA0C7Backend_pSgtcAERszSYRd__Si8RawValueRtd__lufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitCore17EnvironmentValuesV0A0E10scenePhaseAD05SceneF0Ovp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10ScenePhaseO"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10ScenePhaseO10backgroundyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10ScenePhaseO6activeyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10ScenePhaseO8inactiveyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11WindowGroupV4bodys5NeverOvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit12SceneBuilderV15buildExpressionyxxAA0B0RzlFZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit5SceneP4BodyQa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit5SceneP4body4BodyQzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit5ScenePAAE10appearanceyQr0A7Styling10AppearanceVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit5ScenePAAE11environmentyQrs15WritableKeyPathCy0A4Core17EnvironmentValuesVqd__G_qd__tlF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit5ScenePAAE7paletteyQr0A7Styling7Palette_pF"
     }
   ]
 }
