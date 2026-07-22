@@ -9,10 +9,8 @@
 #show: diagram-page
 
 #diagram(
-  spacing: (28pt, 14pt),
-  node-corner-radius: 7pt,
-  node-inset: 9pt,
-  edge-stroke: 1.1pt + colors.edge,
+  spacing: (30pt, 18pt),
+  ..diagram-defaults,
 
   node((0, 0), box-label(
     [1 · Clear Per-Frame State],

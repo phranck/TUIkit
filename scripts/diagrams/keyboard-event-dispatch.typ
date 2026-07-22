@@ -8,10 +8,8 @@
 #show: diagram-page
 
 #diagram(
-  spacing: (30pt, 16pt),
-  node-corner-radius: 7pt,
-  node-inset: 9pt,
-  edge-stroke: 1.1pt + colors.edge,
+  spacing: (32pt, 18pt),
+  ..diagram-defaults,
 
   node((0, 0), box-label(
     [Terminal raw bytes],
@@ -57,7 +55,7 @@
 
   node((0, 9), text(size: 8.5pt, style: "italic")[Event dropped], fill: colors.slate),
 
-  node((1.25, 4.5), box-label(
+  node((1.7, 4.5), box-label(
     [Event consumed],
   ), fill: colors.green-bright, name: <consumed>),
 
@@ -65,20 +63,20 @@
   edge((0, 1), (0, 2), "-|>"),
 
   edge(<gate0>, <layer0>, "-|>", label: elabel[yes], label-side: left),
-  edge(<gate0>, (0.62, 2), (0.62, 3.55), <layer1>, "-|>", label: elabel[no], label-pos: 0.08, label-side: right),
+  edge(<gate0>, (0.58, 2), (0.58, 3.5), <layer1>, "-|>", label: elabel[no], label-pos: 0.06, label-side: right),
 
   edge(<layer0>, <layer1>, "-|>", label: elabel[not consumed], label-side: left),
   edge(<layer1>, <layer2>, "-|>", label: elabel[not consumed], label-side: left),
   edge(<layer2>, <gate3>, "-|>", label: elabel[not consumed], label-side: left),
 
   edge(<gate3>, <layer3>, "-|>", label: elabel[no], label-side: left),
-  edge(<gate3>, (0.62, 6), (0.62, 7.55), <layer4>, "-|>", label: elabel[yes], label-pos: 0.08, label-side: right),
+  edge(<gate3>, (0.58, 6), (0.58, 7.5), <layer4>, "-|>", label: elabel[yes], label-pos: 0.06, label-side: right),
 
   edge(<layer3>, <layer4>, "-|>", label: elabel[not consumed], label-side: left),
   edge(<layer4>, (0, 9), "-|>", label: elabel[not consumed], label-side: left),
 
-  edge(<layer0>, <consumed>, "-|>", label: elabel[consumed], label-pos: 0.25, label-side: right),
-  edge(<layer1>, <consumed>, "-|>", label: elabel[consumed], label-pos: 0.35, label-side: right),
-  edge(<layer2>, <consumed>, "-|>", label: elabel[consumed], label-pos: 0.35, label-side: right),
-  edge(<layer3>, <consumed>, "-|>", label: elabel[consumed], label-pos: 0.25, label-side: right),
+  edge(<layer0>, (1.7, 3), <consumed>, "-|>", label: elabel[consumed], label-pos: 0.28, label-side: left),
+  edge(<layer1>, (1.7, 4), <consumed>, "-|>", label: elabel[consumed], label-pos: 0.3, label-side: left),
+  edge(<layer2>, (1.7, 5), <consumed>, "-|>", label: elabel[consumed], label-pos: 0.3, label-side: left),
+  edge(<layer3>, (1.7, 7), <consumed>, "-|>", label: elabel[consumed], label-pos: 0.28, label-side: left),
 )
