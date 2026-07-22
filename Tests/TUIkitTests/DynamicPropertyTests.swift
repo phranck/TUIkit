@@ -40,7 +40,7 @@ struct DynamicPropertyTests {
         requireDynamicProperty(Binding<Int>.self)
         requireDynamicProperty(Environment<Palette>.self)
         requireDynamicProperty(AppStorage<Int>.self)
-        requireDynamicProperty(Bindable<DynamicPropertyTests>.self)
+        requireDynamicProperty(Bindable<Self>.self)
     }
 
     // MARK: - Nested Hydration
