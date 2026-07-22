@@ -29,7 +29,7 @@ itself stays serialized on the main actor.
 
 Each call to `RenderLoop.render()` executes these steps in order:
 
-@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 12-step render pipeline: Step 1 clear per-frame state (key handlers, preferences, focus, status bar, app header), Step 2 begin lifecycle/state/cache tracking, Step 3 build environment with all subsystem values and services, Step 4 create render context, Step 5 evaluate scene, Step 6 render view tree, Step 7 build output lines, Step 8 begin buffered frame, Step 9 render app header and diff content, Step 10 render status bar, Step 11 flush frame, Step 12 end tracking (lifecycle onDisappear, state GC, cache cleanup).")
+@Image(source: "render-cycle-pipeline.png", alt: "Diagram showing the 12-step render pipeline: Step 1 clear per-frame state (key handlers, preferences, focus staging, status bar, app header), Step 2 begin lifecycle, state, observation, and cache tracking, Step 3 build environment with all subsystem values and services, Step 4 create render context with identity and render phase, Step 5 evaluate scene, Step 6 render view tree (up to three passes recording effects into per-pass collectors), Step 7 build output lines from the clipped cell surface, Step 8 begin buffered frame, Step 9 render app header and diff content, Step 10 render status bar, Step 11 flush frame, Step 12 frame commit and finalize (replay lifetime effects, adopt final pass collectors, lifecycle diff, state GC, observation and cache cleanup).")
 
 ### Step 1: Clear Per-Frame State
 
