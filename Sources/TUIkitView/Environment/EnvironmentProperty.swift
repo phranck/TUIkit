@@ -112,3 +112,7 @@ public struct Environment<Value> {
         }
     }
 }
+
+// MARK: - Dynamic Property Conformance
+
+extension Environment: DynamicProperty {}

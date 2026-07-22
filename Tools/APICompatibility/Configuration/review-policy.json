@@ -21321,16 +21321,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_7storageACyxGx_SSAA0C7Backend_ptcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_ACyxGx_SStcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit10AppStorageV12wrappedValuexvp"
     },
     {
@@ -25877,6 +25867,286 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:10TUIkitView15ModifiedContentVA2A0B0RzAA0B8ModifierR_rlE4bodys5NeverOvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView15DynamicPropertyP"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView15DynamicPropertyP6updateyyF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView15DynamicPropertyPAAE6updateyyF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView5StateV12initialValueACyxGx_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView5StateVAAs23ExpressibleByNilLiteralRzlEACyxGycfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingV13dynamicMemberACyqd__Gs15WritableKeyPathCyxqd__G_tcluip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingV14projectedValueACyxGAE_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASKRzSMRzlE5index6before5IndexSlQzAG_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASKRzSMRzlE9formIndex6beforey0E0SlQzz_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE10startIndex0E0Qzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE5Indexa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE5index5after5IndexQzAG_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE7Elementa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE7Indicesa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE7indices7IndicesQzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE8Iteratora"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE8endIndex0E0Qzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlE9formIndex5aftery0E0Qzz_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAASMRzlEyACy7ElementQzG5IndexQzcip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVAAs12IdentifiableRzlE2id2IDQzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVyACyqd__SgGACyqd__GcADRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVyACys11AnyHashableVGACyqd__GcAERszSHRd__lufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView7BindingVyACyxGSgACyxSgGcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableV12wrappedValuexvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableV14projectedValueACyxGvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableVAARlzC11Observation10ObservableRzlE12wrappedValueACyxGx_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableVAARlzC11Observation10ObservableRzlE14projectedValueACyxGAG_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableVAARlzC11Observation10ObservableRzlEyACyxGxcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableVAARlzClE13dynamicMemberAA7BindingVyqd__Gs24ReferenceWritableKeyPathCyxqd__G_tcluip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView8BindableVAAs12IdentifiableRzlE2id2IDQzvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy10Foundation3URLVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy10Foundation4DataVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy10Foundation4DateVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy20FoundationEssentials3URLVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy20FoundationEssentials4DataVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACy20FoundationEssentials4DateVGAH_SSAA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACySSGSS_SSAA0C7Backend_pSgtcSSRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACySbGSb_SSAA0C7Backend_pSgtcSbRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACySdGSd_SSAA0C7Backend_pSgtcSdRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACySiGSi_SSAA0C7Backend_pSgtcSiRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACyxGx_SSAA0C7Backend_pSgtcSYRzSS03RawE0Rtzlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACyxGx_SSAA0C7Backend_pSgtcSYRzSi03RawE0Rtzlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV12wrappedValue_5storeACyxGx_SSAA0C7Backend_pSgtcSeRzSERzlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy10Foundation3URLVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy10Foundation4DataVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy10Foundation4DateVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy20FoundationEssentials3URLVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy20FoundationEssentials4DataVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACy20FoundationEssentials4DateVSgGSS_AA0C7Backend_pSgtcAHRszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACySSSgGSS_AA0C7Backend_pSgtcAERszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACySbSgGSS_AA0C7Backend_pSgtcAERszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACySdSgGSS_AA0C7Backend_pSgtcAERszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACySiSgGSS_AA0C7Backend_pSgtcAERszlufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACyqd__SgGSS_AA0C7Backend_pSgtcAERszSYRd__SS8RawValueRtd__lufc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10AppStorageV_5storeACyqd__SgGSS_AA0C7Backend_pSgtcAERszSYRd__Si8RawValueRtd__lufc"
     }
   ]
 }

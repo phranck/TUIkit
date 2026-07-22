@@ -83,10 +83,40 @@ ContentView()
     .environment(\.myCustomValue, "custom")
 ```
 
+## @Bindable
+
+``Bindable`` derives bindings from the mutable properties of `@Observable`
+model objects:
+
+```swift
+@Observable
+final class Profile {
+    var name = ""
+}
+
+struct ProfileEditor: View {
+    @Bindable var profile: Profile
+
+    var body: some View {
+        TextField("Name", text: $profile.name)
+    }
+}
+```
+
+## Custom Dynamic Properties
+
+Conform to ``DynamicProperty`` to compose framework wrappers inside your own
+property types. Nested wrappers hydrate with the owning view's identity, and
+`update()` runs before every `body` evaluation.
+
 ## @AppStorage
 
 ``AppStorage`` persists values across app launches using the application's
-runtime-owned storage backend. TUIkit apps use ``JSONFileStorage`` by default:
+runtime-owned storage backend. TUIkit apps use ``JSONFileStorage`` by
+default. SwiftUI's typed initializer families (`Bool`, `Int`, `Double`,
+`String`, `URL`, `Data`, `Date`, raw-representable enums, and their optional
+variants) are available; any other `Codable` value works as an additive
+convenience:
 
 ```swift
 struct SettingsView: View {
@@ -102,7 +132,7 @@ Pass an explicit backend when a property wrapper is created outside the app
 runtime or needs dedicated storage:
 
 ```swift
-@AppStorage("username", storage: MyStorageBackend()) var username = "Guest"
+@AppStorage("username", store: MyStorageBackend()) var username = "Guest"
 ```
 
 An `@AppStorage` property accessed before any runtime hydrates it falls back

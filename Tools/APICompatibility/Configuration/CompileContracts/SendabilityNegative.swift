@@ -2,6 +2,10 @@ import TUIkit
 
 private func requireSendable<Value: Sendable>(_: Value.Type) {}
 
-func rejectNonSendableBinding() {
-    requireSendable(Binding<Int>.self)
+private final class NonSendableModel {
+    var value = 0
+}
+
+func rejectNonSendableValueBinding() {
+    requireSendable(Binding<NonSendableModel>.self)
 }

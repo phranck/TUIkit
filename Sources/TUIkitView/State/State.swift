@@ -314,22 +314,56 @@ public enum StateRegistration {
         withHydration(owner: owner, context: context, block)
     }
 
-    /// Binds direct dynamic-property fields for tests and specialized runtime paths.
+    /// Binds dynamic-property fields for tests and specialized runtime paths.
+    ///
+    /// Walks the owner's stored properties depth-first: framework wrappers
+    /// bind directly, and user-defined ``DynamicProperty`` values are
+    /// descended into so their nested wrappers hydrate with stable,
+    /// declaration-ordered property indices. After a dynamic property's
+    /// subtree is bound, its `update()` runs once.
     package static func bindDynamicProperties<Owner>(
         in owner: Owner,
         context: HydrationContext
     ) {
         var propertyIndex = 0
+        bindDynamicProperties(in: owner, context: context, propertyIndex: &propertyIndex)
+    }
+
+    private static func bindDynamicProperties(
+        in owner: Any,
+        context: HydrationContext,
+        propertyIndex: inout Int
+    ) {
         var mirror: Mirror? = Mirror(reflecting: owner)
 
         while let currentMirror = mirror {
             for child in currentMirror.children {
-                guard let property = child.value as? any RuntimeDynamicProperty else { continue }
-                property.bind(to: context, propertyIndex: propertyIndex)
-                propertyIndex += 1
+                if let property = child.value as? any RuntimeDynamicProperty {
+                    property.bind(to: context, propertyIndex: propertyIndex)
+                    propertyIndex += 1
+                } else if child.value is any DynamicProperty {
+                    bindDynamicProperties(
+                        in: child.value,
+                        context: context,
+                        propertyIndex: &propertyIndex
+                    )
+                }
+
+                if let dynamicProperty = child.value as? any DynamicProperty {
+                    runUpdate(on: dynamicProperty)
+                }
             }
             mirror = currentMirror.superclassMirror
         }
+    }
+
+    /// Runs `update()` on a copy of the property.
+    ///
+    /// Reflection cannot write back into a value-typed owner; framework
+    /// wrappers persist their effects through reference-backed storage.
+    private static func runUpdate<P: DynamicProperty>(on property: P) {
+        var copy = property
+        copy.update()
     }
 
     private static func withHydration<R>(
@@ -375,6 +409,7 @@ public enum StateRegistration {
 /// }
 /// ```
 @propertyWrapper
+@dynamicMemberLookup
 public struct Binding<Value> {
     /// The getter for the value.
     private let getValue: () -> Value
@@ -491,7 +526,31 @@ public struct State<Value> {
         self.defaultValue = wrappedValue
         self.location = StateLocation(defaultValue: wrappedValue)
     }
+
+    /// Creates a state with an initial value.
+    ///
+    /// SwiftUI-compatible spelling of ``init(wrappedValue:)``.
+    ///
+    /// - Parameter value: The initial/default value.
+    public init(initialValue value: Value) {
+        self.init(wrappedValue: value)
+    }
 }
+
+extension State where Value: ExpressibleByNilLiteral {
+    /// Creates state without an initial value, starting at `nil`.
+    ///
+    /// Matches SwiftUI's empty initializer for optional state values.
+    public init() {
+        self.init(wrappedValue: nil)
+    }
+}
+
+// MARK: - Dynamic Property Conformance
+
+extension State: DynamicProperty {}
+
+extension Binding: DynamicProperty {}
 
 // MARK: - Runtime Binding
 
