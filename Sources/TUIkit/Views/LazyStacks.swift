@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - LazyVStack
 
 /// A view that arranges its children in a line that grows vertically,
@@ -35,8 +37,11 @@ public struct LazyVStack<Content: View>: View {
     /// The horizontal alignment of the children.
     public let alignment: HorizontalAlignment
 
-    /// The vertical spacing between children.
-    public let spacing: Int
+    /// The vertical spacing between children, in cells.
+    let spacing: Int
+
+    /// The kinds of child views that pin to the visible bounds.
+    let pinnedViews: PinnedScrollableViews
 
     /// The content of the stack.
     public let content: Content
@@ -45,15 +50,21 @@ public struct LazyVStack<Content: View>: View {
     ///
     /// - Parameters:
     ///   - alignment: The horizontal alignment of children (default: .center).
-    ///   - spacing: The spacing between children in lines (default: 0).
+    ///   - spacing: The spacing between children, or `nil` for the
+    ///     zero-line terminal default. Quantized via ``TerminalGeometry``.
+    ///   - pinnedViews: The kinds of child views that pin to the visible
+    ///     bounds. Accepted for SwiftUI parity; pinning takes effect with
+    ///     true viewport-driven laziness (issue #25).
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: HorizontalAlignment = .center,
-        spacing: Int = 0,
+        spacing: CGFloat? = nil,
+        pinnedViews: PinnedScrollableViews = .init(),
         @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
-        self.spacing = spacing
+        self.spacing = TerminalGeometry.spacing(spacing, default: 0)
+        self.pinnedViews = pinnedViews
         self.content = content()
     }
 
@@ -181,8 +192,11 @@ public struct LazyHStack<Content: View>: View {
     /// The vertical alignment of the children.
     public let alignment: VerticalAlignment
 
-    /// The horizontal spacing between children.
-    public let spacing: Int
+    /// The horizontal spacing between children, in cells.
+    let spacing: Int
+
+    /// The kinds of child views that pin to the visible bounds.
+    let pinnedViews: PinnedScrollableViews
 
     /// The content of the stack.
     public let content: Content
@@ -191,15 +205,21 @@ public struct LazyHStack<Content: View>: View {
     ///
     /// - Parameters:
     ///   - alignment: The vertical alignment of children (default: .center).
-    ///   - spacing: The spacing between children in characters (default: 1).
+    ///   - spacing: The spacing between children, or `nil` for the
+    ///     one-character terminal default. Quantized via ``TerminalGeometry``.
+    ///   - pinnedViews: The kinds of child views that pin to the visible
+    ///     bounds. Accepted for SwiftUI parity; pinning takes effect with
+    ///     true viewport-driven laziness (issue #25).
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: VerticalAlignment = .center,
-        spacing: Int = 1,
+        spacing: CGFloat? = nil,
+        pinnedViews: PinnedScrollableViews = .init(),
         @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
-        self.spacing = spacing
+        self.spacing = TerminalGeometry.spacing(spacing, default: 1)
+        self.pinnedViews = pinnedViews
         self.content = content()
     }
 

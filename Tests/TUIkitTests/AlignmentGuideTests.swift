@@ -24,10 +24,10 @@ struct AlignmentGuideTests {
 
     @Test("Built-in alignments equate by guide identity")
     func builtInAlignmentsEquate() {
-        // swiftlint:disable:next identical_operands
         #expect(HorizontalAlignment.leading == .leading)
         #expect(HorizontalAlignment.leading != .center)
         #expect(VerticalAlignment.top != .bottom)
+        // swiftlint:disable:next identical_operands
         #expect(HorizontalAlignment(OneThird.self) == HorizontalAlignment(OneThird.self))
         #expect(HorizontalAlignment(OneThird.self) != .center)
     }

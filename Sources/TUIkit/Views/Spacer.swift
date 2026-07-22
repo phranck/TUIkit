@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A flexible spacer that fills available space.
 ///
 /// `Spacer` expands along the main axis of its container
@@ -36,9 +38,10 @@ public struct Spacer: View, Equatable {
     /// Creates a spacer with optional minimum length.
     ///
     /// - Parameter minLength: The minimum length. If nil, the
-    ///   spacer expands as much as possible.
-    public init(minLength: Int? = nil) {
-        self.minLength = minLength
+    ///   spacer expands as much as possible. Quantized via
+    ///   ``TerminalGeometry``.
+    public init(minLength: CGFloat? = nil) {
+        self.minLength = minLength.map { max(0, TerminalGeometry.cells($0)) }
     }
 
     public var body: Never {

@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - VStack
 
 /// A view that arranges its children vertically.
@@ -33,8 +35,8 @@ public struct VStack<Content: View>: View {
     /// The horizontal alignment of the children.
     public let alignment: HorizontalAlignment
 
-    /// The vertical spacing between children.
-    public let spacing: Int
+    /// The vertical spacing between children, in cells.
+    let spacing: Int
 
     /// The content of the stack.
     public let content: Content
@@ -43,15 +45,16 @@ public struct VStack<Content: View>: View {
     ///
     /// - Parameters:
     ///   - alignment: The horizontal alignment of children (default: .center, like SwiftUI).
-    ///   - spacing: The spacing between children in lines (default: 0).
+    ///   - spacing: The spacing between children, or `nil` for the
+    ///     zero-line terminal default. Quantized via ``TerminalGeometry``.
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: HorizontalAlignment = .center,
-        spacing: Int = 0,
+        spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
-        self.spacing = spacing
+        self.spacing = TerminalGeometry.spacing(spacing, default: 0)
         self.content = content()
     }
 
