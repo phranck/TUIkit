@@ -254,7 +254,11 @@ extension RenderLoop {
         // replay after the window and stay legitimate.
         tuiContext.appState.beginTraversal()
 
-        let scene = evaluateAppBody(environment: environment)
+        // Scene modifiers apply first (outside-in); a view-level root
+        // palette (`.palette` inside the window content) still wins for
+        // out-of-tree surfaces like the status bar and app header.
+        let evaluatedScene = evaluateAppBody(environment: environment)
+        let scene = SceneResolution.resolve(evaluatedScene, applyingTo: &environment)
         if let paletteOverrideScene = scene as? any RootPaletteOverrideProvidingScene,
            let paletteOverride = paletteOverrideScene.rootPaletteOverride() {
             environment.palette = paletteOverride
@@ -278,7 +282,7 @@ extension RenderLoop {
             )
             measureContext.phase = .measure
             focusManager.beginPass()
-            _ = renderScene(scene, context: measureContext.withChildIdentity(type: type(of: scene)))
+            _ = renderScene(scene, context: sceneContext(scene, base: measureContext))
             focusManager.discardPass()
             appHeaderHeight = measureCollectors.appHeader.height
             isFirstFrame = false
@@ -300,7 +304,7 @@ extension RenderLoop {
         context.hasExplicitHeight = true
 
         focusManager.beginPass()
-        var buffer = renderScene(scene, context: context.withChildIdentity(type: type(of: scene)))
+        var buffer = renderScene(scene, context: sceneContext(scene, base: context))
 
         // If the header height changed after rendering, re-render with the
         // correct height so centering is accurate. The superseded main
@@ -320,7 +324,7 @@ extension RenderLoop {
             correctedContext.hasExplicitWidth = true
             correctedContext.hasExplicitHeight = true
             focusManager.beginPass()
-            buffer = renderScene(scene, context: correctedContext.withChildIdentity(type: type(of: scene)))
+            buffer = renderScene(scene, context: sceneContext(scene, base: correctedContext))
         }
 
         tuiContext.appState.endTraversal()
@@ -523,12 +527,23 @@ private extension RenderLoop {
         lastEnvironmentSnapshot = currentSnapshot
     }
 
-    /// Renders a scene by delegating to `SceneRenderable`.
-    func renderScene<S: Scene>(_ scene: S, context: RenderContext) -> FrameBuffer {
-        if let renderable = scene as? SceneRenderable {
-            return renderable.renderScene(context: context)
-        }
-        return FrameBuffer()
+    /// Renders a resolved scene core.
+    func renderScene(_ scene: (any SceneRenderable)?, context: RenderContext) -> FrameBuffer {
+        scene?.renderScene(context: context) ?? FrameBuffer()
+    }
+
+    /// Extends the identity path with the resolved scene's concrete type.
+    ///
+    /// Opening the existential keeps identity paths byte-identical to the
+    /// pre-modifier era for unwrapped scenes (e.g. `WindowGroup<Content>`).
+    func sceneContext(_ scene: (any SceneRenderable)?, base: RenderContext) -> RenderContext {
+        guard let scene else { return base }
+        return openedSceneContext(scene, base: base)
+    }
+
+    /// Opens the scene existential so the child identity uses its dynamic type.
+    private func openedSceneContext<S: SceneRenderable>(_ scene: S, base: RenderContext) -> RenderContext {
+        base.withChildIdentity(type: S.self)
     }
 
     /// Renders the app header at the specified terminal row.
