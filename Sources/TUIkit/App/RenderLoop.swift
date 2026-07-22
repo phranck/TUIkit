@@ -30,6 +30,34 @@ private struct EnvironmentSnapshot: Equatable {
     }
 }
 
+/// Per-subtree render-affecting environment values included in cache keys.
+///
+/// The subtree analog of ``EnvironmentSnapshot``'s global palette/appearance
+/// clear: these values change a cached subtree's visual output without
+/// changing its `Equatable` view value, so `EquatableView` snapshots them
+/// per position and `RenderCache` misses on mismatch.
+///
+/// Members come from the issue #14 audit: `foregroundStyle` colors any text
+/// below the wrapper; `focusIndicatorColor` drives the pulsing border
+/// indicator inside an active focus section (pulse-derived, so entries
+/// inside an active section refresh every tick instead of freezing).
+/// Everything else read by renderables is either effect-bearing content
+/// (bypassed by classification), globally snapshotted, or deliberately
+/// excluded (`pulsePhase` itself).
+private struct StyleEnvironmentFingerprint: Equatable, Sendable {
+    /// The foreground color set via `.foregroundStyle(_:)`.
+    let foregroundStyle: Color?
+
+    /// The pulse-lerped focus indicator color of the enclosing section.
+    let focusIndicatorColor: Color?
+
+    /// Snapshots the fingerprint members from an environment.
+    init(from environment: EnvironmentValues) {
+        self.foregroundStyle = environment.foregroundStyle
+        self.focusIndicatorColor = environment.focusIndicatorColor
+    }
+}
+
 /// ANSI background codes for each render surface in a frame.
 ///
 /// Keeping these grouped avoids accidentally rendering every surface
@@ -379,6 +407,9 @@ extension RenderLoop {
                 + statusBar.passRegistrationCount
                 + pendingEffects.deferredEffectCount
                 + focusManager.stagedRegistrationCount
+        }
+        environment.environmentFingerprintProbe = { environment in
+            EnvironmentFingerprint(StyleEnvironmentFingerprint(from: environment))
         }
         return environment
     }

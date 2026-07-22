@@ -125,13 +125,21 @@ extension EquatableView: Renderable {
             return TUIkitView.renderToBuffer(content, context: context)
         }
 
-        // Cache hit: view unchanged, size matches, and the identity is
-        // classified effect-free (effect-bearing identities never hit).
+        // Fingerprint of the render-affecting environment at this position
+        // (foreground style, focus indicator, …). Part of the cache key so
+        // an environment change above the wrapper can never serve a stale
+        // buffer. `nil` on the live path.
+        let environmentFingerprint = context.environment.environmentFingerprintProbe?(context.environment)
+
+        // Cache hit: view unchanged, size and environment match, and the
+        // identity is classified effect-free (effect-bearing identities
+        // never hit).
         if let cached = cache.lookup(
             identity: identity,
             view: content,
             contextWidth: context.availableWidth,
-            contextHeight: context.availableHeight
+            contextHeight: context.availableHeight,
+            environmentFingerprint: environmentFingerprint
         ) {
             // Still need to keep runtime records inside the cached subtree
             // active even though its body is not evaluated.
@@ -157,7 +165,8 @@ extension EquatableView: Renderable {
                 view: content,
                 buffer: buffer,
                 contextWidth: context.availableWidth,
-                contextHeight: context.availableHeight
+                contextHeight: context.availableHeight,
+                environmentFingerprint: environmentFingerprint
             )
         }
 

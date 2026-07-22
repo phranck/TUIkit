@@ -124,12 +124,38 @@ public final class RenderCache: @unchecked Sendable {
         /// The available height when this entry was cached.
         public let contextHeight: Int
 
-        /// Creates a new cache entry.
+        /// The environment fingerprint captured at store time.
+        ///
+        /// Part of the cache key: a lookup with a differing fingerprint
+        /// misses so environment-driven output changes (foreground style,
+        /// focus indicator) never serve a stale buffer. `nil` for entries
+        /// stored on the live path, which only match `nil` lookups.
+        package let environmentFingerprint: EnvironmentFingerprint?
+
+        /// Creates a new cache entry without an environment fingerprint.
         public init(viewSnapshot: Any, buffer: FrameBuffer, contextWidth: Int, contextHeight: Int) {
+            self.init(
+                viewSnapshot: viewSnapshot,
+                buffer: buffer,
+                contextWidth: contextWidth,
+                contextHeight: contextHeight,
+                environmentFingerprint: nil
+            )
+        }
+
+        /// Creates a new cache entry with an environment fingerprint.
+        package init(
+            viewSnapshot: Any,
+            buffer: FrameBuffer,
+            contextWidth: Int,
+            contextHeight: Int,
+            environmentFingerprint: EnvironmentFingerprint?
+        ) {
             self.viewSnapshot = viewSnapshot
             self.buffer = buffer
             self.contextWidth = contextWidth
             self.contextHeight = contextHeight
+            self.environmentFingerprint = environmentFingerprint
         }
     }
 
@@ -189,6 +215,33 @@ extension RenderCache {
         contextWidth: Int,
         contextHeight: Int
     ) -> FrameBuffer? {
+        lookup(
+            identity: identity,
+            view: view,
+            contextWidth: contextWidth,
+            contextHeight: contextHeight,
+            environmentFingerprint: nil
+        )
+    }
+
+    /// Looks up a cached buffer, additionally matching the environment
+    /// fingerprint captured when the entry was stored.
+    ///
+    /// - Parameters:
+    ///   - identity: The view's structural identity.
+    ///   - view: The current view value to compare against the snapshot.
+    ///   - contextWidth: The current available width.
+    ///   - contextHeight: The current available height.
+    ///   - environmentFingerprint: The current position's environment
+    ///     fingerprint; must equal the stored one for a hit.
+    /// - Returns: The cached ``FrameBuffer`` if valid, or `nil` on miss.
+    package func lookup<V: Equatable>(
+        identity: ViewIdentity,
+        view: V,
+        contextWidth: Int,
+        contextHeight: Int,
+        environmentFingerprint: EnvironmentFingerprint?
+    ) -> FrameBuffer? {
         guard !effectBearingIdentities.contains(identity) else {
             stats.misses += 1
             logDebug("MISS (carries effects) \(identity.path)")
@@ -208,6 +261,11 @@ extension RenderCache {
               entry.contextHeight == contextHeight else {
             stats.misses += 1
             logDebug("MISS (size changed) \(identity.path)")
+            return nil
+        }
+        guard entry.environmentFingerprint == environmentFingerprint else {
+            stats.misses += 1
+            logDebug("MISS (environment changed) \(identity.path)")
             return nil
         }
         guard oldView == view else {
@@ -237,12 +295,42 @@ extension RenderCache {
         contextWidth: Int,
         contextHeight: Int
     ) {
+        store(
+            identity: identity,
+            view: view,
+            buffer: buffer,
+            contextWidth: contextWidth,
+            contextHeight: contextHeight,
+            environmentFingerprint: nil
+        )
+    }
+
+    /// Stores a rendered buffer together with the environment fingerprint
+    /// of the rendering position.
+    ///
+    /// - Parameters:
+    ///   - identity: The view's structural identity.
+    ///   - view: The view value to snapshot for future comparisons.
+    ///   - buffer: The rendered output to cache.
+    ///   - contextWidth: The available width during rendering.
+    ///   - contextHeight: The available height during rendering.
+    ///   - environmentFingerprint: The environment fingerprint to require
+    ///     on future lookups.
+    package func store<V: Equatable>(
+        identity: ViewIdentity,
+        view: V,
+        buffer: FrameBuffer,
+        contextWidth: Int,
+        contextHeight: Int,
+        environmentFingerprint: EnvironmentFingerprint?
+    ) {
         stats.stores += 1
         entries[identity] = CacheEntry(
             viewSnapshot: view,
             buffer: buffer,
             contextWidth: contextWidth,
-            contextHeight: contextHeight
+            contextHeight: contextHeight,
+            environmentFingerprint: environmentFingerprint
         )
         logDebug("STORE \(identity.path)")
     }

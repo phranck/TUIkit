@@ -79,6 +79,31 @@ struct EquatableEffectTests {
 
         #expect(harness.tuiContext.renderCache.count == 2)
     }
+
+    @Test("Foreground style changes invalidate cached content")
+    func foregroundStyleChangeInvalidatesEntry() {
+        let app = StyledCacheApp()
+        let harness = FrameHarness(app: app)
+
+        harness.renderFrame()
+        harness.renderFrame()
+
+        app.cell.color = .green
+        let statsBeforeChange = harness.tuiContext.renderCache.stats
+        harness.renderFrame()
+        let changeDelta = harness.tuiContext.renderCache.stats.delta(since: statsBeforeChange)
+
+        // The style change must miss and re-render; a hit would serve a
+        // buffer rendered with the previous color.
+        #expect(changeDelta.hits == 0)
+        #expect(changeDelta.stores == 1)
+
+        // With the style stable again, caching resumes.
+        let statsAfterChange = harness.tuiContext.renderCache.stats
+        harness.renderFrame()
+        let steadyDelta = harness.tuiContext.renderCache.stats.delta(since: statsAfterChange)
+        #expect(steadyDelta.hits == 1)
+    }
 }
 
 // MARK: - Fixtures
@@ -150,6 +175,35 @@ private struct CachedFocusApp: App {
     var body: some Scene {
         WindowGroup {
             CachedFocusContent().equatable()
+        }
+    }
+}
+
+/// Mutable foreground color shared between a test and its app fixture.
+@MainActor
+private final class ColorCell {
+    var color: Color = .red
+}
+
+/// Effect-free content whose parent applies a changing foreground style.
+private struct StyledCachedContent: View, Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool { true }
+
+    var body: some View {
+        Text("styled")
+    }
+}
+
+private struct StyledCacheApp: App {
+    let cell = ColorCell()
+
+    init() {}
+
+    var body: some Scene {
+        WindowGroup {
+            StyledCachedContent()
+                .equatable()
+                .foregroundStyle(cell.color)
         }
     }
 }
