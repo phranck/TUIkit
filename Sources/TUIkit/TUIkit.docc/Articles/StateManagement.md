@@ -105,6 +105,20 @@ runtime or needs dedicated storage:
 @AppStorage("username", storage: MyStorageBackend()) var username = "Guest"
 ```
 
+An `@AppStorage` property accessed before any runtime hydrates it falls back
+to volatile in-memory storage: nothing reaches the file system without an
+owning runtime or an explicit backend.
+
+### Persistence Guarantees
+
+``JSONFileStorage`` captures an immutable snapshot for every mutation and
+persists snapshots through one ordered writer, so an older state can never
+overwrite a newer one. `synchronize()` returns only after every previously
+issued write has completed; the runtime flushes storage this way during
+cleanup. Persistence failures are reported as ``StoragePersistenceError``
+values whose reasons are sanitized: they identify the failing step and error
+code, but never contain file paths or stored content.
+
 ## How State Survives Re-Rendering
 
 TUIkit re-evaluates the entire view tree on every frame. When `body` is called, views are

@@ -76,29 +76,84 @@ private func appConfigDirectory() -> URL {
 /// Data is stored in `$XDG_CONFIG_HOME/[appName]/settings.json`
 /// or `~/.config/[appName]/settings.json` as fallback.
 public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
+    /// Persists one serialized snapshot payload to its destination.
+    ///
+    /// The default handler writes atomically to the file system. Tests inject
+    /// recording or failing handlers to assert ordering and error behavior.
+    typealias PersistHandler = @Sendable (_ payload: Data, _ destination: URL) throws -> Void
+
     /// The file URL for the storage file.
     private let fileURL: URL
 
     /// In-memory cache of stored values.
     private var cache: [String: Data] = [:]
 
-    /// Lock for thread safety.
+    /// Lock protecting the in-memory cache.
     private let lock = NSLock()
 
+    /// Serial queue establishing a total order over snapshot writes.
+    ///
+    /// Every mutation enqueues an immutable snapshot of its resulting state.
+    /// Because the queue is serial, an earlier (older) snapshot can never be
+    /// written after (and thereby overwrite) a later one.
+    private let writeQueue = DispatchQueue(label: "work.layered.tuikit.storage-writer")
+
+    /// Writes one serialized payload to disk.
+    private let persist: PersistHandler
+
+    /// Receives every persistence failure this storage encounters.
+    private let onPersistenceFailure: @Sendable (StoragePersistenceError) -> Void
+
     /// Creates a JSON file storage with default location.
-    public init() {
+    ///
+    /// - Parameter onPersistenceFailure: Optional handler receiving sanitized
+    ///   persistence failures. Defaults to logging one line to standard error.
+    public init(
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
         let configDir = appConfigDirectory()
 
         // Create directory if needed
         try? FileManager.default.createDirectory(at: configDir, withIntermediateDirectories: true)
 
         self.fileURL = configDir.appendingPathComponent("settings.json")
+        self.persist = Self.atomicWrite
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
         loadFromDisk()
     }
 
     /// Creates a JSON file storage with a custom file URL.
-    public init(fileURL: URL) {
+    ///
+    /// - Parameters:
+    ///   - fileURL: The destination file for persisted values.
+    ///   - onPersistenceFailure: Optional handler receiving sanitized
+    ///     persistence failures. Defaults to logging one line to standard error.
+    public init(
+        fileURL: URL,
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
         self.fileURL = fileURL
+        self.persist = Self.atomicWrite
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
+        loadFromDisk()
+    }
+
+    /// Creates a storage with an injectable persistence step.
+    ///
+    /// - Parameters:
+    ///   - fileURL: The destination passed to every persist invocation.
+    ///   - persist: Handler receiving each serialized snapshot payload in
+    ///     mutation order on the storage's writer queue.
+    ///   - onPersistenceFailure: Optional handler receiving sanitized
+    ///     persistence failures. Defaults to logging one line to standard error.
+    init(
+        fileURL: URL,
+        persist: @escaping PersistHandler,
+        onPersistenceFailure: (@Sendable (StoragePersistenceError) -> Void)? = nil
+    ) {
+        self.fileURL = fileURL
+        self.persist = persist
+        self.onPersistenceFailure = onPersistenceFailure ?? Self.logFailureToStandardError
         loadFromDisk()
     }
 }
@@ -120,31 +175,23 @@ public extension JSONFileStorage {
     }
 
     func setValue<T: Codable>(_ value: T, forKey key: String) {
-        lock.lock()
-        defer { lock.unlock() }
-
         do {
             let data = try JSONEncoder().encode(value)
-            cache[key] = data
-            saveToDiskAsync()
+            applyAndEnqueueSnapshot { cache in cache[key] = data }
         } catch {
-            // Encoding failed - ignore silently
+            onPersistenceFailure(StoragePersistenceError(operation: .encode, underlying: error))
         }
     }
 
     func removeValue(forKey key: String) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        cache.removeValue(forKey: key)
-        saveToDiskAsync()
+        applyAndEnqueueSnapshot { cache in cache.removeValue(forKey: key) }
     }
 
     func synchronize() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        saveToDiskSync()
+        // An empty synchronous block on the serial writer queue is a true
+        // barrier: it can only run after every previously enqueued snapshot
+        // write has completed.
+        writeQueue.sync {}
     }
 }
 
@@ -169,57 +216,97 @@ private extension JSONFileStorage {
         }
     }
 
-    func saveToDiskAsync() {
-        Task.detached(priority: .utility) { [weak self] in
-            self?.saveToDiskSync()
+    /// Applies a mutation to the cache and enqueues the resulting snapshot.
+    ///
+    /// The mutation and the snapshot copy happen under the lock, so every
+    /// enqueued snapshot is an immutable, consistent image of the state the
+    /// mutation produced. The writer queue then persists snapshots strictly
+    /// in mutation order.
+    ///
+    /// - Parameter mutate: The cache mutation to apply.
+    func applyAndEnqueueSnapshot(_ mutate: (inout [String: Data]) -> Void) {
+        lock.lock()
+        mutate(&cache)
+        let snapshot = cache
+        lock.unlock()
+
+        writeQueue.async { [persist, fileURL, onPersistenceFailure] in
+            Self.persistSnapshot(
+                snapshot,
+                to: fileURL,
+                using: persist,
+                reportingTo: onPersistenceFailure
+            )
         }
     }
 
-    func saveToDiskSync() {
+    /// Serializes one snapshot and hands it to the persist handler.
+    ///
+    /// Runs on the writer queue. Captures only immutable values so pending
+    /// writes complete even if the storage instance is released.
+    ///
+    /// - Parameters:
+    ///   - snapshot: The cache state to persist.
+    ///   - fileURL: The destination file.
+    ///   - persist: The handler performing the actual write.
+    ///   - report: Receiver for sanitized serialization and write failures.
+    static func persistSnapshot(
+        _ snapshot: [String: Data],
+        to fileURL: URL,
+        using persist: PersistHandler,
+        reportingTo report: @Sendable (StoragePersistenceError) -> Void
+    ) {
         // Convert Data values to base64 strings for JSON compatibility
         var serializable: [String: String] = [:]
-        for (key, data) in cache {
+        for (key, data) in snapshot {
             serializable[key] = data.base64EncodedString()
         }
 
+        let payload: Data
         do {
-            let data = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
-            try data.write(to: fileURL, options: .atomic)
+            payload = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
         } catch {
-            // Failed to save - ignore silently
+            report(StoragePersistenceError(operation: .serialize, underlying: error))
+            return
         }
+
+        do {
+            try persist(payload, fileURL)
+        } catch {
+            report(StoragePersistenceError(operation: .write, underlying: error))
+        }
+    }
+
+    /// Default persistence: atomic replacement of the destination file.
+    static let atomicWrite: PersistHandler = { payload, destination in
+        try payload.write(to: destination, options: .atomic)
+    }
+
+    /// Default failure handling: one sanitized line on standard error.
+    static let logFailureToStandardError: @Sendable (StoragePersistenceError) -> Void = { failure in
+        FileHandle.standardError.write(Data("TUIkit: \(failure.description)\n".utf8))
     }
 }
 
-// MARK: - Storage Defaults
+// MARK: - Unbound Fallback
 
-/// Provides the default storage backend for ``AppStorage``.
+/// Process-local fallback for ``AppStorage`` properties accessed outside a
+/// runtime.
 ///
-/// This global compatibility hook is deprecated. `@AppStorage` properties
-/// rendered inside an app bind to that app's runtime backend. Pass an explicit
-/// backend to the property wrapper when code outside a runtime needs one.
+/// Persistent storage is always owned by an app runtime (injected through
+/// `TUIContext`) or passed explicitly to the property wrapper:
 ///
 /// ```swift
 /// @AppStorage("token", storage: MyCustomBackend()) var token = ""
 /// ```
-public enum StorageDefaults {
-    /// Backing storage retained until issue #15 removes the global fallback.
-    nonisolated(unsafe) private static var configuredBackend: StorageBackend = JSONFileStorage()
-
-    /// The default storage backend used by ``AppStorage``.
-    ///
-    /// Defaults to a ``JSONFileStorage`` instance that persists to
-    /// `$XDG_CONFIG_HOME/[appName]/settings.json`.
-    @available(*, deprecated, message: "Pass a StorageBackend to the AppStorage initializer instead")
-    public static var backend: StorageBackend {
-        get { configuredBackend }
-        set { configuredBackend = newValue }
-    }
-
-    /// Legacy fallback used only when AppStorage is accessed outside a runtime.
-    static var runtimeBackend: StorageBackend {
-        configuredBackend
-    }
+///
+/// Code that touches an `@AppStorage` property before any runtime hydrates it
+/// therefore gets deliberately volatile in-memory semantics: nothing reaches
+/// the file system, and no global mutable backend exists that two runtimes
+/// could accidentally share.
+enum UnboundAppStorage {
+    /// Shared volatile backend for unbound property access.
+    static let fallback: StorageBackend = VolatileStorageBackend()
 }
 
 // MARK: - AppStorage Property Wrapper
@@ -378,7 +465,7 @@ private extension AppStorageBox {
         bindToActiveRuntimeIfNeeded()
 
         lock.lock()
-        let storage = explicitStorage ?? runtimeStorage ?? StorageDefaults.runtimeBackend
+        let storage = explicitStorage ?? runtimeStorage ?? UnboundAppStorage.fallback
         let invalidationSink = invalidationSink
         let identity = identity
         lock.unlock()

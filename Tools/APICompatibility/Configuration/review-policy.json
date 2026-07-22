@@ -22576,22 +22576,7 @@
     {
       "action": "tuiSpecific",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit15JSONFileStorageC7fileURLAC10Foundation0E0V_tcfc"
-    },
-    {
-      "action": "tuiSpecific",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit15JSONFileStorageC7fileURLAC20FoundationEssentials0E0V_tcfc"
-    },
-    {
-      "action": "tuiSpecific",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit15JSONFileStorageC8setValue_6forKeyyx_SStSeRzSERzlF"
-    },
-    {
-      "action": "tuiSpecific",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit15JSONFileStorageCACycfc"
     },
     {
       "action": "tuiSpecific",
@@ -23137,16 +23122,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit15RadioButtonItemVyACyxGx_SStcfc"
-    },
-    {
-      "action": "tuiSpecific",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit15StorageDefaultsO"
-    },
-    {
-      "action": "tuiSpecific",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit15StorageDefaultsO7backendAA0B7Backend_pvpZ"
     },
     {
       "action": "implementationLeak",
@@ -25892,6 +25867,66 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:10TUIkitView13RenderContextV5phaseAA0C5PhaseOvp"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit15JSONFileStorageC20onPersistenceFailureACyAA0cE5ErrorVYbcSg_tcfc"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit15JSONFileStorageC7fileURL20onPersistenceFailureAC10Foundation0E0V_yAA0cG5ErrorVYbcSgtcfc"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit15JSONFileStorageC7fileURL20onPersistenceFailureAC20FoundationEssentials0E0V_yAA0cG5ErrorVYbcSgtcfc"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV11descriptionSSvp"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV6reasonSSvp"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9OperationO"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9OperationO5writeyA2EmF"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9OperationO6encodeyA2EmF"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9OperationO8rawValueAESgSS_tcfc"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9OperationO9serializeyA2EmF"
+    },
+    {
+      "action": "tuiSpecific",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit23StoragePersistenceErrorV9operationAC9OperationOvp"
     }
   ]
 }
