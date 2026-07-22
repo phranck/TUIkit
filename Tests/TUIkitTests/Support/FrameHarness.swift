@@ -15,6 +15,9 @@
 /// The default terminal is 40×24 with system status-bar items hidden, so a
 /// frame's content height is `24 − headerHeight` and height-gated fixtures
 /// can distinguish the measurement pass (full 24 rows) from output passes.
+///
+/// Tests that need deterministic services (stub image loaders, injected
+/// clocks, …) pass their own `TUIContext`; by default a fresh one is created.
 @MainActor
 final class FrameHarness<A: App> {
     let app: A
@@ -23,8 +26,7 @@ final class FrameHarness<A: App> {
 
     private let renderLoop: RenderLoop<A>
 
-    init(app: A, width: Int = 40, height: Int = 24) {
-        let tuiContext = TUIContext()
+    init(app: A, width: Int = 40, height: Int = 24, tuiContext: TUIContext = TUIContext()) {
         let terminal = MockTerminal()
         terminal.size = (width, height)
         tuiContext.statusBar.showSystemItems = false
