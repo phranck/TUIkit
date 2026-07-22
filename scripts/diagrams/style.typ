@@ -20,10 +20,22 @@
 
 // Applies page and text defaults for a diagram document.
 #let diagram-page(body) = {
-  set page(width: auto, height: auto, margin: 6pt, fill: none)
+  set page(width: auto, height: auto, margin: 10pt, fill: none)
   set text(font: ("SF Pro Text", "Helvetica Neue"), fill: white)
   body
 }
+
+// Shared diagram defaults: subtle, semi-transparent edges with small arrow
+// heads, and a node outset so arrows keep visible breathing room to every
+// node instead of touching its border. Spread into each diagram call via
+// `..diagram-defaults` and override spacing per diagram as needed.
+#let diagram-defaults = (
+  node-corner-radius: 7pt,
+  node-inset: 10pt,
+  node-outset: 5pt,
+  edge-stroke: 0.7pt + colors.edge.transparentize(25%),
+  mark-scale: 70%,
+)
 
 // A rounded box body: bold title line plus smaller detail lines.
 #let box-label(title, ..lines) = {
