@@ -223,7 +223,6 @@ struct RuntimeCharacterizationTests {
 
         #expect(firstContext.renderCache !== secondContext.renderCache)
     }
-
 }
 
 // MARK: - Fixtures
