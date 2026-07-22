@@ -76,14 +76,30 @@ private func appConfigDirectory() -> URL {
 /// Data is stored in `$XDG_CONFIG_HOME/[appName]/settings.json`
 /// or `~/.config/[appName]/settings.json` as fallback.
 public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
+    /// Persists one serialized snapshot payload to its destination.
+    ///
+    /// The default handler writes atomically to the file system. Tests inject
+    /// recording or failing handlers to assert ordering and error behavior.
+    typealias PersistHandler = @Sendable (_ payload: Data, _ destination: URL) throws -> Void
+
     /// The file URL for the storage file.
     private let fileURL: URL
 
     /// In-memory cache of stored values.
     private var cache: [String: Data] = [:]
 
-    /// Lock for thread safety.
+    /// Lock protecting the in-memory cache.
     private let lock = NSLock()
+
+    /// Serial queue establishing a total order over snapshot writes.
+    ///
+    /// Every mutation enqueues an immutable snapshot of its resulting state.
+    /// Because the queue is serial, an earlier (older) snapshot can never be
+    /// written after (and thereby overwrite) a later one.
+    private let writeQueue = DispatchQueue(label: "work.layered.tuikit.storage-writer")
+
+    /// Writes one serialized payload to disk.
+    private let persist: PersistHandler
 
     /// Creates a JSON file storage with default location.
     public init() {
@@ -93,12 +109,26 @@ public final class JSONFileStorage: StorageBackend, @unchecked Sendable {
         try? FileManager.default.createDirectory(at: configDir, withIntermediateDirectories: true)
 
         self.fileURL = configDir.appendingPathComponent("settings.json")
+        self.persist = Self.atomicWrite
         loadFromDisk()
     }
 
     /// Creates a JSON file storage with a custom file URL.
     public init(fileURL: URL) {
         self.fileURL = fileURL
+        self.persist = Self.atomicWrite
+        loadFromDisk()
+    }
+
+    /// Creates a storage with an injectable persistence step.
+    ///
+    /// - Parameters:
+    ///   - fileURL: The destination passed to every persist invocation.
+    ///   - persist: Handler receiving each serialized snapshot payload in
+    ///     mutation order on the storage's writer queue.
+    init(fileURL: URL, persist: @escaping PersistHandler) {
+        self.fileURL = fileURL
+        self.persist = persist
         loadFromDisk()
     }
 }
@@ -120,31 +150,23 @@ public extension JSONFileStorage {
     }
 
     func setValue<T: Codable>(_ value: T, forKey key: String) {
-        lock.lock()
-        defer { lock.unlock() }
-
         do {
             let data = try JSONEncoder().encode(value)
-            cache[key] = data
-            saveToDiskAsync()
+            applyAndEnqueueSnapshot { cache in cache[key] = data }
         } catch {
             // Encoding failed - ignore silently
         }
     }
 
     func removeValue(forKey key: String) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        cache.removeValue(forKey: key)
-        saveToDiskAsync()
+        applyAndEnqueueSnapshot { cache in cache.removeValue(forKey: key) }
     }
 
     func synchronize() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        saveToDiskSync()
+        // An empty synchronous block on the serial writer queue is a true
+        // barrier: it can only run after every previously enqueued snapshot
+        // write has completed.
+        writeQueue.sync {}
     }
 }
 
@@ -169,25 +191,56 @@ private extension JSONFileStorage {
         }
     }
 
-    func saveToDiskAsync() {
-        Task.detached(priority: .utility) { [weak self] in
-            self?.saveToDiskSync()
+    /// Applies a mutation to the cache and enqueues the resulting snapshot.
+    ///
+    /// The mutation and the snapshot copy happen under the lock, so every
+    /// enqueued snapshot is an immutable, consistent image of the state the
+    /// mutation produced. The writer queue then persists snapshots strictly
+    /// in mutation order.
+    ///
+    /// - Parameter mutate: The cache mutation to apply.
+    func applyAndEnqueueSnapshot(_ mutate: (inout [String: Data]) -> Void) {
+        lock.lock()
+        mutate(&cache)
+        let snapshot = cache
+        lock.unlock()
+
+        writeQueue.async { [persist, fileURL] in
+            Self.persistSnapshot(snapshot, to: fileURL, using: persist)
         }
     }
 
-    func saveToDiskSync() {
+    /// Serializes one snapshot and hands it to the persist handler.
+    ///
+    /// Runs on the writer queue. Captures only immutable values so pending
+    /// writes complete even if the storage instance is released.
+    ///
+    /// - Parameters:
+    ///   - snapshot: The cache state to persist.
+    ///   - fileURL: The destination file.
+    ///   - persist: The handler performing the actual write.
+    static func persistSnapshot(
+        _ snapshot: [String: Data],
+        to fileURL: URL,
+        using persist: PersistHandler
+    ) {
         // Convert Data values to base64 strings for JSON compatibility
         var serializable: [String: String] = [:]
-        for (key, data) in cache {
+        for (key, data) in snapshot {
             serializable[key] = data.base64EncodedString()
         }
 
         do {
-            let data = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
-            try data.write(to: fileURL, options: .atomic)
+            let payload = try JSONSerialization.data(withJSONObject: serializable, options: .prettyPrinted)
+            try persist(payload, fileURL)
         } catch {
             // Failed to save - ignore silently
         }
+    }
+
+    /// Default persistence: atomic replacement of the destination file.
+    static let atomicWrite: PersistHandler = { payload, destination in
+        try payload.write(to: destination, options: .atomic)
     }
 }
 
