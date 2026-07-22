@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A modal dialog view with a title, customizable content, and optional footer.
 ///
 /// `Dialog` is more flexible than `Alert` — it accepts any content,

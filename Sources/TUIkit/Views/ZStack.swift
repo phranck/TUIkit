@@ -87,11 +87,7 @@ private struct _ZStackCore<Content: View>: View, Renderable {
         content: Int,
         alignment: HorizontalAlignment
     ) -> Int {
-        switch alignment {
-        case .leading: return 0
-        case .center: return max(0, (available - content) / 2)
-        case .trailing: return max(0, available - content)
-        }
+        alignment.cellOffset(childWidth: content, containerWidth: available)
     }
 
     private func offset(
@@ -99,11 +95,7 @@ private struct _ZStackCore<Content: View>: View, Renderable {
         content: Int,
         alignment: VerticalAlignment
     ) -> Int {
-        switch alignment {
-        case .top: return 0
-        case .center: return max(0, (available - content) / 2)
-        case .bottom: return max(0, available - content)
-        }
+        alignment.cellOffset(childHeight: content, containerHeight: available)
     }
 }
 

@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A padded, optionally titled container with background support.
 ///
 /// `Card` is the most feature-rich of the simple containers. It combines

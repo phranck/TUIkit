@@ -46,27 +46,27 @@ struct EdgeInsetsTests {
 @Suite("Edge Tests")
 struct EdgeTests {
 
-    @Test("Edge.all contains all edges")
+    @Test("Edge.Set.all contains all edges")
     func edgeAll() {
-        #expect(Edge.all.contains(.top))
-        #expect(Edge.all.contains(.leading))
-        #expect(Edge.all.contains(.bottom))
-        #expect(Edge.all.contains(.trailing))
+        #expect(Edge.Set.all.contains(.top))
+        #expect(Edge.Set.all.contains(.leading))
+        #expect(Edge.Set.all.contains(.bottom))
+        #expect(Edge.Set.all.contains(.trailing))
     }
 
-    @Test("Edge.horizontal contains leading and trailing")
+    @Test("Edge.Set.horizontal contains leading and trailing")
     func edgeHorizontal() {
-        #expect(Edge.horizontal.contains(.leading))
-        #expect(Edge.horizontal.contains(.trailing))
-        #expect(!Edge.horizontal.contains(.top))
-        #expect(!Edge.horizontal.contains(.bottom))
+        #expect(Edge.Set.horizontal.contains(.leading))
+        #expect(Edge.Set.horizontal.contains(.trailing))
+        #expect(!Edge.Set.horizontal.contains(.top))
+        #expect(!Edge.Set.horizontal.contains(.bottom))
     }
 
-    @Test("Edge.vertical contains top and bottom")
+    @Test("Edge.Set.vertical contains top and bottom")
     func edgeVertical() {
-        #expect(Edge.vertical.contains(.top))
-        #expect(Edge.vertical.contains(.bottom))
-        #expect(!Edge.vertical.contains(.leading))
-        #expect(!Edge.vertical.contains(.trailing))
+        #expect(Edge.Set.vertical.contains(.top))
+        #expect(Edge.Set.vertical.contains(.bottom))
+        #expect(!Edge.Set.vertical.contains(.leading))
+        #expect(!Edge.Set.vertical.contains(.trailing))
     }
 }

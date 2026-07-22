@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A stub modifier for list row separators.
 ///
 /// This modifier exists for SwiftUI API compatibility but has no visual effect

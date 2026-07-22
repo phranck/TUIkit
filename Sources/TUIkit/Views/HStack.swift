@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - HStack
 
 /// A view that arranges its children horizontally.
@@ -31,8 +33,8 @@ public struct HStack<Content: View>: View {
     /// The vertical alignment of the children.
     public let alignment: VerticalAlignment
 
-    /// The horizontal spacing between children.
-    public let spacing: Int
+    /// The horizontal spacing between children, in cells.
+    let spacing: Int
 
     /// The content of the stack.
     public let content: Content
@@ -41,15 +43,16 @@ public struct HStack<Content: View>: View {
     ///
     /// - Parameters:
     ///   - alignment: The vertical alignment of children (default: .center).
-    ///   - spacing: The spacing between children in characters (default: 1).
+    ///   - spacing: The spacing between children, or `nil` for the
+    ///     one-character terminal default. Quantized via `TerminalGeometry`.
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: VerticalAlignment = .center,
-        spacing: Int = 1,
+        spacing: CGFloat? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.alignment = alignment
-        self.spacing = spacing
+        self.spacing = TerminalGeometry.spacing(spacing, default: 1)
         self.content = content()
     }
 
