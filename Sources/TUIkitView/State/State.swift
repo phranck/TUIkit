@@ -409,6 +409,7 @@ public enum StateRegistration {
 /// }
 /// ```
 @propertyWrapper
+@dynamicMemberLookup
 public struct Binding<Value> {
     /// The getter for the value.
     private let getValue: () -> Value
