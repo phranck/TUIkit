@@ -388,6 +388,10 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
     }
 }
 
+// MARK: - Dynamic Property Conformance
+
+extension AppStorage: DynamicProperty {}
+
 // MARK: - App Storage Box
 
 /// Reference storage that binds AppStorage to its first rendering runtime.
