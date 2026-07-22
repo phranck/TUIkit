@@ -51,7 +51,7 @@ public struct LazyVStack<Content: View>: View {
     /// - Parameters:
     ///   - alignment: The horizontal alignment of children (default: .center).
     ///   - spacing: The spacing between children, or `nil` for the
-    ///     zero-line terminal default. Quantized via ``TerminalGeometry``.
+    ///     zero-line terminal default. Quantized via `TerminalGeometry`.
     ///   - pinnedViews: The kinds of child views that pin to the visible
     ///     bounds. Accepted for SwiftUI parity; pinning takes effect with
     ///     true viewport-driven laziness (issue #25).
@@ -206,7 +206,7 @@ public struct LazyHStack<Content: View>: View {
     /// - Parameters:
     ///   - alignment: The vertical alignment of children (default: .center).
     ///   - spacing: The spacing between children, or `nil` for the
-    ///     one-character terminal default. Quantized via ``TerminalGeometry``.
+    ///     one-character terminal default. Quantized via `TerminalGeometry`.
     ///   - pinnedViews: The kinds of child views that pin to the visible
     ///     bounds. Accepted for SwiftUI parity; pinning takes effect with
     ///     true viewport-driven laziness (issue #25).

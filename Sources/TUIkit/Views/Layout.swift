@@ -16,7 +16,7 @@ import Foundation
 ///
 /// Matches SwiftUI's shape: `nil` components ask for the ideal size.
 /// The renderer quantizes accepted proposals to whole cells through
-/// ``TerminalGeometry``.
+/// `TerminalGeometry`.
 public struct ProposedViewSize: Equatable, Sendable {
     /// The proposed width, or `nil` for the ideal width.
     public var width: CGFloat?

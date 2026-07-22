@@ -9,7 +9,7 @@ import Foundation
 /// The inset distances for the sides of a rectangle.
 ///
 /// Matches SwiftUI's `CGFloat`-based shape; the renderer quantizes each
-/// side to whole cells through ``TerminalGeometry`` (negative values
+/// side to whole cells through `TerminalGeometry` (negative values
 /// degrade to zero).
 public struct EdgeInsets: Sendable, Equatable {
     /// Padding above the content.

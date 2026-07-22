@@ -39,7 +39,7 @@ public struct Spacer: View, Equatable {
     ///
     /// - Parameter minLength: The minimum length. If nil, the
     ///   spacer expands as much as possible. Quantized via
-    ///   ``TerminalGeometry``.
+    ///   `TerminalGeometry`.
     public init(minLength: CGFloat? = nil) {
         self.minLength = minLength.map { max(0, TerminalGeometry.cells($0)) }
     }

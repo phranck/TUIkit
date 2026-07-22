@@ -46,7 +46,7 @@ public struct VStack<Content: View>: View {
     /// - Parameters:
     ///   - alignment: The horizontal alignment of children (default: .center, like SwiftUI).
     ///   - spacing: The spacing between children, or `nil` for the
-    ///     zero-line terminal default. Quantized via ``TerminalGeometry``.
+    ///     zero-line terminal default. Quantized via `TerminalGeometry`.
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: HorizontalAlignment = .center,

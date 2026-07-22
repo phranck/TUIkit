@@ -44,7 +44,7 @@ public struct HStack<Content: View>: View {
     /// - Parameters:
     ///   - alignment: The vertical alignment of children (default: .center).
     ///   - spacing: The spacing between children, or `nil` for the
-    ///     one-character terminal default. Quantized via ``TerminalGeometry``.
+    ///     one-character terminal default. Quantized via `TerminalGeometry`.
     ///   - content: A ViewBuilder that defines the children.
     public init(
         alignment: VerticalAlignment = .center,

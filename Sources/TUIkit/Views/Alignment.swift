@@ -146,7 +146,7 @@ extension HorizontalAlignment {
     /// Returns the child's leading cell offset inside a container.
     ///
     /// Aligns the child's guide with the container's guide and quantizes
-    /// with ``TerminalGeometry`` so macOS and Linux produce identical
+    /// with `TerminalGeometry` so macOS and Linux produce identical
     /// layouts. The result is clamped to keep the child inside the
     /// container.
     ///

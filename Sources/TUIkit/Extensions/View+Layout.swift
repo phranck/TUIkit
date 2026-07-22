@@ -248,7 +248,7 @@ extension View {
     /// Matches SwiftUI's signature. In a terminal context, 1 unit of
     /// padding means one line vertically and one character horizontally;
     /// `nil` uses the terminal default of one cell. Fractional lengths
-    /// quantize through ``TerminalGeometry``.
+    /// quantize through `TerminalGeometry`.
     ///
     /// ```swift
     /// Text("Hello")
