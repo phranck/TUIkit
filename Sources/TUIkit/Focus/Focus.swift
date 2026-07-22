@@ -87,6 +87,15 @@ public final class FocusManager: @unchecked Sendable {
     /// semantics.
     private var isCollectingPass = false
 
+    /// Number of focusables staged by the current collecting pass.
+    ///
+    /// Snapshot around a subtree rendering to detect focus registrations
+    /// (see `EnvironmentValues.effectRegistrationProbe`). Zero outside a
+    /// collecting pass.
+    var stagedRegistrationCount: Int {
+        stagedSections.reduce(0) { $0 + $1.focusables.count }
+    }
+
     /// Creates a new focus manager instance.
     public init() {}
 

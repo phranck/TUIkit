@@ -98,6 +98,14 @@ public final class PreferenceStorage: @unchecked Sendable {
     /// Stack of preference values for nested rendering.
     private var stack: [PreferenceValues] = [PreferenceValues()]
 
+    /// Monotonic count of preference writes over this storage's lifetime.
+    ///
+    /// Never reset between passes: per-pass scratch storages start at zero,
+    /// so snapshotting the counter around a subtree rendering reveals
+    /// whether that subtree declared any preference (see
+    /// `EnvironmentValues.effectRegistrationProbe`).
+    package private(set) var writeCount = 0
+
     /// Creates a new preference storage.
     public init() {}
 
@@ -140,6 +148,7 @@ public extension PreferenceStorage {
 
     /// Sets a preference value.
     func setValue<K: PreferenceKey>(_ value: K.Value, forKey key: K.Type) {
+        writeCount += 1
         var currentValues = current
         K.reduce(value: &currentValues[key]) { value }
         current = currentValues

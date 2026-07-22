@@ -349,6 +349,11 @@ extension RenderLoop {
     /// All other services (state storage, lifecycle, focus queries, palette,
     /// …) stay on the live runtime.
     ///
+    /// The environment also carries the pass's effect-registration probe:
+    /// a closure summing every effect sink of this pass, which
+    /// `EquatableView` snapshots around a cache-miss rendering to decide
+    /// whether the subtree is effect-free and safe to memoize.
+    ///
     /// - Parameters:
     ///   - base: The frame's live environment.
     ///   - collectors: The scratch collectors of the current pass.
@@ -363,6 +368,18 @@ extension RenderLoop {
         environment.statusBar = collectors.statusBar
         environment.appHeader = collectors.appHeader
         environment.pendingFrameEffects = collectors.pendingEffects
+        let keyEventDispatcher = collectors.keyEventDispatcher
+        let preferences = collectors.preferences
+        let statusBar = collectors.statusBar
+        let pendingEffects = collectors.pendingEffects
+        let focusManager = focusManager
+        environment.effectRegistrationProbe = {
+            keyEventDispatcher.handlerCount
+                + preferences.writeCount
+                + statusBar.passRegistrationCount
+                + pendingEffects.deferredEffectCount
+                + focusManager.stagedRegistrationCount
+        }
         return environment
     }
 }

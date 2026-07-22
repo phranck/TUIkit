@@ -136,6 +136,14 @@ public final class RenderCache: @unchecked Sendable {
     /// Cached entries keyed by view identity.
     private var entries: [ViewIdentity: CacheEntry] = [:]
 
+    /// Identities whose content registered per-pass effects while rendering.
+    ///
+    /// Flagged identities never produce cache hits: their subtree must
+    /// render every frame so its effect registrations reach the frame's
+    /// collectors. The classification refreshes on every miss rendering
+    /// and is garbage-collected with the identity.
+    private var effectBearingIdentities: Set<ViewIdentity> = []
+
     /// Identities seen during the current render pass (for garbage collection).
     private var activeIdentities: Set<ViewIdentity> = []
 
@@ -181,6 +189,11 @@ extension RenderCache {
         contextWidth: Int,
         contextHeight: Int
     ) -> FrameBuffer? {
+        guard !effectBearingIdentities.contains(identity) else {
+            stats.misses += 1
+            logDebug("MISS (carries effects) \(identity.path)")
+            return nil
+        }
         guard let entry = entries[identity] else {
             stats.misses += 1
             logDebug("MISS (no entry) \(identity.path)")
@@ -244,6 +257,36 @@ extension RenderCache {
         activeIdentities.insert(identity)
     }
 
+    /// Classifies whether an identity's content registered per-pass effects
+    /// while rendering.
+    ///
+    /// Flagging drops any stored buffer and makes every future ``lookup``
+    /// miss, so the subtree renders each frame and its registrations reach
+    /// the frame's collectors. Unflagging (content re-classified as
+    /// effect-free) re-enables normal caching; the caller stores the fresh
+    /// buffer in the same rendering.
+    ///
+    /// - Parameters:
+    ///   - carriesEffects: Whether the content registered effects during
+    ///     its most recent miss rendering.
+    ///   - identity: The view's structural identity.
+    package func setCarriesEffects(_ carriesEffects: Bool, for identity: ViewIdentity) {
+        if carriesEffects {
+            effectBearingIdentities.insert(identity)
+            entries.removeValue(forKey: identity)
+        } else {
+            effectBearingIdentities.remove(identity)
+        }
+    }
+
+    /// Whether the identity is currently classified as effect-bearing.
+    ///
+    /// - Parameter identity: The view's structural identity.
+    /// - Returns: True when ``lookup`` bypasses the cache for this identity.
+    package func carriesEffects(_ identity: ViewIdentity) -> Bool {
+        effectBearingIdentities.contains(identity)
+    }
+
     /// Begins a new render pass by clearing the active identity set
     /// and snapshotting the current stats for per-frame delta calculation.
     public func beginRenderPass() {
@@ -259,6 +302,9 @@ extension RenderCache {
         let staleKeys = entries.keys.filter { !activeIdentities.contains($0) }
         for key in staleKeys {
             entries.removeValue(forKey: key)
+        }
+        effectBearingIdentities = effectBearingIdentities.filter {
+            activeIdentities.contains($0)
         }
     }
 
@@ -297,6 +343,7 @@ extension RenderCache {
     /// Removes all cached entries, resets GC state, and clears statistics.
     public func reset() {
         entries.removeAll()
+        effectBearingIdentities.removeAll()
         activeIdentities.removeAll()
         stats = Stats()
         statsAtFrameStart = Stats()
