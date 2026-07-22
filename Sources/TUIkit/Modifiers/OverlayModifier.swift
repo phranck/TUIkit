@@ -57,26 +57,16 @@ extension OverlayModifier: Renderable {
         let overlayHeight = overlayBuffer.height
 
         // Calculate horizontal position
-        let horizontalOffset: Int
-        switch alignment.horizontal {
-        case .leading:
-            horizontalOffset = 0
-        case .center:
-            horizontalOffset = max(0, (baseWidth - overlayWidth) / 2)
-        case .trailing:
-            horizontalOffset = max(0, baseWidth - overlayWidth)
-        }
+        let horizontalOffset = alignment.horizontal.cellOffset(
+            childWidth: overlayWidth,
+            containerWidth: baseWidth
+        )
 
         // Calculate vertical position
-        let verticalOffset: Int
-        switch alignment.vertical {
-        case .top:
-            verticalOffset = 0
-        case .center:
-            verticalOffset = max(0, (baseHeight - overlayHeight) / 2)
-        case .bottom:
-            verticalOffset = max(0, baseHeight - overlayHeight)
-        }
+        let verticalOffset = alignment.vertical.cellOffset(
+            childHeight: overlayHeight,
+            containerHeight: baseHeight
+        )
 
         // Composite the overlay onto the base
         return baseBuffer.composited(with: overlayBuffer, at: (x: horizontalOffset, y: verticalOffset))

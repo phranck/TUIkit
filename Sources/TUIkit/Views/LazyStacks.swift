@@ -132,15 +132,10 @@ private struct _LazyVStackCore<Content: View>: View, Renderable {
 
         var alignedLines: [String] = []
 
-        let bufferOffset: Int
-        switch alignment {
-        case .leading:
-            bufferOffset = 0
-        case .center:
-            bufferOffset = (width - buffer.width) / 2
-        case .trailing:
-            bufferOffset = width - buffer.width
-        }
+        let bufferOffset = alignment.cellOffset(
+            childWidth: buffer.width,
+            containerWidth: width
+        )
 
         let leftPadding = String(repeating: " ", count: bufferOffset)
         let rightPaddingCount = width - bufferOffset - buffer.width

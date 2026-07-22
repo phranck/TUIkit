@@ -429,16 +429,9 @@ private struct _TableCore<Value: Identifiable & Sendable>: View, Renderable wher
         let visibleLength = text.strippedLength
         let padding = max(0, width - visibleLength)
 
-        switch alignment {
-        case .leading:
-            return text + String(repeating: " ", count: padding)
-        case .center:
-            let leftPad = padding / 2
-            let rightPad = padding - leftPad
-            return String(repeating: " ", count: leftPad) + text + String(repeating: " ", count: rightPad)
-        case .trailing:
-            return String(repeating: " ", count: padding) + text
-        }
+        let leftPad = alignment.cellOffset(childWidth: visibleLength, containerWidth: width)
+        let rightPad = padding - leftPad
+        return String(repeating: " ", count: leftPad) + text + String(repeating: " ", count: rightPad)
     }
 }
 

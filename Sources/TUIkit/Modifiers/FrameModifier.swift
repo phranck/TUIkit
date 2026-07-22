@@ -152,15 +152,10 @@ extension FlexibleFrameView: Renderable {
         var result: [String] = []
 
         // Calculate vertical offset for alignment
-        let verticalOffset: Int
-        switch alignment.vertical {
-        case .top:
-            verticalOffset = 0
-        case .center:
-            verticalOffset = max(0, (targetHeight - buffer.height) / 2)
-        case .bottom:
-            verticalOffset = max(0, targetHeight - buffer.height)
-        }
+        let verticalOffset = alignment.vertical.cellOffset(
+            childHeight: buffer.height,
+            containerHeight: targetHeight
+        )
 
         for row in 0..<targetHeight {
             let contentRow = row - verticalOffset
@@ -189,15 +184,11 @@ extension FlexibleFrameView: Renderable {
 
         let padding = targetWidth - visibleWidth
 
-        switch alignment.horizontal {
-        case .leading:
-            return line + String(repeating: " ", count: padding)
-        case .center:
-            let left = padding / 2
-            let right = padding - left
-            return String(repeating: " ", count: left) + line + String(repeating: " ", count: right)
-        case .trailing:
-            return String(repeating: " ", count: padding) + line
-        }
+        let left = alignment.horizontal.cellOffset(
+            childWidth: visibleWidth,
+            containerWidth: targetWidth
+        )
+        let right = padding - left
+        return String(repeating: " ", count: left) + line + String(repeating: " ", count: right)
     }
 }
