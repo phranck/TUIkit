@@ -297,7 +297,7 @@ private extension JSONFileStorage {
 /// `TUIContext`) or passed explicitly to the property wrapper:
 ///
 /// ```swift
-/// @AppStorage("token", storage: MyCustomBackend()) var token = ""
+/// @AppStorage("token", store: MyCustomBackend()) var token = ""
 /// ```
 ///
 /// Code that touches an `@AppStorage` property before any runtime hydrates it
@@ -335,41 +335,22 @@ enum UnboundAppStorage {
 ///
 /// # Supported Types
 ///
-/// Any type that conforms to `Codable`:
-/// - String, Int, Double, Bool
-/// - Date, Data, URL
-/// - Arrays and Dictionaries of Codable types
-/// - Custom Codable structs and enums
+/// SwiftUI's initializer families cover `Bool`, `Int`, `Double`, `String`,
+/// `URL`, `Data`, `Date`, `RawRepresentable` values with `String` or `Int`
+/// raw values, and their optional variants. As an additive terminal
+/// convenience, any `Codable` value is supported as well.
+///
+/// The `store` parameter accepts a ``StorageBackend`` instead of SwiftUI's
+/// `UserDefaults`, which has no terminal equivalent; passing `nil` uses the
+/// owning runtime's injected backend.
 @propertyWrapper
-public struct AppStorage<Value: Codable>: @unchecked Sendable {
+public struct AppStorage<Value>: @unchecked Sendable {
     /// Reference storage that captures the first runtime owning this property.
     private let box: AppStorageBox<Value>
 
-    /// Creates an AppStorage with the default storage backend.
-    ///
-    /// - Parameters:
-    ///   - wrappedValue: The default value.
-    ///   - key: The key to use for storage.
-    public init(wrappedValue: Value, _ key: String) {
-        self.box = AppStorageBox(
-            key: key,
-            defaultValue: wrappedValue,
-            explicitStorage: nil
-        )
-    }
-
-    /// Creates an AppStorage with a custom storage backend.
-    ///
-    /// - Parameters:
-    ///   - wrappedValue: The default value.
-    ///   - key: The key to use for storage.
-    ///   - storage: The storage backend to use.
-    public init(wrappedValue: Value, _ key: String, storage: StorageBackend) {
-        self.box = AppStorageBox(
-            key: key,
-            defaultValue: wrappedValue,
-            explicitStorage: storage
-        )
+    /// Creates a wrapper around prepared reference storage.
+    fileprivate init(box: AppStorageBox<Value>) {
+        self.box = box
     }
 
     /// The current value.
@@ -388,6 +369,246 @@ public struct AppStorage<Value: Codable>: @unchecked Sendable {
     }
 }
 
+// MARK: - Codable Convenience
+
+extension AppStorage {
+    /// Creates a property that can read and write any Codable value.
+    ///
+    /// Additive terminal convenience beyond SwiftUI's typed families; the
+    /// typed overloads below take precedence for their exact value types.
+    ///
+    /// - Parameters:
+    ///   - wrappedValue: The default value.
+    ///   - key: The key to read and write the value to.
+    ///   - store: The backend to use, or `nil` for the runtime's backend.
+    public init(
+        wrappedValue: Value,
+        _ key: String,
+        store: (any StorageBackend)? = nil
+    ) where Value: Codable {
+        self.init(box: AppStorageBox(
+            key: key,
+            defaultValue: wrappedValue,
+            explicitStorage: store,
+            read: { backend, key in backend.value(forKey: key) },
+            write: { backend, key, value in backend.setValue(value, forKey: key) }
+        ))
+    }
+}
+
+// MARK: - Standard Value Families
+
+extension AppStorage {
+    /// Shared construction for Codable-backed typed families.
+    fileprivate static func codableFamily(
+        wrappedValue: Value,
+        key: String,
+        store: (any StorageBackend)?
+    ) -> AppStorage<Value> where Value: Codable {
+        AppStorage(wrappedValue: wrappedValue, key, store: store)
+    }
+
+    /// Creates a property that can read and write a Boolean value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == Bool {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an integer value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == Int {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write a double value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == Double {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write a string value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == String {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write a URL value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == URL {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write a data value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == Data {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+
+    /// Creates a property that can read and write a date value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value == Date {
+        self = Self.codableFamily(wrappedValue: wrappedValue, key: key, store: store)
+    }
+}
+
+// MARK: - RawRepresentable Families
+
+extension AppStorage {
+    /// Shared construction for raw-representable typed families.
+    fileprivate static func rawFamily<Raw: Codable>(
+        wrappedValue: Value,
+        key: String,
+        store: (any StorageBackend)?,
+        rawValue: @escaping @Sendable (Value) -> Raw,
+        fromRaw: @escaping @Sendable (Raw) -> Value?
+    ) -> AppStorage<Value> {
+        AppStorage(box: AppStorageBox(
+            key: key,
+            defaultValue: wrappedValue,
+            explicitStorage: store,
+            read: { backend, key in
+                let raw: Raw? = backend.value(forKey: key)
+                return raw.flatMap(fromRaw)
+            },
+            write: { backend, key, value in
+                backend.setValue(rawValue(value), forKey: key)
+            }
+        ))
+    }
+
+    /// Creates a property that can read and write a string-backed
+    /// RawRepresentable value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value: RawRepresentable, Value.RawValue == String {
+        self = Self.rawFamily(
+            wrappedValue: wrappedValue,
+            key: key,
+            store: store,
+            rawValue: { $0.rawValue },
+            fromRaw: { Value(rawValue: $0) }
+        )
+    }
+
+    /// Creates a property that can read and write an integer-backed
+    /// RawRepresentable value.
+    public init(wrappedValue: Value, _ key: String, store: (any StorageBackend)? = nil)
+    where Value: RawRepresentable, Value.RawValue == Int {
+        self = Self.rawFamily(
+            wrappedValue: wrappedValue,
+            key: key,
+            store: store,
+            rawValue: { $0.rawValue },
+            fromRaw: { Value(rawValue: $0) }
+        )
+    }
+}
+
+// MARK: - Optional Families
+
+extension AppStorage {
+    /// Shared construction for optional Codable-backed families.
+    fileprivate static func optionalFamily<Wrapped: Codable>(
+        key: String,
+        store: (any StorageBackend)?
+    ) -> AppStorage<Value> where Value == Wrapped? {
+        AppStorage(box: AppStorageBox(
+            key: key,
+            defaultValue: nil,
+            explicitStorage: store,
+            read: { backend, key in
+                let stored: Wrapped? = backend.value(forKey: key)
+                return stored.map { $0 }
+            },
+            write: { backend, key, value in
+                if let value {
+                    backend.setValue(value, forKey: key)
+                } else {
+                    backend.removeValue(forKey: key)
+                }
+            }
+        ))
+    }
+
+    /// Creates a property that can read and write an optional Boolean value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == Bool? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional integer value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == Int? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional double value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == Double? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional string value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == String? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional URL value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == URL? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional data value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == Data? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional date value.
+    public init(_ key: String, store: (any StorageBackend)? = nil) where Value == Date? {
+        self = Self.optionalFamily(key: key, store: store)
+    }
+
+    /// Creates a property that can read and write an optional string-backed
+    /// RawRepresentable value.
+    public init<R>(_ key: String, store: (any StorageBackend)? = nil)
+    where Value == R?, R: RawRepresentable, R.RawValue == String {
+        self.init(box: AppStorageBox(
+            key: key,
+            defaultValue: nil,
+            explicitStorage: store,
+            read: { backend, key in
+                let raw: String? = backend.value(forKey: key)
+                return raw.flatMap(R.init(rawValue:)).map { $0 }
+            },
+            write: { backend, key, value in
+                if let value {
+                    backend.setValue(value.rawValue, forKey: key)
+                } else {
+                    backend.removeValue(forKey: key)
+                }
+            }
+        ))
+    }
+
+    /// Creates a property that can read and write an optional integer-backed
+    /// RawRepresentable value.
+    public init<R>(_ key: String, store: (any StorageBackend)? = nil)
+    where Value == R?, R: RawRepresentable, R.RawValue == Int {
+        self.init(box: AppStorageBox(
+            key: key,
+            defaultValue: nil,
+            explicitStorage: store,
+            read: { backend, key in
+                let raw: Int? = backend.value(forKey: key)
+                return raw.flatMap(R.init(rawValue:)).map { $0 }
+            },
+            write: { backend, key, value in
+                if let value {
+                    backend.setValue(value.rawValue, forKey: key)
+                } else {
+                    backend.removeValue(forKey: key)
+                }
+            }
+        ))
+    }
+}
+
 // MARK: - Dynamic Property Conformance
 
 extension AppStorage: DynamicProperty {}
@@ -395,7 +616,13 @@ extension AppStorage: DynamicProperty {}
 // MARK: - App Storage Box
 
 /// Reference storage that binds AppStorage to its first rendering runtime.
-private final class AppStorageBox<Value: Codable>: @unchecked Sendable {
+private final class AppStorageBox<Value>: @unchecked Sendable {
+    /// Reads the stored value from a backend, if present.
+    typealias Read = @Sendable (any StorageBackend, String) -> Value?
+
+    /// Writes (or clears) the stored value on a backend.
+    typealias Write = @Sendable (any StorageBackend, String, Value) -> Void
+
     /// Persistent key.
     private let key: String
 
@@ -404,6 +631,12 @@ private final class AppStorageBox<Value: Codable>: @unchecked Sendable {
 
     /// Explicit backend supplied by the property-wrapper initializer.
     private let explicitStorage: StorageBackend?
+
+    /// Family-specific decoding step.
+    private let read: Read
+
+    /// Family-specific encoding step.
+    private let write: Write
 
     /// Backend captured from the owning runtime.
     private var runtimeStorage: StorageBackend?
@@ -421,22 +654,26 @@ private final class AppStorageBox<Value: Codable>: @unchecked Sendable {
     init(
         key: String,
         defaultValue: Value,
-        explicitStorage: StorageBackend?
+        explicitStorage: StorageBackend?,
+        read: @escaping Read,
+        write: @escaping Write
     ) {
         self.key = key
         self.defaultValue = defaultValue
         self.explicitStorage = explicitStorage
+        self.read = read
+        self.write = write
     }
 
     /// Current persisted value.
     var value: Value {
         get {
             let storage = resolvedDependencies().storage
-            return storage.value(forKey: key) ?? defaultValue
+            return read(storage, key) ?? defaultValue
         }
         set {
             let dependencies = resolvedDependencies()
-            dependencies.storage.setValue(newValue, forKey: key)
+            write(dependencies.storage, key, newValue)
 
             if let identity = dependencies.identity {
                 dependencies.invalidationSink?.invalidate(.subtree(identity))
