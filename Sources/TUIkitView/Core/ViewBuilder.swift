@@ -25,6 +25,11 @@ import TUIkitCore
 /// - Conditionals (`if`, `if-else`)
 /// - Optional views (`if let`)
 /// - Arrays of views (`for-in`)
+///
+/// SwiftUI's builder is nonisolated; TUIkit keeps `@MainActor` because Swift
+/// 6.0 infers main-actor isolation from the `View` protocol onto every
+/// conforming type's initializers, which the builder must call. Documented as
+/// a compiler-floor exception in the compatibility manifest.
 @MainActor
 @resultBuilder
 public struct ViewBuilder {

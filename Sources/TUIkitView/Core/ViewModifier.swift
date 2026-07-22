@@ -33,6 +33,7 @@ import TUIkitCore
 /// Terminal-specific buffer transformations (padding, background fills) are
 /// framework infrastructure and live behind the internal buffer-modifier
 /// layer, not behind this public protocol.
+@preconcurrency
 @MainActor
 public protocol ViewModifier {
     /// The type of view produced by ``body(content:)``.
