@@ -38,6 +38,15 @@ public struct Bindable<Value> {
     public var projectedValue: Bindable<Value> {
         self
     }
+
+    /// Designated storage initializer.
+    ///
+    /// Suppresses the synthesized internal memberwise initializer, which
+    /// would violate the property-wrapper accessibility requirement; the
+    /// public initializers below are constrained to observable objects.
+    private init(storing wrappedValue: Value) {
+        self.wrappedValue = wrappedValue
+    }
 }
 
 // MARK: - Dynamic Member Lookup
@@ -67,7 +76,7 @@ extension Bindable where Value: AnyObject, Value: Observable {
     ///
     /// - Parameter wrappedValue: The observable object to wrap.
     public init(wrappedValue: Value) {
-        self.wrappedValue = wrappedValue
+        self.init(storing: wrappedValue)
     }
 
     /// Creates a bindable object from an observable object.
@@ -76,7 +85,7 @@ extension Bindable where Value: AnyObject, Value: Observable {
     ///
     /// - Parameter wrappedValue: The observable object to wrap.
     public init(_ wrappedValue: Value) {
-        self.wrappedValue = wrappedValue
+        self.init(storing: wrappedValue)
     }
 
     /// Creates a bindable from the value of another bindable.
