@@ -49,6 +49,20 @@ ContentView()
     .palette(SystemPalette(.amber))
 ```
 
+### At the Scene Level
+
+Apply a palette to the whole application, including out-of-tree surfaces
+like the status bar and app header, with the scene modifier:
+
+```swift
+var body: some Scene {
+    WindowGroup {
+        ContentView()
+    }
+    .palette(SystemPalette(.green))
+}
+```
+
 ### Palette Colors in Views
 
 Use ``Color/palette`` to access the current palette's colors:
