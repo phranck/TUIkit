@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Generate stable SwiftUI snapshots
         env:
@@ -47,7 +47,7 @@ jobs:
             --output-root "$SNAPSHOT_OUTPUT"
 
       - name: Upload stable SwiftUI snapshots
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: swiftui-reference-snapshots
           path: |
@@ -62,7 +62,7 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Select Swift 6.0.3
         run: |
@@ -75,7 +75,7 @@ jobs:
         run: ./scripts/test-linux.sh macos
 
       - name: Upload macOS API snapshots
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: tuikit-macos-snapshots
           path: |
@@ -84,7 +84,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload discovered test list
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: discovered-tests
           path: .build/quality/test-list.txt
@@ -94,7 +94,7 @@ jobs:
         run: tar -czf "$RUNNER_TEMP/docc-output.tar.gz" -C docc-output .
 
       - name: Upload DocC output
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: docc-output
           path: ${{ runner.temp }}/docc-output.tar.gz
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Run deterministic quality gate
         env:
@@ -113,7 +113,7 @@ jobs:
         run: ./scripts/test-linux.sh linux
 
       - name: Upload Linux API snapshots
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: tuikit-linux-snapshots
           path: |
@@ -127,7 +127,7 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Select Swift 6.0.3
         run: |
@@ -135,19 +135,19 @@ jobs:
           sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
 
       - name: Download stable SwiftUI snapshots
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: swiftui-reference-snapshots
           path: ${{ runner.temp }}/swiftui-reference-snapshots
 
       - name: Download macOS API snapshots
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: tuikit-macos-snapshots
           path: ${{ runner.temp }}/tuikit-macos-snapshots
 
       - name: Download Linux API snapshots
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: tuikit-linux-snapshots
           path: ${{ runner.temp }}/tuikit-linux-snapshots
@@ -200,7 +200,7 @@ jobs:
             --manifest Tools/APICompatibility/Configuration/compatibility-manifest.json
 
       - name: Upload assembled API inputs
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: api-compatibility-inputs
           path: ${{ runner.temp }}/api-compatibility-inputs
@@ -215,7 +215,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -236,7 +236,7 @@ jobs:
 
       - name: Download discovered test list
         if: steps.badge-provenance.outputs.stale == 'false'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: discovered-tests
           path: .build/quality
@@ -280,7 +280,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Download DocC output
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: docc-output
           path: ${{ runner.temp }}/docc-artifact
