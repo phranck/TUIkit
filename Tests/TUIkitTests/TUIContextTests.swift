@@ -419,12 +419,16 @@ private final class RecordingRuntimeImageLoader: ImageLoader, @unchecked Sendabl
         cache: URLImageCache,
         timeout: TimeInterval,
         maxPixelCount: Int?
-    ) throws -> RGBAImage {
+    ) async throws -> RGBAImage {
         cache.set(urlString, image: image)
+        recordRequest(urlString)
+        requestRecorded.signal()
+        return image
+    }
+
+    private func recordRequest(_ urlString: String) {
         lock.lock()
         urls.append(urlString)
         lock.unlock()
-        requestRecorded.signal()
-        return image
     }
 }
