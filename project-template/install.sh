@@ -135,25 +135,29 @@ UNINSTALL_SCRIPT
         echo ""
         echo -e "    ${CYAN}export PATH=\"\$PATH:$INSTALL_PATH\"${NC}"
         echo ""
-        echo -e "  ${DIM}Add automatically? (y/n)${NC}"
-        read -r response
 
-        if [[ "$response" =~ ^[Yy]$ ]]; then
-            # Create backup
-            if [ -f "$SHELL_CONFIG" ]; then
-                cp "$SHELL_CONFIG" "${SHELL_CONFIG}.backup"
-            fi
-
-            # Add to PATH
-            echo "" >> "$SHELL_CONFIG"
-            echo "# Added by TUIkit installer" >> "$SHELL_CONFIG"
-            echo "export PATH=\"\$PATH:$INSTALL_PATH\"" >> "$SHELL_CONFIG"
-
-            echo ""
-            echo -e "  ${GREEN}Done!${NC} PATH updated."
-            echo -e "  ${DIM}Restart your terminal or run:${NC} source $SHELL_CONFIG"
+        # Skip the interactive prompt in automation.
+        if [ "${TUIKIT_NON_INTERACTIVE:-0}" = "1" ]; then
+            echo -e "  ${DIM}Non-interactive mode: leaving PATH untouched.${NC}"
         else
-            echo -e "  ${DIM}Skipped. Add PATH manually to use tuikit.${NC}"
+            echo -e "  ${DIM}Add automatically? (y/n)${NC}"
+            read -r response
+
+            if [[ "$response" =~ ^[Yy]$ ]]; then
+                if [ -f "$SHELL_CONFIG" ]; then
+                    cp "$SHELL_CONFIG" "${SHELL_CONFIG}.backup"
+                fi
+
+                echo "" >> "$SHELL_CONFIG"
+                echo "# Added by TUIkit installer" >> "$SHELL_CONFIG"
+                echo "export PATH=\"\$PATH:$INSTALL_PATH\"" >> "$SHELL_CONFIG"
+
+                echo ""
+                echo -e "  ${GREEN}Done!${NC} PATH updated."
+                echo -e "  ${DIM}Restart your terminal or run:${NC} source $SHELL_CONFIG"
+            else
+                echo -e "  ${DIM}Skipped. Add PATH manually to use tuikit.${NC}"
+            fi
         fi
     fi
 

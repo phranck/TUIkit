@@ -8,16 +8,22 @@ CLI tool for creating TUIkit terminal applications.
 curl -fsSL https://raw.githubusercontent.com/phranck/TUIkit/main/project-template/install.sh | bash
 ```
 
-This installs the `tuikit` command globally on your system.
+This installs the `tuikit` command into your user bin directory
+(`~/.local/bin` on Linux; `/usr/local/bin` when writable on macOS, else
+`~/.local/bin`).
 
 ## Usage
 
 ```bash
 tuikit init MyApp                   # Basic app
-tuikit init sqlite MyApp            # With SQLite database
+tuikit init sqlite MyApp            # With SQLite (GRDB)
 tuikit init testing MyApp           # With Swift Testing
 tuikit init sqlite testing MyApp    # All features
+tuikit init --yes git MyApp         # Non-interactive (CI-friendly)
 ```
+
+Set `TUIKIT_NON_INTERACTIVE=1` to suppress every prompt (helpful for
+CI or unattended installs).
 
 ## What Gets Created
 
@@ -29,27 +35,37 @@ MyApp/
 │   ├── ContentView.swift   # Root view
 │   └── Database.swift      # (if sqlite option used)
 ├── Tests/                  # (if testing/xctest option used)
-├── .swiftpm/               # Pre-configured Xcode scheme
 ├── README.md
 └── .gitignore
 ```
 
-## Features
+Xcode generates its own scheme configuration on first open, so the
+generator does not pre-populate `.swiftpm`.
 
-- Creates native Swift Packages (not .xcodeproj)
-- Optional SQLite.swift integration
-- Optional Swift Testing or XCTest
-- Pre-configured Xcode scheme
-- Cross-platform (macOS, Linux)
-- XDG Base Directory compliant
+## Name Handling
 
-## Installation Details
+The project name is split into a display name (the folder), a Swift
+identifier used for target, package, and module names, and a
+filesystem path. Invalid components (`..`, embedded `/`, control
+characters, empty names) are rejected before any file is written.
+Non-identifier characters in the display name become underscores in
+the Swift identifier (`my-app` → `my_app`).
 
-The installer:
-- Detects your platform (macOS/Linux)
-- Installs to `/usr/local/bin` or `~/.local/bin`
-- Offers to update your shell PATH automatically
-- Creates `tuikit-uninstall` command for easy removal
+## Requirements
+
+- macOS 15+ or a supported Linux distribution
+- Swift 6.0.3 (the pinned compiler floor matches the TUIkit SDK gates;
+  the Linux installer pins this version through `swiftly` or a Swift.org
+  tarball on Ubuntu)
+- Bash shell
+
+## Platform Behavior
+
+- **macOS**: Xcode preferences are set only on macOS; the "Open in
+  Xcode" prompt is macOS-only and skipped in non-interactive runs.
+- **Linux**: the installer offers to install Swift through your
+  distribution (apt / dnf / AUR) or `swiftly`. Non-Ubuntu tarball
+  downloads are refused instead of pretending to be Ubuntu.
 
 ## Manual Installation
 
@@ -63,19 +79,18 @@ cd TUIkit/project-template
 
 ```bash
 tuikit-uninstall
+# or
+tuikit uninstall
 ```
 
-## Requirements
-
-- macOS 15+ or Linux
-- Swift 6.0+
-- Bash shell
+Both spellings remove the script from the same directory the installer
+used.
 
 ## Documentation
 
-- [TUIkit Documentation](https://docs.tuikit.dev/documentation/tuikit/)
+- [TUIkit Documentation](https://tuikit.layered.work/documentation/tuikit/)
 - [TUIkit GitHub](https://github.com/phranck/TUIkit)
 
 ## License
 
-MIT License
+This repository has been published under the [MIT](https://layered.mit-license.org) license.
