@@ -169,7 +169,7 @@ extension _ImageCore {
                     case .file(let path):
                         rawImage = try imageLoader.loadImage(from: path, maxPixelCount: maxPixelCount)
                     case .url(let urlString):
-                        rawImage = try imageLoader.loadImage(
+                        rawImage = try await imageLoader.loadImage(
                             from: urlString,
                             cache: imageCache,
                             timeout: urlTimeout,

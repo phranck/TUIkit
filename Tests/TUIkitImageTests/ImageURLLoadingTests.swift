@@ -15,7 +15,7 @@ import Testing
 struct ImageURLLoadingTests {
 
     @Test("URL cache hits enforce the current loader pixel limit")
-    func cachedImagePixelLimit() {
+    func cachedImagePixelLimit() async {
         let urlString = "https://cache.test/issue-16-limit.png"
         let cachedImage = RGBAImage(
             width: 2,
@@ -29,37 +29,13 @@ struct ImageURLLoadingTests {
         )
 
         do {
-            _ = try loader.loadImage(from: urlString, cache: cache)
+            _ = try await loader.loadImage(from: urlString, cache: cache)
             Issue.record("Expected the current loader limit to reject the cached image")
         } catch let error as ImageLoadError {
             guard case .imageTooLarge(pixelCount: 4, limit: 3) = error else {
                 Issue.record("Unexpected error: \(error)")
                 return
             }
-        } catch {
-            Issue.record("Unexpected error type: \(error)")
-        }
-    }
-
-    @Test("URL loading stops at the encoded input byte limit")
-    func urlInputByteLimit() {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.protocolClasses = [OversizedImageURLProtocol.self]
-        let request = URLRequest(url: URL(string: "https://stream.test/oversized-image")!)
-
-        do {
-            _ = try BoundedURLImageDataLoader.load(
-                request: request,
-                maxByteCount: 4,
-                configuration: configuration
-            )
-            Issue.record("Expected the URL input byte limit to stop the download")
-        } catch let error as ImageLoadError {
-            guard case .inputTooLarge(let byteCount, limit: 4) = error else {
-                Issue.record("Unexpected error: \(error)")
-                return
-            }
-            #expect(byteCount == 5)
         } catch {
             Issue.record("Unexpected error type: \(error)")
         }

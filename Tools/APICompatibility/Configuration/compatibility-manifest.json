@@ -339404,7 +339404,7 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:11TUIkitImage08PlatformB6LoaderV04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
+      "symbolID" : "s:11TUIkitImage08PlatformB6LoaderV04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
     },
     {
       "classification" : "implementationLeak",
@@ -339514,7 +339514,7 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:11TUIkitImage0B6LoaderP04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
+      "symbolID" : "s:11TUIkitImage0B6LoaderP04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
     },
     {
       "classification" : "implementationLeak",
@@ -339539,7 +339539,7 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:11TUIkitImage0B6LoaderPAAE04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
+      "symbolID" : "s:11TUIkitImage0B6LoaderPAAE04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
     },
     {
       "classification" : "tuiSpecific",

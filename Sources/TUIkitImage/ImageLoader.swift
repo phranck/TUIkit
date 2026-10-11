@@ -10,140 +10,10 @@ import Foundation
 import FoundationNetworking
 #endif
 
-enum BoundedURLImageDataLoader {
-
-    static func load(
-        request: URLRequest,
-        maxByteCount: Int,
-        configuration: URLSessionConfiguration = .ephemeral
-    ) throws -> Data {
-        guard maxByteCount >= 0 else {
-            throw ImageLoadError.inputTooLarge(byteCount: 0, limit: maxByteCount)
-        }
-
-        return try SessionDelegate(maxByteCount: maxByteCount).load(
-            request: request,
-            configuration: configuration
-        )
-    }
-}
-
-private extension BoundedURLImageDataLoader {
-
-    final class SessionDelegate: NSObject, URLSessionDataDelegate, @unchecked Sendable {
-        private let maxByteCount: Int
-        private let completionSemaphore = DispatchSemaphore(value: 0)
-        private let stateLock = NSLock()
-        private var bufferedData = Data()
-        private var result: Result<Data, Error>?
-
-        init(maxByteCount: Int) {
-            self.maxByteCount = maxByteCount
-        }
-
-        func load(request: URLRequest, configuration: URLSessionConfiguration) throws -> Data {
-            let session = URLSession(
-                configuration: configuration,
-                delegate: self,
-                delegateQueue: nil
-            )
-            let task = session.dataTask(with: request)
-            task.resume()
-            completionSemaphore.wait()
-            session.invalidateAndCancel()
-
-            stateLock.lock()
-            let completedResult = result
-            stateLock.unlock()
-
-            guard let completedResult else {
-                throw ImageLoadError.downloadFailed("Download finished without a result")
-            }
-            return try completedResult.get()
-        }
-
-        func urlSession(
-            _ session: URLSession,
-            dataTask: URLSessionDataTask,
-            didReceive response: URLResponse,
-            completionHandler: @escaping @Sendable (URLSession.ResponseDisposition) -> Void
-        ) {
-            let expectedByteCount = response.expectedContentLength
-            if expectedByteCount > Int64(maxByteCount) {
-                let reportedByteCount = min(expectedByteCount, Int64(Int.max))
-                finish(
-                    with: .failure(
-                        ImageLoadError.inputTooLarge(
-                            byteCount: Int(reportedByteCount),
-                            limit: maxByteCount
-                        )
-                    )
-                )
-                completionHandler(.cancel)
-                return
-            }
-
-            completionHandler(.allow)
-        }
-
-        func urlSession(
-            _ session: URLSession,
-            dataTask: URLSessionDataTask,
-            didReceive data: Data
-        ) {
-            stateLock.lock()
-            guard result == nil else {
-                stateLock.unlock()
-                dataTask.cancel()
-                return
-            }
-
-            let remainingByteCount = maxByteCount - bufferedData.count
-            guard data.count <= remainingByteCount else {
-                let reportedByteCount = maxByteCount == Int.max ? Int.max : maxByteCount + 1
-                result = .failure(
-                    ImageLoadError.inputTooLarge(
-                        byteCount: reportedByteCount,
-                        limit: maxByteCount
-                    )
-                )
-                stateLock.unlock()
-                completionSemaphore.signal()
-                dataTask.cancel()
-                return
-            }
-
-            bufferedData.append(data)
-            stateLock.unlock()
-        }
-
-        func urlSession(
-            _ session: URLSession,
-            task: URLSessionTask,
-            didCompleteWithError error: Error?
-        ) {
-            if let error {
-                finish(with: .failure(error))
-            } else {
-                stateLock.lock()
-                let data = bufferedData
-                stateLock.unlock()
-                finish(with: .success(data))
-            }
-        }
-
-        private func finish(with completedResult: Result<Data, Error>) {
-            stateLock.lock()
-            guard result == nil else {
-                stateLock.unlock()
-                return
-            }
-            result = completedResult
-            stateLock.unlock()
-            completionSemaphore.signal()
-        }
-    }
-}
+// The former DispatchSemaphore-based URL data loader was removed in
+// favor of the async URLImageCoordinator pipeline: sync semaphore waits
+// blocked concurrency-runtime threads on Linux and required
+// nonisolated(unsafe) result state. See `URLImageCoordinator.swift`.
 
 // MARK: - ImageLoader Protocol
 
@@ -170,12 +40,16 @@ public protocol ImageLoader: Sendable {
     func loadImage(from path: String, maxPixelCount: Int?) throws -> RGBAImage
 
     /// Loads an image from a URL using the supplied runtime cache.
+    ///
+    /// The default implementation returns the cached image if present and
+    /// otherwise fails; concrete loaders (like `PlatformImageLoader`) fetch
+    /// through the async pipeline.
     func loadImage(
         from urlString: String,
         cache: URLImageCache,
         timeout: TimeInterval,
         maxPixelCount: Int?
-    ) throws -> RGBAImage
+    ) async throws -> RGBAImage
 }
 
 // MARK: - ImageLoader Defaults
@@ -192,7 +66,7 @@ public extension ImageLoader {
         cache: URLImageCache,
         timeout: TimeInterval,
         maxPixelCount: Int?
-    ) throws -> RGBAImage {
+    ) async throws -> RGBAImage {
         if let image = cache.get(urlString) {
             try validatePixelCount(image, maxPixelCount: maxPixelCount)
             return image
@@ -273,9 +147,20 @@ public enum ImageLoadError: Error, LocalizedError, CustomStringConvertible {
 /// Cross-platform image loader backed by pure Swift PNG and JPEG decoders.
 public struct PlatformImageLoader: ImageLoader {
     private let decoder: PureSwiftImageDecoder
+    private let coordinator: URLImageCoordinator
 
     public init(limits: ImageDecodingLimits = .default) {
-        decoder = PureSwiftImageDecoder(limits: limits)
+        self.decoder = PureSwiftImageDecoder(limits: limits)
+        self.coordinator = URLImageCoordinator()
+    }
+
+    /// Creates a loader with an explicit URL coordinator.
+    ///
+    /// Tests inject a coordinator configured with a scripted transport so
+    /// no live networking runs; production uses the default.
+    init(limits: ImageDecodingLimits = .default, coordinator: URLImageCoordinator) {
+        self.decoder = PureSwiftImageDecoder(limits: limits)
+        self.coordinator = coordinator
     }
 
     public func loadImage(from path: String) throws -> RGBAImage {
@@ -410,33 +295,14 @@ extension PlatformImageLoader {
         cache: URLImageCache,
         timeout: TimeInterval = 30,
         maxPixelCount: Int? = nil
-    ) throws -> RGBAImage {
-        if let cached = cache.get(urlString) {
-            try decoder.validateCachedImage(cached, maxPixelCount: maxPixelCount)
-            return cached
-        }
-
-        guard let url = URL(string: urlString) else {
-            throw ImageLoadError.downloadFailed("Invalid URL: \(urlString)")
-        }
-
-        let data: Data
-        do {
-            var request = URLRequest(url: url)
-            request.timeoutInterval = timeout
-            data = try BoundedURLImageDataLoader.load(
-                request: request,
-                maxByteCount: decoder.maxInputBytes
-            )
-        } catch let error as ImageLoadError {
-            throw error
-        } catch {
-            throw ImageLoadError.downloadFailed(error.localizedDescription)
-        }
-
-        let image = try loadImage(from: data, maxPixelCount: maxPixelCount)
-        cache.set(urlString, image: image)
-        return image
+    ) async throws -> RGBAImage {
+        try await coordinator.load(
+            urlString,
+            cache: cache,
+            timeout: timeout,
+            maxPixelCount: maxPixelCount,
+            decoder: decoder
+        )
     }
 }
 

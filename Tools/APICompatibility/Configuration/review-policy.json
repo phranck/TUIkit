@@ -19636,11 +19636,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:11TUIkitImage08PlatformB6LoaderV04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:11TUIkitImage08PlatformB6LoaderV04loadB04fromAA9RGBAImageV10Foundation4DataV_tKF"
     },
     {
@@ -19746,11 +19741,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:11TUIkitImage0B6LoaderP04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:11TUIkitImage0B6LoaderP04loadB04fromAA9RGBAImageV10Foundation4DataV_tKF"
     },
     {
@@ -19767,11 +19757,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:11TUIkitImage0B6LoaderPAAE04loadB04from13maxPixelCountAA9RGBAImageVSS_SiSgtKF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:11TUIkitImage0B6LoaderPAAE04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtKF"
     },
     {
       "action": "tuiSpecific",
@@ -26207,6 +26192,21 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit5ScenePAAE7paletteyQr0A7Styling7Palette_pF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:11TUIkitImage08PlatformB6LoaderV04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:11TUIkitImage0B6LoaderP04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:11TUIkitImage0B6LoaderPAAE04loadB04from5cache7timeout13maxPixelCountAA9RGBAImageVSS_AA13URLImageCacheCSdSiSgtYaKF"
     }
   ]
 }
