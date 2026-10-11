@@ -27,7 +27,7 @@ struct FrameModifierTests {
             content: Text("Hi"),
             minWidth: nil,
             idealWidth: nil,
-            maxWidth: .infinity,
+            maxWidth: Int.max,
             minHeight: nil,
             idealHeight: nil,
             maxHeight: nil,
@@ -45,7 +45,7 @@ struct FrameModifierTests {
             content: Text("Short"),
             minWidth: nil,
             idealWidth: nil,
-            maxWidth: .fixed(10),
+            maxWidth: 10,
             minHeight: nil,
             idealHeight: nil,
             maxHeight: nil,
@@ -173,7 +173,7 @@ struct FrameModifierTests {
             maxWidth: nil,
             minHeight: 5,
             idealHeight: nil,
-            maxHeight: .fixed(10),
+            maxHeight: 10,
             alignment: .top
         )
         let context = testContext()
@@ -192,7 +192,7 @@ struct FrameModifierTests {
             maxWidth: nil,
             minHeight: nil,
             idealHeight: nil,
-            maxHeight: .infinity,
+            maxHeight: Int.max,
             alignment: .top
         )
         var context = testContext()

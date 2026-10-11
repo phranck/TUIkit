@@ -4,20 +4,6 @@
 //  Created by LAYERED.work
 //  License: MIT
 
-// MARK: - Frame Dimension
-
-/// Represents a frame dimension that can be a fixed value or infinity.
-public enum FrameDimension: Equatable, Sendable {
-    /// A fixed size in characters/lines.
-    case fixed(Int)
-
-    /// Expand to fill all available space.
-    case infinity
-
-    /// The special infinity value for frame constraints.
-    public static let max: FrameDimension = .infinity
-}
-
 // MARK: - Flexible Frame View
 
 /// A view that applies flexible frame constraints to its content.
@@ -34,8 +20,8 @@ public struct FlexibleFrameView<Content: View>: View {
     /// The ideal width in characters, or nil to use intrinsic size.
     let idealWidth: Int?
 
-    /// The maximum width constraint, or nil for no maximum.
-    let maxWidth: FrameDimension?
+    /// The maximum width in cells (`Int.max` fills), or nil for no maximum.
+    let maxWidth: Int?
 
     /// The minimum height in lines, or nil for no minimum.
     let minHeight: Int?
@@ -43,8 +29,8 @@ public struct FlexibleFrameView<Content: View>: View {
     /// The ideal height in lines, or nil to use intrinsic size.
     let idealHeight: Int?
 
-    /// The maximum height constraint, or nil for no maximum.
-    let maxHeight: FrameDimension?
+    /// The maximum height in cells (`Int.max` fills), or nil for no maximum.
+    let maxHeight: Int?
 
     /// The alignment of the content within the frame.
     let alignment: Alignment
@@ -76,12 +62,9 @@ extension FlexibleFrameView: Renderable {
         // Calculate the target width based on constraints
         let targetWidth: Int
         if let maximumWidth = maxWidth {
-            switch maximumWidth {
-            case .infinity:
-                targetWidth = context.availableWidth
-            case .fixed(let value):
-                targetWidth = min(value, context.availableWidth)
-            }
+            targetWidth = maximumWidth == .max
+                ? context.availableWidth
+                : min(maximumWidth, context.availableWidth)
         } else if let ideal = idealWidth {
             targetWidth = min(ideal, context.availableWidth)
         } else {
@@ -92,12 +75,9 @@ extension FlexibleFrameView: Renderable {
         // Calculate the target height based on constraints
         let targetHeight: Int?
         if let maximumHeight = maxHeight {
-            switch maximumHeight {
-            case .infinity:
-                targetHeight = context.availableHeight
-            case .fixed(let value):
-                targetHeight = min(value, context.availableHeight)
-            }
+            targetHeight = maximumHeight == .max
+                ? context.availableHeight
+                : min(maximumHeight, context.availableHeight)
         } else if let ideal = idealHeight {
             targetHeight = min(ideal, context.availableHeight)
         } else {
@@ -131,10 +111,10 @@ extension FlexibleFrameView: Renderable {
         }
 
         // Apply maximum constraints (expand to fill if infinity)
-        if let maximumWidth = maxWidth, case .infinity = maximumWidth {
+        if maxWidth == .max {
             finalWidth = context.availableWidth
         }
-        if let maximumHeight = maxHeight, case .infinity = maximumHeight {
+        if maxHeight == .max {
             finalHeight = context.availableHeight
         }
 
@@ -152,15 +132,10 @@ extension FlexibleFrameView: Renderable {
         var result: [String] = []
 
         // Calculate vertical offset for alignment
-        let verticalOffset: Int
-        switch alignment.vertical {
-        case .top:
-            verticalOffset = 0
-        case .center:
-            verticalOffset = max(0, (targetHeight - buffer.height) / 2)
-        case .bottom:
-            verticalOffset = max(0, targetHeight - buffer.height)
-        }
+        let verticalOffset = alignment.vertical.cellOffset(
+            childHeight: buffer.height,
+            containerHeight: targetHeight
+        )
 
         for row in 0..<targetHeight {
             let contentRow = row - verticalOffset
@@ -189,15 +164,11 @@ extension FlexibleFrameView: Renderable {
 
         let padding = targetWidth - visibleWidth
 
-        switch alignment.horizontal {
-        case .leading:
-            return line + String(repeating: " ", count: padding)
-        case .center:
-            let left = padding / 2
-            let right = padding - left
-            return String(repeating: " ", count: left) + line + String(repeating: " ", count: right)
-        case .trailing:
-            return String(repeating: " ", count: padding) + line
-        }
+        let left = alignment.horizontal.cellOffset(
+            childWidth: visibleWidth,
+            containerWidth: targetWidth
+        )
+        let right = padding - left
+        return String(repeating: " ", count: left) + line + String(repeating: " ", count: right)
     }
 }

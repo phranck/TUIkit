@@ -18761,16 +18761,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQrSiSg_AiD9AlignmentVtF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQrSiSg_AmD14FrameDimensionOSgA2mpD9AlignmentVtF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:10TUIkitView0B0P0A0E5modal11isPresented7contentQrAA7BindingVySbG_qd__yctAaBRd__lF"
     },
     {
@@ -18797,16 +18787,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQrAD10EdgeInsetsVF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeV_SitF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQrSiF"
     },
     {
       "action": "implementationLeak",
@@ -21381,41 +21361,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV10horizontal8verticalACSi_Sitcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV3allACSi_tcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingACSi_S3itcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV3topSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV6bottomSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV7leadingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10EdgeInsetsV8trailingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit10FocusStateC"
     },
     {
@@ -21456,21 +21401,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyHStackV7spacingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyHStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentO_SixyXEtcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyHStackV9alignmentAA17VerticalAlignmentOvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit10LazyHStackVAASQRzrlE2eeoiySbACyxG_AEtFZ"
     },
     {
@@ -21487,21 +21417,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit10LazyVStackV7contentxvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyVStackV7spacingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyVStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentO_SixyXEtcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit10LazyVStackV9alignmentAA19HorizontalAlignmentOvp"
     },
     {
       "action": "implementationLeak",
@@ -21732,16 +21647,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit11TableColumnV5widthyACyxGAA0C5WidthOF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit11TableColumnV9alignmentAA19HorizontalAlignmentOvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit11TableColumnV9alignmentyACyxGAA19HorizontalAlignmentOF"
     },
     {
       "action": "implementationLeak",
@@ -22187,26 +22092,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit14DimmedModifierVAASQRzrlE2eeoiySbACyxG_AEtFZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit14FrameDimensionO"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit14FrameDimensionO3maxACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit14FrameDimensionO5fixedyACSicACmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit14FrameDimensionO8infinityyA2CmF"
     },
     {
       "action": "implementationLeak",
@@ -23206,26 +23091,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit17VerticalAlignmentO"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit17VerticalAlignmentO3topyA2CmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit17VerticalAlignmentO6bottomyA2CmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit17VerticalAlignmentO6centeryA2CmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit17extractBadgeValue4fromAA0cD0OSgx_t0A4View0F0RzlF"
     },
     {
@@ -23362,26 +23227,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit19CheckboxToggleStyleVACycfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit19HorizontalAlignmentO"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit19HorizontalAlignmentO6centeryA2CmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit19HorizontalAlignmentO7leadingyA2CmF"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit19HorizontalAlignmentO8trailingyA2CmF"
     },
     {
       "action": "tuiSpecific",
@@ -24146,56 +23991,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV10horizontalACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV3allACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV3topACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV6bottomACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV7leadingACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV8rawValueACs5UInt8V_tcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV8rawValues5UInt8Vvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV8trailingACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit4EdgeV8verticalACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit4ListV"
     },
     {
@@ -24616,21 +24411,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6HStackV7spacingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentO_SixyXEtcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6HStackV9alignmentAA17VerticalAlignmentOvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit6HStackVAASQRzrlE2eeoiySbACyxG_AEtFZ"
     },
     {
@@ -24701,11 +24481,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6SpacerV9minLengthACSiSg_tcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit6ToggleV"
     },
     {
@@ -24747,21 +24522,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit6VStackV7contentxvp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6VStackV7spacingSivp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentO_SixyXEtcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit6VStackV9alignmentAA19HorizontalAlignmentOvp"
     },
     {
       "action": "implementationLeak",
@@ -25301,16 +25061,6 @@
     {
       "action": "implementationLeak",
       "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit9AlignmentV10horizontal8verticalAcA010HorizontalB0O_AA08VerticalB0Otcfc"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit9AlignmentV10horizontalAA010HorizontalB0Ovp"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
       "symbolID": "s:6TUIkit9AlignmentV10topLeadingACvpZ"
     },
     {
@@ -25352,11 +25102,6 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit9AlignmentV8trailingACvpZ"
-    },
-    {
-      "action": "implementationLeak",
-      "ownerIssue": "#35",
-      "symbolID": "s:6TUIkit9AlignmentV8verticalAA08VerticalB0Ovp"
     },
     {
       "action": "implementationLeak",
@@ -26207,6 +25952,746 @@
       "action": "implementationLeak",
       "ownerIssue": "#35",
       "symbolID": "s:6TUIkit5ScenePAAE7paletteyQr0A7Styling7Palette_pF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQr10Foundation7CGFloatVSg_AlD9AlignmentVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQr14CoreFoundation7CGFloatVSg_AlD9AlignmentVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQr10Foundation7CGFloatVSg_A5pD9AlignmentVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQr14CoreFoundation7CGFloatVSg_A5pD9AlignmentVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQr10Foundation7CGFloatVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQr14CoreFoundation7CGFloatVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeO3SetV_10Foundation7CGFloatVSgtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeO3SetV_14CoreFoundation7CGFloatVSgtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV10horizontal8verticalAC10Foundation7CGFloatV_AHtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV10horizontal8verticalAC14CoreFoundation7CGFloatV_AHtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3allAC10Foundation7CGFloatV_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3allAC14CoreFoundation7CGFloatV_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3top10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3top14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingAC10Foundation7CGFloatV_A3Jtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingAC14CoreFoundation7CGFloatV_A3Jtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV6bottom10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV6bottom14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV7leading10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV7leading14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV8trailing10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10EdgeInsetsV8trailing14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyHStackV9alignment7spacing11pinnedViews7contentACyxGAA17VerticalAlignmentV_10Foundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyHStackV9alignment7spacing11pinnedViews7contentACyxGAA17VerticalAlignmentV_14CoreFoundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyHStackV9alignmentAA17VerticalAlignmentVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyVStackV9alignment7spacing11pinnedViews7contentACyxGAA19HorizontalAlignmentV_10Foundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyVStackV9alignment7spacing11pinnedViews7contentACyxGAA19HorizontalAlignmentV_14CoreFoundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit10LazyVStackV9alignmentAA19HorizontalAlignmentVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11AlignmentIDP"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11AlignmentIDP12defaultValue2in10Foundation7CGFloatVAA14ViewDimensionsV_tFZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11AlignmentIDP12defaultValue2in14CoreFoundation7CGFloatVAA14ViewDimensionsV_tFZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11TableColumnV9alignmentAA19HorizontalAlignmentVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit11TableColumnV9alignmentyACyxGAA19HorizontalAlignmentVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit12ViewThatFitsV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit12ViewThatFitsV14renderToBuffer7context0A4Core05FrameG0V0aB013RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit12ViewThatFitsV2in7contentACyxGAA4AxisO3SetV_xyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit12ViewThatFitsV4bodys5NeverOvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13GeometryProxyV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13GeometryProxyV4size10Foundation6CGSizeVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13GeometryProxyV4sizeSo6CGSizeVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13LayoutSubviewV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13LayoutSubviewV12sizeThatFitsy10Foundation6CGSizeVAA16ProposedViewSizeVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13LayoutSubviewV12sizeThatFitsySo6CGSizeVAA16ProposedViewSizeVF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13LayoutSubviewV5place2at8proposaly10Foundation7CGPointV_AA16ProposedViewSizeVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit13LayoutSubviewV5place2at8proposalySo7CGPointV_AA16ProposedViewSizeVtF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14GeometryReaderV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14GeometryReaderV14renderToBuffer7context0A4Core05FrameF0V0A4View13RenderContextV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14GeometryReaderV4bodys5NeverOvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14GeometryReaderV7contentACyxGxAA0B5ProxyVc_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14GeometryReaderV7contentyxAA0B5ProxyVcvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14LayoutSubviewsV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14LayoutSubviewsV10startIndexSivp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14LayoutSubviewsV8endIndexSivp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14LayoutSubviewsVyAA0B7SubviewVSicip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsV5width10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsV5width14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsV6height10Foundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsV6height14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsVy10Foundation7CGFloatVAA17VerticalAlignmentVcip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsVy10Foundation7CGFloatVAA19HorizontalAlignmentVcip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsVy14CoreFoundation7CGFloatVAA17VerticalAlignmentVcip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit14ViewDimensionsVy14CoreFoundation7CGFloatVAA19HorizontalAlignmentVcip"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV11unspecifiedACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV4zeroACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV5width10Foundation7CGFloatVSgvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV5width14CoreFoundation7CGFloatVSgvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV5width6heightAC10Foundation7CGFloatVSg_AItcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV5width6heightAC14CoreFoundation7CGFloatVSg_AItcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV6height10Foundation7CGFloatVSgvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV6height14CoreFoundation7CGFloatVSgvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeV8infinityACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeVyAC10Foundation6CGSizeVcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit16ProposedViewSizeVyACSo6CGSizeVcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentV2eeoiySbAC_ACtFZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentV3topACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentV6bottomACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentV6centerACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit17VerticalAlignmentVyAcA0C2ID_pXpcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentV2eeoiySbAC_ACtFZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentV6centerACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentV7leadingACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentV8trailingACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit19HorizontalAlignmentVyAcA0C2ID_pXpcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit21PinnedScrollableViewsV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit21PinnedScrollableViewsV14sectionFootersACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit21PinnedScrollableViewsV14sectionHeadersACvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit21PinnedScrollableViewsV8rawValueACs6UInt32V_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit21PinnedScrollableViewsV8rawValues6UInt32Vvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO10horizontalyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO3SetV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO3SetV10horizontalAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO3SetV8rawValueAEs4Int8V_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO3SetV8rawValues4Int8Vvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO3SetV8verticalAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO8rawValueACSgs4Int8V_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4AxisO8verticalyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV10horizontalAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV3allAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV3topAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV6bottomAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV7leadingAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV8containsySbACF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV8rawValueAEs4Int8V_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV8rawValues4Int8Vvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV8trailingAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetV8verticalAEvpZ"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3SetVyAeCcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO3topyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO6bottomyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO7leadingyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO8rawValueACSgs4Int8V_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit4EdgeO8trailingyA2CmF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentV_10Foundation7CGFloatVSgxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentV_14CoreFoundation7CGFloatVSgxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6HStackV9alignmentAA17VerticalAlignmentVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP12sizeThatFits8proposal8subviews5cache10Foundation6CGSizeVAA16ProposedViewSizeV_AA0B8SubviewsV5CacheQzztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP12sizeThatFits8proposal8subviews5cacheSo6CGSizeVAA16ProposedViewSizeV_AA0B8SubviewsV5CacheQzztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP13placeSubviews2in8proposal8subviews5cachey10Foundation6CGRectV_AA16ProposedViewSizeVAA0bD0V5CacheQzztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP13placeSubviews2in8proposal8subviews5cacheySo6CGRectV_AA16ProposedViewSizeVAA0bD0V5CacheQzztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP5CacheQa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP8Subviewsa"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutP9makeCache8subviews0D0QzAA0B8SubviewsV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutPAAE14callAsFunctionyQrqd__yXE0A4View0F0Rd__lF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6LayoutPAAyt5CacheRtzrlE04makeC08subviewsyAA0B8SubviewsV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6SpacerV9minLengthAC10Foundation7CGFloatVSg_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6SpacerV9minLengthAC14CoreFoundation7CGFloatVSg_tcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentV_10Foundation7CGFloatVSgxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentV_14CoreFoundation7CGFloatVSgxyXEtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit6VStackV9alignmentAA19HorizontalAlignmentVvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AlignmentV10horizontal8verticalAcA010HorizontalB0V_AA08VerticalB0Vtcfc"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AlignmentV10horizontalAA010HorizontalB0Vvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AlignmentV8verticalAA08VerticalB0Vvp"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV12sizeThatFits8proposal8subviews5cache10Foundation6CGSizeVAA16ProposedViewSizeV_AA0C8SubviewsVypztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV12sizeThatFits8proposal8subviews5cacheSo6CGSizeVAA16ProposedViewSizeV_AA0C8SubviewsVypztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV13placeSubviews2in8proposal8subviews5cachey10Foundation6CGRectV_AA16ProposedViewSizeVAA0cE0VypztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV13placeSubviews2in8proposal8subviews5cacheySo6CGRectV_AA16ProposedViewSizeVAA0cE0VypztF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV5Cachea"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutV9makeCache8subviewsypAA0C8SubviewsV_tF"
+    },
+    {
+      "action": "implementationLeak",
+      "ownerIssue": "#35",
+      "symbolID": "s:6TUIkit9AnyLayoutVyACxcAA0C0Rzlufc"
     }
   ]
 }

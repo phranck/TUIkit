@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 /// A labeled container — always has a title, optionally a footer.
 ///
 /// `Panel` groups content under a visible heading. The title is mandatory,

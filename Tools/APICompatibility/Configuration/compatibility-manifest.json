@@ -338269,12 +338269,22 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQrSiSg_AiD9AlignmentVtF"
+      "symbolID" : "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQr10Foundation7CGFloatVSg_AlD9AlignmentVtF"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQrSiSg_AmD14FrameDimensionOSgA2mpD9AlignmentVtF"
+      "symbolID" : "s:10TUIkitView0B0P0A0E5frame5width6height9alignmentQr14CoreFoundation7CGFloatVSg_AlD9AlignmentVtF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQr10Foundation7CGFloatVSg_A5pD9AlignmentVtF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:10TUIkitView0B0P0A0E5frame8minWidth05idealE003maxE00D6Height0fH00gH09alignmentQr14CoreFoundation7CGFloatVSg_A5pD9AlignmentVtF"
     },
     {
       "classification" : "implementationLeak",
@@ -338304,17 +338314,27 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
+      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQr10Foundation7CGFloatVF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQr14CoreFoundation7CGFloatVF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
       "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQrAD10EdgeInsetsVF"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeV_SitF"
+      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeO3SetV_10Foundation7CGFloatVSgtF"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQrSiF"
+      "symbolID" : "s:10TUIkitView0B0P0A0E7paddingyQrAD4EdgeO3SetV_14CoreFoundation7CGFloatVSgtF"
     },
     {
       "classification" : "implementationLeak",
@@ -341274,37 +341294,72 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV10horizontal8verticalACSi_Sitcfc"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV10horizontal8verticalAC10Foundation7CGFloatV_AHtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV3allACSi_tcfc"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV10horizontal8verticalAC14CoreFoundation7CGFloatV_AHtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingACSi_S3itcfc"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3allAC10Foundation7CGFloatV_tcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV3topSivp"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3allAC14CoreFoundation7CGFloatV_tcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV6bottomSivp"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3top10Foundation7CGFloatVvp"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV7leadingSivp"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3top14CoreFoundation7CGFloatVvp"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10EdgeInsetsV8trailingSivp"
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingAC10Foundation7CGFloatV_A3Jtcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV3top7leading6bottom8trailingAC14CoreFoundation7CGFloatV_A3Jtcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV6bottom10Foundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV6bottom14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV7leading10Foundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV7leading14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV8trailing10Foundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit10EdgeInsetsV8trailing14CoreFoundation7CGFloatVvp"
     },
     {
       "classification" : "implementationLeak",
@@ -341349,17 +341404,17 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyHStackV7spacingSivp"
+      "symbolID" : "s:6TUIkit10LazyHStackV9alignment7spacing11pinnedViews7contentACyxGAA17VerticalAlignmentV_10Foundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyHStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentO_SixyXEtcfc"
+      "symbolID" : "s:6TUIkit10LazyHStackV9alignment7spacing11pinnedViews7contentACyxGAA17VerticalAlignmentV_14CoreFoundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyHStackV9alignmentAA17VerticalAlignmentOvp"
+      "symbolID" : "s:6TUIkit10LazyHStackV9alignmentAA17VerticalAlignmentVvp"
     },
     {
       "classification" : "implementationLeak",
@@ -341384,17 +341439,17 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyVStackV7spacingSivp"
+      "symbolID" : "s:6TUIkit10LazyVStackV9alignment7spacing11pinnedViews7contentACyxGAA19HorizontalAlignmentV_10Foundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyVStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentO_SixyXEtcfc"
+      "symbolID" : "s:6TUIkit10LazyVStackV9alignment7spacing11pinnedViews7contentACyxGAA19HorizontalAlignmentV_14CoreFoundation7CGFloatVSgAA016PinnedScrollableG0VxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit10LazyVStackV9alignmentAA19HorizontalAlignmentOvp"
+      "symbolID" : "s:6TUIkit10LazyVStackV9alignmentAA19HorizontalAlignmentVvp"
     },
     {
       "classification" : "implementationLeak",
@@ -341475,6 +341530,21 @@
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit10renderOnce7contentyxyXE_t0A4View0E0RzlF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit11AlignmentIDP"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit11AlignmentIDP12defaultValue2in10Foundation7CGFloatVAA14ViewDimensionsV_tFZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit11AlignmentIDP12defaultValue2in14CoreFoundation7CGFloatVAA14ViewDimensionsV_tFZ"
     },
     {
       "classification" : "implementationLeak",
@@ -341649,12 +341719,12 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit11TableColumnV9alignmentAA19HorizontalAlignmentOvp"
+      "symbolID" : "s:6TUIkit11TableColumnV9alignmentAA19HorizontalAlignmentVvp"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit11TableColumnV9alignmentyACyxGAA19HorizontalAlignmentOF"
+      "symbolID" : "s:6TUIkit11TableColumnV9alignmentyACyxGAA19HorizontalAlignmentVF"
     },
     {
       "classification" : "implementationLeak",
@@ -341999,6 +342069,26 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit12ViewThatFitsV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit12ViewThatFitsV14renderToBuffer7context0A4Core05FrameG0V0aB013RenderContextV_tF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit12ViewThatFitsV2in7contentACyxGAA4AxisO3SetV_xyXEtcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit12ViewThatFitsV4bodys5NeverOvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit13BadgeModifierV"
     },
     {
@@ -342015,6 +342105,46 @@
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit13BadgeModifierVAASQRzrlE2eeoiySbACyxG_AEtFZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13GeometryProxyV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13GeometryProxyV4size10Foundation6CGSizeVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13GeometryProxyV4sizeSo6CGSizeVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13LayoutSubviewV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13LayoutSubviewV12sizeThatFitsy10Foundation6CGSizeVAA16ProposedViewSizeVF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13LayoutSubviewV12sizeThatFitsySo6CGSizeVAA16ProposedViewSizeVF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13LayoutSubviewV5place2at8proposaly10Foundation7CGPointV_AA16ProposedViewSizeVtF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit13LayoutSubviewV5place2at8proposalySo7CGPointV_AA16ProposedViewSizeVtF"
     },
     {
       "classification" : "implementationLeak",
@@ -342114,22 +342244,47 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit14FrameDimensionO"
+      "symbolID" : "s:6TUIkit14GeometryReaderV"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit14FrameDimensionO3maxACvpZ"
+      "symbolID" : "s:6TUIkit14GeometryReaderV14renderToBuffer7context0A4Core05FrameF0V0A4View13RenderContextV_tF"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit14FrameDimensionO5fixedyACSicACmF"
+      "symbolID" : "s:6TUIkit14GeometryReaderV4bodys5NeverOvp"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit14FrameDimensionO8infinityyA2CmF"
+      "symbolID" : "s:6TUIkit14GeometryReaderV7contentACyxGxAA0B5ProxyVc_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14GeometryReaderV7contentyxAA0B5ProxyVcvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14LayoutSubviewsV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14LayoutSubviewsV10startIndexSivp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14LayoutSubviewsV8endIndexSivp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14LayoutSubviewsVyAA0B7SubviewVSicip"
     },
     {
       "classification" : "implementationLeak",
@@ -342345,6 +342500,51 @@
       "classification" : "tuiSpecific",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit14StorageBackendP8setValue_6forKeyyqd___SStSeRd__SERd__lF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsV5width10Foundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsV5width14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsV6height10Foundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsV6height14CoreFoundation7CGFloatVvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsVy10Foundation7CGFloatVAA17VerticalAlignmentVcip"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsVy10Foundation7CGFloatVAA19HorizontalAlignmentVcip"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsVy14CoreFoundation7CGFloatVAA17VerticalAlignmentVcip"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit14ViewDimensionsVy14CoreFoundation7CGFloatVAA19HorizontalAlignmentVcip"
     },
     {
       "classification" : "tuiSpecific",
@@ -342969,6 +343169,66 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV11unspecifiedACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV4zeroACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV5width10Foundation7CGFloatVSgvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV5width14CoreFoundation7CGFloatVSgvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV5width6heightAC10Foundation7CGFloatVSg_AItcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV5width6heightAC14CoreFoundation7CGFloatVSg_AItcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV6height10Foundation7CGFloatVSgvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV6height14CoreFoundation7CGFloatVSgvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeV8infinityACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeVyAC10Foundation6CGSizeVcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit16ProposedViewSizeVyACSo6CGSizeVcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit16RadioButtonGroupV"
     },
     {
@@ -343144,22 +343404,32 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit17VerticalAlignmentO"
+      "symbolID" : "s:6TUIkit17VerticalAlignmentV"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit17VerticalAlignmentO3topyA2CmF"
+      "symbolID" : "s:6TUIkit17VerticalAlignmentV2eeoiySbAC_ACtFZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit17VerticalAlignmentO6bottomyA2CmF"
+      "symbolID" : "s:6TUIkit17VerticalAlignmentV3topACvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit17VerticalAlignmentO6centeryA2CmF"
+      "symbolID" : "s:6TUIkit17VerticalAlignmentV6bottomACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit17VerticalAlignmentV6centerACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit17VerticalAlignmentVyAcA0C2ID_pXpcfc"
     },
     {
       "classification" : "implementationLeak",
@@ -343304,22 +343574,32 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit19HorizontalAlignmentO"
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentV"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit19HorizontalAlignmentO6centeryA2CmF"
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentV2eeoiySbAC_ACtFZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit19HorizontalAlignmentO7leadingyA2CmF"
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentV6centerACvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit19HorizontalAlignmentO8trailingyA2CmF"
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentV7leadingACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentV8trailingACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit19HorizontalAlignmentVyAcA0C2ID_pXpcfc"
     },
     {
       "classification" : "tuiSpecific",
@@ -343665,6 +343945,31 @@
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit21InsetGroupedListStyleVACycfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit21PinnedScrollableViewsV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit21PinnedScrollableViewsV14sectionFootersACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit21PinnedScrollableViewsV14sectionHeadersACvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit21PinnedScrollableViewsV8rawValueACs6UInt32V_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit21PinnedScrollableViewsV8rawValues6UInt32Vvp"
     },
     {
       "classification" : "tuiSpecific",
@@ -344097,6 +344402,51 @@
       "symbolID" : "s:6TUIkit3AppPxycfc"
     },
     {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO10horizontalyA2CmF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO3SetV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO3SetV10horizontalAEvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO3SetV8rawValueAEs4Int8V_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO3SetV8rawValues4Int8Vvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO3SetV8verticalAEvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO8rawValueACSgs4Int8V_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4AxisO8verticalyA2CmF"
+    },
+    {
       "classification" : "tuiSpecific",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit4CardV"
@@ -344129,52 +344479,92 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV"
+      "symbolID" : "s:6TUIkit4EdgeO"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV10horizontalACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV3allACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV10horizontalAEvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV3topACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV3allAEvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV6bottomACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV3topAEvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV7leadingACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV6bottomAEvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV8rawValueACs5UInt8V_tcfc"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV7leadingAEvpZ"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV8rawValues5UInt8Vvp"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV8containsySbACF"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV8trailingACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV8rawValueAEs4Int8V_tcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit4EdgeV8verticalACvpZ"
+      "symbolID" : "s:6TUIkit4EdgeO3SetV8rawValues4Int8Vvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO3SetV8trailingAEvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO3SetV8verticalAEvpZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO3SetVyAeCcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO3topyA2CmF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO6bottomyA2CmF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO7leadingyA2CmF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO8rawValueACSgs4Int8V_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit4EdgeO8trailingyA2CmF"
     },
     {
       "classification" : "implementationLeak",
@@ -344624,22 +345014,72 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6HStackV7spacingSivp"
+      "symbolID" : "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentV_10Foundation7CGFloatVSgxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentO_SixyXEtcfc"
+      "symbolID" : "s:6TUIkit6HStackV9alignment7spacing7contentACyxGAA17VerticalAlignmentV_14CoreFoundation7CGFloatVSgxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6HStackV9alignmentAA17VerticalAlignmentOvp"
+      "symbolID" : "s:6TUIkit6HStackV9alignmentAA17VerticalAlignmentVvp"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
       "symbolID" : "s:6TUIkit6HStackVAASQRzrlE2eeoiySbACyxG_AEtFZ"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP12sizeThatFits8proposal8subviews5cache10Foundation6CGSizeVAA16ProposedViewSizeV_AA0B8SubviewsV5CacheQzztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP12sizeThatFits8proposal8subviews5cacheSo6CGSizeVAA16ProposedViewSizeV_AA0B8SubviewsV5CacheQzztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP13placeSubviews2in8proposal8subviews5cachey10Foundation6CGRectV_AA16ProposedViewSizeVAA0bD0V5CacheQzztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP13placeSubviews2in8proposal8subviews5cacheySo6CGRectV_AA16ProposedViewSizeVAA0bD0V5CacheQzztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP5CacheQa"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP8Subviewsa"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutP9makeCache8subviews0D0QzAA0B8SubviewsV_tF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutPAAE14callAsFunctionyQrqd__yXE0A4View0F0Rd__lF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6LayoutPAAyt5CacheRtzrlE04makeC08subviewsyAA0B8SubviewsV_tF"
     },
     {
       "classification" : "implementationLeak",
@@ -344709,7 +345149,12 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6SpacerV9minLengthACSiSg_tcfc"
+      "symbolID" : "s:6TUIkit6SpacerV9minLengthAC10Foundation7CGFloatVSg_tcfc"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit6SpacerV9minLengthAC14CoreFoundation7CGFloatVSg_tcfc"
     },
     {
       "classification" : "implementationLeak",
@@ -344759,17 +345204,17 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6VStackV7spacingSivp"
+      "symbolID" : "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentV_10Foundation7CGFloatVSgxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentO_SixyXEtcfc"
+      "symbolID" : "s:6TUIkit6VStackV9alignment7spacing7contentACyxGAA19HorizontalAlignmentV_14CoreFoundation7CGFloatVSgxyXEtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit6VStackV9alignmentAA19HorizontalAlignmentOvp"
+      "symbolID" : "s:6TUIkit6VStackV9alignmentAA19HorizontalAlignmentVvp"
     },
     {
       "classification" : "implementationLeak",
@@ -345304,12 +345749,12 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit9AlignmentV10horizontal8verticalAcA010HorizontalB0O_AA08VerticalB0Otcfc"
+      "symbolID" : "s:6TUIkit9AlignmentV10horizontal8verticalAcA010HorizontalB0V_AA08VerticalB0Vtcfc"
     },
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit9AlignmentV10horizontalAA010HorizontalB0Ovp"
+      "symbolID" : "s:6TUIkit9AlignmentV10horizontalAA010HorizontalB0Vvp"
     },
     {
       "classification" : "implementationLeak",
@@ -345359,7 +345804,47 @@
     {
       "classification" : "implementationLeak",
       "ownerIssue" : "#35",
-      "symbolID" : "s:6TUIkit9AlignmentV8verticalAA08VerticalB0Ovp"
+      "symbolID" : "s:6TUIkit9AlignmentV8verticalAA08VerticalB0Vvp"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV12sizeThatFits8proposal8subviews5cache10Foundation6CGSizeVAA16ProposedViewSizeV_AA0C8SubviewsVypztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV12sizeThatFits8proposal8subviews5cacheSo6CGSizeVAA16ProposedViewSizeV_AA0C8SubviewsVypztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV13placeSubviews2in8proposal8subviews5cachey10Foundation6CGRectV_AA16ProposedViewSizeVAA0cE0VypztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV13placeSubviews2in8proposal8subviews5cacheySo6CGRectV_AA16ProposedViewSizeVAA0cE0VypztF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV5Cachea"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutV9makeCache8subviewsypAA0C8SubviewsV_tF"
+    },
+    {
+      "classification" : "implementationLeak",
+      "ownerIssue" : "#35",
+      "symbolID" : "s:6TUIkit9AnyLayoutVyACxcAA0C0Rzlufc"
     },
     {
       "classification" : "implementationLeak",

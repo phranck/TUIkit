@@ -4,6 +4,8 @@
 //  Created by LAYERED.work
 //  License: MIT
 
+import Foundation
+
 // MARK: - List Row Separator Modifier
 
 extension View {
