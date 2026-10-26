@@ -114,7 +114,11 @@ package final class PendingFrameEffects: @unchecked Sendable {
     ///
     /// - Parameter effect: The deferred manager call. Callers capture their
     ///   values explicitly (capture list) so non-Sendable generics copy into
-    ///   the record without region-crossing diagnostics.
+    ///   the record without region-crossing diagnostics. A value read
+    ///   through a generic parameter's metatype (`K.self`, `K.defaultValue`)
+    ///   cannot be captured this way, because from Swift 6.2 on that
+    ///   metatype is not Sendable. Capture the Sendable container it is read
+    ///   from and read the value inside the effect instead.
     package func recordEffect(_ effect: @escaping () -> Void) {
         deferredEffects.append(effect)
     }
